@@ -268,7 +268,7 @@
         <div class="bird-icon" id="startBirdIcon">🐤</div>
         <h2>FLAPPY BIRD</h2>
         <p>Tap to flap! Avoid the pipes!</p>
-        <p style="color: #ff9800;">Beat the BOSS at 50 to unlock skins!</p>
+        <p style="color: #ff9800;" id="bossHint">Beat the BOSS at 50 to unlock skins!</p>
         <div class="button-row">
             <button class="btn" id="startBtn">START</button>
             <button class="btn btn-secondary" id="skinsBtn">SKINS</button>
@@ -279,7 +279,8 @@
     <!-- Skins Screen -->
     <div class="overlay hidden" id="skinsScreen">
         <h2>BIRD SKINS</h2>
-        <p>Beat the boss to unlock random skins!</p>
+        <p id="skinsSubtitle">Beat the boss to unlock random skins!</p>
+        <p style="color: #FF69B4; font-size: 0.9rem;">Rainbow is the FINAL unlock - survive to 200!</p>
         <div class="skins-grid" id="skinsGrid"></div>
         <button class="btn" id="skinsBackBtn">BACK</button>
     </div>
@@ -421,11 +422,32 @@
             const lockedSkins = SKINS.filter(s => !s.unlocked);
             if (lockedSkins.length === 0) return null;
 
-            const randomSkin = lockedSkins[Math.floor(Math.random() * lockedSkins.length)];
-            randomSkin.unlocked = true;
-            unlockedSkins.push(randomSkin.id);
-            saveSkins();
-            return randomSkin;
+            // Rainbow skin can only be unlocked after ALL other skins are unlocked
+            const nonRainbowLocked = lockedSkins.filter(s => s.id !== 'rainbowbird');
+
+            let skinToUnlock;
+            if (nonRainbowLocked.length > 0) {
+                // There are still non-rainbow skins to unlock
+                skinToUnlock = nonRainbowLocked[Math.floor(Math.random() * nonRainbowLocked.length)];
+            } else {
+                // All non-rainbow skins unlocked, now unlock rainbow
+                skinToUnlock = lockedSkins.find(s => s.id === 'rainbowbird');
+            }
+
+            if (skinToUnlock) {
+                skinToUnlock.unlocked = true;
+                unlockedSkins.push(skinToUnlock.id);
+                saveSkins();
+            }
+            return skinToUnlock;
+        }
+
+        // Check if rainbow unlock is next (for extended boss fight)
+        function isRainbowUnlockNext() {
+            const lockedSkins = SKINS.filter(s => !s.unlocked);
+            const nonRainbowLocked = lockedSkins.filter(s => s.id !== 'rainbowbird');
+            // Rainbow is next if it's locked and all other skins are unlocked
+            return nonRainbowLocked.length === 0 && lockedSkins.some(s => s.id === 'rainbowbird');
         }
 
         function renderSkinsGrid() {
@@ -458,43 +480,65 @@
             document.getElementById('startBirdIcon').textContent = skin ? skin.emoji : '🐤';
         }
 
+        function updateBossHint() {
+            const hint = document.getElementById('bossHint');
+            const lockedSkins = SKINS.filter(s => !s.unlocked);
+
+            if (lockedSkins.length === 0) {
+                hint.textContent = 'All skins unlocked! Play for high scores!';
+                hint.style.color = '#8BC34A';
+            } else if (isRainbowUnlockNext()) {
+                hint.innerHTML = '🌈 RAINBOW CHALLENGE: Survive to 200! 🌈';
+                hint.style.color = '#FF69B4';
+            } else {
+                hint.textContent = `Beat the BOSS at 50 to unlock skins! (${lockedSkins.length} left)`;
+                hint.style.color = '#ff9800';
+            }
+        }
+
         // ============================================
-        // LEADERBOARD SYSTEM
+        // LEADERBOARD SYSTEM (GLOBAL)
         // ============================================
-        const LEADERBOARD_KEY = 'flappyLeaderboard';
+        const LEADERBOARD_API = 'leaderboard.php';
         let leaderboard = [];
         let playerName = localStorage.getItem('flappyPlayerName') || 'Player';
 
-        function loadLeaderboard() {
-            // For now, use localStorage. In production, you'd use a server.
-            const saved = localStorage.getItem(LEADERBOARD_KEY);
-            leaderboard = saved ? JSON.parse(saved) : [];
-        }
-
-        function saveToLeaderboard(name, score) {
-            loadLeaderboard();
-
-            // Check if player already has an entry
-            const existingIndex = leaderboard.findIndex(e => e.name === name);
-            if (existingIndex >= 0) {
-                // Only update if new score is higher
-                if (score > leaderboard[existingIndex].score) {
-                    leaderboard[existingIndex].score = score;
+        async function loadLeaderboard() {
+            try {
+                const response = await fetch(LEADERBOARD_API);
+                const data = await response.json();
+                if (data.success) {
+                    leaderboard = data.scores;
                 }
-            } else {
-                leaderboard.push({ name, score });
+            } catch (error) {
+                console.error('Failed to load leaderboard:', error);
+                leaderboard = [];
             }
-
-            // Sort by score descending and keep top 10
-            leaderboard.sort((a, b) => b.score - a.score);
-            leaderboard = leaderboard.slice(0, 10);
-
-            localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
         }
 
-        function renderLeaderboard() {
-            loadLeaderboard();
+        async function saveToLeaderboard(name, scoreVal) {
+            try {
+                const response = await fetch(LEADERBOARD_API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, score: scoreVal })
+                });
+                const data = await response.json();
+                if (data.success && data.rank <= 10) {
+                    console.log('Made top 10! Rank:', data.rank);
+                }
+            } catch (error) {
+                console.error('Failed to save score:', error);
+            }
+        }
+
+        async function renderLeaderboard() {
             const list = document.getElementById('leaderboardList');
+            list.innerHTML = '<p style="color: #fff; text-align: center;">Loading...</p>';
+
+            await loadLeaderboard();
 
             if (leaderboard.length === 0) {
                 list.innerHTML = '<p style="color: #fff; text-align: center;">No scores yet! Be the first!</p>';
@@ -526,7 +570,9 @@
         const PIPE_GAP = 160;
         const PIPE_SPAWN_RATE = 100;
         const BOSS_START_SCORE = 50;
-        const BOSS_END_SCORE = 100;
+        const BOSS_END_SCORE_NORMAL = 100;
+        const BOSS_END_SCORE_RAINBOW = 200; // Extended boss fight for rainbow skin
+        let currentBossEndScore = BOSS_END_SCORE_NORMAL;
 
         // ============================================
         // GAME STATE
@@ -593,6 +639,7 @@
         loadSkins();
         highScoreDisplay.textContent = highScore;
         updateStartBirdIcon();
+        updateBossHint();
 
         // ============================================
         // DRAWING FUNCTIONS
@@ -814,7 +861,7 @@
             }
 
             // Health bar
-            const healthPercent = (BOSS_END_SCORE - score) / (BOSS_END_SCORE - BOSS_START_SCORE);
+            const healthPercent = (currentBossEndScore - score) / (currentBossEndScore - BOSS_START_SCORE);
             ctx.fillStyle = '#333';
             ctx.fillRect(x - 10, y - 20, boss.width + 20, 10);
             ctx.fillStyle = healthPercent > 0.3 ? '#f00' : '#ff0';
@@ -869,7 +916,12 @@
             if (bossMode) {
                 ctx.fillStyle = '#ff0';
                 ctx.font = 'bold 20px Courier New';
-                ctx.fillText('SURVIVE TO ' + BOSS_END_SCORE + '!', canvas.width / 2, 90);
+                ctx.fillText('SURVIVE TO ' + currentBossEndScore + '!', canvas.width / 2, 90);
+                if (currentBossEndScore === BOSS_END_SCORE_RAINBOW) {
+                    ctx.fillStyle = '#FF69B4';
+                    ctx.font = 'bold 14px Courier New';
+                    ctx.fillText('RAINBOW CHALLENGE!', canvas.width / 2, 110);
+                }
             }
         }
 
@@ -931,6 +983,14 @@
             pipes = []; // Clear remaining pipes
             fireballs = [];
             bossScoreTimer = 0;
+
+            // Check if this is the rainbow unlock attempt (extended boss fight)
+            if (isRainbowUnlockNext()) {
+                currentBossEndScore = BOSS_END_SCORE_RAINBOW;
+            } else {
+                currentBossEndScore = BOSS_END_SCORE_NORMAL;
+            }
+
             playSound('bossRoar');
         }
 
@@ -944,7 +1004,7 @@
                 score++;
                 scoreDisplay.textContent = score;
 
-                if (score >= BOSS_END_SCORE) {
+                if (score >= currentBossEndScore) {
                     bossVictory();
                     return;
                 }
@@ -1203,6 +1263,7 @@
             victoryScreen.classList.add('hidden');
             startScreen.classList.remove('hidden');
             gameStarted = false;
+            updateBossHint();
             idleLoop();
         });
 
