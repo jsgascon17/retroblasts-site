@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Jump Quest - Platformer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #c41e3a;
+            text-shadow: 3px 3px 0 #fff, 4px 4px 0 #000;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        /* Stats bar */
+        .stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 10px;
+            padding: 10px 30px;
+            background: #222;
+            border-radius: 10px;
+            border: 3px solid #444;
+        }
+
+        .stat {
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .stat-label {
+            color: #888;
+        }
+
+        .stat-value {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .lives {
+            color: #ff6b6b;
+        }
+
+        /* Canvas */
+        #gameCanvas {
+            border: 4px solid #8B4513;
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 15px;
+            color: #555;
+            font-size: 0.85rem;
+        }
+
+        .controls span {
+            background: #fff;
+            padding: 5px 12px;
+            border-radius: 5px;
+            border: 2px solid #ccc;
+            margin: 0 3px;
+            box-shadow: 0 3px 0 #999;
+        }
+
+        /* Overlays */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .overlay.hidden {
+            display: none;
+        }
+
+        .overlay h2 {
+            font-size: 3rem;
+            color: #ffd700;
+            text-shadow: 3px 3px 0 #c41e3a;
+            margin-bottom: 20px;
+        }
+
+        .overlay p {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .overlay .final-score {
+            font-size: 1.5rem;
+            color: #ffd700;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(to bottom, #4CAF50, #388E3C);
+            color: #fff;
+            border: 3px solid #2E7D32;
+            border-radius: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 5px 0 #1B5E20;
+            transition: all 0.1s;
+        }
+
+        .btn:hover {
+            transform: translateY(2px);
+            box-shadow: 0 3px 0 #1B5E20;
+        }
+
+        .btn:active {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+
+        .level-complete {
+            color: #4CAF50;
+        }
+
+        /* Mobile controls */
+        .mobile-controls {
+            display: none;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .mobile-btn {
+            width: 70px;
+            height: 70px;
+            font-size: 1.5rem;
+            background: linear-gradient(to bottom, #fff, #ddd);
+            border: 3px solid #999;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #666;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .mobile-btn:active {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+
+        .jump-btn {
+            width: 100px;
+            background: linear-gradient(to bottom, #ff6b6b, #c41e3a);
+            border-color: #8B0000;
+            color: #fff;
+            box-shadow: 0 5px 0 #8B0000;
+        }
+
+        @media (max-width: 650px) {
+            #gameCanvas {
+                width: 100%;
+                height: auto;
+            }
+            .mobile-controls {
+                display: flex;
+            }
+            .controls {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>SUPER JUMP QUEST</h1>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat">
+            <span class="stat-label">COINS:</span>
+            <span class="stat-value" id="coins">0</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">LEVEL:</span>
+            <span class="stat-value" id="level">1</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">LIVES:</span>
+            <span class="stat-value lives" id="lives">❤️❤️❤️</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">HIGH:</span>
+            <span class="stat-value" id="highScore">0</span>
+        </div>
+    </div>
+
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas" width="800" height="450"></canvas>
+
+    <!-- Controls -->
+    <div class="controls">
+        <span>←</span> <span>→</span> Move
+        &nbsp;&nbsp;
+        <span>SPACE</span> or <span>↑</span> Jump
+    </div>
+
+    <!-- Mobile Controls -->
+    <div class="mobile-controls">
+        <button class="mobile-btn" id="leftBtn">←</button>
+        <button class="mobile-btn jump-btn" id="jumpBtn">JUMP</button>
+        <button class="mobile-btn" id="rightBtn">→</button>
+    </div>
+
+    <!-- Start Screen -->
+    <div class="overlay" id="startScreen">
+        <h2>SUPER JUMP QUEST</h2>
+        <p>Collect coins, avoid enemies, reach the flag!</p>
+        <button class="btn" id="startBtn">START GAME</button>
+    </div>
+
+    <!-- Level Complete Screen -->
+    <div class="overlay hidden" id="levelScreen">
+        <h2 class="level-complete">LEVEL COMPLETE!</h2>
+        <div class="final-score">COINS: <span id="levelCoins">0</span></div>
+        <button class="btn" id="nextLevelBtn">NEXT LEVEL</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div class="overlay hidden" id="gameOverScreen">
+        <h2 style="color: #ff6b6b;">GAME OVER</h2>
+        <div class="final-score">TOTAL COINS: <span id="finalCoins">0</span></div>
+        <p>You reached Level <span id="finalLevel">1</span></p>
+        <button class="btn" id="restartBtn">TRY AGAIN</button>
+    </div>
+
+    <script>
+        // ============================================
+        // CANVAS SETUP
+        // ============================================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // ============================================
+        // GAME CONSTANTS
+        // ============================================
+        const GRAVITY = 0.6;
+        const FRICTION = 0.85;
+        const PLAYER_SPEED = 5;
+        const JUMP_FORCE = -13;
+
+        // ============================================
+        // GAME STATE
+        // ============================================
+        let gameRunning = false;
+        let coins = 0;
+        let totalCoins = 0;
+        let lives = 3;
+        let currentLevel = 1;
+        let highScore = localStorage.getItem('platformerHigh') || 0;
+        let cameraX = 0;
+
+        // Player
+        let player = {
+            x: 50,
+            y: 300,
+            width: 32,
+            height: 40,
+            vx: 0,
+            vy: 0,
+            onGround: false,
+            facingRight: true,
+            color: '#c41e3a'
+        };
+
+        // Input
+        let keys = {
+            left: false,
+            right: false,
+            jump: false
+        };
+
+        // Level data
+        let platforms = [];
+        let coinList = [];
+        let enemies = [];
+        let flag = null;
+        let levelWidth = 2000;
+
+        // DOM
+        const coinsDisplay = document.getElementById('coins');
+        const levelDisplay = document.getElementById('level');
+        const livesDisplay = document.getElementById('lives');
+        const highScoreDisplay = document.getElementById('highScore');
+        const startScreen = document.getElementById('startScreen');
+        const levelScreen = document.getElementById('levelScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+
+        highScoreDisplay.textContent = highScore;
+
+        // ============================================
+        // LEVEL GENERATION
+        // ============================================
+        function generateLevel(levelNum) {
+            platforms = [];
+            coinList = [];
+            enemies = [];
+            cameraX = 0;
+
+            levelWidth = 1500 + levelNum * 500;
+
+            // Ground
+            platforms.push({
+                x: 0, y: 400, width: 300, height: 50, color: '#8B4513'
+            });
+
+            // Generate platforms
+            let lastX = 250;
+            let lastY = 400;
+
+            while (lastX < levelWidth - 200) {
+                const gap = 80 + Math.random() * 100;
+                const width = 100 + Math.random() * 150;
+                const yChange = (Math.random() - 0.5) * 100;
+
+                lastX += gap;
+                lastY = Math.max(150, Math.min(380, lastY + yChange));
+
+                platforms.push({
+                    x: lastX,
+                    y: lastY,
+                    width: width,
+                    height: 30,
+                    color: '#8B4513'
+                });
+
+                // Add coins above platform
+                if (Math.random() > 0.3) {
+                    const coinCount = Math.floor(Math.random() * 3) + 1;
+                    for (let i = 0; i < coinCount; i++) {
+                        coinList.push({
+                            x: lastX + 20 + i * 30,
+                            y: lastY - 50,
+                            width: 20,
+                            height: 20,
+                            collected: false
+                        });
+                    }
+                }
+
+                // Add enemies on some platforms
+                if (Math.random() > 0.6 && width > 120) {
+                    enemies.push({
+                        x: lastX + width / 2,
+                        y: lastY - 30,
+                        width: 30,
+                        height: 30,
+                        vx: 1 + levelNum * 0.3,
+                        startX: lastX + 10,
+                        endX: lastX + width - 40,
+                        alive: true
+                    });
+                }
+
+                lastX += width;
+            }
+
+            // Final platform with flag
+            platforms.push({
+                x: levelWidth - 150,
+                y: 350,
+                width: 150,
+                height: 50,
+                color: '#8B4513'
+            });
+
+            flag = {
+                x: levelWidth - 80,
+                y: 250,
+                width: 20,
+                height: 100
+            };
+
+            // Reset player
+            player.x = 50;
+            player.y = 300;
+            player.vx = 0;
+            player.vy = 0;
+        }
+
+        // ============================================
+        // DRAWING FUNCTIONS
+        // ============================================
+        function drawBackground() {
+            // Sky gradient (already in CSS, but add clouds)
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Clouds
+            ctx.fillStyle = '#fff';
+            for (let i = 0; i < 5; i++) {
+                const x = ((i * 400 - cameraX * 0.3) % (canvas.width + 200)) - 100;
+                const y = 50 + i * 30;
+                drawCloud(x, y);
+            }
+
+            // Distant mountains
+            ctx.fillStyle = '#9cb49c';
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height);
+            for (let x = 0; x <= canvas.width; x += 100) {
+                const mountainX = x - (cameraX * 0.2) % 200;
+                ctx.lineTo(mountainX, 300 + Math.sin(mountainX * 0.02) * 50);
+            }
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.fill();
+        }
+
+        function drawCloud(x, y) {
+            ctx.beginPath();
+            ctx.arc(x, y, 25, 0, Math.PI * 2);
+            ctx.arc(x + 25, y - 10, 30, 0, Math.PI * 2);
+            ctx.arc(x + 50, y, 25, 0, Math.PI * 2);
+            ctx.arc(x + 25, y + 10, 20, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawPlatform(platform) {
+            const x = platform.x - cameraX;
+
+            // Main platform
+            ctx.fillStyle = platform.color;
+            ctx.fillRect(x, platform.y, platform.width, platform.height);
+
+            // Grass top
+            ctx.fillStyle = '#228B22';
+            ctx.fillRect(x, platform.y, platform.width, 8);
+
+            // Texture lines
+            ctx.fillStyle = '#654321';
+            for (let i = 0; i < platform.width; i += 20) {
+                ctx.fillRect(x + i + 5, platform.y + 15, 10, 3);
+            }
+        }
+
+        function drawPlayer() {
+            const x = player.x - cameraX;
+            const y = player.y;
+
+            // Body
+            ctx.fillStyle = player.color;
+            ctx.fillRect(x + 4, y + 15, 24, 25);
+
+            // Head
+            ctx.fillStyle = '#FFD5B4';
+            ctx.fillRect(x + 6, y, 20, 18);
+
+            // Hat
+            ctx.fillStyle = player.color;
+            ctx.fillRect(x + 4, y - 5, 24, 8);
+            ctx.fillRect(x + 2, y + 2, 28, 5);
+
+            // Eyes
+            ctx.fillStyle = '#000';
+            if (player.facingRight) {
+                ctx.fillRect(x + 18, y + 6, 4, 4);
+            } else {
+                ctx.fillRect(x + 10, y + 6, 4, 4);
+            }
+
+            // Mustache
+            ctx.fillStyle = '#4a2c0a';
+            ctx.fillRect(x + 8, y + 12, 16, 3);
+        }
+
+        function drawCoin(coin) {
+            if (coin.collected) return;
+
+            const x = coin.x - cameraX;
+            const y = coin.y;
+
+            // Animated spin effect
+            const wobble = Math.sin(Date.now() * 0.005 + coin.x) * 3;
+
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(x + 10, y + 10 + wobble, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#FFA500';
+            ctx.beginPath();
+            ctx.arc(x + 10, y + 10 + wobble, 6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawEnemy(enemy) {
+            if (!enemy.alive) return;
+
+            const x = enemy.x - cameraX;
+            const y = enemy.y;
+
+            // Body (goomba-like)
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.arc(x + 15, y + 15, 15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Angry eyes
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(x + 6, y + 8, 8, 8);
+            ctx.fillRect(x + 16, y + 8, 8, 8);
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x + 10, y + 10, 4, 6);
+            ctx.fillRect(x + 18, y + 10, 4, 6);
+
+            // Eyebrows (angry)
+            ctx.fillStyle = '#4a2c0a';
+            ctx.fillRect(x + 5, y + 5, 10, 3);
+            ctx.fillRect(x + 17, y + 5, 10, 3);
+
+            // Feet
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x + 3, y + 25, 10, 5);
+            ctx.fillRect(x + 17, y + 25, 10, 5);
+        }
+
+        function drawFlag() {
+            const x = flag.x - cameraX;
+
+            // Pole
+            ctx.fillStyle = '#333';
+            ctx.fillRect(x + 8, flag.y, 4, flag.height);
+
+            // Flag
+            ctx.fillStyle = '#4CAF50';
+            ctx.beginPath();
+            ctx.moveTo(x + 12, flag.y);
+            ctx.lineTo(x + 50, flag.y + 25);
+            ctx.lineTo(x + 12, flag.y + 50);
+            ctx.fill();
+
+            // Star on flag
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(x + 28, flag.y + 25, 8, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // ============================================
+        // UPDATE FUNCTIONS
+        // ============================================
+        function updatePlayer() {
+            // Horizontal movement
+            if (keys.left) {
+                player.vx = -PLAYER_SPEED;
+                player.facingRight = false;
+            } else if (keys.right) {
+                player.vx = PLAYER_SPEED;
+                player.facingRight = true;
+            } else {
+                player.vx *= FRICTION;
+            }
+
+            // Jumping
+            if (keys.jump && player.onGround) {
+                player.vy = JUMP_FORCE;
+                player.onGround = false;
+            }
+
+            // Apply gravity
+            player.vy += GRAVITY;
+
+            // Apply velocity
+            player.x += player.vx;
+            player.y += player.vy;
+
+            // Platform collision
+            player.onGround = false;
+            platforms.forEach(platform => {
+                if (player.x + player.width > platform.x &&
+                    player.x < platform.x + platform.width &&
+                    player.y + player.height > platform.y &&
+                    player.y + player.height < platform.y + platform.height + player.vy + 5 &&
+                    player.vy >= 0) {
+
+                    player.y = platform.y - player.height;
+                    player.vy = 0;
+                    player.onGround = true;
+                }
+            });
+
+            // Fall off screen
+            if (player.y > canvas.height + 50) {
+                loseLife();
+            }
+
+            // Left boundary
+            if (player.x < 0) player.x = 0;
+
+            // Update camera
+            const targetCameraX = player.x - canvas.width / 3;
+            cameraX = Math.max(0, Math.min(targetCameraX, levelWidth - canvas.width));
+        }
+
+        function updateEnemies() {
+            enemies.forEach(enemy => {
+                if (!enemy.alive) return;
+
+                // Move back and forth
+                enemy.x += enemy.vx;
+                if (enemy.x <= enemy.startX || enemy.x >= enemy.endX) {
+                    enemy.vx *= -1;
+                }
+            });
+        }
+
+        function checkCollisions() {
+            // Coins
+            coinList.forEach(coin => {
+                if (coin.collected) return;
+
+                if (player.x + player.width > coin.x &&
+                    player.x < coin.x + coin.width &&
+                    player.y + player.height > coin.y &&
+                    player.y < coin.y + coin.height) {
+
+                    coin.collected = true;
+                    coins++;
+                    totalCoins++;
+                    coinsDisplay.textContent = totalCoins;
+                }
+            });
+
+            // Enemies
+            enemies.forEach(enemy => {
+                if (!enemy.alive) return;
+
+                if (player.x + player.width > enemy.x &&
+                    player.x < enemy.x + enemy.width &&
+                    player.y + player.height > enemy.y &&
+                    player.y < enemy.y + enemy.height) {
+
+                    // Check if jumping on enemy
+                    if (player.vy > 0 && player.y + player.height < enemy.y + 15) {
+                        // Stomp enemy!
+                        enemy.alive = false;
+                        player.vy = JUMP_FORCE * 0.6;
+                        totalCoins += 5;
+                        coinsDisplay.textContent = totalCoins;
+                    } else {
+                        // Hit by enemy
+                        loseLife();
+                    }
+                }
+            });
+
+            // Flag
+            if (player.x + player.width > flag.x &&
+                player.x < flag.x + flag.width &&
+                player.y + player.height > flag.y) {
+                levelComplete();
+            }
+        }
+
+        // ============================================
+        // GAME FLOW
+        // ============================================
+        function loseLife() {
+            lives--;
+            updateLivesDisplay();
+
+            if (lives <= 0) {
+                gameOver();
+            } else {
+                // Reset player position
+                player.x = 50;
+                player.y = 300;
+                player.vx = 0;
+                player.vy = 0;
+                cameraX = 0;
+            }
+        }
+
+        function updateLivesDisplay() {
+            livesDisplay.textContent = '❤️'.repeat(lives);
+        }
+
+        function levelComplete() {
+            gameRunning = false;
+            document.getElementById('levelCoins').textContent = coins;
+            levelScreen.classList.remove('hidden');
+        }
+
+        function nextLevel() {
+            currentLevel++;
+            levelDisplay.textContent = currentLevel;
+            coins = 0;
+            generateLevel(currentLevel);
+            levelScreen.classList.add('hidden');
+            gameRunning = true;
+            gameLoop();
+        }
+
+        function gameOver() {
+            gameRunning = false;
+
+            if (totalCoins > highScore) {
+                highScore = totalCoins;
+                localStorage.setItem('platformerHigh', highScore);
+                highScoreDisplay.textContent = highScore;
+            }
+
+            document.getElementById('finalCoins').textContent = totalCoins;
+            document.getElementById('finalLevel').textContent = currentLevel;
+            gameOverScreen.classList.remove('hidden');
+        }
+
+        function startGame() {
+            coins = 0;
+            totalCoins = 0;
+            lives = 3;
+            currentLevel = 1;
+
+            coinsDisplay.textContent = totalCoins;
+            levelDisplay.textContent = currentLevel;
+            updateLivesDisplay();
+
+            generateLevel(currentLevel);
+
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            gameRunning = true;
+
+            gameLoop();
+        }
+
+        // ============================================
+        // GAME LOOP
+        // ============================================
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            // Clear
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw
+            drawBackground();
+            platforms.forEach(drawPlatform);
+            coinList.forEach(drawCoin);
+            enemies.forEach(drawEnemy);
+            drawFlag();
+            drawPlayer();
+
+            // Update
+            updatePlayer();
+            updateEnemies();
+            checkCollisions();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ============================================
+        // INPUT
+        // ============================================
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = true;
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = true;
+            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+                e.preventDefault();
+                keys.jump = true;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = false;
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
+            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') keys.jump = false;
+        });
+
+        // Mobile controls
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        const jumpBtn = document.getElementById('jumpBtn');
+
+        leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.left = true; });
+        leftBtn.addEventListener('touchend', () => keys.left = false);
+        rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.right = true; });
+        rightBtn.addEventListener('touchend', () => keys.right = false);
+        jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.jump = true; });
+        jumpBtn.addEventListener('touchend', () => keys.jump = false);
+
+        // Buttons
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('nextLevelBtn').addEventListener('click', nextLevel);
+        document.getElementById('restartBtn').addEventListener('click', startGame);
+    </script>
+</body>
+</html>
