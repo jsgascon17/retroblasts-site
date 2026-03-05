@@ -1484,6 +1484,7 @@
             ctx.fillText(`💰 ${saveData.gold} Gold`, W/2, py + 75);
 
             let itemY = py + 105;
+            shopItemPositions = []; // Reset for click detection
 
             if (activeShop === 'gun' || activeShop === 'pet') {
                 const items = activeShop === 'gun' ? Object.entries(GUNS) : Object.entries(PETS);
@@ -1495,6 +1496,9 @@
                 items.forEach(([id, item], index) => {
                     const owned = ownedList.includes(id);
                     const isEquipped = activeShop === 'gun' ? equipped === id : equipped.includes(id);
+
+                    // Store position for click detection
+                    shopItemPositions.push({ x: px + 20, y: itemY, w: pw - 40, h: itemH });
 
                     // Item background
                     const itemGrad = ctx.createLinearGradient(px + 20, itemY, px + pw - 20, itemY);
@@ -3046,32 +3050,24 @@
         canvas.addEventListener('mousemove', e => { const rect = canvas.getBoundingClientRect(); mouseX = e.clientX - rect.left; mouseY = e.clientY - rect.top; });
         canvas.addEventListener('mousedown', () => { mouseDown = true; });
         canvas.addEventListener('mouseup', () => { mouseDown = false; });
+        // Store item positions for click detection
+        let shopItemPositions = [];
+
         canvas.addEventListener('click', e => {
             const rect = canvas.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const clickY = e.clientY - rect.top;
+            const scaleX = W / rect.width;
+            const scaleY = H / rect.height;
+            const clickX = (e.clientX - rect.left) * scaleX;
+            const clickY = (e.clientY - rect.top) * scaleY;
 
             if (gameMode === 'lobby') {
                 if (activeShop) {
                     // Click on shop items
-                    const pw = 650, ph = 550, px = (W - pw) / 2, py = (H - ph) / 2;
-                    const itemStartY = py + 105;
-
-                    // Check if click is within shop panel
-                    if (clickX > px + 20 && clickX < px + pw - 20) {
-                        let itemSpacing = 40;
-                        let itemCount = 0;
-
-                        if (activeShop === 'pet') { itemSpacing = 34; itemCount = 12; }
-                        else if (activeShop === 'gun') { itemSpacing = 40; itemCount = 9; }
-                        else if (activeShop === 'achievements') { itemSpacing = 34; itemCount = 12; }
-                        else if (activeShop === 'skins') { itemSpacing = 42; itemCount = 8; }
-
-                        if (itemCount > 0) {
-                            const clickedIndex = Math.floor((clickY - itemStartY) / itemSpacing);
-                            if (clickedIndex >= 0 && clickedIndex < itemCount) {
-                                handleShopInput(String(clickedIndex + 1));
-                            }
+                    for (let i = 0; i < shopItemPositions.length; i++) {
+                        const pos = shopItemPositions[i];
+                        if (clickX > pos.x && clickX < pos.x + pos.w && clickY > pos.y && clickY < pos.y + pos.h) {
+                            handleShopInput(String(i + 1));
+                            break;
                         }
                     }
                 } else {
