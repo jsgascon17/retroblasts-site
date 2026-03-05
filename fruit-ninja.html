@@ -868,11 +868,23 @@
                 ctx.translate(fruit.x, fruit.y);
                 ctx.rotate(fruit.rotation);
 
-                // Glow for powerups
-                if (fruit.isPowerup) {
-                    ctx.shadowColor = fruit.color;
-                    ctx.shadowBlur = 20;
-                }
+                // Glowing backdrop circle to make fruit visible
+                const glowColor = fruit.isBomb ? 'rgba(255, 50, 50, 0.6)' :
+                                  fruit.isPowerup ? fruit.color :
+                                  'rgba(255, 255, 255, 0.85)';
+
+                // Outer glow
+                ctx.shadowColor = fruit.isBomb ? '#ff0000' : (fruit.color || '#ffffff');
+                ctx.shadowBlur = 25;
+
+                // Background circle
+                ctx.fillStyle = glowColor;
+                ctx.beginPath();
+                ctx.arc(0, 0, fruit.size / 2 + 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Reset shadow for emoji
+                ctx.shadowBlur = 0;
 
                 // Bomb fuse spark
                 if (fruit.isBomb) {
