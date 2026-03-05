@@ -3047,15 +3047,41 @@
         canvas.addEventListener('mousedown', () => { mouseDown = true; });
         canvas.addEventListener('mouseup', () => { mouseDown = false; });
         canvas.addEventListener('click', e => {
-            if (gameMode === 'lobby' && !activeShop) {
-                const rect = canvas.getBoundingClientRect();
-                const clickX = e.clientX - rect.left;
-                const clickY = e.clientY - rect.top;
-                for (const shop of SHOPS) {
-                    if (clickX > shop.x && clickX < shop.x + shop.w && clickY > shop.y && clickY < shop.y + shop.h) {
-                        if (shop.id === 'start') startRun();
-                        else activeShop = shop.id;
-                        break;
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            if (gameMode === 'lobby') {
+                if (activeShop) {
+                    // Click on shop items
+                    const pw = 650, ph = 550, px = (W - pw) / 2, py = (H - ph) / 2;
+                    const itemStartY = py + 105;
+
+                    // Check if click is within shop panel
+                    if (clickX > px + 20 && clickX < px + pw - 20) {
+                        let itemSpacing = 40;
+                        let itemCount = 0;
+
+                        if (activeShop === 'pet') { itemSpacing = 34; itemCount = 12; }
+                        else if (activeShop === 'gun') { itemSpacing = 40; itemCount = 9; }
+                        else if (activeShop === 'achievements') { itemSpacing = 34; itemCount = 12; }
+                        else if (activeShop === 'skins') { itemSpacing = 42; itemCount = 8; }
+
+                        if (itemCount > 0) {
+                            const clickedIndex = Math.floor((clickY - itemStartY) / itemSpacing);
+                            if (clickedIndex >= 0 && clickedIndex < itemCount) {
+                                handleShopInput(String(clickedIndex + 1));
+                            }
+                        }
+                    }
+                } else {
+                    // Click on lobby shops
+                    for (const shop of SHOPS) {
+                        if (clickX > shop.x && clickX < shop.x + shop.w && clickY > shop.y && clickY < shop.y + shop.h) {
+                            if (shop.id === 'start') startRun();
+                            else activeShop = shop.id;
+                            break;
+                        }
                     }
                 }
             }
