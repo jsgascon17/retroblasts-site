@@ -1671,6 +1671,10 @@
 
             // Add gold to save (keep what you earned)
             saveData.gold += runGold;
+            // Update best distance if this run was better
+            if (distance > saveData.bestDistance) {
+                saveData.bestDistance = distance;
+            }
             saveSave();
 
             document.getElementById('gameOverScreen').classList.remove('hidden');
