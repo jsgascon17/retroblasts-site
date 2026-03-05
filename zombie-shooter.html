@@ -894,6 +894,11 @@
                 z.depth -= z.speed;
                 z.x += (player.x - z.x) * 0.025;
 
+                // Check if boss died (from any source - pet, exploder, etc)
+                if (z.type === 'boss' && z.health <= 0 && bossActive) {
+                    bossActive = null;
+                }
+
                 // Spitter shoots projectiles
                 if (z.type === 'spitter' && z.depth < 150 && z.depth > 50) {
                     z.spitCD = (z.spitCD || 0) - 1;
