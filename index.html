@@ -160,6 +160,21 @@
             font-size: 5rem;
         }
 
+        /* Fruit Ninja */
+        .fruit-preview {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+        }
+
+        .fruit-preview .icon {
+            font-size: 4rem;
+            animation: slice 1s ease-in-out infinite;
+        }
+
+        @keyframes slice {
+            0%, 100% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+        }
+
 
         .game-info {
             padding: 25px;
@@ -477,6 +492,26 @@
                         <span class="tag">Clicker</span>
                         <span class="tag">Idle</span>
                         <span class="tag">Relaxing</span>
+                    </div>
+                    <span class="play-btn">Play Now</span>
+                </div>
+            </a>
+
+            <!-- Fruit Ninja -->
+            <a href="fruit-ninja.html" class="game-card">
+                <div class="game-preview fruit-preview">
+                    <span class="icon">🍉</span>
+                </div>
+                <div class="game-info">
+                    <h2 class="game-title">Fruit Ninja</h2>
+                    <p class="game-description">
+                        Slice the fruit, avoid the bombs! Swipe to slash through
+                        flying fruit. Build combos and chase high scores!
+                    </p>
+                    <div class="game-tags">
+                        <span class="tag">Action</span>
+                        <span class="tag">Swipe</span>
+                        <span class="tag">Combos</span>
                     </div>
                     <span class="play-btn">Play Now</span>
                 </div>
