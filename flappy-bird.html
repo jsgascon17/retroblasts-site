@@ -684,12 +684,33 @@
         }
 
         function updateClouds() {
+            // Portal only appears between scores 10-45
+            const portalActive = score >= 10 && score <= 45 && !cloudWorldMode && !bossMode && !cloudWorldEntered;
+
+            // Ensure at least one portal cloud exists when in range
+            if (portalActive) {
+                const hasPortal = clouds.some(c => c.isPortal);
+                if (!hasPortal) {
+                    // Make a random visible cloud the portal
+                    const visibleClouds = clouds.filter(c => c.x > 0 && c.x < W);
+                    if (visibleClouds.length > 0) {
+                        visibleClouds[Math.floor(Math.random() * visibleClouds.length)].isPortal = true;
+                    } else {
+                        clouds[0].isPortal = true;
+                    }
+                }
+            } else {
+                // Remove portal status outside the score range
+                clouds.forEach(c => c.isPortal = false);
+            }
+
             clouds.forEach(c => {
                 c.x -= 0.5;
                 if (c.x < -80) {
                     c.x = W + 80;
                     c.y = 50 + Math.random() * 100;
-                    c.isPortal = !cloudWorldMode && !bossMode && !cloudWorldEntered && Math.random() < 0.1;
+                    // Random chance for additional portal clouds in range
+                    c.isPortal = portalActive && Math.random() < 0.2;
                 }
 
                 // Portal cloud collision
