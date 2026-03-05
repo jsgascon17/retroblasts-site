@@ -3050,6 +3050,20 @@
         canvas.addEventListener('mousemove', e => { const rect = canvas.getBoundingClientRect(); mouseX = e.clientX - rect.left; mouseY = e.clientY - rect.top; });
         canvas.addEventListener('mousedown', () => { mouseDown = true; });
         canvas.addEventListener('mouseup', () => { mouseDown = false; });
+        canvas.addEventListener('click', e => {
+            if (gameMode === 'lobby' && !activeShop) {
+                const rect = canvas.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+                for (const shop of SHOPS) {
+                    if (clickX > shop.x && clickX < shop.x + shop.w && clickY > shop.y && clickY < shop.y + shop.h) {
+                        if (shop.id === 'start') startRun();
+                        else activeShop = shop.id;
+                        break;
+                    }
+                }
+            }
+        });
         canvas.addEventListener('mouseleave', () => { mouseDown = false; });
         canvas.addEventListener('contextmenu', e => e.preventDefault());
 
