@@ -227,8 +227,13 @@
             soldier: { name: 'Soldier', health: 80, speed: 1.2, reward: 20, color: '#ffff00', size: 0.6 },
             heavy: { name: 'Heavy', health: 200, speed: 0.7, reward: 40, color: '#ff8800', size: 0.8 },
             racer: { name: 'Racer', health: 50, speed: 3, reward: 25, color: '#ff00ff', size: 0.45 },
-            boss: { name: 'Boss', health: 1000, speed: 0.5, reward: 200, color: '#ff0000', size: 1.2, liveCost: 5 }
+            boss: { name: 'Boss', health: 1000, speed: 0.5, reward: 200, color: '#ff0000', size: 1.2, liveCost: 5 },
+            superboss: { name: 'DOOM', health: 50000, speed: 0.4, reward: 5000, color: '#8B00FF', size: 2.0, liveCost: 20, destroysTowers: true }
         };
+
+        // Secret code tracker
+        let secretCode = '';
+        const SECRET_WORD = 'DOOM';
 
         // ============================================
         // PATH DEFINITION (grid coordinates)
@@ -526,6 +531,31 @@
                     ctx.textAlign = 'center';
                     ctx.fillText('BOSS', e.x, e.y - size - 14);
                 }
+
+                // SUPER BOSS - special effects
+                if (e.type === 'superboss') {
+                    // Glowing aura
+                    ctx.fillStyle = `rgba(139, 0, 255, ${0.3 + Math.sin(frame * 0.1) * 0.2})`;
+                    ctx.beginPath();
+                    ctx.arc(e.x, e.y, size * 1.8, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Destruction ring
+                    ctx.strokeStyle = `rgba(255, 0, 0, ${0.5 + Math.sin(frame * 0.15) * 0.3})`;
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(e.x, e.y, TILE_W * 1.5, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Label
+                    ctx.fillStyle = '#8B00FF';
+                    ctx.font = 'bold 16px Courier New';
+                    ctx.textAlign = 'center';
+                    ctx.shadowColor = '#8B00FF';
+                    ctx.shadowBlur = 15;
+                    ctx.fillText('DOOM', e.x, e.y - size - 18);
+                    ctx.shadowBlur = 0;
+                }
             });
         }
 
@@ -641,11 +671,38 @@
 
         function updateEnemies() {
             enemies.forEach(e => {
-                // Apply slow
+                // Apply slow (super boss immune)
                 let speed = e.speed;
-                if (e.slowed > 0) {
+                if (e.slowed > 0 && e.type !== 'superboss') {
                     speed *= 0.5;
                     e.slowed -= gameSpeed;
+                }
+
+                // Super Boss destroys nearby towers!
+                if (ENEMIES[e.type].destroysTowers) {
+                    const destroyRange = TILE_W * 1.5;
+                    towers = towers.filter(t => {
+                        const dx = t.x - e.x;
+                        const dy = t.y - e.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < destroyRange) {
+                            // Tower destroyed!
+                            playSound('missile');
+                            for (let i = 0; i < 12; i++) {
+                                particles.push({
+                                    type: 'debris',
+                                    x: t.x, y: t.y,
+                                    vx: (Math.random() - 0.5) * 8,
+                                    vy: (Math.random() - 0.5) * 8,
+                                    color: '#ff4444',
+                                    size: 6 + Math.random() * 6,
+                                    life: 1
+                                });
+                            }
+                            return false;
+                        }
+                        return true;
+                    });
                 }
 
                 // Move along path
@@ -1010,6 +1067,37 @@
             }
         });
 
+        function spawnSuperBoss() {
+            // Screen shake
+            canvas.style.transform = 'translateX(5px)';
+            setTimeout(() => canvas.style.transform = 'translateX(-5px)', 50);
+            setTimeout(() => canvas.style.transform = 'translateX(3px)', 100);
+            setTimeout(() => canvas.style.transform = 'translateX(-3px)', 150);
+            setTimeout(() => canvas.style.transform = '', 200);
+
+            // Spawn the DOOM boss
+            enemies.push({
+                type: 'superboss',
+                x: PATH_PIXELS[0].x,
+                y: PATH_PIXELS[0].y,
+                health: ENEMIES.superboss.health,
+                maxHealth: ENEMIES.superboss.health,
+                speed: ENEMIES.superboss.speed,
+                pathIndex: 0,
+                slowed: 0
+            });
+
+            // Warning message
+            const warning = document.createElement('div');
+            warning.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:4rem;color:#8B00FF;text-shadow:0 0 30px #8B00FF;font-family:Courier New;font-weight:bold;z-index:1000;animation:pulse 0.5s ease-in-out;';
+            warning.textContent = 'DOOM APPROACHES';
+            document.body.appendChild(warning);
+            setTimeout(() => warning.remove(), 2000);
+
+            playSound('gameOver');
+            secretCode = '';
+        }
+
         document.addEventListener('keydown', e => {
             if (e.code === 'Space' && gameState === 'playing') {
                 e.preventDefault();
@@ -1020,6 +1108,17 @@
                 selectedPlacedTower = null;
                 sellBtn.style.display = 'none';
                 updateTowerBar();
+            }
+
+            // Secret code detection - type "DOOM" to spawn super boss
+            if (gameState === 'playing' && e.key.length === 1) {
+                secretCode += e.key.toUpperCase();
+                if (secretCode.length > SECRET_WORD.length) {
+                    secretCode = secretCode.slice(-SECRET_WORD.length);
+                }
+                if (secretCode === SECRET_WORD) {
+                    spawnSuperBoss();
+                }
             }
         });
 
