@@ -1456,7 +1456,7 @@
         function drawShopMenu() {
             if (!activeShop) return;
             ctx.fillStyle = 'rgba(0,0,0,0.9)'; ctx.fillRect(0, 0, W, H);
-            const pw = 650, ph = 480, px = (W - pw) / 2, py = (H - ph) / 2;
+            const pw = 650, ph = 550, px = (W - pw) / 2, py = (H - ph) / 2;
 
             // Panel background with gradient
             const panelGrad = ctx.createLinearGradient(px, py, px, py + ph);
@@ -1489,6 +1489,8 @@
                 const items = activeShop === 'gun' ? Object.entries(GUNS) : Object.entries(PETS);
                 const ownedList = activeShop === 'gun' ? saveData.ownedGuns : saveData.ownedPets;
                 const equipped = activeShop === 'gun' ? saveData.equippedGun : saveData.activePets;
+                const itemH = activeShop === 'pet' ? 32 : 38;
+                const itemSpacing = activeShop === 'pet' ? 34 : 40;
 
                 items.forEach(([id, item], index) => {
                     const owned = ownedList.includes(id);
@@ -1500,22 +1502,22 @@
                     else if (owned) { itemGrad.addColorStop(0, 'rgba(255,255,255,0.1)'); itemGrad.addColorStop(1, 'rgba(255,255,255,0.05)'); }
                     else { itemGrad.addColorStop(0, 'rgba(0,0,0,0.4)'); itemGrad.addColorStop(1, 'rgba(0,0,0,0.2)'); }
                     ctx.fillStyle = itemGrad;
-                    ctx.fillRect(px + 20, itemY, pw - 40, 38);
+                    ctx.fillRect(px + 20, itemY, pw - 40, itemH);
                     ctx.strokeStyle = isEquipped ? '#4CAF50' : owned ? '#555' : '#333';
                     ctx.lineWidth = 2;
-                    ctx.strokeRect(px + 20, itemY, pw - 40, 38);
+                    ctx.strokeRect(px + 20, itemY, pw - 40, itemH);
 
-                    ctx.fillStyle = '#fff'; ctx.font = 'bold 15px Rajdhani, Courier New'; ctx.textAlign = 'left';
-                    ctx.fillText(`${index + 1}. ${item.name}`, px + 35, itemY + 25);
-                    ctx.fillStyle = '#aaa'; ctx.font = '12px Rajdhani';
-                    if (activeShop === 'gun') ctx.fillText(`DMG:${item.damage} MAG:${item.magSize}`, px + 220, itemY + 25);
-                    else ctx.fillText(`DMG:${item.damage} RNG:${item.range || '-'}`, px + 200, itemY + 25);
+                    ctx.fillStyle = '#fff'; ctx.font = `bold ${activeShop === 'pet' ? 13 : 15}px Rajdhani, Courier New`; ctx.textAlign = 'left';
+                    ctx.fillText(`${index + 1}. ${item.icon || ''} ${item.name}`, px + 35, itemY + itemH/2 + 5);
+                    ctx.fillStyle = '#aaa'; ctx.font = '11px Rajdhani';
+                    if (activeShop === 'gun') ctx.fillText(`DMG:${item.damage} MAG:${item.magSize}`, px + 220, itemY + itemH/2 + 5);
+                    else ctx.fillText(`DMG:${item.damage}`, px + 220, itemY + itemH/2 + 5);
 
                     ctx.textAlign = 'right';
-                    if (isEquipped) { ctx.fillStyle = '#4CAF50'; ctx.font = 'bold 14px Rajdhani'; ctx.fillText('✓ EQUIPPED', px + pw - 35, itemY + 25); }
-                    else if (owned) { ctx.fillStyle = '#2196F3'; ctx.fillText('EQUIP [' + (index+1) + ']', px + pw - 35, itemY + 25); }
-                    else { ctx.fillStyle = saveData.gold >= item.price ? '#ffd700' : '#666'; ctx.fillText(`${item.price}g`, px + pw - 35, itemY + 25); }
-                    itemY += 40;
+                    if (isEquipped) { ctx.fillStyle = '#4CAF50'; ctx.font = 'bold 12px Rajdhani'; ctx.fillText('✓ ACTIVE', px + pw - 35, itemY + itemH/2 + 5); }
+                    else if (owned) { ctx.fillStyle = '#2196F3'; ctx.fillText('[' + (index+1) + ']', px + pw - 35, itemY + itemH/2 + 5); }
+                    else { ctx.fillStyle = saveData.gold >= item.price ? '#ffd700' : '#666'; ctx.fillText(`${item.price}g`, px + pw - 35, itemY + itemH/2 + 5); }
+                    itemY += itemSpacing;
                 });
             } else if (activeShop === 'perk') {
                 Object.entries(PERKS).forEach(([id, perk], index) => {
@@ -1631,24 +1633,24 @@
             } else if (activeShop === 'achievements') {
                 ctx.fillStyle = '#fff'; ctx.font = 'bold 16px Rajdhani'; ctx.textAlign = 'center';
                 ctx.fillText(`Achievements: ${saveData.achievements.length}/${Object.keys(ACHIEVEMENTS).length}`, W/2, itemY);
-                itemY += 20;
+                itemY += 18;
                 Object.entries(ACHIEVEMENTS).forEach(([id, ach], index) => {
                     const unlocked = saveData.achievements.includes(id);
                     ctx.fillStyle = unlocked ? 'rgba(76,175,80,0.3)' : 'rgba(0,0,0,0.4)';
-                    ctx.fillRect(px + 20, itemY, pw - 40, 38);
+                    ctx.fillRect(px + 20, itemY, pw - 40, 32);
                     ctx.strokeStyle = unlocked ? '#4CAF50' : '#333';
-                    ctx.strokeRect(px + 20, itemY, pw - 40, 38);
+                    ctx.strokeRect(px + 20, itemY, pw - 40, 32);
 
-                    ctx.font = '20px Arial'; ctx.textAlign = 'left';
-                    ctx.fillText(ach.icon, px + 30, itemY + 27);
-                    ctx.fillStyle = unlocked ? '#fff' : '#666'; ctx.font = 'bold 14px Rajdhani';
-                    ctx.fillText(ach.name, px + 60, itemY + 18);
-                    ctx.fillStyle = unlocked ? '#aaa' : '#555'; ctx.font = '12px Rajdhani';
-                    ctx.fillText(ach.desc, px + 60, itemY + 33);
+                    ctx.font = '16px Arial'; ctx.textAlign = 'left';
+                    ctx.fillText(ach.icon, px + 28, itemY + 22);
+                    ctx.fillStyle = unlocked ? '#fff' : '#666'; ctx.font = 'bold 12px Rajdhani';
+                    ctx.fillText(ach.name, px + 52, itemY + 14);
+                    ctx.fillStyle = unlocked ? '#aaa' : '#555'; ctx.font = '10px Rajdhani';
+                    ctx.fillText(ach.desc, px + 52, itemY + 27);
                     ctx.textAlign = 'right';
-                    ctx.fillStyle = unlocked ? '#4CAF50' : '#666';
-                    ctx.fillText(unlocked ? '✓ UNLOCKED' : 'LOCKED', px + pw - 35, itemY + 25);
-                    itemY += 40;
+                    ctx.fillStyle = unlocked ? '#4CAF50' : '#666'; ctx.font = '11px Rajdhani';
+                    ctx.fillText(unlocked ? '✓' : '🔒', px + pw - 30, itemY + 20);
+                    itemY += 34;
                 });
             } else if (activeShop === 'challenges') {
                 generateDailyChallenges();
