@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gone Fishing - Learning Sandbox</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 40%, #4A90A4 40%, #2C5F7C 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            overflow: hidden;
+        }
+        h1 {
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+        }
+        .top-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 5px;
+            color: #fff;
+            font-size: 1rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .money { color: #FFD700; }
+        #gameCanvas {
+            border: 4px solid #8B4513;
+            border-radius: 10px;
+            cursor: crosshair;
+        }
+        .controls {
+            margin-top: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .overlay.hidden { display: none; }
+        .overlay h2 {
+            font-size: 2.5rem;
+            color: #4A90A4;
+            margin-bottom: 20px;
+        }
+        .overlay p {
+            color: #aaa;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(to bottom, #4A90A4, #2C5F7C);
+            color: #fff;
+            border: 3px solid #1a3d4d;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            background: linear-gradient(to bottom, #5BA0B4, #3C6F8C);
+        }
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            max-width: 800px;
+            margin: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .shop-item {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .shop-item:hover:not(.owned):not(.locked) {
+            border-color: #FFD700;
+            background: rgba(255,215,0,0.1);
+        }
+        .shop-item.owned {
+            border-color: #4CAF50;
+            background: rgba(76,175,80,0.2);
+        }
+        .shop-item.equipped {
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0,255,0,0.5);
+        }
+        .shop-item.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .shop-item .icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .shop-item .name { font-weight: bold; margin-bottom: 5px; }
+        .shop-item .desc { font-size: 0.8rem; color: #aaa; margin-bottom: 10px; }
+        .shop-item .price { color: #FFD700; }
+        .collection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            max-width: 600px;
+            margin: 20px;
+            max-height: 350px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .fish-entry {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            color: #fff;
+        }
+        .fish-entry.caught {
+            border-color: #4CAF50;
+        }
+        .fish-entry.uncaught {
+            opacity: 0.4;
+        }
+        .fish-entry .icon { font-size: 2rem; }
+        .fish-entry .name { font-size: 0.7rem; margin-top: 5px; }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 25px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab.active {
+            background: rgba(255,255,255,0.3);
+            border-color: #fff;
+        }
+        .catch-display {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            border: 4px solid #FFD700;
+            border-radius: 20px;
+            padding: 30px 50px;
+            text-align: center;
+            z-index: 200;
+            animation: popIn 0.3s ease-out;
+        }
+        .catch-display.hidden { display: none; }
+        @keyframes popIn {
+            from { transform: translate(-50%, -50%) scale(0); }
+            to { transform: translate(-50%, -50%) scale(1); }
+        }
+        .catch-display .fish-icon { font-size: 5rem; }
+        .catch-display .fish-name { font-size: 1.8rem; color: #fff; margin: 10px 0; }
+        .catch-display .fish-value { font-size: 1.3rem; color: #FFD700; }
+        .catch-display .fish-rarity { font-size: 1rem; margin-top: 5px; }
+        .rarity-common { color: #aaa; }
+        .rarity-uncommon { color: #4CAF50; }
+        .rarity-rare { color: #2196F3; }
+        .rarity-epic { color: #9C27B0; }
+        .rarity-legendary { color: #FFD700; text-shadow: 0 0 10px #FFD700; }
+        .back-link {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            color: #fff;
+            text-decoration: none;
+            opacity: 0.6;
+        }
+        .back-link:hover { opacity: 1; }
+    </style>
+</head>
+<body>
+    <h1>GONE FISHING</h1>
+    <div class="top-bar">
+        <span class="money">$<span id="money">0</span></span>
+        <span>Rod: <span id="rodName">Basic Rod</span></span>
+        <span>Bait: <span id="baitName">Worm</span></span>
+        <span>Fish: <span id="fishCount">0</span>/<span id="totalFish">0</span></span>
+    </div>
+    <canvas id="gameCanvas" width="800" height="500"></canvas>
+    <div class="controls">
+        <span>CLICK to cast</span> | <span>HOLD to reel when fish bites</span> | <span>S = Shop</span> | <span>C = Collection</span>
+    </div>
+
+    <!-- Start Screen -->
+    <div class="overlay" id="startScreen">
+        <h2>GONE FISHING</h2>
+        <p>Cast your line and catch all the fish!</p>
+        <p style="font-size: 0.9rem; color: #888;">Click to cast, hold to reel when you get a bite.</p>
+        <p style="font-size: 0.9rem; color: #888;">Buy better rods and bait to catch rarer fish!</p>
+        <button class="btn" id="startBtn">START FISHING</button>
+    </div>
+
+    <!-- Shop Screen -->
+    <div class="overlay hidden" id="shopScreen">
+        <h2>TACKLE SHOP</h2>
+        <div class="tabs">
+            <div class="tab active" data-tab="rods">Rods</div>
+            <div class="tab" data-tab="bait">Bait</div>
+        </div>
+        <div class="shop-grid" id="shopGrid"></div>
+        <button class="btn" id="shopBackBtn">BACK TO FISHING</button>
+    </div>
+
+    <!-- Collection Screen -->
+    <div class="overlay hidden" id="collectionScreen">
+        <h2>FISH COLLECTION</h2>
+        <p>Caught: <span id="collectionCount">0</span> / <span id="collectionTotal">0</span></p>
+        <div class="collection-grid" id="collectionGrid"></div>
+        <button class="btn" id="collectionBackBtn">BACK TO FISHING</button>
+    </div>
+
+    <!-- Catch Display -->
+    <div class="catch-display hidden" id="catchDisplay">
+        <div class="fish-icon" id="catchIcon"></div>
+        <div class="fish-name" id="catchName"></div>
+        <div class="fish-value" id="catchValue"></div>
+        <div class="fish-rarity" id="catchRarity"></div>
+    </div>
+
+    <a href="index.html" class="back-link">&larr; Back to Arcade</a>
+
+    <script>
+        // ============================================
+        // AUDIO
+        // ============================================
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            const sounds = {
+                cast: () => {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now); osc.stop(now + 0.3);
+                },
+                splash: () => {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now); osc.stop(now + 0.2);
+                },
+                bite: () => {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.setValueAtTime(600, now + 0.1);
+                    osc.frequency.setValueAtTime(800, now + 0.2);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now); osc.stop(now + 0.3);
+                },
+                reel: () => {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(200 + Math.random() * 100, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now); osc.stop(now + 0.05);
+                },
+                catch: () => {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523, now);
+                    osc.frequency.setValueAtTime(659, now + 0.1);
+                    osc.frequency.setValueAtTime(784, now + 0.2);
+                    osc.frequency.setValueAtTime(1047, now + 0.3);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now); osc.stop(now + 0.5);
+                },
+                lost: () => {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.4);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now); osc.stop(now + 0.4);
+                },
+                buy: () => {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.setValueAtTime(800, now + 0.1);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now); osc.stop(now + 0.15);
+                },
+                legendary: () => {
+                    osc.type = 'sine';
+                    [523, 659, 784, 1047, 1319, 1568].forEach((freq, i) => {
+                        osc.frequency.setValueAtTime(freq, now + i * 0.1);
+                    });
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+                    osc.start(now); osc.stop(now + 0.8);
+                }
+            };
+            if (sounds[type]) sounds[type]();
+        }
+
+        // ============================================
+        // CANVAS
+        // ============================================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+
+        // Water line
+        const WATER_LINE = 120;
+        const WATER_DEPTH = H - WATER_LINE;
+
+        // ============================================
+        // FISH DATA
+        // ============================================
+        const FISH = [
+            // Common (depth 0-150)
+            { id: 'goldfish', name: 'Goldfish', emoji: '🐠', value: 5, rarity: 'common', minDepth: 0, maxDepth: 100, speed: 1.5, size: 30, chance: 0.25 },
+            { id: 'sardine', name: 'Sardine', emoji: '🐟', value: 3, rarity: 'common', minDepth: 0, maxDepth: 120, speed: 2, size: 25, chance: 0.3 },
+            { id: 'anchovy', name: 'Anchovy', emoji: '🐟', value: 2, rarity: 'common', minDepth: 0, maxDepth: 80, speed: 2.5, size: 20, chance: 0.35 },
+
+            // Uncommon (depth 50-250)
+            { id: 'bass', name: 'Bass', emoji: '🐟', value: 15, rarity: 'uncommon', minDepth: 50, maxDepth: 200, speed: 1.8, size: 40, chance: 0.15 },
+            { id: 'trout', name: 'Trout', emoji: '🐟', value: 20, rarity: 'uncommon', minDepth: 80, maxDepth: 220, speed: 2, size: 38, chance: 0.12 },
+            { id: 'carp', name: 'Carp', emoji: '🐟', value: 12, rarity: 'uncommon', minDepth: 60, maxDepth: 180, speed: 1.2, size: 45, chance: 0.15 },
+            { id: 'pufferfish', name: 'Pufferfish', emoji: '🐡', value: 25, rarity: 'uncommon', minDepth: 100, maxDepth: 250, speed: 0.8, size: 35, chance: 0.08 },
+
+            // Rare (depth 150-350)
+            { id: 'salmon', name: 'Salmon', emoji: '🐟', value: 40, rarity: 'rare', minDepth: 150, maxDepth: 300, speed: 2.5, size: 50, chance: 0.06 },
+            { id: 'tuna', name: 'Tuna', emoji: '🐟', value: 50, rarity: 'rare', minDepth: 180, maxDepth: 350, speed: 3, size: 55, chance: 0.05 },
+            { id: 'angelfish', name: 'Angelfish', emoji: '🐠', value: 45, rarity: 'rare', minDepth: 120, maxDepth: 280, speed: 1.5, size: 35, chance: 0.05 },
+            { id: 'clownfish', name: 'Clownfish', emoji: '🐠', value: 35, rarity: 'rare', minDepth: 100, maxDepth: 250, speed: 1.8, size: 28, chance: 0.06 },
+
+            // Epic (depth 250+)
+            { id: 'swordfish', name: 'Swordfish', emoji: '🐟', value: 100, rarity: 'epic', minDepth: 250, maxDepth: 400, speed: 3.5, size: 70, chance: 0.03 },
+            { id: 'shark', name: 'Shark', emoji: '🦈', value: 150, rarity: 'epic', minDepth: 280, maxDepth: 400, speed: 2.8, size: 80, chance: 0.02 },
+            { id: 'octopus', name: 'Octopus', emoji: '🐙', value: 80, rarity: 'epic', minDepth: 220, maxDepth: 380, speed: 1, size: 50, chance: 0.03 },
+            { id: 'jellyfish', name: 'Jellyfish', emoji: '🪼', value: 60, rarity: 'epic', minDepth: 200, maxDepth: 350, speed: 0.5, size: 40, chance: 0.04 },
+
+            // Legendary (deep, rare)
+            { id: 'whale', name: 'Whale', emoji: '🐋', value: 300, rarity: 'legendary', minDepth: 320, maxDepth: 400, speed: 1.5, size: 100, chance: 0.008 },
+            { id: 'dolphin', name: 'Dolphin', emoji: '🐬', value: 200, rarity: 'legendary', minDepth: 280, maxDepth: 380, speed: 3, size: 70, chance: 0.01 },
+            { id: 'seahorse', name: 'Golden Seahorse', emoji: '🦑', value: 250, rarity: 'legendary', minDepth: 300, maxDepth: 400, speed: 0.8, size: 35, chance: 0.008 },
+
+            // Junk
+            { id: 'boot', name: 'Old Boot', emoji: '🥾', value: 1, rarity: 'common', minDepth: 0, maxDepth: 400, speed: 0, size: 30, chance: 0.1, isJunk: true },
+            { id: 'can', name: 'Tin Can', emoji: '🥫', value: 1, rarity: 'common', minDepth: 0, maxDepth: 400, speed: 0, size: 25, chance: 0.08, isJunk: true },
+            { id: 'seaweed', name: 'Seaweed', emoji: '🌿', value: 2, rarity: 'common', minDepth: 0, maxDepth: 400, speed: 0, size: 35, chance: 0.12, isJunk: true },
+        ];
+
+        // ============================================
+        // EQUIPMENT DATA
+        // ============================================
+        const RODS = [
+            { id: 'basic', name: 'Basic Rod', price: 0, reelSpeed: 1, lineStrength: 1, castPower: 1, desc: 'A simple bamboo rod' },
+            { id: 'fiber', name: 'Fiberglass Rod', price: 100, reelSpeed: 1.3, lineStrength: 1.2, castPower: 1.2, desc: 'Faster reeling' },
+            { id: 'carbon', name: 'Carbon Rod', price: 300, reelSpeed: 1.5, lineStrength: 1.5, castPower: 1.4, desc: 'Strong and fast' },
+            { id: 'pro', name: 'Pro Angler Rod', price: 750, reelSpeed: 1.8, lineStrength: 1.8, castPower: 1.6, desc: 'Professional grade' },
+            { id: 'master', name: 'Master Rod', price: 1500, reelSpeed: 2, lineStrength: 2, castPower: 1.8, desc: 'The best money can buy' },
+            { id: 'golden', name: 'Golden Rod', price: 5000, reelSpeed: 2.5, lineStrength: 2.5, castPower: 2, desc: 'Legendary craftsmanship' },
+        ];
+
+        const BAITS = [
+            { id: 'worm', name: 'Worm', price: 0, rarityBonus: 0, depthBonus: 0, desc: 'Basic earthworm' },
+            { id: 'minnow', name: 'Minnow', price: 50, rarityBonus: 0.1, depthBonus: 20, desc: 'Attracts bigger fish' },
+            { id: 'shrimp', name: 'Shrimp', price: 150, rarityBonus: 0.2, depthBonus: 50, desc: 'Rare fish love it' },
+            { id: 'squid', name: 'Squid Bait', price: 400, rarityBonus: 0.35, depthBonus: 80, desc: 'Deep sea special' },
+            { id: 'golden', name: 'Golden Lure', price: 1000, rarityBonus: 0.5, depthBonus: 100, desc: 'Irresistible to legends' },
+        ];
+
+        // ============================================
+        // GAME STATE
+        // ============================================
+        let gameStarted = false;
+        let money = parseInt(localStorage.getItem('fishingMoney')) || 0;
+        let caughtFish = JSON.parse(localStorage.getItem('fishingCaught')) || [];
+        let ownedRods = JSON.parse(localStorage.getItem('fishingRods')) || ['basic'];
+        let ownedBaits = JSON.parse(localStorage.getItem('fishingBaits')) || ['worm'];
+        let equippedRod = localStorage.getItem('fishingEquippedRod') || 'basic';
+        let equippedBait = localStorage.getItem('fishingEquippedBait') || 'worm';
+
+        // Fishing state
+        let state = 'idle'; // idle, casting, waiting, bite, reeling, caught
+        let castPower = 0;
+        let castCharging = false;
+        let bobberX = 0, bobberY = 0;
+        let hookDepth = 0;
+        let targetDepth = 0;
+        let lineX = 0;
+        let hookedFish = null;
+        let reelProgress = 0;
+        let tension = 50; // 0-100, need to keep in sweet spot
+        let isReeling = false;
+        let biteTimer = 0;
+        let nibbleTimer = 0;
+        let bobberBob = 0;
+
+        // Visual state
+        let frameCount = 0;
+        let particles = [];
+        let floatingTexts = [];
+        let swimFish = []; // Background fish
+        let waves = [];
+        let bubbles = [];
+
+        // Fisher position
+        const fisherX = 100;
+        const fisherY = WATER_LINE - 20;
+
+        // Initialize waves
+        for (let i = 0; i < 20; i++) {
+            waves.push({ x: i * 50, phase: Math.random() * Math.PI * 2 });
+        }
+
+        // Save functions
+        function saveGame() {
+            localStorage.setItem('fishingMoney', money);
+            localStorage.setItem('fishingCaught', JSON.stringify(caughtFish));
+            localStorage.setItem('fishingRods', JSON.stringify(ownedRods));
+            localStorage.setItem('fishingBaits', JSON.stringify(ownedBaits));
+            localStorage.setItem('fishingEquippedRod', equippedRod);
+            localStorage.setItem('fishingEquippedBait', equippedBait);
+        }
+
+        function updateUI() {
+            document.getElementById('money').textContent = money;
+            document.getElementById('rodName').textContent = RODS.find(r => r.id === equippedRod).name;
+            document.getElementById('baitName').textContent = BAITS.find(b => b.id === equippedBait).name;
+            document.getElementById('fishCount').textContent = [...new Set(caughtFish)].length;
+            document.getElementById('totalFish').textContent = FISH.filter(f => !f.isJunk).length;
+        }
+
+        // ============================================
+        // FISHING MECHANICS
+        // ============================================
+        function startCast() {
+            if (state !== 'idle') return;
+            castCharging = true;
+            castPower = 0;
+            state = 'casting';
+        }
+
+        function releaseCast() {
+            if (state !== 'casting') return;
+            castCharging = false;
+
+            const rod = RODS.find(r => r.id === equippedRod);
+            const power = castPower * rod.castPower;
+
+            // Calculate where bobber lands
+            bobberX = fisherX + 100 + power * 5;
+            bobberX = Math.min(bobberX, W - 50);
+            bobberY = WATER_LINE;
+            lineX = bobberX;
+
+            // Calculate depth based on power
+            const bait = BAITS.find(b => b.id === equippedBait);
+            targetDepth = 50 + power * 3 + bait.depthBonus;
+            hookDepth = 0;
+
+            playSound('cast');
+            state = 'waiting';
+
+            // Create splash
+            for (let i = 0; i < 10; i++) {
+                particles.push({
+                    x: bobberX,
+                    y: WATER_LINE,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: -Math.random() * 5,
+                    life: 1,
+                    color: '#87CEEB'
+                });
+            }
+
+            setTimeout(() => playSound('splash'), 200);
+
+            // Start waiting for fish
+            scheduleBite();
+        }
+
+        function scheduleBite() {
+            const rod = RODS.find(r => r.id === equippedRod);
+            const bait = BAITS.find(b => b.id === equippedBait);
+
+            // Random wait time (shorter with better gear)
+            const baseWait = 3000 + Math.random() * 5000;
+            biteTimer = baseWait / (1 + bait.rarityBonus);
+
+            // Random nibbles before real bite
+            nibbleTimer = 1000 + Math.random() * 2000;
+        }
+
+        function triggerBite() {
+            // Select a fish based on depth and rarity
+            const bait = BAITS.find(b => b.id === equippedBait);
+            const depth = hookDepth;
+
+            // Filter fish by depth
+            let possibleFish = FISH.filter(f =>
+                depth >= f.minDepth && depth <= f.maxDepth
+            );
+
+            // Apply rarity bonus from bait
+            const roll = Math.random();
+            let cumulative = 0;
+
+            // Boost rare fish chances with better bait
+            possibleFish = possibleFish.map(f => ({
+                ...f,
+                adjustedChance: f.chance * (1 + (f.rarity !== 'common' ? bait.rarityBonus * 2 : 0))
+            }));
+
+            // Normalize chances
+            const totalChance = possibleFish.reduce((sum, f) => sum + f.adjustedChance, 0);
+
+            for (const fish of possibleFish) {
+                cumulative += fish.adjustedChance / totalChance;
+                if (roll < cumulative) {
+                    hookedFish = fish;
+                    break;
+                }
+            }
+
+            if (!hookedFish) hookedFish = possibleFish[0];
+
+            state = 'bite';
+            playSound('bite');
+
+            // Player has limited time to react
+            setTimeout(() => {
+                if (state === 'bite') {
+                    // Fish got away
+                    state = 'idle';
+                    hookedFish = null;
+                    floatingTexts.push({
+                        text: 'Too slow!',
+                        x: bobberX,
+                        y: bobberY - 20,
+                        color: '#ff6b6b',
+                        life: 1
+                    });
+                }
+            }, 2000);
+        }
+
+        function startReeling() {
+            if (state === 'bite') {
+                state = 'reeling';
+                reelProgress = 0;
+                tension = 50;
+                isReeling = true;
+            } else if (state === 'reeling') {
+                isReeling = true;
+            }
+        }
+
+        function stopReeling() {
+            isReeling = false;
+        }
+
+        function updateReeling() {
+            if (state !== 'reeling') return;
+
+            const rod = RODS.find(r => r.id === equippedRod);
+            const fish = hookedFish;
+
+            // Tension mechanics
+            if (isReeling) {
+                // Reeling increases tension and progress
+                tension += 2 * fish.speed / rod.lineStrength;
+                reelProgress += 1 * rod.reelSpeed;
+                playSound('reel');
+            } else {
+                // Not reeling decreases tension but fish pulls away
+                tension -= 1;
+                reelProgress -= 0.3 * fish.speed;
+            }
+
+            // Fish fights back randomly
+            if (Math.random() < 0.05 * fish.speed) {
+                tension += 10;
+                floatingTexts.push({
+                    text: '!',
+                    x: bobberX + (Math.random() - 0.5) * 30,
+                    y: bobberY - 30,
+                    color: '#ff0',
+                    life: 0.5
+                });
+            }
+
+            // Clamp tension
+            tension = Math.max(0, Math.min(100, tension));
+
+            // Check for line break (too much tension)
+            if (tension >= 100) {
+                lostFish('Line snapped!');
+                return;
+            }
+
+            // Check for fish escape (too little tension)
+            if (tension <= 0) {
+                lostFish('Fish escaped!');
+                return;
+            }
+
+            // Check for successful catch
+            if (reelProgress >= 100) {
+                catchFish();
+            }
+
+            // Update bobber position based on tension
+            bobberBob = Math.sin(frameCount * 0.3) * (tension / 20);
+        }
+
+        function lostFish(reason) {
+            state = 'idle';
+            playSound('lost');
+            floatingTexts.push({
+                text: reason,
+                x: bobberX,
+                y: bobberY - 30,
+                color: '#ff6b6b',
+                life: 1.5
+            });
+            hookedFish = null;
+        }
+
+        function catchFish() {
+            const fish = hookedFish;
+            state = 'caught';
+
+            // Calculate value
+            let value = fish.value;
+            const rod = RODS.find(r => r.id === equippedRod);
+
+            // Bonus for perfect tension
+            if (tension >= 40 && tension <= 60) {
+                value = Math.floor(value * 1.5);
+            }
+
+            money += value;
+
+            // Add to collection
+            if (!caughtFish.includes(fish.id)) {
+                caughtFish.push(fish.id);
+            }
+
+            saveGame();
+            updateUI();
+
+            // Play sound
+            if (fish.rarity === 'legendary') {
+                playSound('legendary');
+            } else {
+                playSound('catch');
+            }
+
+            // Show catch display
+            showCatch(fish, value);
+
+            // Reset after delay
+            setTimeout(() => {
+                state = 'idle';
+                hookedFish = null;
+                document.getElementById('catchDisplay').classList.add('hidden');
+            }, 2500);
+        }
+
+        function showCatch(fish, value) {
+            document.getElementById('catchIcon').textContent = fish.emoji;
+            document.getElementById('catchName').textContent = fish.name;
+            document.getElementById('catchValue').textContent = '+$' + value;
+            document.getElementById('catchRarity').textContent = fish.rarity.toUpperCase();
+            document.getElementById('catchRarity').className = 'fish-rarity rarity-' + fish.rarity;
+            document.getElementById('catchDisplay').classList.remove('hidden');
+        }
+
+        // ============================================
+        // UPDATE
+        // ============================================
+        function update() {
+            frameCount++;
+
+            // Update cast power
+            if (castCharging && state === 'casting') {
+                castPower += 2;
+                if (castPower >= 100) castPower = 100;
+            }
+
+            // Update hook sinking
+            if (state === 'waiting' && hookDepth < targetDepth) {
+                hookDepth += 2;
+            }
+
+            // Waiting for bite
+            if (state === 'waiting') {
+                nibbleTimer -= 16;
+                biteTimer -= 16;
+
+                // Random nibbles
+                if (nibbleTimer <= 0) {
+                    bobberBob = -10;
+                    nibbleTimer = 1000 + Math.random() * 3000;
+                }
+
+                // Actual bite
+                if (biteTimer <= 0) {
+                    triggerBite();
+                }
+            }
+
+            // Reeling
+            if (state === 'reeling') {
+                updateReeling();
+            }
+
+            // Bobber animation
+            if (state === 'waiting' || state === 'bite') {
+                if (state === 'bite') {
+                    bobberBob = Math.sin(frameCount * 0.5) * 15;
+                } else {
+                    bobberBob = bobberBob * 0.9 + Math.sin(frameCount * 0.05) * 2;
+                }
+            }
+
+            // Update particles
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.2;
+                p.life -= 0.02;
+            });
+            particles = particles.filter(p => p.life > 0);
+
+            // Update floating texts
+            floatingTexts.forEach(t => {
+                t.y -= 1;
+                t.life -= 0.02;
+            });
+            floatingTexts = floatingTexts.filter(t => t.life > 0);
+
+            // Update bubbles
+            if (Math.random() < 0.1) {
+                bubbles.push({
+                    x: Math.random() * W,
+                    y: H,
+                    size: 2 + Math.random() * 4,
+                    speed: 1 + Math.random() * 2
+                });
+            }
+            bubbles.forEach(b => {
+                b.y -= b.speed;
+                b.x += Math.sin(frameCount * 0.05 + b.y * 0.02) * 0.5;
+            });
+            bubbles = bubbles.filter(b => b.y > WATER_LINE);
+
+            // Spawn background fish
+            if (Math.random() < 0.02 && swimFish.length < 10) {
+                const fromLeft = Math.random() < 0.5;
+                swimFish.push({
+                    x: fromLeft ? -50 : W + 50,
+                    y: WATER_LINE + 50 + Math.random() * (H - WATER_LINE - 100),
+                    vx: fromLeft ? 1 + Math.random() * 2 : -1 - Math.random() * 2,
+                    emoji: ['🐟', '🐠'][Math.floor(Math.random() * 2)],
+                    size: 20 + Math.random() * 20
+                });
+            }
+            swimFish.forEach(f => {
+                f.x += f.vx;
+                f.y += Math.sin(frameCount * 0.05 + f.x * 0.01) * 0.3;
+            });
+            swimFish = swimFish.filter(f => f.x > -100 && f.x < W + 100);
+        }
+
+        // ============================================
+        // DRAW
+        // ============================================
+        function draw() {
+            // Sky
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, WATER_LINE);
+            skyGradient.addColorStop(0, '#87CEEB');
+            skyGradient.addColorStop(1, '#B0E0E6');
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, W, WATER_LINE);
+
+            // Sun
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(W - 80, 60, 40, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Clouds
+            ctx.fillStyle = '#fff';
+            drawCloud(150, 50, 1);
+            drawCloud(400, 70, 0.8);
+            drawCloud(600, 40, 1.2);
+
+            // Water
+            const waterGradient = ctx.createLinearGradient(0, WATER_LINE, 0, H);
+            waterGradient.addColorStop(0, '#4A90A4');
+            waterGradient.addColorStop(0.5, '#2C5F7C');
+            waterGradient.addColorStop(1, '#1a3d4d');
+            ctx.fillStyle = waterGradient;
+            ctx.fillRect(0, WATER_LINE, W, H - WATER_LINE);
+
+            // Waves
+            ctx.fillStyle = 'rgba(135, 206, 235, 0.3)';
+            ctx.beginPath();
+            ctx.moveTo(0, WATER_LINE);
+            for (let i = 0; i < W; i += 10) {
+                const waveY = WATER_LINE + Math.sin(i * 0.02 + frameCount * 0.03) * 5;
+                ctx.lineTo(i, waveY);
+            }
+            ctx.lineTo(W, WATER_LINE + 20);
+            ctx.lineTo(0, WATER_LINE + 20);
+            ctx.fill();
+
+            // Bubbles
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            bubbles.forEach(b => {
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Background fish
+            swimFish.forEach(f => {
+                ctx.save();
+                ctx.translate(f.x, f.y);
+                ctx.scale(f.vx > 0 ? 1 : -1, 1);
+                ctx.font = f.size + 'px Arial';
+                ctx.textAlign = 'center';
+                ctx.globalAlpha = 0.6;
+                ctx.fillText(f.emoji, 0, 0);
+                ctx.restore();
+            });
+            ctx.globalAlpha = 1;
+
+            // Fisher
+            drawFisher();
+
+            // Fishing line
+            if (state !== 'idle' && state !== 'casting') {
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(fisherX + 60, fisherY - 40);
+                ctx.lineTo(bobberX, bobberY + bobberBob);
+                ctx.stroke();
+
+                // Line going down into water
+                ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+                ctx.beginPath();
+                ctx.moveTo(bobberX, bobberY + bobberBob + 10);
+                ctx.lineTo(bobberX, bobberY + bobberBob + hookDepth * 0.5);
+                ctx.stroke();
+            }
+
+            // Bobber
+            if (state !== 'idle' && state !== 'casting') {
+                drawBobber(bobberX, bobberY + bobberBob);
+            }
+
+            // Hooked fish (when reeling)
+            if (state === 'reeling' && hookedFish) {
+                const fishY = bobberY + bobberBob + hookDepth * 0.5 * (1 - reelProgress / 100);
+                const fishX = bobberX + Math.sin(frameCount * 0.2) * 20;
+                ctx.font = hookedFish.size + 'px Arial';
+                ctx.textAlign = 'center';
+                ctx.save();
+                ctx.translate(fishX, fishY);
+                ctx.rotate(Math.sin(frameCount * 0.3) * 0.3);
+                ctx.fillText(hookedFish.emoji, 0, 0);
+                ctx.restore();
+            }
+
+            // Particles
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+
+            // Floating texts
+            floatingTexts.forEach(t => {
+                ctx.globalAlpha = t.life;
+                ctx.fillStyle = t.color;
+                ctx.font = 'bold 18px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(t.text, t.x, t.y);
+            });
+            ctx.globalAlpha = 1;
+
+            // Cast power meter
+            if (state === 'casting') {
+                ctx.fillStyle = '#333';
+                ctx.fillRect(fisherX - 20, fisherY + 40, 100, 15);
+                const powerColor = castPower < 50 ? '#4CAF50' : castPower < 80 ? '#FFC107' : '#f44336';
+                ctx.fillStyle = powerColor;
+                ctx.fillRect(fisherX - 20, fisherY + 40, castPower, 15);
+                ctx.strokeStyle = '#fff';
+                ctx.strokeRect(fisherX - 20, fisherY + 40, 100, 15);
+
+                ctx.fillStyle = '#fff';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('POWER', fisherX + 30, fisherY + 52);
+            }
+
+            // Tension meter (when reeling)
+            if (state === 'reeling') {
+                // Tension bar
+                ctx.fillStyle = '#333';
+                ctx.fillRect(W / 2 - 100, 20, 200, 25);
+
+                // Sweet spot zone
+                ctx.fillStyle = 'rgba(76, 175, 80, 0.5)';
+                ctx.fillRect(W / 2 - 100 + 80, 20, 40, 25);
+
+                // Tension indicator
+                const tensionColor = tension > 80 ? '#f44336' : tension < 20 ? '#2196F3' : '#4CAF50';
+                ctx.fillStyle = tensionColor;
+                ctx.fillRect(W / 2 - 100, 20, tension * 2, 25);
+
+                ctx.strokeStyle = '#fff';
+                ctx.strokeRect(W / 2 - 100, 20, 200, 25);
+
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('TENSION', W / 2, 38);
+
+                // Progress bar
+                ctx.fillStyle = '#333';
+                ctx.fillRect(W / 2 - 100, 50, 200, 15);
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(W / 2 - 100, 50, reelProgress * 2, 15);
+                ctx.strokeStyle = '#fff';
+                ctx.strokeRect(W / 2 - 100, 50, 200, 15);
+
+                // Instructions
+                ctx.fillStyle = '#fff';
+                ctx.font = '14px Arial';
+                ctx.fillText('HOLD to reel - Keep tension in green zone!', W / 2, 85);
+            }
+
+            // Bite indicator
+            if (state === 'bite') {
+                ctx.fillStyle = '#ff0';
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('BITE! CLICK NOW!', bobberX, bobberY - 40);
+            }
+
+            // Depth indicator
+            if (state === 'waiting') {
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText('Depth: ' + Math.floor(hookDepth) + 'm', W - 20, WATER_LINE + 30);
+            }
+        }
+
+        function drawCloud(x, y, scale) {
+            ctx.beginPath();
+            ctx.arc(x, y, 20 * scale, 0, Math.PI * 2);
+            ctx.arc(x + 25 * scale, y - 10 * scale, 25 * scale, 0, Math.PI * 2);
+            ctx.arc(x + 50 * scale, y, 20 * scale, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawFisher() {
+            ctx.save();
+            ctx.translate(fisherX, fisherY);
+
+            // Body
+            ctx.fillStyle = '#4169E1';
+            ctx.fillRect(-15, -20, 30, 40);
+
+            // Head
+            ctx.fillStyle = '#FFE4C4';
+            ctx.beginPath();
+            ctx.arc(0, -35, 15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Hat
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(-20, -55, 40, 10);
+            ctx.fillRect(-12, -65, 24, 12);
+
+            // Fishing rod
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(10, -10);
+            ctx.lineTo(60, -40);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawBobber(x, y) {
+            // Bobber body
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.ellipse(x, y, 8, 12, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // White stripe
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.ellipse(x, y - 4, 8, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Antenna
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x, y - 12);
+            ctx.lineTo(x, y - 20);
+            ctx.stroke();
+        }
+
+        // ============================================
+        // SHOP
+        // ============================================
+        function renderShop(tab) {
+            const grid = document.getElementById('shopGrid');
+            const items = tab === 'rods' ? RODS : BAITS;
+            const owned = tab === 'rods' ? ownedRods : ownedBaits;
+            const equipped = tab === 'rods' ? equippedRod : equippedBait;
+
+            grid.innerHTML = items.map(item => {
+                const isOwned = owned.includes(item.id);
+                const isEquipped = equipped === item.id;
+                const canAfford = money >= item.price;
+                const icon = tab === 'rods' ? '🎣' : '🪱';
+
+                return `
+                    <div class="shop-item ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''} ${!isOwned && !canAfford ? 'locked' : ''}"
+                         data-id="${item.id}" data-type="${tab}">
+                        <div class="icon">${icon}</div>
+                        <div class="name">${item.name}</div>
+                        <div class="desc">${item.desc}</div>
+                        ${isOwned ?
+                            (isEquipped ? '<div style="color: #4CAF50;">EQUIPPED</div>' : '<div class="price">Click to equip</div>')
+                            : `<div class="price">$${item.price}</div>`
+                        }
+                    </div>
+                `;
+            }).join('');
+
+            // Add click handlers
+            grid.querySelectorAll('.shop-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    const id = el.dataset.id;
+                    const type = el.dataset.type;
+                    const items = type === 'rods' ? RODS : BAITS;
+                    const item = items.find(i => i.id === id);
+                    const owned = type === 'rods' ? ownedRods : ownedBaits;
+
+                    if (owned.includes(id)) {
+                        // Equip
+                        if (type === 'rods') equippedRod = id;
+                        else equippedBait = id;
+                        playSound('buy');
+                        saveGame();
+                        updateUI();
+                        renderShop(type);
+                    } else if (money >= item.price) {
+                        // Buy
+                        money -= item.price;
+                        if (type === 'rods') {
+                            ownedRods.push(id);
+                            equippedRod = id;
+                        } else {
+                            ownedBaits.push(id);
+                            equippedBait = id;
+                        }
+                        playSound('buy');
+                        saveGame();
+                        updateUI();
+                        renderShop(type);
+                    }
+                });
+            });
+        }
+
+        function renderCollection() {
+            const grid = document.getElementById('collectionGrid');
+            const fishOnly = FISH.filter(f => !f.isJunk);
+
+            document.getElementById('collectionCount').textContent = [...new Set(caughtFish.filter(id => !FISH.find(f => f.id === id)?.isJunk))].length;
+            document.getElementById('collectionTotal').textContent = fishOnly.length;
+
+            grid.innerHTML = fishOnly.map(fish => {
+                const caught = caughtFish.includes(fish.id);
+                return `
+                    <div class="fish-entry ${caught ? 'caught' : 'uncaught'}">
+                        <div class="icon">${caught ? fish.emoji : '❓'}</div>
+                        <div class="name ${caught ? 'rarity-' + fish.rarity : ''}">${caught ? fish.name : '???'}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============================================
+        // GAME LOOP
+        // ============================================
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ============================================
+        // INPUT
+        // ============================================
+        canvas.addEventListener('mousedown', e => {
+            if (!gameStarted) return;
+            initAudio();
+
+            if (state === 'idle') {
+                startCast();
+            } else if (state === 'bite' || state === 'reeling') {
+                startReeling();
+            }
+        });
+
+        canvas.addEventListener('mouseup', e => {
+            if (state === 'casting') {
+                releaseCast();
+            } else if (state === 'reeling') {
+                stopReeling();
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            if (state === 'reeling') {
+                stopReeling();
+            }
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+            if (!gameStarted) return;
+            initAudio();
+
+            if (state === 'idle') {
+                startCast();
+            } else if (state === 'bite' || state === 'reeling') {
+                startReeling();
+            }
+        });
+
+        canvas.addEventListener('touchend', e => {
+            e.preventDefault();
+            if (state === 'casting') {
+                releaseCast();
+            } else if (state === 'reeling') {
+                stopReeling();
+            }
+        });
+
+        // Keyboard
+        document.addEventListener('keydown', e => {
+            if (e.key === 's' || e.key === 'S') {
+                document.getElementById('shopScreen').classList.toggle('hidden');
+                document.getElementById('collectionScreen').classList.add('hidden');
+                if (!document.getElementById('shopScreen').classList.contains('hidden')) {
+                    renderShop('rods');
+                }
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                document.getElementById('collectionScreen').classList.toggle('hidden');
+                document.getElementById('shopScreen').classList.add('hidden');
+                if (!document.getElementById('collectionScreen').classList.contains('hidden')) {
+                    renderCollection();
+                }
+            }
+        });
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                renderShop(tab.dataset.tab);
+            });
+        });
+
+        // Buttons
+        document.getElementById('startBtn').addEventListener('click', () => {
+            initAudio();
+            gameStarted = true;
+            document.getElementById('startScreen').classList.add('hidden');
+            updateUI();
+            gameLoop();
+        });
+
+        document.getElementById('shopBackBtn').addEventListener('click', () => {
+            document.getElementById('shopScreen').classList.add('hidden');
+        });
+
+        document.getElementById('collectionBackBtn').addEventListener('click', () => {
+            document.getElementById('collectionScreen').classList.add('hidden');
+        });
+
+        // Initial UI update
+        updateUI();
+    </script>
+</body>
+</html>
