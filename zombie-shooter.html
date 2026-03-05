@@ -1432,23 +1432,11 @@
             const rate = Math.max(12, 55 - distance / 70);
             if (Math.random() > 1 / rate) return;
 
-            const side = Math.random();
             let x, depth;
 
-            // Wider spawn range for more visibility
-            if (side < 0.35) {
-                // From left
-                x = player.x - 100 - Math.random() * 60;
-                depth = 40 + Math.random() * 120;
-            } else if (side < 0.7) {
-                // From right
-                x = player.x + 100 + Math.random() * 60;
-                depth = 40 + Math.random() * 120;
-            } else {
-                // From front
-                x = player.x + (Math.random() - 0.5) * 180;
-                depth = 170 + Math.random() * 30;
-            }
+            // Only spawn in front of player, farther away for more reaction time
+            x = player.x + (Math.random() - 0.5) * 200;
+            depth = 220 + Math.random() * 40;
 
             const type = Math.random();
             let hp = 40 + distance / 45;
