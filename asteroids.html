@@ -8,7 +8,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Courier New', monospace;
-            background: #000;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -18,12 +18,13 @@
         }
         #gameCanvas {
             border: 2px solid #fff;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
         }
         .overlay {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -34,8 +35,9 @@
         .overlay h1 {
             font-size: 4rem;
             color: #fff;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             letter-spacing: 10px;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
         }
         .overlay h2 {
             font-size: 2.5rem;
@@ -55,8 +57,16 @@
         .overlay .high-score {
             color: #ff0;
             font-size: 1.2rem;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
+        .stats-bar {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        .stats-bar span { color: #fff; }
         .btn {
             padding: 15px 50px;
             font-size: 1.3rem;
@@ -74,8 +84,20 @@
             background: #fff;
             color: #000;
         }
+        .btn-small {
+            padding: 10px 25px;
+            font-size: 1rem;
+        }
+        .btn-shop {
+            border-color: #0ff;
+            color: #0ff;
+        }
+        .btn-shop:hover {
+            background: #0ff;
+            color: #000;
+        }
         .controls {
-            margin-top: 30px;
+            margin-top: 20px;
             text-align: center;
         }
         .controls p {
@@ -96,8 +118,190 @@
             color: #555;
             text-decoration: none;
             font-size: 0.9rem;
+            z-index: 200;
         }
         .back-link:hover { color: #fff; }
+
+        /* Shop Styles */
+        .shop-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.98);
+            z-index: 150;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .shop-overlay.hidden { display: none; }
+        .shop-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .shop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #333;
+        }
+        .shop-header h2 {
+            color: #fff;
+            font-size: 2rem;
+            letter-spacing: 5px;
+        }
+        .coins-display {
+            color: #ffd700;
+            font-size: 1.5rem;
+        }
+        .shop-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .shop-tab {
+            padding: 10px 20px;
+            background: #1a1a2e;
+            border: 2px solid #333;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+        }
+        .shop-tab:hover { border-color: #666; color: #fff; }
+        .shop-tab.active {
+            border-color: #0ff;
+            color: #0ff;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        .shop-section { display: none; }
+        .shop-section.active { display: block; }
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .shop-item {
+            background: #1a1a2e;
+            border: 2px solid #333;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .shop-item:hover { border-color: #666; transform: translateY(-2px); }
+        .shop-item.owned { border-color: #0f0; }
+        .shop-item.equipped { border-color: #ff0; background: rgba(255, 255, 0, 0.1); }
+        .shop-item-preview {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .shop-item-preview canvas {
+            max-width: 100%;
+            max-height: 80px;
+        }
+        .shop-item-name {
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        .shop-item-price {
+            color: #ffd700;
+            font-size: 0.9rem;
+        }
+        .shop-item-price.owned { color: #0f0; }
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #1a1a2e;
+            border: 2px solid #333;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        .achievement-item.unlocked {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+        .achievement-icon {
+            font-size: 2.5rem;
+            filter: grayscale(100%);
+            opacity: 0.3;
+        }
+        .achievement-item.unlocked .achievement-icon {
+            filter: none;
+            opacity: 1;
+        }
+        .achievement-info {
+            flex: 1;
+            text-align: left;
+        }
+        .achievement-name {
+            color: #fff;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .achievement-desc {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        .achievement-reward {
+            color: #ffd700;
+            font-size: 0.9rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .stat-item {
+            background: #1a1a2e;
+            border: 2px solid #333;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-value {
+            color: #0ff;
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        .close-shop {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            font-size: 2rem;
+            color: #666;
+            cursor: pointer;
+            z-index: 160;
+        }
+        .close-shop:hover { color: #fff; }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ffd700;
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 5px;
+            z-index: 200;
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -106,15 +310,21 @@
     <!-- Start Screen -->
     <div class="overlay" id="startScreen">
         <h1>ASTEROIDS</h1>
+        <div class="stats-bar">
+            <div>Coins: <span id="coinsDisplay">0</span></div>
+            <div>High Score: <span id="highScoreDisplay">0</span></div>
+        </div>
         <p>Destroy the asteroids before they destroy you!</p>
-        <button class="btn" id="startBtn">START GAME</button>
+        <div>
+            <button class="btn" id="startBtn">START GAME</button>
+            <button class="btn btn-small btn-shop" id="shopBtn">HANGAR</button>
+        </div>
         <div class="controls">
             <p><span class="key">←</span> <span class="key">→</span> Rotate</p>
             <p><span class="key">↑</span> Thrust</p>
             <p><span class="key">SPACE</span> Fire</p>
-            <p><span class="key">SHIFT</span> Hyperspace (teleport)</p>
+            <p><span class="key">SHIFT</span> Hyperspace</p>
         </div>
-        <p style="margin-top: 20px;">High Score: <span id="highScoreDisplay">0</span></p>
     </div>
 
     <!-- Game Over Screen -->
@@ -123,12 +333,147 @@
         <div class="score-display">SCORE: <span id="finalScore">0</span></div>
         <div class="high-score">HIGH SCORE: <span id="finalHighScore">0</span></div>
         <p id="newHighScore" style="color: #0f0; display: none;">NEW HIGH SCORE!</p>
+        <p style="color: #ffd700;">+<span id="coinsEarned">0</span> coins earned</p>
         <button class="btn" id="restartBtn">PLAY AGAIN</button>
+        <button class="btn btn-small btn-shop" id="shopBtn2">HANGAR</button>
+    </div>
+
+    <!-- Shop/Hangar -->
+    <div class="shop-overlay hidden" id="shopOverlay">
+        <span class="close-shop" id="closeShop">&times;</span>
+        <div class="shop-container">
+            <div class="shop-header">
+                <h2>HANGAR</h2>
+                <div class="coins-display">⬡ <span id="shopCoins">0</span></div>
+            </div>
+            <div class="shop-tabs">
+                <div class="shop-tab active" data-tab="ships">Ships</div>
+                <div class="shop-tab" data-tab="trails">Trails</div>
+                <div class="shop-tab" data-tab="achievements">Achievements</div>
+                <div class="shop-tab" data-tab="stats">Stats</div>
+            </div>
+            <div class="shop-section active" id="shipsSection">
+                <div class="shop-grid" id="shipsGrid"></div>
+            </div>
+            <div class="shop-section" id="trailsSection">
+                <div class="shop-grid" id="trailsGrid"></div>
+            </div>
+            <div class="shop-section" id="achievementsSection">
+                <div id="achievementsList"></div>
+            </div>
+            <div class="shop-section" id="statsSection">
+                <div class="stats-grid" id="statsGrid"></div>
+            </div>
+        </div>
     </div>
 
     <a href="index.html" class="back-link">&larr; Back to Arcade</a>
 
     <script>
+        // ============================================
+        // SHIP SKINS
+        // ============================================
+        const SHIPS = [
+            { id: 'classic', name: 'Classic', price: 0, colors: ['#fff'], style: 'classic' },
+            { id: 'neon', name: 'Neon Blue', price: 100, colors: ['#0ff', '#00f'], style: 'classic' },
+            { id: 'fire', name: 'Inferno', price: 150, colors: ['#ff4500', '#ff8c00', '#ffd700'], style: 'classic' },
+            { id: 'toxic', name: 'Toxic', price: 150, colors: ['#0f0', '#8f0'], style: 'classic' },
+            { id: 'stealth', name: 'Stealth', price: 200, colors: ['#333', '#666'], style: 'sleek' },
+            { id: 'plasma', name: 'Plasma', price: 250, colors: ['#ff00ff', '#8800ff'], style: 'classic' },
+            { id: 'golden', name: 'Golden', price: 500, colors: ['#ffd700', '#ff8c00'], style: 'classic' },
+            { id: 'diamond', name: 'Diamond', price: 750, colors: ['#b9f2ff', '#fff', '#e0ffff'], style: 'sleek' },
+            { id: 'rainbow', name: 'Rainbow', price: 1000, colors: ['rainbow'], style: 'classic' },
+            { id: 'ghost', name: 'Ghost', price: 400, colors: ['rgba(255,255,255,0.5)'], style: 'ghost' }
+        ];
+
+        // ============================================
+        // THRUST TRAILS
+        // ============================================
+        const TRAILS = [
+            { id: 'classic', name: 'Classic', price: 0, colors: ['#ff0', '#f80'] },
+            { id: 'blue', name: 'Blue Flame', price: 75, colors: ['#0ff', '#00f'] },
+            { id: 'green', name: 'Green Energy', price: 75, colors: ['#0f0', '#8f0'] },
+            { id: 'purple', name: 'Purple Haze', price: 100, colors: ['#ff00ff', '#8800ff'] },
+            { id: 'rainbow', name: 'Rainbow Trail', price: 200, colors: ['rainbow'] },
+            { id: 'ice', name: 'Ice', price: 150, colors: ['#fff', '#b9f2ff'] },
+            { id: 'fire', name: 'Fire Trail', price: 150, colors: ['#ff4500', '#ff0'] },
+            { id: 'electric', name: 'Electric', price: 175, colors: ['#ff0', '#fff'] }
+        ];
+
+        // ============================================
+        // ACHIEVEMENTS
+        // ============================================
+        const ACHIEVEMENTS = [
+            { id: 'firstBlood', name: 'First Blood', desc: 'Destroy your first asteroid', icon: '🎯', reward: 25, check: s => s.totalAsteroidsDestroyed >= 1 },
+            { id: 'asteroid50', name: 'Rock Crusher', desc: 'Destroy 50 asteroids', icon: '💥', reward: 50, check: s => s.totalAsteroidsDestroyed >= 50 },
+            { id: 'asteroid200', name: 'Asteroid Hunter', desc: 'Destroy 200 asteroids', icon: '☄️', reward: 100, check: s => s.totalAsteroidsDestroyed >= 200 },
+            { id: 'asteroid1000', name: 'Space Cleaner', desc: 'Destroy 1000 asteroids', icon: '🌟', reward: 250, check: s => s.totalAsteroidsDestroyed >= 1000 },
+            { id: 'saucer1', name: 'UFO Down', desc: 'Destroy a UFO', icon: '🛸', reward: 50, check: s => s.saucersDestroyed >= 1 },
+            { id: 'saucer10', name: 'Alien Hunter', desc: 'Destroy 10 UFOs', icon: '👽', reward: 150, check: s => s.saucersDestroyed >= 10 },
+            { id: 'level5', name: 'Warming Up', desc: 'Reach level 5', icon: '⭐', reward: 50, check: s => s.highestLevel >= 5 },
+            { id: 'level10', name: 'Getting Good', desc: 'Reach level 10', icon: '🌙', reward: 100, check: s => s.highestLevel >= 10 },
+            { id: 'level20', name: 'Expert Pilot', desc: 'Reach level 20', icon: '🚀', reward: 200, check: s => s.highestLevel >= 20 },
+            { id: 'score10k', name: 'Ten Thousand', desc: 'Score 10,000 points', icon: '📈', reward: 75, check: s => s.highScore >= 10000 },
+            { id: 'score50k', name: 'Fifty Grand', desc: 'Score 50,000 points', icon: '💰', reward: 150, check: s => s.highScore >= 50000 },
+            { id: 'score100k', name: 'Centurion', desc: 'Score 100,000 points', icon: '👑', reward: 300, check: s => s.highScore >= 100000 },
+            { id: 'games10', name: 'Regular', desc: 'Play 10 games', icon: '🎮', reward: 50, check: s => s.gamesPlayed >= 10 },
+            { id: 'games50', name: 'Veteran', desc: 'Play 50 games', icon: '🎖️', reward: 150, check: s => s.gamesPlayed >= 50 },
+            { id: 'hyperspace', name: 'Risky Business', desc: 'Use hyperspace 20 times', icon: '⚡', reward: 75, check: s => s.hyperspaceUses >= 20 },
+            { id: 'powerup', name: 'Powered Up', desc: 'Collect 10 power-ups', icon: '💎', reward: 50, check: s => s.powerupsCollected >= 10 }
+        ];
+
+        // ============================================
+        // POWER-UPS
+        // ============================================
+        const POWERUP_TYPES = [
+            { id: 'shield', name: 'Shield', color: '#0ff', duration: 300, icon: '🛡️' },
+            { id: 'rapidfire', name: 'Rapid Fire', color: '#ff0', duration: 300, icon: '⚡' },
+            { id: 'tripleshot', name: 'Triple Shot', color: '#f0f', duration: 300, icon: '🔱' },
+            { id: 'extralife', name: 'Extra Life', color: '#0f0', duration: 0, icon: '❤️' },
+            { id: 'bomb', name: 'Bomb', color: '#f80', duration: 0, icon: '💣' },
+            { id: 'slowmo', name: 'Slow Motion', color: '#88f', duration: 180, icon: '⏱️' }
+        ];
+
+        // ============================================
+        // SAVE DATA
+        // ============================================
+        let saveData = {
+            coins: 0,
+            totalCoinsEarned: 0,
+            highScore: 0,
+            gamesPlayed: 0,
+            totalAsteroidsDestroyed: 0,
+            saucersDestroyed: 0,
+            highestLevel: 1,
+            hyperspaceUses: 0,
+            powerupsCollected: 0,
+            totalShotsFired: 0,
+            ownedShips: ['classic'],
+            equippedShip: 'classic',
+            ownedTrails: ['classic'],
+            equippedTrail: 'classic',
+            achievements: []
+        };
+
+        function loadSave() {
+            const saved = localStorage.getItem('asteroidsProSave');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                saveData = { ...saveData, ...parsed };
+            }
+            updateDisplays();
+        }
+
+        function saveSave() {
+            localStorage.setItem('asteroidsProSave', JSON.stringify(saveData));
+        }
+
+        function updateDisplays() {
+            document.getElementById('coinsDisplay').textContent = saveData.coins;
+            document.getElementById('highScoreDisplay').textContent = saveData.highScore;
+            document.getElementById('shopCoins').textContent = saveData.coins;
+        }
+
         // ============================================
         // AUDIO
         // ============================================
@@ -212,6 +557,22 @@
                     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
                     osc.start(now); osc.stop(now + 0.5);
                 },
+                powerup: () => {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.15);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now); osc.stop(now + 0.2);
+                },
+                bomb: () => {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(80, now);
+                    osc.frequency.exponentialRampToValueAtTime(20, now + 0.6);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                    osc.start(now); osc.stop(now + 0.6);
+                },
                 saucerBig: () => {
                     osc.type = 'square';
                     osc.frequency.setValueAtTime(100, now);
@@ -228,6 +589,15 @@
                     gain.gain.setValueAtTime(0.08, now);
                     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
                     osc.start(now); osc.stop(now + 0.15);
+                },
+                achievement: () => {
+                    osc.type = 'sine';
+                    [523, 659, 784, 1047].forEach((freq, i) => {
+                        osc.frequency.setValueAtTime(freq, now + i * 0.08);
+                    });
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now); osc.stop(now + 0.4);
                 }
             };
             if (sounds[type]) sounds[type]();
@@ -251,7 +621,7 @@
         const BULLET_SPEED = 10;
         const BULLET_LIFE = 50;
         const SHOOT_COOLDOWN = 10;
-        const INVINCIBLE_TIME = 180; // 3 seconds at 60fps
+        const INVINCIBLE_TIME = 180;
         const EXTRA_LIFE_SCORE = 10000;
 
         const ASTEROID_SIZES = {
@@ -267,9 +637,11 @@
         let score = 0;
         let lives = 3;
         let level = 1;
-        let highScore = parseInt(localStorage.getItem('asteroidsHighScore')) || 0;
         let nextExtraLife = EXTRA_LIFE_SCORE;
         let frameCount = 0;
+        let coinsThisGame = 0;
+        let asteroidsThisGame = 0;
+        let slowMoActive = false;
 
         // Ship
         let ship = null;
@@ -281,12 +653,11 @@
         let saucer = null;
         let saucerBullets = [];
         let saucerTimer = 0;
+        let powerups = [];
+        let activePowerups = {};
 
         // Input
         const keys = {};
-
-        // Update high score display
-        document.getElementById('highScoreDisplay').textContent = highScore;
 
         // ============================================
         // SHIP
@@ -297,34 +668,54 @@
                 y: H / 2,
                 vx: 0,
                 vy: 0,
-                angle: -Math.PI / 2, // Pointing up
+                angle: -Math.PI / 2,
                 radius: SHIP_SIZE,
                 thrusting: false,
                 shootCooldown: 0,
                 invincible: INVINCIBLE_TIME,
                 visible: true,
-                dead: false
+                dead: false,
+                hyperspaceUsed: false
             };
+        }
+
+        function getShipColors() {
+            const shipData = SHIPS.find(s => s.id === saveData.equippedShip) || SHIPS[0];
+            if (shipData.colors[0] === 'rainbow') {
+                const hue = (frameCount * 3) % 360;
+                return [`hsl(${hue}, 100%, 50%)`, `hsl(${(hue + 60) % 360}, 100%, 50%)`];
+            }
+            return shipData.colors;
+        }
+
+        function getTrailColors() {
+            const trailData = TRAILS.find(t => t.id === saveData.equippedTrail) || TRAILS[0];
+            if (trailData.colors[0] === 'rainbow') {
+                const hue = (frameCount * 5) % 360;
+                return [`hsl(${hue}, 100%, 50%)`, `hsl(${(hue + 30) % 360}, 100%, 50%)`];
+            }
+            return trailData.colors;
         }
 
         function updateShip() {
             if (ship.dead) return;
 
+            const speedMult = slowMoActive ? 0.5 : 1;
+
             // Rotation
             if (keys['ArrowLeft'] || keys['KeyA']) {
-                ship.angle -= TURN_SPEED;
+                ship.angle -= TURN_SPEED * speedMult;
             }
             if (keys['ArrowRight'] || keys['KeyD']) {
-                ship.angle += TURN_SPEED;
+                ship.angle += TURN_SPEED * speedMult;
             }
 
             // Thrust
             ship.thrusting = keys['ArrowUp'] || keys['KeyW'];
             if (ship.thrusting) {
-                ship.vx += Math.cos(ship.angle) * THRUST_POWER;
-                ship.vy += Math.sin(ship.angle) * THRUST_POWER;
+                ship.vx += Math.cos(ship.angle) * THRUST_POWER * speedMult;
+                ship.vy += Math.sin(ship.angle) * THRUST_POWER * speedMult;
 
-                // Limit speed
                 const speed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
                 if (speed > MAX_SPEED) {
                     ship.vx = (ship.vx / speed) * MAX_SPEED;
@@ -334,13 +725,14 @@
                 // Thrust particles
                 if (frameCount % 2 === 0) {
                     const thrustAngle = ship.angle + Math.PI + (Math.random() - 0.5) * 0.5;
+                    const trailColors = getTrailColors();
                     particles.push({
                         x: ship.x - Math.cos(ship.angle) * SHIP_SIZE,
                         y: ship.y - Math.sin(ship.angle) * SHIP_SIZE,
                         vx: Math.cos(thrustAngle) * (2 + Math.random() * 2),
                         vy: Math.sin(thrustAngle) * (2 + Math.random() * 2),
                         life: 0.5 + Math.random() * 0.3,
-                        color: Math.random() < 0.5 ? '#ff0' : '#f80'
+                        color: trailColors[Math.floor(Math.random() * trailColors.length)]
                     });
                 }
 
@@ -352,8 +744,8 @@
             ship.vy *= FRICTION;
 
             // Move
-            ship.x += ship.vx;
-            ship.y += ship.vy;
+            ship.x += ship.vx * speedMult;
+            ship.y += ship.vy * speedMult;
 
             // Screen wrap
             ship.x = (ship.x + W) % W;
@@ -361,8 +753,11 @@
 
             // Shooting
             if (ship.shootCooldown > 0) ship.shootCooldown--;
+            const rapidFire = activePowerups.rapidfire;
+            const cooldown = rapidFire ? SHOOT_COOLDOWN / 3 : SHOOT_COOLDOWN;
             if ((keys['Space'] || keys['KeyX']) && ship.shootCooldown === 0) {
                 shoot();
+                ship.shootCooldown = cooldown;
             }
 
             // Hyperspace
@@ -385,14 +780,21 @@
         }
 
         function shoot() {
-            bullets.push({
-                x: ship.x + Math.cos(ship.angle) * SHIP_SIZE,
-                y: ship.y + Math.sin(ship.angle) * SHIP_SIZE,
-                vx: Math.cos(ship.angle) * BULLET_SPEED + ship.vx * 0.5,
-                vy: Math.sin(ship.angle) * BULLET_SPEED + ship.vy * 0.5,
-                life: BULLET_LIFE
+            const tripleShot = activePowerups.tripleshot;
+            const angles = tripleShot ? [-0.2, 0, 0.2] : [0];
+
+            angles.forEach(offset => {
+                const angle = ship.angle + offset;
+                bullets.push({
+                    x: ship.x + Math.cos(angle) * SHIP_SIZE,
+                    y: ship.y + Math.sin(angle) * SHIP_SIZE,
+                    vx: Math.cos(angle) * BULLET_SPEED + ship.vx * 0.5,
+                    vy: Math.sin(angle) * BULLET_SPEED + ship.vy * 0.5,
+                    life: BULLET_LIFE
+                });
             });
-            ship.shootCooldown = SHOOT_COOLDOWN;
+
+            saveData.totalShotsFired++;
             playSound('shoot');
         }
 
@@ -402,32 +804,38 @@
             ship.y = Math.random() * H;
             ship.vx = 0;
             ship.vy = 0;
+            saveData.hyperspaceUses++;
 
-            // Small chance of death
-            if (Math.random() < 0.1) {
+            if (Math.random() < 0.1 && !activePowerups.shield) {
                 destroyShip();
             }
         }
 
         function destroyShip() {
+            if (activePowerups.shield) {
+                delete activePowerups.shield;
+                showNotification('Shield absorbed the hit!');
+                ship.invincible = 60;
+                return;
+            }
+
             ship.dead = true;
             playSound('death');
 
-            // Explosion particles
             for (let i = 0; i < 20; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const speed = 2 + Math.random() * 4;
+                const colors = getShipColors();
                 particles.push({
                     x: ship.x,
                     y: ship.y,
                     vx: Math.cos(angle) * speed,
                     vy: Math.sin(angle) * speed,
                     life: 1 + Math.random() * 0.5,
-                    color: '#fff'
+                    color: colors[Math.floor(Math.random() * colors.length)]
                 });
             }
 
-            // Ship debris
             for (let i = 0; i < 4; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 particles.push({
@@ -443,14 +851,13 @@
             }
 
             lives--;
+            activePowerups = {};
 
             if (lives > 0) {
-                // Respawn after delay
                 setTimeout(() => {
                     ship = createShip();
                 }, 2000);
             } else {
-                // Game over
                 setTimeout(() => {
                     gameOver();
                 }, 1500);
@@ -460,25 +867,60 @@
         function drawShip() {
             if (ship.dead || !ship.visible) return;
 
+            const colors = getShipColors();
+            const shipData = SHIPS.find(s => s.id === saveData.equippedShip) || SHIPS[0];
+
             ctx.save();
             ctx.translate(ship.x, ship.y);
             ctx.rotate(ship.angle);
 
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
+            // Shield effect
+            if (activePowerups.shield) {
+                ctx.strokeStyle = '#0ff';
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = 0.5 + Math.sin(frameCount * 0.2) * 0.3;
+                ctx.beginPath();
+                ctx.arc(0, 0, SHIP_SIZE + 8, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
 
-            // Ship body (triangle)
-            ctx.moveTo(SHIP_SIZE, 0);
-            ctx.lineTo(-SHIP_SIZE * 0.7, -SHIP_SIZE * 0.6);
-            ctx.lineTo(-SHIP_SIZE * 0.4, 0);
-            ctx.lineTo(-SHIP_SIZE * 0.7, SHIP_SIZE * 0.6);
+            ctx.strokeStyle = colors[0];
+            ctx.lineWidth = 2;
+
+            if (shipData.style === 'ghost') {
+                ctx.globalAlpha = 0.5;
+            }
+
+            ctx.beginPath();
+            if (shipData.style === 'sleek') {
+                ctx.moveTo(SHIP_SIZE * 1.2, 0);
+                ctx.lineTo(-SHIP_SIZE * 0.5, -SHIP_SIZE * 0.5);
+                ctx.lineTo(-SHIP_SIZE * 0.3, 0);
+                ctx.lineTo(-SHIP_SIZE * 0.5, SHIP_SIZE * 0.5);
+            } else {
+                ctx.moveTo(SHIP_SIZE, 0);
+                ctx.lineTo(-SHIP_SIZE * 0.7, -SHIP_SIZE * 0.6);
+                ctx.lineTo(-SHIP_SIZE * 0.4, 0);
+                ctx.lineTo(-SHIP_SIZE * 0.7, SHIP_SIZE * 0.6);
+            }
             ctx.closePath();
             ctx.stroke();
 
+            // Glow effect for special ships
+            if (colors.length > 1 && colors[0] !== 'rainbow') {
+                ctx.shadowColor = colors[0];
+                ctx.shadowBlur = 10;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+
+            ctx.globalAlpha = 1;
+
             // Thrust flame
             if (ship.thrusting) {
-                ctx.strokeStyle = Math.random() < 0.5 ? '#ff0' : '#f80';
+                const trailColors = getTrailColors();
+                ctx.strokeStyle = trailColors[Math.floor(Math.random() * trailColors.length)];
                 ctx.beginPath();
                 ctx.moveTo(-SHIP_SIZE * 0.4, -SHIP_SIZE * 0.3);
                 ctx.lineTo(-SHIP_SIZE * (0.8 + Math.random() * 0.4), 0);
@@ -497,7 +939,6 @@
             const speed = sizeData.speed * (0.5 + Math.random());
             const angle = Math.random() * Math.PI * 2;
 
-            // Generate irregular shape
             const vertices = [];
             const numVertices = 8 + Math.floor(Math.random() * 5);
             for (let i = 0; i < numVertices; i++) {
@@ -525,7 +966,6 @@
 
         function spawnAsteroids(count) {
             for (let i = 0; i < count; i++) {
-                // Spawn away from ship
                 let x, y;
                 do {
                     x = Math.random() * W;
@@ -537,28 +977,27 @@
         }
 
         function updateAsteroids() {
+            const speedMult = slowMoActive ? 0.5 : 1;
             asteroids.forEach(a => {
-                a.x += a.vx;
-                a.y += a.vy;
-                a.rotation += a.rotationSpeed;
+                a.x += a.vx * speedMult;
+                a.y += a.vy * speedMult;
+                a.rotation += a.rotationSpeed * speedMult;
 
-                // Screen wrap
                 a.x = (a.x + W) % W;
                 a.y = (a.y + H) % H;
             });
         }
 
         function destroyAsteroid(asteroid, index) {
-            // Add score
             score += asteroid.points;
+            asteroidsThisGame++;
+            saveData.totalAsteroidsDestroyed++;
             checkExtraLife();
 
-            // Play sound
             if (asteroid.size === 'large') playSound('explodeLarge');
             else if (asteroid.size === 'medium') playSound('explodeMedium');
             else playSound('explodeSmall');
 
-            // Explosion particles
             for (let i = 0; i < 8; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const speed = 1 + Math.random() * 3;
@@ -572,7 +1011,11 @@
                 });
             }
 
-            // Split into smaller asteroids
+            // Chance to spawn power-up
+            if (Math.random() < 0.05 && asteroid.size === 'large') {
+                spawnPowerup(asteroid.x, asteroid.y);
+            }
+
             if (asteroid.size === 'large') {
                 asteroids.push(createAsteroid(asteroid.x, asteroid.y, 'medium'));
                 asteroids.push(createAsteroid(asteroid.x, asteroid.y, 'medium'));
@@ -581,10 +1024,8 @@
                 asteroids.push(createAsteroid(asteroid.x, asteroid.y, 'small'));
             }
 
-            // Remove asteroid
             asteroids.splice(index, 1);
 
-            // Check for level complete
             if (asteroids.length === 0) {
                 nextLevel();
             }
@@ -612,6 +1053,125 @@
         }
 
         // ============================================
+        // POWER-UPS
+        // ============================================
+        function spawnPowerup(x, y) {
+            const type = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
+            powerups.push({
+                x,
+                y,
+                type,
+                radius: 15,
+                rotation: 0,
+                life: 600
+            });
+        }
+
+        function updatePowerups() {
+            powerups.forEach((p, i) => {
+                p.rotation += 0.05;
+                p.life--;
+
+                if (p.life <= 0) {
+                    powerups.splice(i, 1);
+                    return;
+                }
+
+                if (ship && !ship.dead && distance(p.x, p.y, ship.x, ship.y) < p.radius + ship.radius) {
+                    collectPowerup(p);
+                    powerups.splice(i, 1);
+                }
+            });
+
+            // Update active powerups
+            Object.keys(activePowerups).forEach(key => {
+                activePowerups[key]--;
+                if (activePowerups[key] <= 0) {
+                    delete activePowerups[key];
+                }
+            });
+
+            slowMoActive = !!activePowerups.slowmo;
+        }
+
+        function collectPowerup(powerup) {
+            playSound('powerup');
+            saveData.powerupsCollected++;
+
+            switch (powerup.type.id) {
+                case 'extralife':
+                    lives++;
+                    playSound('extraLife');
+                    showNotification('Extra Life!');
+                    break;
+                case 'bomb':
+                    playSound('bomb');
+                    // Destroy all asteroids on screen
+                    for (let i = asteroids.length - 1; i >= 0; i--) {
+                        score += asteroids[i].points;
+                        asteroidsThisGame++;
+                        saveData.totalAsteroidsDestroyed++;
+
+                        for (let j = 0; j < 5; j++) {
+                            const angle = Math.random() * Math.PI * 2;
+                            const speed = 1 + Math.random() * 3;
+                            particles.push({
+                                x: asteroids[i].x,
+                                y: asteroids[i].y,
+                                vx: Math.cos(angle) * speed,
+                                vy: Math.sin(angle) * speed,
+                                life: 0.5,
+                                color: '#f80'
+                            });
+                        }
+                    }
+                    asteroids = [];
+                    showNotification('BOMB!');
+                    setTimeout(() => nextLevel(), 500);
+                    break;
+                default:
+                    activePowerups[powerup.type.id] = powerup.type.duration;
+                    showNotification(powerup.type.name + '!');
+            }
+        }
+
+        function drawPowerups() {
+            powerups.forEach(p => {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+
+                // Pulsing glow
+                const pulse = 0.5 + Math.sin(frameCount * 0.1) * 0.3;
+                ctx.shadowColor = p.type.color;
+                ctx.shadowBlur = 15 * pulse;
+
+                // Hexagon shape
+                ctx.strokeStyle = p.type.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i / 6) * Math.PI * 2;
+                    const x = Math.cos(angle) * p.radius;
+                    const y = Math.sin(angle) * p.radius;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+
+                // Icon
+                ctx.fillStyle = '#fff';
+                ctx.font = '14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(p.type.icon, 0, 0);
+
+                ctx.restore();
+            });
+        }
+
+        // ============================================
         // SAUCER (UFO)
         // ============================================
         function spawnSaucer() {
@@ -632,7 +1192,6 @@
 
         function updateSaucer() {
             if (!saucer) {
-                // Chance to spawn saucer
                 saucerTimer++;
                 if (saucerTimer > 600 && Math.random() < 0.005) {
                     spawnSaucer();
@@ -641,34 +1200,30 @@
                 return;
             }
 
-            // Move
-            saucer.x += saucer.vx;
-            saucer.y += saucer.vy;
+            const speedMult = slowMoActive ? 0.5 : 1;
 
-            // Change direction randomly
+            saucer.x += saucer.vx * speedMult;
+            saucer.y += saucer.vy * speedMult;
+
             saucer.directionTimer--;
             if (saucer.directionTimer <= 0) {
                 saucer.vy = (Math.random() - 0.5) * 3;
                 saucer.directionTimer = 30 + Math.random() * 60;
             }
 
-            // Keep in bounds vertically
             if (saucer.y < 50) saucer.vy = Math.abs(saucer.vy);
             if (saucer.y > H - 50) saucer.vy = -Math.abs(saucer.vy);
 
-            // Shoot
             saucer.shootTimer--;
             if (saucer.shootTimer <= 0 && ship && !ship.dead) {
                 saucerShoot();
                 saucer.shootTimer = saucer.isSmall ? 40 : 60;
             }
 
-            // Sound
             if (frameCount % 20 === 0) {
                 playSound(saucer.isSmall ? 'saucerSmall' : 'saucerBig');
             }
 
-            // Remove if off screen
             if (saucer.x < -50 || saucer.x > W + 50) {
                 saucer = null;
             }
@@ -677,11 +1232,9 @@
         function saucerShoot() {
             let angle;
             if (saucer.isSmall) {
-                // Accurate shot at player
                 angle = Math.atan2(ship.y - saucer.y, ship.x - saucer.x);
-                angle += (Math.random() - 0.5) * 0.2; // Small inaccuracy
+                angle += (Math.random() - 0.5) * 0.2;
             } else {
-                // Random direction
                 angle = Math.random() * Math.PI * 2;
             }
 
@@ -698,10 +1251,10 @@
 
         function destroySaucer() {
             score += saucer.isSmall ? 1000 : 200;
+            saveData.saucersDestroyed++;
             checkExtraLife();
             playSound('explodeLarge');
 
-            // Explosion
             for (let i = 0; i < 15; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const speed = 2 + Math.random() * 4;
@@ -711,9 +1264,12 @@
                     vx: Math.cos(angle) * speed,
                     vy: Math.sin(angle) * speed,
                     life: 0.8 + Math.random() * 0.4,
-                    color: '#fff'
+                    color: '#0f0'
                 });
             }
+
+            // Saucer always drops power-up
+            spawnPowerup(saucer.x, saucer.y);
 
             saucer = null;
         }
@@ -724,15 +1280,13 @@
             ctx.save();
             ctx.translate(saucer.x, saucer.y);
 
-            ctx.strokeStyle = '#fff';
+            ctx.strokeStyle = '#0f0';
             ctx.lineWidth = 2;
 
-            // Body
             ctx.beginPath();
             ctx.ellipse(0, 0, saucer.radius, saucer.radius * 0.4, 0, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Dome
             ctx.beginPath();
             ctx.ellipse(0, -saucer.radius * 0.2, saucer.radius * 0.5, saucer.radius * 0.3, 0, Math.PI, 0);
             ctx.stroke();
@@ -744,13 +1298,13 @@
         // BULLETS
         // ============================================
         function updateBullets() {
-            // Player bullets
+            const speedMult = slowMoActive ? 0.5 : 1;
+
             bullets.forEach((b, i) => {
-                b.x += b.vx;
-                b.y += b.vy;
+                b.x += b.vx * speedMult;
+                b.y += b.vy * speedMult;
                 b.life--;
 
-                // Screen wrap
                 b.x = (b.x + W) % W;
                 b.y = (b.y + H) % H;
 
@@ -759,13 +1313,11 @@
                 }
             });
 
-            // Saucer bullets
             saucerBullets.forEach((b, i) => {
-                b.x += b.vx;
-                b.y += b.vy;
+                b.x += b.vx * speedMult;
+                b.y += b.vy * speedMult;
                 b.life--;
 
-                // Screen wrap
                 b.x = (b.x + W) % W;
                 b.y = (b.y + H) % H;
 
@@ -776,14 +1328,16 @@
         }
 
         function drawBullets() {
-            ctx.fillStyle = '#fff';
+            const shipColors = getShipColors();
+            ctx.fillStyle = shipColors[0];
 
             bullets.forEach(b => {
                 ctx.beginPath();
-                ctx.arc(b.x, b.y, 2, 0, Math.PI * 2);
+                ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
                 ctx.fill();
             });
 
+            ctx.fillStyle = '#0f0';
             saucerBullets.forEach(b => {
                 ctx.beginPath();
                 ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
@@ -903,11 +1457,15 @@
                 lives++;
                 nextExtraLife += EXTRA_LIFE_SCORE;
                 playSound('extraLife');
+                showNotification('Extra Life!');
             }
         }
 
         function nextLevel() {
             level++;
+            if (level > saveData.highestLevel) {
+                saveData.highestLevel = level;
+            }
             setTimeout(() => {
                 spawnAsteroids(3 + level);
             }, 1500);
@@ -921,6 +1479,8 @@
             level = 1;
             nextExtraLife = EXTRA_LIFE_SCORE;
             frameCount = 0;
+            coinsThisGame = 0;
+            asteroidsThisGame = 0;
 
             ship = createShip();
             asteroids = [];
@@ -929,11 +1489,17 @@
             saucerBullets = [];
             saucer = null;
             saucerTimer = 0;
+            powerups = [];
+            activePowerups = {};
+            slowMoActive = false;
 
             spawnAsteroids(4);
 
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('gameOverScreen').classList.add('hidden');
+
+            saveData.gamesPlayed++;
+            saveSave();
 
             gameRunning = true;
             gameLoop();
@@ -942,17 +1508,60 @@
         function gameOver() {
             gameRunning = false;
 
+            // Calculate coins earned
+            coinsThisGame = Math.floor(score / 100) + Math.floor(asteroidsThisGame / 2);
+            saveData.coins += coinsThisGame;
+            saveData.totalCoinsEarned += coinsThisGame;
+
             // Check high score
-            const isNewHigh = score > highScore;
+            const isNewHigh = score > saveData.highScore;
             if (isNewHigh) {
-                highScore = score;
-                localStorage.setItem('asteroidsHighScore', highScore);
+                saveData.highScore = score;
             }
 
+            // Check achievements
+            checkAchievements();
+            saveSave();
+
             document.getElementById('finalScore').textContent = score;
-            document.getElementById('finalHighScore').textContent = highScore;
+            document.getElementById('finalHighScore').textContent = saveData.highScore;
             document.getElementById('newHighScore').style.display = isNewHigh ? 'block' : 'none';
+            document.getElementById('coinsEarned').textContent = coinsThisGame;
             document.getElementById('gameOverScreen').classList.remove('hidden');
+        }
+
+        // ============================================
+        // ACHIEVEMENTS
+        // ============================================
+        function checkAchievements() {
+            let newAchievements = false;
+
+            ACHIEVEMENTS.forEach(achievement => {
+                if (!saveData.achievements.includes(achievement.id) && achievement.check(saveData)) {
+                    saveData.achievements.push(achievement.id);
+                    saveData.coins += achievement.reward;
+                    showNotification(`🏆 ${achievement.name}! +${achievement.reward} coins`);
+                    playSound('achievement');
+                    newAchievements = true;
+                }
+            });
+
+            if (newAchievements) saveSave();
+        }
+
+        // ============================================
+        // NOTIFICATIONS
+        // ============================================
+        function showNotification(message) {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.textContent = message;
+            document.body.appendChild(notif);
+
+            setTimeout(() => notif.remove(), 2000);
         }
 
         // ============================================
@@ -964,12 +1573,18 @@
             ctx.textAlign = 'left';
             ctx.fillText(score.toString().padStart(6, '0'), 20, 35);
 
+            // Coins
+            ctx.fillStyle = '#ffd700';
+            ctx.font = '16px Courier New';
+            ctx.fillText('⬡ ' + (saveData.coins + coinsThisGame), 20, 90);
+
             // Lives
             ctx.save();
             for (let i = 0; i < lives; i++) {
                 ctx.translate(30 + i * 25, 60);
                 ctx.rotate(-Math.PI / 2);
-                ctx.strokeStyle = '#fff';
+                const colors = getShipColors();
+                ctx.strokeStyle = colors[0];
                 ctx.lineWidth = 1.5;
                 ctx.beginPath();
                 ctx.moveTo(10, 0);
@@ -983,9 +1598,22 @@
             ctx.restore();
 
             // Level
+            ctx.fillStyle = '#fff';
             ctx.textAlign = 'right';
             ctx.font = '16px Courier New';
             ctx.fillText('LEVEL ' + level, W - 20, 30);
+
+            // Active power-ups
+            let powerupY = 50;
+            Object.keys(activePowerups).forEach(key => {
+                const type = POWERUP_TYPES.find(p => p.id === key);
+                if (type) {
+                    const remaining = Math.ceil(activePowerups[key] / 60);
+                    ctx.fillStyle = type.color;
+                    ctx.fillText(`${type.icon} ${remaining}s`, W - 20, powerupY);
+                    powerupY += 20;
+                }
+            });
         }
 
         // ============================================
@@ -996,22 +1624,29 @@
 
             frameCount++;
 
-            // Clear
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, W, H);
 
-            // Update
+            // Draw starfield
+            ctx.fillStyle = '#333';
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 73 + frameCount * 0.1) % W;
+                const y = (i * 127) % H;
+                ctx.fillRect(x, y, 1, 1);
+            }
+
             if (ship && !ship.dead) updateShip();
             updateAsteroids();
             updateBullets();
             updateParticles();
             updateSaucer();
+            updatePowerups();
             checkCollisions();
 
-            // Draw
             asteroids.forEach(drawAsteroid);
             drawBullets();
             drawParticles();
+            drawPowerups();
             drawSaucer();
             if (ship) drawShip();
             drawHUD();
@@ -1025,7 +1660,6 @@
         document.addEventListener('keydown', e => {
             keys[e.code] = true;
 
-            // Prevent scrolling
             if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
                 e.preventDefault();
             }
@@ -1035,11 +1669,220 @@
             keys[e.code] = false;
         });
 
-        // Buttons
+        // ============================================
+        // SHOP
+        // ============================================
+        function openShop() {
+            document.getElementById('shopOverlay').classList.remove('hidden');
+            renderShop();
+        }
+
+        function closeShop() {
+            document.getElementById('shopOverlay').classList.add('hidden');
+            updateDisplays();
+        }
+
+        function renderShop() {
+            updateDisplays();
+
+            // Ships
+            const shipsGrid = document.getElementById('shipsGrid');
+            shipsGrid.innerHTML = '';
+            SHIPS.forEach(ship => {
+                const owned = saveData.ownedShips.includes(ship.id);
+                const equipped = saveData.equippedShip === ship.id;
+
+                const item = document.createElement('div');
+                item.className = `shop-item ${owned ? 'owned' : ''} ${equipped ? 'equipped' : ''}`;
+
+                const preview = document.createElement('div');
+                preview.className = 'shop-item-preview';
+                const previewCanvas = document.createElement('canvas');
+                previewCanvas.width = 80;
+                previewCanvas.height = 80;
+                preview.appendChild(previewCanvas);
+                drawShipPreview(previewCanvas, ship);
+
+                const name = document.createElement('div');
+                name.className = 'shop-item-name';
+                name.textContent = ship.name;
+
+                const price = document.createElement('div');
+                price.className = `shop-item-price ${owned ? 'owned' : ''}`;
+                price.textContent = owned ? (equipped ? 'EQUIPPED' : 'OWNED') : `⬡ ${ship.price}`;
+
+                item.appendChild(preview);
+                item.appendChild(name);
+                item.appendChild(price);
+
+                item.onclick = () => {
+                    if (owned) {
+                        saveData.equippedShip = ship.id;
+                        saveSave();
+                        renderShop();
+                    } else if (saveData.coins >= ship.price) {
+                        saveData.coins -= ship.price;
+                        saveData.ownedShips.push(ship.id);
+                        saveData.equippedShip = ship.id;
+                        saveSave();
+                        renderShop();
+                        playSound('powerup');
+                    }
+                };
+
+                shipsGrid.appendChild(item);
+            });
+
+            // Trails
+            const trailsGrid = document.getElementById('trailsGrid');
+            trailsGrid.innerHTML = '';
+            TRAILS.forEach(trail => {
+                const owned = saveData.ownedTrails.includes(trail.id);
+                const equipped = saveData.equippedTrail === trail.id;
+
+                const item = document.createElement('div');
+                item.className = `shop-item ${owned ? 'owned' : ''} ${equipped ? 'equipped' : ''}`;
+
+                const preview = document.createElement('div');
+                preview.className = 'shop-item-preview';
+                preview.style.background = `linear-gradient(90deg, ${trail.colors[0] === 'rainbow' ? 'red, orange, yellow, green, blue, purple' : trail.colors.join(', ')})`;
+                preview.style.borderRadius = '5px';
+                preview.style.height = '30px';
+                preview.style.marginTop = '25px';
+
+                const name = document.createElement('div');
+                name.className = 'shop-item-name';
+                name.textContent = trail.name;
+
+                const price = document.createElement('div');
+                price.className = `shop-item-price ${owned ? 'owned' : ''}`;
+                price.textContent = owned ? (equipped ? 'EQUIPPED' : 'OWNED') : `⬡ ${trail.price}`;
+
+                item.appendChild(preview);
+                item.appendChild(name);
+                item.appendChild(price);
+
+                item.onclick = () => {
+                    if (owned) {
+                        saveData.equippedTrail = trail.id;
+                        saveSave();
+                        renderShop();
+                    } else if (saveData.coins >= trail.price) {
+                        saveData.coins -= trail.price;
+                        saveData.ownedTrails.push(trail.id);
+                        saveData.equippedTrail = trail.id;
+                        saveSave();
+                        renderShop();
+                        playSound('powerup');
+                    }
+                };
+
+                trailsGrid.appendChild(item);
+            });
+
+            // Achievements
+            const achievementsList = document.getElementById('achievementsList');
+            achievementsList.innerHTML = '';
+            ACHIEVEMENTS.forEach(achievement => {
+                const unlocked = saveData.achievements.includes(achievement.id);
+
+                const item = document.createElement('div');
+                item.className = `achievement-item ${unlocked ? 'unlocked' : ''}`;
+
+                item.innerHTML = `
+                    <div class="achievement-icon">${achievement.icon}</div>
+                    <div class="achievement-info">
+                        <div class="achievement-name">${achievement.name}</div>
+                        <div class="achievement-desc">${achievement.desc}</div>
+                    </div>
+                    <div class="achievement-reward">${unlocked ? '✓' : `⬡ ${achievement.reward}`}</div>
+                `;
+
+                achievementsList.appendChild(item);
+            });
+
+            // Stats
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = '';
+            const stats = [
+                { label: 'High Score', value: saveData.highScore.toLocaleString() },
+                { label: 'Games Played', value: saveData.gamesPlayed },
+                { label: 'Total Coins Earned', value: saveData.totalCoinsEarned },
+                { label: 'Asteroids Destroyed', value: saveData.totalAsteroidsDestroyed },
+                { label: 'UFOs Destroyed', value: saveData.saucersDestroyed },
+                { label: 'Highest Level', value: saveData.highestLevel },
+                { label: 'Hyperspace Uses', value: saveData.hyperspaceUses },
+                { label: 'Power-ups Collected', value: saveData.powerupsCollected },
+                { label: 'Shots Fired', value: saveData.totalShotsFired },
+                { label: 'Achievements', value: `${saveData.achievements.length}/${ACHIEVEMENTS.length}` }
+            ];
+
+            stats.forEach(stat => {
+                const item = document.createElement('div');
+                item.className = 'stat-item';
+                item.innerHTML = `
+                    <div class="stat-value">${stat.value}</div>
+                    <div class="stat-label">${stat.label}</div>
+                `;
+                statsGrid.appendChild(item);
+            });
+        }
+
+        function drawShipPreview(canvas, shipData) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(-Math.PI / 2);
+
+            let color = shipData.colors[0];
+            if (color === 'rainbow') {
+                const gradient = ctx.createLinearGradient(-20, 0, 20, 0);
+                gradient.addColorStop(0, 'red');
+                gradient.addColorStop(0.5, 'yellow');
+                gradient.addColorStop(1, 'blue');
+                color = gradient;
+            }
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            if (shipData.style === 'sleek') {
+                ctx.moveTo(20 * 1.2, 0);
+                ctx.lineTo(-20 * 0.5, -20 * 0.5);
+                ctx.lineTo(-20 * 0.3, 0);
+                ctx.lineTo(-20 * 0.5, 20 * 0.5);
+            } else {
+                ctx.moveTo(20, 0);
+                ctx.lineTo(-20 * 0.7, -20 * 0.6);
+                ctx.lineTo(-20 * 0.4, 0);
+                ctx.lineTo(-20 * 0.7, 20 * 0.6);
+            }
+            ctx.closePath();
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // Shop tab switching
+        document.querySelectorAll('.shop-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.shop-section').forEach(s => s.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab + 'Section').classList.add('active');
+            });
+        });
+
+        // Event listeners
         document.getElementById('startBtn').addEventListener('click', startGame);
         document.getElementById('restartBtn').addEventListener('click', startGame);
+        document.getElementById('shopBtn').addEventListener('click', openShop);
+        document.getElementById('shopBtn2').addEventListener('click', openShop);
+        document.getElementById('closeShop').addEventListener('click', closeShop);
 
-        // Touch controls for mobile
+        // Touch controls
         let touchControls = { left: false, right: false, thrust: false, fire: false };
 
         canvas.addEventListener('touchstart', e => {
@@ -1066,8 +1909,6 @@
                 const x = touch.clientX - rect.left;
                 const y = touch.clientY - rect.top;
 
-                // Left side = rotate left, right side = rotate right
-                // Top half = thrust, bottom half = fire
                 if (x < W / 3) touchControls.left = true;
                 else if (x > W * 2 / 3) touchControls.right = true;
 
@@ -1084,6 +1925,9 @@
             keys['ArrowUp'] = touchControls.thrust;
             keys['Space'] = touchControls.fire;
         }
+
+        // Initialize
+        loadSave();
     </script>
 </body>
 </html>

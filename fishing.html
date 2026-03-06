@@ -7,8 +7,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Courier New', monospace;
-            background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 40%, #4A90A4 40%, #2C5F7C 100%);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -16,242 +15,191 @@
             padding: 10px;
             overflow: hidden;
         }
-        h1 {
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            margin-bottom: 5px;
-            font-size: 1.8rem;
-        }
+        h1 { color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin-bottom: 5px; font-size: 1.8rem; }
         .top-bar {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 5px;
-            color: #fff;
-            font-size: 1rem;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            display: flex; gap: 20px; margin-bottom: 5px; color: #fff;
+            font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); flex-wrap: wrap; justify-content: center;
         }
         .money { color: #FFD700; }
-        #gameCanvas {
-            border: 4px solid #8B4513;
-            border-radius: 10px;
-            cursor: crosshair;
-        }
-        .controls {
-            margin-top: 10px;
-            color: #fff;
-            font-size: 0.9rem;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
+        #gameCanvas { border: 4px solid #8B4513; border-radius: 10px; cursor: crosshair; }
+        .controls { margin-top: 10px; color: #fff; font-size: 0.9rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+
         .overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 100; padding: 20px; overflow-y: auto;
         }
         .overlay.hidden { display: none; }
-        .overlay h2 {
-            font-size: 2.5rem;
-            color: #4A90A4;
-            margin-bottom: 20px;
-        }
-        .overlay p {
-            color: #aaa;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
+        .overlay h2 { font-size: 2rem; color: #4A90A4; margin-bottom: 15px; }
+        .overlay p { color: #aaa; margin-bottom: 10px; font-size: 1rem; }
+
         .btn {
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            font-family: 'Courier New', monospace;
-            background: linear-gradient(to bottom, #4A90A4, #2C5F7C);
-            color: #fff;
-            border: 3px solid #1a3d4d;
-            border-radius: 10px;
-            cursor: pointer;
-            margin: 10px;
-            transition: all 0.2s;
+            padding: 12px 35px; font-size: 1.1rem; background: linear-gradient(to bottom, #4A90A4, #2C5F7C);
+            color: #fff; border: 3px solid #1a3d4d; border-radius: 10px; cursor: pointer;
+            margin: 8px; transition: all 0.2s;
         }
-        .btn:hover {
-            transform: scale(1.05);
-            background: linear-gradient(to bottom, #5BA0B4, #3C6F8C);
+        .btn:hover { transform: scale(1.05); background: linear-gradient(to bottom, #5BA0B4, #3C6F8C); }
+        .btn-shop { background: linear-gradient(to bottom, #9C27B0, #7B1FA2); border-color: #4A148C; }
+        .btn-small { padding: 8px 20px; font-size: 0.9rem; }
+
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; }
+        .tab {
+            padding: 10px 20px; background: rgba(255,255,255,0.1); border: 2px solid #555;
+            border-radius: 10px; color: #aaa; cursor: pointer; transition: all 0.2s;
         }
+        .tab:hover { background: rgba(255,255,255,0.2); }
+        .tab.active { background: #4A90A4; color: #fff; border-color: #4A90A4; }
+
+        .shop-content { display: none; max-height: 350px; overflow-y: auto; width: 100%; max-width: 700px; }
+        .shop-content.active { display: block; }
+
         .shop-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            max-width: 800px;
-            margin: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-            padding: 10px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px; padding: 10px;
         }
         .shop-item {
-            background: rgba(255,255,255,0.1);
-            border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.2s;
+            background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px; padding: 12px; text-align: center; color: #fff;
+            cursor: pointer; transition: all 0.2s;
         }
-        .shop-item:hover:not(.owned):not(.locked) {
-            border-color: #FFD700;
-            background: rgba(255,215,0,0.1);
+        .shop-item:hover { transform: scale(1.03); border-color: #4A90A4; }
+        .shop-item.owned { border-color: #4CAF50; background: rgba(76, 175, 80, 0.2); }
+        .shop-item.equipped { border-color: #FFD700; background: rgba(255, 215, 0, 0.2); }
+        .shop-item.locked { opacity: 0.5; }
+        .shop-item-icon { font-size: 2rem; margin-bottom: 5px; }
+        .shop-item-name { font-weight: bold; font-size: 0.85rem; }
+        .shop-item-stats { color: #4CAF50; font-size: 0.75rem; margin-top: 5px; }
+        .shop-item-price { color: #FFD700; font-size: 0.8rem; margin-top: 5px; }
+
+        .location-select { display: flex; gap: 15px; margin: 15px 0; flex-wrap: wrap; justify-content: center; }
+        .location-btn {
+            padding: 15px 20px; background: rgba(255,255,255,0.1); border: 3px solid #555;
+            border-radius: 12px; color: #fff; cursor: pointer; transition: all 0.2s;
+            text-align: center; min-width: 120px;
         }
-        .shop-item.owned {
-            border-color: #4CAF50;
-            background: rgba(76,175,80,0.2);
+        .location-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.05); }
+        .location-btn.selected { border-color: #FFD700; background: rgba(255, 215, 0, 0.2); }
+        .location-btn.locked { opacity: 0.5; cursor: not-allowed; }
+        .location-icon { font-size: 2rem; margin-bottom: 5px; }
+        .location-name { font-weight: bold; font-size: 0.9rem; }
+        .location-req { font-size: 0.7rem; color: #aaa; }
+
+        .achievements-grid {
+            display: grid; grid-template-columns: repeat(5, 70px); gap: 8px;
+            justify-content: center; max-height: 300px; overflow-y: auto;
         }
-        .shop-item.equipped {
-            border-color: #00ff00;
-            box-shadow: 0 0 15px rgba(0,255,0,0.5);
+        .achievement {
+            width: 70px; height: 80px; background: rgba(255,255,255,0.05); border: 2px solid #333;
+            border-radius: 10px; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; opacity: 0.4;
         }
-        .shop-item.locked {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .shop-item .icon { font-size: 2.5rem; margin-bottom: 10px; }
-        .shop-item .name { font-weight: bold; margin-bottom: 5px; }
-        .shop-item .desc { font-size: 0.8rem; color: #aaa; margin-bottom: 10px; }
-        .shop-item .price { color: #FFD700; }
+        .achievement.unlocked { opacity: 1; border-color: #FFD700; background: rgba(255, 215, 0, 0.1); }
+        .achievement-icon { font-size: 1.5rem; }
+        .achievement-name { font-size: 0.55rem; color: #fff; margin-top: 3px; text-align: center; }
+
         .collection-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 10px;
-            max-width: 600px;
-            margin: 20px;
-            max-height: 350px;
-            overflow-y: auto;
-            padding: 10px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px; padding: 10px; max-height: 300px; overflow-y: auto;
         }
-        .fish-entry {
-            background: rgba(255,255,255,0.1);
-            border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 10px;
-            padding: 10px;
-            text-align: center;
-            color: #fff;
+        .fish-item {
+            background: rgba(255,255,255,0.05); border: 2px solid #333; border-radius: 8px;
+            padding: 8px; text-align: center; color: #fff;
         }
-        .fish-entry.caught {
-            border-color: #4CAF50;
+        .fish-item.caught { border-color: #4CAF50; background: rgba(76, 175, 80, 0.1); }
+        .fish-emoji { font-size: 1.5rem; }
+        .fish-name { font-size: 0.65rem; margin-top: 3px; }
+        .fish-count { font-size: 0.6rem; color: #FFD700; }
+
+        .stats-bar { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-bottom: 15px; }
+        .stat-item { background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 15px; text-align: center; }
+        .stat-label { font-size: 0.7rem; color: #aaa; }
+        .stat-value { font-size: 1.1rem; font-weight: bold; color: #FFD700; }
+
+        .catch-popup {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95); border: 3px solid #FFD700; border-radius: 20px;
+            padding: 25px; text-align: center; z-index: 200; animation: popIn 0.3s ease-out;
         }
-        .fish-entry.uncaught {
-            opacity: 0.4;
-        }
-        .fish-entry .icon { font-size: 2rem; }
-        .fish-entry .name { font-size: 0.7rem; margin-top: 5px; }
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .tab {
-            padding: 10px 25px;
-            background: rgba(255,255,255,0.1);
-            border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 20px;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .tab.active {
-            background: rgba(255,255,255,0.3);
-            border-color: #fff;
-        }
-        .catch-display {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
-            border: 4px solid #FFD700;
-            border-radius: 20px;
-            padding: 30px 50px;
-            text-align: center;
-            z-index: 200;
-            animation: popIn 0.3s ease-out;
-        }
-        .catch-display.hidden { display: none; }
-        @keyframes popIn {
-            from { transform: translate(-50%, -50%) scale(0); }
-            to { transform: translate(-50%, -50%) scale(1); }
-        }
-        .catch-display .fish-icon { font-size: 5rem; }
-        .catch-display .fish-name { font-size: 1.8rem; color: #fff; margin: 10px 0; }
-        .catch-display .fish-value { font-size: 1.3rem; color: #FFD700; }
-        .catch-display .fish-rarity { font-size: 1rem; margin-top: 5px; }
-        .rarity-common { color: #aaa; }
-        .rarity-uncommon { color: #4CAF50; }
-        .rarity-rare { color: #2196F3; }
-        .rarity-epic { color: #9C27B0; }
-        .rarity-legendary { color: #FFD700; text-shadow: 0 0 10px #FFD700; }
-        .back-link {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            color: #fff;
-            text-decoration: none;
-            opacity: 0.6;
-        }
-        .back-link:hover { opacity: 1; }
+        .catch-popup.hidden { display: none; }
+        @keyframes popIn { from { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+        .catch-fish { font-size: 4rem; animation: fishBounce 0.5s ease-out; }
+        @keyframes fishBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .catch-name { font-size: 1.5rem; color: #fff; margin: 10px 0; }
+        .catch-rarity { font-size: 1rem; margin-bottom: 10px; }
+        .catch-value { color: #FFD700; font-size: 1.2rem; }
+        .catch-new { color: #4CAF50; font-size: 0.9rem; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <h1>GONE FISHING</h1>
+    <h1>🎣 Gone Fishing</h1>
     <div class="top-bar">
-        <span class="money">$<span id="money">0</span></span>
-        <span>Rod: <span id="rodName">Basic Rod</span></span>
-        <span>Bait: <span id="baitName">Worm</span></span>
-        <span>Fish: <span id="fishCount">0</span>/<span id="totalFish">0</span></span>
+        <span class="money">💰 $<span id="money">100</span></span>
+        <span>🐟 <span id="totalCaught">0</span> caught</span>
+        <span>📍 <span id="currentLocation">Pond</span></span>
     </div>
     <canvas id="gameCanvas" width="800" height="500"></canvas>
-    <div class="controls">
-        <span>CLICK to cast</span> | <span>HOLD to reel when fish bites</span> | <span>S = Shop</span> | <span>C = Collection</span>
-    </div>
+    <div class="controls">Click and hold to cast • Release to catch • Space for Shop</div>
 
     <!-- Start Screen -->
     <div class="overlay" id="startScreen">
-        <h2>GONE FISHING</h2>
-        <p>Cast your line and catch all the fish!</p>
-        <p style="font-size: 0.9rem; color: #888;">Click to cast, hold to reel when you get a bite.</p>
-        <p style="font-size: 0.9rem; color: #888;">Buy better rods and bait to catch rarer fish!</p>
-        <button class="btn" id="startBtn">START FISHING</button>
+        <h2>🎣 Gone Fishing</h2>
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-label">Money</div>
+                <div class="stat-value" id="startMoney">$100</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Fish Caught</div>
+                <div class="stat-value" id="startCaught">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Species</div>
+                <div class="stat-value" id="startSpecies">0/24</div>
+            </div>
+        </div>
+        <p>Select Location:</p>
+        <div class="location-select" id="locationSelect"></div>
+        <div style="margin-top: 15px;">
+            <button class="btn" id="startBtn">START FISHING</button>
+            <button class="btn btn-shop" id="shopBtn">SHOP</button>
+        </div>
     </div>
 
     <!-- Shop Screen -->
     <div class="overlay hidden" id="shopScreen">
-        <h2>TACKLE SHOP</h2>
+        <h2>🛒 Shop</h2>
+        <p style="color: #FFD700;">Money: $<span id="shopMoney">100</span></p>
         <div class="tabs">
             <div class="tab active" data-tab="rods">Rods</div>
-            <div class="tab" data-tab="bait">Bait</div>
+            <div class="tab" data-tab="baits">Baits</div>
+            <div class="tab" data-tab="collection">Collection</div>
+            <div class="tab" data-tab="achievements">Badges</div>
         </div>
-        <div class="shop-grid" id="shopGrid"></div>
-        <button class="btn" id="shopBackBtn">BACK TO FISHING</button>
+        <div class="shop-content active" id="rodsContent">
+            <div class="shop-grid" id="rodsGrid"></div>
+        </div>
+        <div class="shop-content" id="baitsContent">
+            <div class="shop-grid" id="baitsGrid"></div>
+        </div>
+        <div class="shop-content" id="collectionContent">
+            <p id="collectionCount" style="color: #aaa; margin-bottom: 10px; text-align: center;">0/24 Species</p>
+            <div class="collection-grid" id="collectionGrid"></div>
+        </div>
+        <div class="shop-content" id="achievementsContent">
+            <p id="achieveCount" style="color: #aaa; margin-bottom: 10px; text-align: center;">0/16 Unlocked</p>
+            <div class="achievements-grid" id="achievementsGrid"></div>
+        </div>
+        <button class="btn btn-small" id="shopBackBtn">BACK</button>
     </div>
 
-    <!-- Collection Screen -->
-    <div class="overlay hidden" id="collectionScreen">
-        <h2>FISH COLLECTION</h2>
-        <p>Caught: <span id="collectionCount">0</span> / <span id="collectionTotal">0</span></p>
-        <div class="collection-grid" id="collectionGrid"></div>
-        <button class="btn" id="collectionBackBtn">BACK TO FISHING</button>
+    <!-- Catch Popup -->
+    <div class="catch-popup hidden" id="catchPopup">
+        <div class="catch-fish" id="catchFish">🐟</div>
+        <div class="catch-name" id="catchName">Fish</div>
+        <div class="catch-rarity" id="catchRarity">Common</div>
+        <div class="catch-value" id="catchValue">+$10</div>
+        <div class="catch-new hidden" id="catchNew">NEW SPECIES!</div>
     </div>
-
-    <!-- Catch Display -->
-    <div class="catch-display hidden" id="catchDisplay">
-        <div class="fish-icon" id="catchIcon"></div>
-        <div class="fish-name" id="catchName"></div>
-        <div class="fish-value" id="catchValue"></div>
-        <div class="fish-rarity" id="catchRarity"></div>
-    </div>
-
-    <a href="index.html" class="back-link">&larr; Back to Arcade</a>
 
     <script>
         // ============================================
@@ -259,11 +207,7 @@
         // ============================================
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
-
-        function initAudio() {
-            if (!audioCtx) audioCtx = new AudioContext();
-        }
-
+        function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); }
         function playSound(type) {
             if (!audioCtx) return;
             const osc = audioCtx.createOscillator();
@@ -271,993 +215,733 @@
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             const now = audioCtx.currentTime;
-
             const sounds = {
-                cast: () => {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(300, now);
-                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                    osc.start(now); osc.stop(now + 0.3);
-                },
-                splash: () => {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(150, now);
-                    osc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                    osc.start(now); osc.stop(now + 0.2);
-                },
-                bite: () => {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(800, now);
-                    osc.frequency.setValueAtTime(600, now + 0.1);
-                    osc.frequency.setValueAtTime(800, now + 0.2);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                    osc.start(now); osc.stop(now + 0.3);
-                },
-                reel: () => {
-                    osc.type = 'square';
-                    osc.frequency.setValueAtTime(200 + Math.random() * 100, now);
-                    gain.gain.setValueAtTime(0.05, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-                    osc.start(now); osc.stop(now + 0.05);
-                },
-                catch: () => {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(523, now);
-                    osc.frequency.setValueAtTime(659, now + 0.1);
-                    osc.frequency.setValueAtTime(784, now + 0.2);
-                    osc.frequency.setValueAtTime(1047, now + 0.3);
-                    gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-                    osc.start(now); osc.stop(now + 0.5);
-                },
-                lost: () => {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(300, now);
-                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.4);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-                    osc.start(now); osc.stop(now + 0.4);
-                },
-                buy: () => {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(600, now);
-                    osc.frequency.setValueAtTime(800, now + 0.1);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-                    osc.start(now); osc.stop(now + 0.15);
-                },
-                legendary: () => {
-                    osc.type = 'sine';
-                    [523, 659, 784, 1047, 1319, 1568].forEach((freq, i) => {
-                        osc.frequency.setValueAtTime(freq, now + i * 0.1);
-                    });
-                    gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
-                    osc.start(now); osc.stop(now + 0.8);
-                }
+                cast: () => { osc.type = 'sine'; osc.frequency.setValueAtTime(300, now); osc.frequency.exponentialRampToValueAtTime(150, now + 0.3); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3); osc.start(now); osc.stop(now + 0.3); },
+                splash: () => { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(50, now + 0.2); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2); },
+                catch: () => { osc.type = 'sine'; [400, 500, 600, 800].forEach((f, i) => osc.frequency.setValueAtTime(f, now + i * 0.08)); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4); osc.start(now); osc.stop(now + 0.4); },
+                rare: () => { osc.type = 'sine'; [523, 659, 784, 1047].forEach((f, i) => osc.frequency.setValueAtTime(f, now + i * 0.12)); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6); osc.start(now); osc.stop(now + 0.6); },
+                buy: () => { osc.type = 'sine'; osc.frequency.setValueAtTime(800, now); osc.frequency.setValueAtTime(1000, now + 0.1); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15); osc.start(now); osc.stop(now + 0.15); },
+                unlock: () => { osc.type = 'sine'; [523, 659, 784, 1047, 1319].forEach((f, i) => osc.frequency.setValueAtTime(f, now + i * 0.1)); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6); osc.start(now); osc.stop(now + 0.6); }
             };
             if (sounds[type]) sounds[type]();
         }
 
         // ============================================
-        // CANVAS
+        // GAME DATA
+        // ============================================
+        const LOCATIONS = [
+            { id: 'pond', name: 'Pond', icon: '🏞️', unlockCost: 0, rarityBonus: 0, bgColors: ['#87CEEB', '#4A90A4', '#2C5F7C'] },
+            { id: 'river', name: 'River', icon: '🏔️', unlockCost: 500, rarityBonus: 0.1, bgColors: ['#89CFF0', '#3498DB', '#2980B9'] },
+            { id: 'lake', name: 'Lake', icon: '🌲', unlockCost: 1500, rarityBonus: 0.15, bgColors: ['#6DD5ED', '#2193B0', '#1A6985'] },
+            { id: 'ocean', name: 'Ocean', icon: '🌊', unlockCost: 5000, rarityBonus: 0.25, bgColors: ['#4FACFE', '#00F2FE', '#006994'] },
+            { id: 'tropics', name: 'Tropics', icon: '🏝️', unlockCost: 15000, rarityBonus: 0.35, bgColors: ['#43E97B', '#38F9D7', '#00CED1'] }
+        ];
+
+        const RODS = [
+            { id: 'basic', name: 'Basic Rod', icon: '🎣', castPower: 1, reelSpeed: 1, rarityBonus: 0, price: 0 },
+            { id: 'fiber', name: 'Fiberglass', icon: '🎣', castPower: 1.2, reelSpeed: 1.1, rarityBonus: 0.05, price: 200 },
+            { id: 'carbon', name: 'Carbon Fiber', icon: '🎣', castPower: 1.4, reelSpeed: 1.2, rarityBonus: 0.1, price: 500 },
+            { id: 'pro', name: 'Pro Rod', icon: '🎣', castPower: 1.6, reelSpeed: 1.3, rarityBonus: 0.15, price: 1200 },
+            { id: 'master', name: 'Master Rod', icon: '🎣', castPower: 1.8, reelSpeed: 1.4, rarityBonus: 0.2, price: 3000 },
+            { id: 'legend', name: 'Legendary', icon: '✨', castPower: 2, reelSpeed: 1.5, rarityBonus: 0.3, price: 8000 }
+        ];
+
+        const BAITS = [
+            { id: 'worm', name: 'Worm', icon: '🪱', rarityBonus: 0, price: 0 },
+            { id: 'minnow', name: 'Minnow', icon: '🐟', rarityBonus: 0.08, price: 100 },
+            { id: 'shrimp', name: 'Shrimp', icon: '🦐', rarityBonus: 0.12, price: 250 },
+            { id: 'squid', name: 'Squid', icon: '🦑', rarityBonus: 0.18, price: 500 },
+            { id: 'lure', name: 'Gold Lure', icon: '✨', rarityBonus: 0.25, price: 1500 },
+            { id: 'magic', name: 'Magic Bait', icon: '🌟', rarityBonus: 0.35, price: 5000 }
+        ];
+
+        const FISH = [
+            // Common (pond)
+            { id: 'goldfish', name: 'Goldfish', emoji: '🐠', rarity: 'common', value: 10, location: 'pond' },
+            { id: 'carp', name: 'Carp', emoji: '🐟', rarity: 'common', value: 15, location: 'pond' },
+            { id: 'bass', name: 'Bass', emoji: '🐟', rarity: 'common', value: 20, location: 'pond' },
+            { id: 'catfish', name: 'Catfish', emoji: '🐡', rarity: 'uncommon', value: 40, location: 'pond' },
+            // River
+            { id: 'trout', name: 'Trout', emoji: '🐟', rarity: 'common', value: 25, location: 'river' },
+            { id: 'salmon', name: 'Salmon', emoji: '🐟', rarity: 'uncommon', value: 50, location: 'river' },
+            { id: 'pike', name: 'Pike', emoji: '🐟', rarity: 'rare', value: 100, location: 'river' },
+            { id: 'sturgeon', name: 'Sturgeon', emoji: '🐟', rarity: 'epic', value: 250, location: 'river' },
+            // Lake
+            { id: 'perch', name: 'Perch', emoji: '🐟', rarity: 'common', value: 30, location: 'lake' },
+            { id: 'walleye', name: 'Walleye', emoji: '🐟', rarity: 'uncommon', value: 60, location: 'lake' },
+            { id: 'muskie', name: 'Muskie', emoji: '🐟', rarity: 'rare', value: 150, location: 'lake' },
+            { id: 'lakeMonster', name: 'Lake Monster', emoji: '🐉', rarity: 'legendary', value: 1000, location: 'lake' },
+            // Ocean
+            { id: 'tuna', name: 'Tuna', emoji: '🐟', rarity: 'common', value: 50, location: 'ocean' },
+            { id: 'swordfish', name: 'Swordfish', emoji: '🐟', rarity: 'uncommon', value: 100, location: 'ocean' },
+            { id: 'shark', name: 'Shark', emoji: '🦈', rarity: 'rare', value: 300, location: 'ocean' },
+            { id: 'whale', name: 'Whale', emoji: '🐋', rarity: 'epic', value: 500, location: 'ocean' },
+            { id: 'megalodon', name: 'Megalodon', emoji: '🦈', rarity: 'legendary', value: 2000, location: 'ocean' },
+            // Tropics
+            { id: 'clownfish', name: 'Clownfish', emoji: '🐠', rarity: 'common', value: 60, location: 'tropics' },
+            { id: 'angelfish', name: 'Angelfish', emoji: '🐠', rarity: 'uncommon', value: 120, location: 'tropics' },
+            { id: 'manta', name: 'Manta Ray', emoji: '🐟', rarity: 'rare', value: 400, location: 'tropics' },
+            { id: 'seaTurtle', name: 'Sea Turtle', emoji: '🐢', rarity: 'rare', value: 350, location: 'tropics' },
+            { id: 'dolphin', name: 'Dolphin', emoji: '🐬', rarity: 'epic', value: 750, location: 'tropics' },
+            { id: 'kraken', name: 'Kraken', emoji: '🐙', rarity: 'legendary', value: 3000, location: 'tropics' },
+            // Special (any location, very rare)
+            { id: 'golden', name: 'Golden Fish', emoji: '✨', rarity: 'legendary', value: 5000, location: 'any' }
+        ];
+
+        const RARITIES = {
+            common: { color: '#aaa', chance: 0.5 },
+            uncommon: { color: '#4CAF50', chance: 0.3 },
+            rare: { color: '#2196F3', chance: 0.15 },
+            epic: { color: '#9C27B0', chance: 0.04 },
+            legendary: { color: '#FFD700', chance: 0.01 }
+        };
+
+        const ACHIEVEMENTS = [
+            { id: 'catch10', name: 'Beginner', desc: 'Catch 10 fish', icon: '🐟', check: s => s.totalCaught >= 10 },
+            { id: 'catch100', name: 'Fisher', desc: 'Catch 100 fish', icon: '🎣', check: s => s.totalCaught >= 100 },
+            { id: 'catch500', name: 'Expert', desc: 'Catch 500 fish', icon: '🏆', check: s => s.totalCaught >= 500 },
+            { id: 'money1000', name: 'Wealthy', desc: 'Earn $1,000', icon: '💰', check: s => s.totalEarned >= 1000 },
+            { id: 'money10000', name: 'Rich', desc: 'Earn $10,000', icon: '💎', check: s => s.totalEarned >= 10000 },
+            { id: 'money50000', name: 'Tycoon', desc: 'Earn $50,000', icon: '🤑', check: s => s.totalEarned >= 50000 },
+            { id: 'species10', name: 'Collector', desc: 'Catch 10 species', icon: '📚', check: s => Object.keys(s.fishCaught).length >= 10 },
+            { id: 'species20', name: 'Completionist', desc: 'Catch 20 species', icon: '🌟', check: s => Object.keys(s.fishCaught).length >= 20 },
+            { id: 'speciesAll', name: 'Master', desc: 'Catch all species', icon: '👑', check: s => Object.keys(s.fishCaught).length >= FISH.length },
+            { id: 'rare1', name: 'Lucky', desc: 'Catch a rare fish', icon: '🍀', check: s => s.raresCaught >= 1 },
+            { id: 'rare10', name: 'Fortune', desc: 'Catch 10 rare fish', icon: '⭐', check: s => s.raresCaught >= 10 },
+            { id: 'epic1', name: 'Epic Find', desc: 'Catch an epic fish', icon: '💜', check: s => s.epicsCaught >= 1 },
+            { id: 'legend1', name: 'Legend', desc: 'Catch a legendary', icon: '🏅', check: s => s.legendsCaught >= 1 },
+            { id: 'location3', name: 'Traveler', desc: 'Unlock 3 locations', icon: '🗺️', check: s => s.unlockedLocations.length >= 3 },
+            { id: 'locationAll', name: 'Explorer', desc: 'Unlock all locations', icon: '🌍', check: s => s.unlockedLocations.length >= LOCATIONS.length },
+            { id: 'rod3', name: 'Equipped', desc: 'Own 3 rods', icon: '🎣', check: s => s.ownedRods.length >= 3 }
+        ];
+
+        // ============================================
+        // SAVE DATA
+        // ============================================
+        let saveData = {
+            money: 100,
+            totalEarned: 0,
+            totalCaught: 0,
+            raresCaught: 0,
+            epicsCaught: 0,
+            legendsCaught: 0,
+            fishCaught: {},
+            ownedRods: ['basic'],
+            equippedRod: 'basic',
+            ownedBaits: ['worm'],
+            equippedBait: 'worm',
+            unlockedLocations: ['pond'],
+            currentLocation: 'pond',
+            achievements: []
+        };
+
+        function loadSaveData() {
+            const saved = localStorage.getItem('fishingSave');
+            if (saved) saveData = { ...saveData, ...JSON.parse(saved) };
+        }
+
+        function saveSaveData() {
+            localStorage.setItem('fishingSave', JSON.stringify(saveData));
+        }
+
+        // ============================================
+        // CANVAS & GAME STATE
         // ============================================
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const W = canvas.width, H = canvas.height;
 
-        // Water line
-        const WATER_LINE = 120;
-        const WATER_DEPTH = H - WATER_LINE;
-
-        // ============================================
-        // FISH DATA
-        // ============================================
-        const FISH = [
-            // Common (depth 0-150)
-            { id: 'goldfish', name: 'Goldfish', emoji: '🐠', value: 5, rarity: 'common', minDepth: 0, maxDepth: 100, speed: 1.5, size: 30, chance: 0.25 },
-            { id: 'sardine', name: 'Sardine', emoji: '🐟', value: 3, rarity: 'common', minDepth: 0, maxDepth: 120, speed: 2, size: 25, chance: 0.3 },
-            { id: 'anchovy', name: 'Anchovy', emoji: '🐟', value: 2, rarity: 'common', minDepth: 0, maxDepth: 80, speed: 2.5, size: 20, chance: 0.35 },
-
-            // Uncommon (depth 50-250)
-            { id: 'bass', name: 'Bass', emoji: '🐟', value: 15, rarity: 'uncommon', minDepth: 50, maxDepth: 200, speed: 1.8, size: 40, chance: 0.15 },
-            { id: 'trout', name: 'Trout', emoji: '🐟', value: 20, rarity: 'uncommon', minDepth: 80, maxDepth: 220, speed: 2, size: 38, chance: 0.12 },
-            { id: 'carp', name: 'Carp', emoji: '🐟', value: 12, rarity: 'uncommon', minDepth: 60, maxDepth: 180, speed: 1.2, size: 45, chance: 0.15 },
-            { id: 'pufferfish', name: 'Pufferfish', emoji: '🐡', value: 25, rarity: 'uncommon', minDepth: 100, maxDepth: 250, speed: 0.8, size: 35, chance: 0.08 },
-
-            // Rare (depth 150-350)
-            { id: 'salmon', name: 'Salmon', emoji: '🐟', value: 40, rarity: 'rare', minDepth: 150, maxDepth: 300, speed: 2.5, size: 50, chance: 0.06 },
-            { id: 'tuna', name: 'Tuna', emoji: '🐟', value: 50, rarity: 'rare', minDepth: 180, maxDepth: 350, speed: 3, size: 55, chance: 0.05 },
-            { id: 'angelfish', name: 'Angelfish', emoji: '🐠', value: 45, rarity: 'rare', minDepth: 120, maxDepth: 280, speed: 1.5, size: 35, chance: 0.05 },
-            { id: 'clownfish', name: 'Clownfish', emoji: '🐠', value: 35, rarity: 'rare', minDepth: 100, maxDepth: 250, speed: 1.8, size: 28, chance: 0.06 },
-
-            // Epic (depth 250+)
-            { id: 'swordfish', name: 'Swordfish', emoji: '🐟', value: 100, rarity: 'epic', minDepth: 250, maxDepth: 400, speed: 3.5, size: 70, chance: 0.03 },
-            { id: 'shark', name: 'Shark', emoji: '🦈', value: 150, rarity: 'epic', minDepth: 280, maxDepth: 400, speed: 2.8, size: 80, chance: 0.02 },
-            { id: 'octopus', name: 'Octopus', emoji: '🐙', value: 80, rarity: 'epic', minDepth: 220, maxDepth: 380, speed: 1, size: 50, chance: 0.03 },
-            { id: 'jellyfish', name: 'Jellyfish', emoji: '🪼', value: 60, rarity: 'epic', minDepth: 200, maxDepth: 350, speed: 0.5, size: 40, chance: 0.04 },
-
-            // Legendary (deep, rare)
-            { id: 'whale', name: 'Whale', emoji: '🐋', value: 300, rarity: 'legendary', minDepth: 320, maxDepth: 400, speed: 1.5, size: 100, chance: 0.008 },
-            { id: 'dolphin', name: 'Dolphin', emoji: '🐬', value: 200, rarity: 'legendary', minDepth: 280, maxDepth: 380, speed: 3, size: 70, chance: 0.01 },
-            { id: 'seahorse', name: 'Golden Seahorse', emoji: '🦑', value: 250, rarity: 'legendary', minDepth: 300, maxDepth: 400, speed: 0.8, size: 35, chance: 0.008 },
-
-            // Junk
-            { id: 'boot', name: 'Old Boot', emoji: '🥾', value: 1, rarity: 'common', minDepth: 0, maxDepth: 400, speed: 0, size: 30, chance: 0.1, isJunk: true },
-            { id: 'can', name: 'Tin Can', emoji: '🥫', value: 1, rarity: 'common', minDepth: 0, maxDepth: 400, speed: 0, size: 25, chance: 0.08, isJunk: true },
-            { id: 'seaweed', name: 'Seaweed', emoji: '🌿', value: 2, rarity: 'common', minDepth: 0, maxDepth: 400, speed: 0, size: 35, chance: 0.12, isJunk: true },
-        ];
-
-        // ============================================
-        // EQUIPMENT DATA
-        // ============================================
-        const RODS = [
-            { id: 'basic', name: 'Basic Rod', price: 0, reelSpeed: 1, lineStrength: 1, castPower: 1, desc: 'A simple bamboo rod' },
-            { id: 'fiber', name: 'Fiberglass Rod', price: 100, reelSpeed: 1.3, lineStrength: 1.2, castPower: 1.2, desc: 'Faster reeling' },
-            { id: 'carbon', name: 'Carbon Rod', price: 300, reelSpeed: 1.5, lineStrength: 1.5, castPower: 1.4, desc: 'Strong and fast' },
-            { id: 'pro', name: 'Pro Angler Rod', price: 750, reelSpeed: 1.8, lineStrength: 1.8, castPower: 1.6, desc: 'Professional grade' },
-            { id: 'master', name: 'Master Rod', price: 1500, reelSpeed: 2, lineStrength: 2, castPower: 1.8, desc: 'The best money can buy' },
-            { id: 'golden', name: 'Golden Rod', price: 5000, reelSpeed: 2.5, lineStrength: 2.5, castPower: 2, desc: 'Legendary craftsmanship' },
-        ];
-
-        const BAITS = [
-            { id: 'worm', name: 'Worm', price: 0, rarityBonus: 0, depthBonus: 0, desc: 'Basic earthworm' },
-            { id: 'minnow', name: 'Minnow', price: 50, rarityBonus: 0.1, depthBonus: 20, desc: 'Attracts bigger fish' },
-            { id: 'shrimp', name: 'Shrimp', price: 150, rarityBonus: 0.2, depthBonus: 50, desc: 'Rare fish love it' },
-            { id: 'squid', name: 'Squid Bait', price: 400, rarityBonus: 0.35, depthBonus: 80, desc: 'Deep sea special' },
-            { id: 'golden', name: 'Golden Lure', price: 1000, rarityBonus: 0.5, depthBonus: 100, desc: 'Irresistible to legends' },
-        ];
-
-        // ============================================
-        // GAME STATE
-        // ============================================
-        let gameStarted = false;
-        let money = parseInt(localStorage.getItem('fishingMoney')) || 0;
-        let caughtFish = JSON.parse(localStorage.getItem('fishingCaught')) || [];
-        let ownedRods = JSON.parse(localStorage.getItem('fishingRods')) || ['basic'];
-        let ownedBaits = JSON.parse(localStorage.getItem('fishingBaits')) || ['worm'];
-        let equippedRod = localStorage.getItem('fishingEquippedRod') || 'basic';
-        let equippedBait = localStorage.getItem('fishingEquippedBait') || 'worm';
-
-        // Fishing state
-        let state = 'idle'; // idle, casting, waiting, bite, reeling, caught
+        let gameRunning = false;
+        let casting = false;
         let castPower = 0;
-        let castCharging = false;
-        let bobberX = 0, bobberY = 0;
-        let hookDepth = 0;
-        let targetDepth = 0;
-        let lineX = 0;
-        let hookedFish = null;
-        let reelProgress = 0;
-        let tension = 50; // 0-100, need to keep in sweet spot
-        let isReeling = false;
-        let biteTimer = 0;
-        let nibbleTimer = 0;
-        let bobberBob = 0;
-
-        // Visual state
-        let frameCount = 0;
+        let castMaxPower = 0;
+        let hookX = W / 2, hookY = 80;
+        let hookTargetY = 80;
+        let reeling = false;
+        let caughtFish = null;
         let particles = [];
-        let floatingTexts = [];
-        let swimFish = []; // Background fish
-        let waves = [];
         let bubbles = [];
+        let fishInWater = [];
+        let frameCount = 0;
 
-        // Fisher position
-        const fisherX = 100;
-        const fisherY = WATER_LINE - 20;
-
-        // Initialize waves
-        for (let i = 0; i < 20; i++) {
-            waves.push({ x: i * 50, phase: Math.random() * Math.PI * 2 });
-        }
-
-        // Save functions
-        function saveGame() {
-            localStorage.setItem('fishingMoney', money);
-            localStorage.setItem('fishingCaught', JSON.stringify(caughtFish));
-            localStorage.setItem('fishingRods', JSON.stringify(ownedRods));
-            localStorage.setItem('fishingBaits', JSON.stringify(ownedBaits));
-            localStorage.setItem('fishingEquippedRod', equippedRod);
-            localStorage.setItem('fishingEquippedBait', equippedBait);
-        }
-
-        function updateUI() {
-            document.getElementById('money').textContent = money;
-            document.getElementById('rodName').textContent = RODS.find(r => r.id === equippedRod).name;
-            document.getElementById('baitName').textContent = BAITS.find(b => b.id === equippedBait).name;
-            document.getElementById('fishCount').textContent = [...new Set(caughtFish)].length;
-            document.getElementById('totalFish').textContent = FISH.filter(f => !f.isJunk).length;
-        }
+        loadSaveData();
 
         // ============================================
-        // FISHING MECHANICS
+        // DRAWING
         // ============================================
-        function startCast() {
-            if (state !== 'idle') return;
-            castCharging = true;
-            castPower = 0;
-            state = 'casting';
-        }
+        function drawBackground() {
+            const loc = LOCATIONS.find(l => l.id === saveData.currentLocation) || LOCATIONS[0];
+            const gradient = ctx.createLinearGradient(0, 0, 0, H);
+            gradient.addColorStop(0, loc.bgColors[0]);
+            gradient.addColorStop(0.35, loc.bgColors[1]);
+            gradient.addColorStop(1, loc.bgColors[2]);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, W, H);
 
-        function releaseCast() {
-            if (state !== 'casting') return;
-            castCharging = false;
-
-            const rod = RODS.find(r => r.id === equippedRod);
-            const power = castPower * rod.castPower;
-
-            // Calculate where bobber lands
-            bobberX = fisherX + 100 + power * 5;
-            bobberX = Math.min(bobberX, W - 50);
-            bobberY = WATER_LINE;
-            lineX = bobberX;
-
-            // Calculate depth based on power
-            const bait = BAITS.find(b => b.id === equippedBait);
-            targetDepth = 50 + power * 3 + bait.depthBonus;
-            hookDepth = 0;
-
-            playSound('cast');
-            state = 'waiting';
-
-            // Create splash
-            for (let i = 0; i < 10; i++) {
-                particles.push({
-                    x: bobberX,
-                    y: WATER_LINE,
-                    vx: (Math.random() - 0.5) * 5,
-                    vy: -Math.random() * 5,
-                    life: 1,
-                    color: '#87CEEB'
-                });
-            }
-
-            setTimeout(() => playSound('splash'), 200);
-
-            // Start waiting for fish
-            scheduleBite();
-        }
-
-        function scheduleBite() {
-            const rod = RODS.find(r => r.id === equippedRod);
-            const bait = BAITS.find(b => b.id === equippedBait);
-
-            // Random wait time (shorter with better gear)
-            const baseWait = 3000 + Math.random() * 5000;
-            biteTimer = baseWait / (1 + bait.rarityBonus);
-
-            // Random nibbles before real bite
-            nibbleTimer = 1000 + Math.random() * 2000;
-        }
-
-        function triggerBite() {
-            // Select a fish based on depth and rarity
-            const bait = BAITS.find(b => b.id === equippedBait);
-            const depth = hookDepth;
-
-            // Filter fish by depth
-            let possibleFish = FISH.filter(f =>
-                depth >= f.minDepth && depth <= f.maxDepth
-            );
-
-            // Apply rarity bonus from bait
-            const roll = Math.random();
-            let cumulative = 0;
-
-            // Boost rare fish chances with better bait
-            possibleFish = possibleFish.map(f => ({
-                ...f,
-                adjustedChance: f.chance * (1 + (f.rarity !== 'common' ? bait.rarityBonus * 2 : 0))
-            }));
-
-            // Normalize chances
-            const totalChance = possibleFish.reduce((sum, f) => sum + f.adjustedChance, 0);
-
-            for (const fish of possibleFish) {
-                cumulative += fish.adjustedChance / totalChance;
-                if (roll < cumulative) {
-                    hookedFish = fish;
-                    break;
-                }
-            }
-
-            if (!hookedFish) hookedFish = possibleFish[0];
-
-            state = 'bite';
-            playSound('bite');
-
-            // Player has limited time to react
-            setTimeout(() => {
-                if (state === 'bite') {
-                    // Fish got away
-                    state = 'idle';
-                    hookedFish = null;
-                    floatingTexts.push({
-                        text: 'Too slow!',
-                        x: bobberX,
-                        y: bobberY - 20,
-                        color: '#ff6b6b',
-                        life: 1
-                    });
-                }
-            }, 2000);
-        }
-
-        function startReeling() {
-            if (state === 'bite') {
-                state = 'reeling';
-                reelProgress = 0;
-                tension = 50;
-                isReeling = true;
-            } else if (state === 'reeling') {
-                isReeling = true;
-            }
-        }
-
-        function stopReeling() {
-            isReeling = false;
-        }
-
-        function updateReeling() {
-            if (state !== 'reeling') return;
-
-            const rod = RODS.find(r => r.id === equippedRod);
-            const fish = hookedFish;
-
-            // Tension mechanics
-            if (isReeling) {
-                // Reeling increases tension and progress
-                tension += 2 * fish.speed / rod.lineStrength;
-                reelProgress += 1 * rod.reelSpeed;
-                playSound('reel');
-            } else {
-                // Not reeling decreases tension but fish pulls away
-                tension -= 1;
-                reelProgress -= 0.3 * fish.speed;
-            }
-
-            // Fish fights back randomly
-            if (Math.random() < 0.05 * fish.speed) {
-                tension += 10;
-                floatingTexts.push({
-                    text: '!',
-                    x: bobberX + (Math.random() - 0.5) * 30,
-                    y: bobberY - 30,
-                    color: '#ff0',
-                    life: 0.5
-                });
-            }
-
-            // Clamp tension
-            tension = Math.max(0, Math.min(100, tension));
-
-            // Check for line break (too much tension)
-            if (tension >= 100) {
-                lostFish('Line snapped!');
-                return;
-            }
-
-            // Check for fish escape (too little tension)
-            if (tension <= 0) {
-                lostFish('Fish escaped!');
-                return;
-            }
-
-            // Check for successful catch
-            if (reelProgress >= 100) {
-                catchFish();
-            }
-
-            // Update bobber position based on tension
-            bobberBob = Math.sin(frameCount * 0.3) * (tension / 20);
-        }
-
-        function lostFish(reason) {
-            state = 'idle';
-            playSound('lost');
-            floatingTexts.push({
-                text: reason,
-                x: bobberX,
-                y: bobberY - 30,
-                color: '#ff6b6b',
-                life: 1.5
-            });
-            hookedFish = null;
-        }
-
-        function catchFish() {
-            const fish = hookedFish;
-            state = 'caught';
-
-            // Calculate value
-            let value = fish.value;
-            const rod = RODS.find(r => r.id === equippedRod);
-
-            // Bonus for perfect tension
-            if (tension >= 40 && tension <= 60) {
-                value = Math.floor(value * 1.5);
-            }
-
-            money += value;
-
-            // Add to collection
-            if (!caughtFish.includes(fish.id)) {
-                caughtFish.push(fish.id);
-            }
-
-            saveGame();
-            updateUI();
-
-            // Play sound
-            if (fish.rarity === 'legendary') {
-                playSound('legendary');
-            } else {
-                playSound('catch');
-            }
-
-            // Show catch display
-            showCatch(fish, value);
-
-            // Reset after delay
-            setTimeout(() => {
-                state = 'idle';
-                hookedFish = null;
-                document.getElementById('catchDisplay').classList.add('hidden');
-            }, 2500);
-        }
-
-        function showCatch(fish, value) {
-            document.getElementById('catchIcon').textContent = fish.emoji;
-            document.getElementById('catchName').textContent = fish.name;
-            document.getElementById('catchValue').textContent = '+$' + value;
-            document.getElementById('catchRarity').textContent = fish.rarity.toUpperCase();
-            document.getElementById('catchRarity').className = 'fish-rarity rarity-' + fish.rarity;
-            document.getElementById('catchDisplay').classList.remove('hidden');
-        }
-
-        // ============================================
-        // UPDATE
-        // ============================================
-        function update() {
-            frameCount++;
-
-            // Update cast power
-            if (castCharging && state === 'casting') {
-                castPower += 2;
-                if (castPower >= 100) castPower = 100;
-            }
-
-            // Update hook sinking
-            if (state === 'waiting' && hookDepth < targetDepth) {
-                hookDepth += 2;
-            }
-
-            // Waiting for bite
-            if (state === 'waiting') {
-                nibbleTimer -= 16;
-                biteTimer -= 16;
-
-                // Random nibbles
-                if (nibbleTimer <= 0) {
-                    bobberBob = -10;
-                    nibbleTimer = 1000 + Math.random() * 3000;
-                }
-
-                // Actual bite
-                if (biteTimer <= 0) {
-                    triggerBite();
-                }
-            }
-
-            // Reeling
-            if (state === 'reeling') {
-                updateReeling();
-            }
-
-            // Bobber animation
-            if (state === 'waiting' || state === 'bite') {
-                if (state === 'bite') {
-                    bobberBob = Math.sin(frameCount * 0.5) * 15;
-                } else {
-                    bobberBob = bobberBob * 0.9 + Math.sin(frameCount * 0.05) * 2;
-                }
-            }
-
-            // Update particles
-            particles.forEach(p => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.vy += 0.2;
-                p.life -= 0.02;
-            });
-            particles = particles.filter(p => p.life > 0);
-
-            // Update floating texts
-            floatingTexts.forEach(t => {
-                t.y -= 1;
-                t.life -= 0.02;
-            });
-            floatingTexts = floatingTexts.filter(t => t.life > 0);
-
-            // Update bubbles
-            if (Math.random() < 0.1) {
-                bubbles.push({
-                    x: Math.random() * W,
-                    y: H,
-                    size: 2 + Math.random() * 4,
-                    speed: 1 + Math.random() * 2
-                });
-            }
-            bubbles.forEach(b => {
-                b.y -= b.speed;
-                b.x += Math.sin(frameCount * 0.05 + b.y * 0.02) * 0.5;
-            });
-            bubbles = bubbles.filter(b => b.y > WATER_LINE);
-
-            // Spawn background fish
-            if (Math.random() < 0.02 && swimFish.length < 10) {
-                const fromLeft = Math.random() < 0.5;
-                swimFish.push({
-                    x: fromLeft ? -50 : W + 50,
-                    y: WATER_LINE + 50 + Math.random() * (H - WATER_LINE - 100),
-                    vx: fromLeft ? 1 + Math.random() * 2 : -1 - Math.random() * 2,
-                    emoji: ['🐟', '🐠'][Math.floor(Math.random() * 2)],
-                    size: 20 + Math.random() * 20
-                });
-            }
-            swimFish.forEach(f => {
-                f.x += f.vx;
-                f.y += Math.sin(frameCount * 0.05 + f.x * 0.01) * 0.3;
-            });
-            swimFish = swimFish.filter(f => f.x > -100 && f.x < W + 100);
-        }
-
-        // ============================================
-        // DRAW
-        // ============================================
-        function draw() {
-            // Sky
-            const skyGradient = ctx.createLinearGradient(0, 0, 0, WATER_LINE);
-            skyGradient.addColorStop(0, '#87CEEB');
-            skyGradient.addColorStop(1, '#B0E0E6');
-            ctx.fillStyle = skyGradient;
-            ctx.fillRect(0, 0, W, WATER_LINE);
-
-            // Sun
-            ctx.fillStyle = '#FFD700';
-            ctx.beginPath();
-            ctx.arc(W - 80, 60, 40, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Clouds
-            ctx.fillStyle = '#fff';
-            drawCloud(150, 50, 1);
-            drawCloud(400, 70, 0.8);
-            drawCloud(600, 40, 1.2);
-
-            // Water
-            const waterGradient = ctx.createLinearGradient(0, WATER_LINE, 0, H);
-            waterGradient.addColorStop(0, '#4A90A4');
-            waterGradient.addColorStop(0.5, '#2C5F7C');
-            waterGradient.addColorStop(1, '#1a3d4d');
-            ctx.fillStyle = waterGradient;
-            ctx.fillRect(0, WATER_LINE, W, H - WATER_LINE);
-
-            // Waves
-            ctx.fillStyle = 'rgba(135, 206, 235, 0.3)';
-            ctx.beginPath();
-            ctx.moveTo(0, WATER_LINE);
-            for (let i = 0; i < W; i += 10) {
-                const waveY = WATER_LINE + Math.sin(i * 0.02 + frameCount * 0.03) * 5;
-                ctx.lineTo(i, waveY);
-            }
-            ctx.lineTo(W, WATER_LINE + 20);
-            ctx.lineTo(0, WATER_LINE + 20);
-            ctx.fill();
+            // Water line
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.fillRect(0, H * 0.35 - 2, W, 4);
 
             // Bubbles
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
             bubbles.forEach(b => {
+                ctx.globalAlpha = b.life;
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
                 ctx.beginPath();
                 ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
                 ctx.fill();
             });
-
-            // Background fish
-            swimFish.forEach(f => {
-                ctx.save();
-                ctx.translate(f.x, f.y);
-                ctx.scale(f.vx > 0 ? 1 : -1, 1);
-                ctx.font = f.size + 'px Arial';
-                ctx.textAlign = 'center';
-                ctx.globalAlpha = 0.6;
-                ctx.fillText(f.emoji, 0, 0);
-                ctx.restore();
-            });
             ctx.globalAlpha = 1;
-
-            // Fisher
-            drawFisher();
-
-            // Fishing line
-            if (state !== 'idle' && state !== 'casting') {
-                ctx.strokeStyle = '#333';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(fisherX + 60, fisherY - 40);
-                ctx.lineTo(bobberX, bobberY + bobberBob);
-                ctx.stroke();
-
-                // Line going down into water
-                ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-                ctx.beginPath();
-                ctx.moveTo(bobberX, bobberY + bobberBob + 10);
-                ctx.lineTo(bobberX, bobberY + bobberBob + hookDepth * 0.5);
-                ctx.stroke();
-            }
-
-            // Bobber
-            if (state !== 'idle' && state !== 'casting') {
-                drawBobber(bobberX, bobberY + bobberBob);
-            }
-
-            // Hooked fish (when reeling)
-            if (state === 'reeling' && hookedFish) {
-                const fishY = bobberY + bobberBob + hookDepth * 0.5 * (1 - reelProgress / 100);
-                const fishX = bobberX + Math.sin(frameCount * 0.2) * 20;
-                ctx.font = hookedFish.size + 'px Arial';
-                ctx.textAlign = 'center';
-                ctx.save();
-                ctx.translate(fishX, fishY);
-                ctx.rotate(Math.sin(frameCount * 0.3) * 0.3);
-                ctx.fillText(hookedFish.emoji, 0, 0);
-                ctx.restore();
-            }
-
-            // Particles
-            particles.forEach(p => {
-                ctx.globalAlpha = p.life;
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-                ctx.fill();
-            });
-            ctx.globalAlpha = 1;
-
-            // Floating texts
-            floatingTexts.forEach(t => {
-                ctx.globalAlpha = t.life;
-                ctx.fillStyle = t.color;
-                ctx.font = 'bold 18px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(t.text, t.x, t.y);
-            });
-            ctx.globalAlpha = 1;
-
-            // Cast power meter
-            if (state === 'casting') {
-                ctx.fillStyle = '#333';
-                ctx.fillRect(fisherX - 20, fisherY + 40, 100, 15);
-                const powerColor = castPower < 50 ? '#4CAF50' : castPower < 80 ? '#FFC107' : '#f44336';
-                ctx.fillStyle = powerColor;
-                ctx.fillRect(fisherX - 20, fisherY + 40, castPower, 15);
-                ctx.strokeStyle = '#fff';
-                ctx.strokeRect(fisherX - 20, fisherY + 40, 100, 15);
-
-                ctx.fillStyle = '#fff';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('POWER', fisherX + 30, fisherY + 52);
-            }
-
-            // Tension meter (when reeling)
-            if (state === 'reeling') {
-                // Tension bar
-                ctx.fillStyle = '#333';
-                ctx.fillRect(W / 2 - 100, 20, 200, 25);
-
-                // Sweet spot zone
-                ctx.fillStyle = 'rgba(76, 175, 80, 0.5)';
-                ctx.fillRect(W / 2 - 100 + 80, 20, 40, 25);
-
-                // Tension indicator
-                const tensionColor = tension > 80 ? '#f44336' : tension < 20 ? '#2196F3' : '#4CAF50';
-                ctx.fillStyle = tensionColor;
-                ctx.fillRect(W / 2 - 100, 20, tension * 2, 25);
-
-                ctx.strokeStyle = '#fff';
-                ctx.strokeRect(W / 2 - 100, 20, 200, 25);
-
-                ctx.fillStyle = '#fff';
-                ctx.font = 'bold 14px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('TENSION', W / 2, 38);
-
-                // Progress bar
-                ctx.fillStyle = '#333';
-                ctx.fillRect(W / 2 - 100, 50, 200, 15);
-                ctx.fillStyle = '#FFD700';
-                ctx.fillRect(W / 2 - 100, 50, reelProgress * 2, 15);
-                ctx.strokeStyle = '#fff';
-                ctx.strokeRect(W / 2 - 100, 50, 200, 15);
-
-                // Instructions
-                ctx.fillStyle = '#fff';
-                ctx.font = '14px Arial';
-                ctx.fillText('HOLD to reel - Keep tension in green zone!', W / 2, 85);
-            }
-
-            // Bite indicator
-            if (state === 'bite') {
-                ctx.fillStyle = '#ff0';
-                ctx.font = 'bold 24px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('BITE! CLICK NOW!', bobberX, bobberY - 40);
-            }
-
-            // Depth indicator
-            if (state === 'waiting') {
-                ctx.fillStyle = 'rgba(255,255,255,0.7)';
-                ctx.font = '14px Arial';
-                ctx.textAlign = 'right';
-                ctx.fillText('Depth: ' + Math.floor(hookDepth) + 'm', W - 20, WATER_LINE + 30);
-            }
-        }
-
-        function drawCloud(x, y, scale) {
-            ctx.beginPath();
-            ctx.arc(x, y, 20 * scale, 0, Math.PI * 2);
-            ctx.arc(x + 25 * scale, y - 10 * scale, 25 * scale, 0, Math.PI * 2);
-            ctx.arc(x + 50 * scale, y, 20 * scale, 0, Math.PI * 2);
-            ctx.fill();
         }
 
         function drawFisher() {
-            ctx.save();
-            ctx.translate(fisherX, fisherY);
+            // Dock
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(W / 2 - 60, 40, 120, 20);
+            ctx.fillRect(W / 2 - 50, 50, 100, 8);
 
-            // Body
-            ctx.fillStyle = '#4169E1';
-            ctx.fillRect(-15, -20, 30, 40);
-
-            // Head
+            // Fisher
             ctx.fillStyle = '#FFE4C4';
             ctx.beginPath();
-            ctx.arc(0, -35, 15, 0, Math.PI * 2);
+            ctx.arc(W / 2, 25, 12, 0, Math.PI * 2);
             ctx.fill();
 
             // Hat
             ctx.fillStyle = '#8B4513';
-            ctx.fillRect(-20, -55, 40, 10);
-            ctx.fillRect(-12, -65, 24, 12);
+            ctx.fillRect(W / 2 - 15, 10, 30, 8);
+            ctx.fillRect(W / 2 - 8, 3, 16, 10);
 
-            // Fishing rod
+            // Body
+            ctx.fillStyle = '#4169E1';
+            ctx.fillRect(W / 2 - 8, 35, 16, 20);
+
+            // Rod
+            const rod = RODS.find(r => r.id === saveData.equippedRod) || RODS[0];
             ctx.strokeStyle = '#8B4513';
             ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(10, -10);
-            ctx.lineTo(60, -40);
+            ctx.moveTo(W / 2 + 8, 40);
+            ctx.lineTo(W / 2 + 50, 30);
             ctx.stroke();
 
-            ctx.restore();
+            // Fishing line
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(W / 2 + 50, 30);
+            ctx.lineTo(hookX, hookY);
+            ctx.stroke();
+
+            // Hook/bobber
+            ctx.fillStyle = hookY > H * 0.35 ? '#ff4444' : '#fff';
+            ctx.beginPath();
+            ctx.arc(hookX, hookY, 6, 0, Math.PI * 2);
+            ctx.fill();
         }
 
-        function drawBobber(x, y) {
-            // Bobber body
-            ctx.fillStyle = '#ff0000';
-            ctx.beginPath();
-            ctx.ellipse(x, y, 8, 12, 0, 0, Math.PI * 2);
-            ctx.fill();
+        function drawCastPower() {
+            if (!casting) return;
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(20, H - 40, 200, 20);
+            ctx.fillStyle = `hsl(${120 - castPower * 1.2}, 100%, 50%)`;
+            ctx.fillRect(22, H - 38, castPower * 1.96, 16);
+        }
 
-            // White stripe
+        function drawFishInWater() {
+            fishInWater.forEach(f => {
+                ctx.save();
+                ctx.translate(f.x, f.y);
+                if (f.vx < 0) ctx.scale(-1, 1);
+                ctx.font = `${f.size}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.globalAlpha = 0.6;
+                ctx.fillText(f.emoji, 0, 0);
+                ctx.restore();
+            });
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function drawHUD() {
+            const rod = RODS.find(r => r.id === saveData.equippedRod) || RODS[0];
+            const bait = BAITS.find(b => b.id === saveData.equippedBait) || BAITS[0];
+
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(10, 10, 150, 60);
             ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.ellipse(x, y - 4, 8, 4, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Antenna
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(x, y - 12);
-            ctx.lineTo(x, y - 20);
-            ctx.stroke();
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Rod: ${rod.name}`, 20, 30);
+            ctx.fillText(`Bait: ${bait.icon} ${bait.name}`, 20, 50);
         }
 
         // ============================================
-        // SHOP
+        // GAME LOGIC
         // ============================================
-        function renderShop(tab) {
-            const grid = document.getElementById('shopGrid');
-            const items = tab === 'rods' ? RODS : BAITS;
-            const owned = tab === 'rods' ? ownedRods : ownedBaits;
-            const equipped = tab === 'rods' ? equippedRod : equippedBait;
+        function updateHook() {
+            if (reeling) {
+                const rod = RODS.find(r => r.id === saveData.equippedRod) || RODS[0];
+                hookY -= 4 * rod.reelSpeed;
+                if (hookY <= 80) {
+                    hookY = 80;
+                    reeling = false;
+                    if (caughtFish) {
+                        showCatch(caughtFish);
+                        caughtFish = null;
+                    }
+                }
+            } else if (hookY < hookTargetY && !casting) {
+                hookY += 3;
+                if (hookY >= hookTargetY) {
+                    hookY = hookTargetY;
+                    playSound('splash');
+                    spawnBubbles(hookX, hookY);
+                }
+            }
+        }
 
-            grid.innerHTML = items.map(item => {
-                const isOwned = owned.includes(item.id);
-                const isEquipped = equipped === item.id;
-                const canAfford = money >= item.price;
-                const icon = tab === 'rods' ? '🎣' : '🪱';
+        function spawnBubbles(x, y) {
+            for (let i = 0; i < 8; i++) {
+                bubbles.push({
+                    x: x + (Math.random() - 0.5) * 30,
+                    y: y,
+                    size: 2 + Math.random() * 4,
+                    vy: -1 - Math.random() * 2,
+                    life: 1
+                });
+            }
+        }
 
-                return `
-                    <div class="shop-item ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''} ${!isOwned && !canAfford ? 'locked' : ''}"
-                         data-id="${item.id}" data-type="${tab}">
-                        <div class="icon">${icon}</div>
-                        <div class="name">${item.name}</div>
-                        <div class="desc">${item.desc}</div>
-                        ${isOwned ?
-                            (isEquipped ? '<div style="color: #4CAF50;">EQUIPPED</div>' : '<div class="price">Click to equip</div>')
-                            : `<div class="price">$${item.price}</div>`
+        function updateBubbles() {
+            bubbles.forEach(b => {
+                b.y += b.vy;
+                b.x += (Math.random() - 0.5) * 0.5;
+                b.life -= 0.02;
+            });
+            bubbles = bubbles.filter(b => b.life > 0 && b.y > H * 0.35);
+        }
+
+        function updateFishInWater() {
+            // Spawn new fish
+            if (Math.random() < 0.02 && fishInWater.length < 8) {
+                const availableFish = FISH.filter(f => f.location === saveData.currentLocation || f.location === 'any');
+                const fish = availableFish[Math.floor(Math.random() * availableFish.length)];
+                const fromLeft = Math.random() < 0.5;
+                fishInWater.push({
+                    x: fromLeft ? -30 : W + 30,
+                    y: H * 0.4 + Math.random() * (H * 0.5),
+                    vx: fromLeft ? 0.5 + Math.random() : -0.5 - Math.random(),
+                    emoji: fish.emoji,
+                    size: 25 + Math.random() * 15,
+                    fishData: fish
+                });
+            }
+
+            // Update positions
+            fishInWater.forEach(f => {
+                f.x += f.vx;
+                f.y += Math.sin(frameCount * 0.05 + f.x * 0.01) * 0.3;
+            });
+
+            // Remove off-screen fish
+            fishInWater = fishInWater.filter(f => f.x > -50 && f.x < W + 50);
+        }
+
+        function checkFishCatch() {
+            if (!reeling || caughtFish) return;
+
+            const rod = RODS.find(r => r.id === saveData.equippedRod) || RODS[0];
+            const bait = BAITS.find(b => b.id === saveData.equippedBait) || BAITS[0];
+            const loc = LOCATIONS.find(l => l.id === saveData.currentLocation) || LOCATIONS[0];
+
+            // Check distance to fish
+            for (let i = fishInWater.length - 1; i >= 0; i--) {
+                const f = fishInWater[i];
+                const dist = Math.sqrt((f.x - hookX) ** 2 + (f.y - hookY) ** 2);
+                if (dist < 40) {
+                    // Calculate catch chance based on rarity
+                    const totalBonus = rod.rarityBonus + bait.rarityBonus + loc.rarityBonus;
+                    const rarityChance = RARITIES[f.fishData.rarity].chance + totalBonus;
+
+                    if (Math.random() < rarityChance * 2) {
+                        caughtFish = f.fishData;
+                        fishInWater.splice(i, 1);
+
+                        // Particles
+                        for (let j = 0; j < 10; j++) {
+                            particles.push({
+                                x: f.x,
+                                y: f.y,
+                                vx: (Math.random() - 0.5) * 4,
+                                vy: (Math.random() - 0.5) * 4,
+                                size: 3 + Math.random() * 4,
+                                color: '#4FC3F7',
+                                life: 1
+                            });
                         }
-                    </div>
+                        return;
+                    }
+                }
+            }
+
+            // Random catch based on depth
+            const depth = (hookY - H * 0.35) / (H * 0.6);
+            const catchChance = 0.005 * depth;
+            const totalBonus = rod.rarityBonus + bait.rarityBonus + loc.rarityBonus;
+
+            if (Math.random() < catchChance) {
+                const availableFish = FISH.filter(f => f.location === saveData.currentLocation || f.location === 'any');
+                const roll = Math.random();
+                let cumulative = 0;
+
+                for (const fish of availableFish) {
+                    const chance = RARITIES[fish.rarity].chance + totalBonus * 0.5;
+                    cumulative += chance;
+                    if (roll < cumulative / 2) {
+                        caughtFish = fish;
+                        break;
+                    }
+                }
+
+                if (!caughtFish) {
+                    caughtFish = availableFish[Math.floor(Math.random() * availableFish.length)];
+                }
+            }
+        }
+
+        function showCatch(fish) {
+            const isNew = !saveData.fishCaught[fish.id];
+
+            // Update stats
+            saveData.totalCaught++;
+            saveData.fishCaught[fish.id] = (saveData.fishCaught[fish.id] || 0) + 1;
+            saveData.money += fish.value;
+            saveData.totalEarned += fish.value;
+
+            if (fish.rarity === 'rare') saveData.raresCaught++;
+            if (fish.rarity === 'epic') saveData.epicsCaught++;
+            if (fish.rarity === 'legendary') saveData.legendsCaught++;
+
+            // Play sound
+            if (fish.rarity === 'legendary' || fish.rarity === 'epic') {
+                playSound('rare');
+            } else {
+                playSound('catch');
+            }
+
+            // Show popup
+            document.getElementById('catchFish').textContent = fish.emoji;
+            document.getElementById('catchName').textContent = fish.name;
+            document.getElementById('catchRarity').textContent = fish.rarity.toUpperCase();
+            document.getElementById('catchRarity').style.color = RARITIES[fish.rarity].color;
+            document.getElementById('catchValue').textContent = `+$${fish.value}`;
+            document.getElementById('catchNew').classList.toggle('hidden', !isNew);
+            document.getElementById('catchPopup').classList.remove('hidden');
+
+            updateDisplays();
+            checkAchievements();
+            saveSaveData();
+
+            setTimeout(() => {
+                document.getElementById('catchPopup').classList.add('hidden');
+            }, 2000);
+        }
+
+        function updateParticles() {
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.03;
+            });
+            particles = particles.filter(p => p.life > 0);
+        }
+
+        // ============================================
+        // SHOP & UI
+        // ============================================
+        function renderLocations() {
+            const container = document.getElementById('locationSelect');
+            container.innerHTML = '';
+            LOCATIONS.forEach(loc => {
+                const unlocked = saveData.unlockedLocations.includes(loc.id);
+                const selected = saveData.currentLocation === loc.id;
+                const canUnlock = saveData.money >= loc.unlockCost;
+
+                const btn = document.createElement('div');
+                btn.className = `location-btn ${selected ? 'selected' : ''} ${!unlocked && !canUnlock ? 'locked' : ''}`;
+                btn.innerHTML = `
+                    <div class="location-icon">${loc.icon}</div>
+                    <div class="location-name">${loc.name}</div>
+                    ${unlocked ? '' : `<div class="location-req">$${loc.unlockCost}</div>`}
                 `;
-            }).join('');
-
-            // Add click handlers
-            grid.querySelectorAll('.shop-item').forEach(el => {
-                el.addEventListener('click', () => {
-                    const id = el.dataset.id;
-                    const type = el.dataset.type;
-                    const items = type === 'rods' ? RODS : BAITS;
-                    const item = items.find(i => i.id === id);
-                    const owned = type === 'rods' ? ownedRods : ownedBaits;
-
-                    if (owned.includes(id)) {
-                        // Equip
-                        if (type === 'rods') equippedRod = id;
-                        else equippedBait = id;
+                btn.addEventListener('click', () => {
+                    if (unlocked) {
+                        saveData.currentLocation = loc.id;
+                        renderLocations();
+                        saveSaveData();
+                    } else if (canUnlock) {
+                        saveData.money -= loc.unlockCost;
+                        saveData.unlockedLocations.push(loc.id);
+                        saveData.currentLocation = loc.id;
                         playSound('buy');
-                        saveGame();
-                        updateUI();
-                        renderShop(type);
-                    } else if (money >= item.price) {
-                        // Buy
-                        money -= item.price;
-                        if (type === 'rods') {
-                            ownedRods.push(id);
-                            equippedRod = id;
-                        } else {
-                            ownedBaits.push(id);
-                            equippedBait = id;
-                        }
-                        playSound('buy');
-                        saveGame();
-                        updateUI();
-                        renderShop(type);
+                        renderLocations();
+                        updateDisplays();
+                        checkAchievements();
+                        saveSaveData();
                     }
                 });
+                container.appendChild(btn);
+            });
+        }
+
+        function renderRods() {
+            const grid = document.getElementById('rodsGrid');
+            grid.innerHTML = '';
+            RODS.forEach(rod => {
+                const owned = saveData.ownedRods.includes(rod.id);
+                const equipped = saveData.equippedRod === rod.id;
+                const canBuy = saveData.money >= rod.price;
+
+                const item = document.createElement('div');
+                item.className = `shop-item ${equipped ? 'equipped' : owned ? 'owned' : !canBuy ? 'locked' : ''}`;
+                item.innerHTML = `
+                    <div class="shop-item-icon">${rod.icon}</div>
+                    <div class="shop-item-name">${rod.name}</div>
+                    <div class="shop-item-stats">Power: ${rod.castPower}x | Reel: ${rod.reelSpeed}x</div>
+                    ${owned ? '<div class="shop-item-price">Owned</div>' : `<div class="shop-item-price">$${rod.price}</div>`}
+                `;
+                item.addEventListener('click', () => {
+                    if (owned) {
+                        saveData.equippedRod = rod.id;
+                        renderRods();
+                        saveSaveData();
+                    } else if (canBuy) {
+                        saveData.money -= rod.price;
+                        saveData.ownedRods.push(rod.id);
+                        saveData.equippedRod = rod.id;
+                        playSound('buy');
+                        renderRods();
+                        updateDisplays();
+                        checkAchievements();
+                        saveSaveData();
+                    }
+                });
+                grid.appendChild(item);
+            });
+        }
+
+        function renderBaits() {
+            const grid = document.getElementById('baitsGrid');
+            grid.innerHTML = '';
+            BAITS.forEach(bait => {
+                const owned = saveData.ownedBaits.includes(bait.id);
+                const equipped = saveData.equippedBait === bait.id;
+                const canBuy = saveData.money >= bait.price;
+
+                const item = document.createElement('div');
+                item.className = `shop-item ${equipped ? 'equipped' : owned ? 'owned' : !canBuy ? 'locked' : ''}`;
+                item.innerHTML = `
+                    <div class="shop-item-icon">${bait.icon}</div>
+                    <div class="shop-item-name">${bait.name}</div>
+                    <div class="shop-item-stats">+${Math.round(bait.rarityBonus * 100)}% Rarity</div>
+                    ${owned ? '<div class="shop-item-price">Owned</div>' : `<div class="shop-item-price">$${bait.price}</div>`}
+                `;
+                item.addEventListener('click', () => {
+                    if (owned) {
+                        saveData.equippedBait = bait.id;
+                        renderBaits();
+                        saveSaveData();
+                    } else if (canBuy) {
+                        saveData.money -= bait.price;
+                        saveData.ownedBaits.push(bait.id);
+                        saveData.equippedBait = bait.id;
+                        playSound('buy');
+                        renderBaits();
+                        updateDisplays();
+                        saveSaveData();
+                    }
+                });
+                grid.appendChild(item);
             });
         }
 
         function renderCollection() {
             const grid = document.getElementById('collectionGrid');
-            const fishOnly = FISH.filter(f => !f.isJunk);
+            grid.innerHTML = '';
+            FISH.forEach(fish => {
+                const count = saveData.fishCaught[fish.id] || 0;
+                const caught = count > 0;
 
-            document.getElementById('collectionCount').textContent = [...new Set(caughtFish.filter(id => !FISH.find(f => f.id === id)?.isJunk))].length;
-            document.getElementById('collectionTotal').textContent = fishOnly.length;
-
-            grid.innerHTML = fishOnly.map(fish => {
-                const caught = caughtFish.includes(fish.id);
-                return `
-                    <div class="fish-entry ${caught ? 'caught' : 'uncaught'}">
-                        <div class="icon">${caught ? fish.emoji : '❓'}</div>
-                        <div class="name ${caught ? 'rarity-' + fish.rarity : ''}">${caught ? fish.name : '???'}</div>
-                    </div>
+                const item = document.createElement('div');
+                item.className = `fish-item ${caught ? 'caught' : ''}`;
+                item.innerHTML = `
+                    <div class="fish-emoji">${caught ? fish.emoji : '❓'}</div>
+                    <div class="fish-name" style="color: ${caught ? RARITIES[fish.rarity].color : '#666'}">${caught ? fish.name : '???'}</div>
+                    ${caught ? `<div class="fish-count">x${count}</div>` : ''}
                 `;
-            }).join('');
+                grid.appendChild(item);
+            });
+            document.getElementById('collectionCount').textContent = `${Object.keys(saveData.fishCaught).length}/${FISH.length} Species`;
+        }
+
+        function renderAchievements() {
+            const grid = document.getElementById('achievementsGrid');
+            grid.innerHTML = '';
+            ACHIEVEMENTS.forEach(a => {
+                const unlocked = saveData.achievements.includes(a.id);
+                const item = document.createElement('div');
+                item.className = `achievement ${unlocked ? 'unlocked' : ''}`;
+                item.innerHTML = `
+                    <div class="achievement-icon">${unlocked ? a.icon : '🔒'}</div>
+                    <div class="achievement-name">${a.name}</div>
+                `;
+                item.title = a.desc;
+                grid.appendChild(item);
+            });
+            document.getElementById('achieveCount').textContent = `${saveData.achievements.length}/${ACHIEVEMENTS.length} Unlocked`;
+        }
+
+        function checkAchievements() {
+            ACHIEVEMENTS.forEach(a => {
+                if (!saveData.achievements.includes(a.id) && a.check(saveData)) {
+                    saveData.achievements.push(a.id);
+                    playSound('unlock');
+                }
+            });
+        }
+
+        function updateDisplays() {
+            document.getElementById('money').textContent = saveData.money;
+            document.getElementById('totalCaught').textContent = saveData.totalCaught;
+            document.getElementById('currentLocation').textContent = LOCATIONS.find(l => l.id === saveData.currentLocation)?.name || 'Pond';
+            document.getElementById('startMoney').textContent = '$' + saveData.money;
+            document.getElementById('startCaught').textContent = saveData.totalCaught;
+            document.getElementById('startSpecies').textContent = `${Object.keys(saveData.fishCaught).length}/${FISH.length}`;
+            document.getElementById('shopMoney').textContent = saveData.money;
         }
 
         // ============================================
         // GAME LOOP
         // ============================================
         function gameLoop() {
-            update();
-            draw();
+            if (!gameRunning) return;
+            frameCount++;
+
+            ctx.clearRect(0, 0, W, H);
+            drawBackground();
+            drawFishInWater();
+            drawFisher();
+            drawCastPower();
+            drawParticles();
+            drawHUD();
+
+            updateHook();
+            updateBubbles();
+            updateFishInWater();
+            updateParticles();
+            checkFishCatch();
+
+            if (casting) {
+                castPower += 2;
+                if (castPower >= 100) castPower = 100;
+            }
+
             requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            initAudio();
+            gameRunning = true;
+            hookY = 80;
+            hookX = W / 2;
+            fishInWater = [];
+            document.getElementById('startScreen').classList.add('hidden');
+            document.body.style.background = 'linear-gradient(to bottom, #87CEEB 0%, #87CEEB 40%, #4A90A4 40%, #2C5F7C 100%)';
+            gameLoop();
         }
 
         // ============================================
         // INPUT
         // ============================================
-        canvas.addEventListener('mousedown', e => {
-            if (!gameStarted) return;
-            initAudio();
-
-            if (state === 'idle') {
-                startCast();
-            } else if (state === 'bite' || state === 'reeling') {
-                startReeling();
+        canvas.addEventListener('mousedown', () => {
+            if (!reeling && hookY <= 80) {
+                casting = true;
+                castPower = 0;
+                playSound('cast');
             }
         });
 
-        canvas.addEventListener('mouseup', e => {
-            if (state === 'casting') {
-                releaseCast();
-            } else if (state === 'reeling') {
-                stopReeling();
+        canvas.addEventListener('mouseup', () => {
+            if (casting) {
+                casting = false;
+                const rod = RODS.find(r => r.id === saveData.equippedRod) || RODS[0];
+                hookTargetY = H * 0.35 + (castPower / 100) * H * 0.55 * rod.castPower;
+                hookX = W / 2 + (Math.random() - 0.5) * 100;
+                castMaxPower = castPower;
+                castPower = 0;
+
+                // Auto reel after a delay
+                setTimeout(() => {
+                    if (!reeling && hookY > 80) {
+                        reeling = true;
+                    }
+                }, 2000 + Math.random() * 3000);
+            } else if (hookY > 80 && !reeling) {
+                reeling = true;
             }
         });
 
-        canvas.addEventListener('mouseleave', () => {
-            if (state === 'reeling') {
-                stopReeling();
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && gameRunning) {
+                e.preventDefault();
+                gameRunning = false;
+                document.getElementById('startScreen').classList.remove('hidden');
+                renderLocations();
+                updateDisplays();
             }
         });
 
-        // Touch support
-        canvas.addEventListener('touchstart', e => {
-            e.preventDefault();
-            if (!gameStarted) return;
-            initAudio();
+        // ============================================
+        // UI EVENTS
+        // ============================================
+        document.getElementById('startBtn').addEventListener('click', startGame);
 
-            if (state === 'idle') {
-                startCast();
-            } else if (state === 'bite' || state === 'reeling') {
-                startReeling();
-            }
-        });
-
-        canvas.addEventListener('touchend', e => {
-            e.preventDefault();
-            if (state === 'casting') {
-                releaseCast();
-            } else if (state === 'reeling') {
-                stopReeling();
-            }
-        });
-
-        // Keyboard
-        document.addEventListener('keydown', e => {
-            if (e.key === 's' || e.key === 'S') {
-                document.getElementById('shopScreen').classList.toggle('hidden');
-                document.getElementById('collectionScreen').classList.add('hidden');
-                if (!document.getElementById('shopScreen').classList.contains('hidden')) {
-                    renderShop('rods');
-                }
-            }
-            if (e.key === 'c' || e.key === 'C') {
-                document.getElementById('collectionScreen').classList.toggle('hidden');
-                document.getElementById('shopScreen').classList.add('hidden');
-                if (!document.getElementById('collectionScreen').classList.contains('hidden')) {
-                    renderCollection();
-                }
-            }
-        });
-
-        // Tab switching
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                renderShop(tab.dataset.tab);
-            });
-        });
-
-        // Buttons
-        document.getElementById('startBtn').addEventListener('click', () => {
-            initAudio();
-            gameStarted = true;
+        document.getElementById('shopBtn').addEventListener('click', () => {
             document.getElementById('startScreen').classList.add('hidden');
-            updateUI();
-            gameLoop();
+            renderRods();
+            renderBaits();
+            renderCollection();
+            renderAchievements();
+            document.getElementById('shopScreen').classList.remove('hidden');
         });
 
         document.getElementById('shopBackBtn').addEventListener('click', () => {
             document.getElementById('shopScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+            updateDisplays();
         });
 
-        document.getElementById('collectionBackBtn').addEventListener('click', () => {
-            document.getElementById('collectionScreen').classList.add('hidden');
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.shop-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab + 'Content').classList.add('active');
+            });
         });
 
-        // Initial UI update
-        updateUI();
+        // Init
+        renderLocations();
+        updateDisplays();
     </script>
 </body>
 </html>
