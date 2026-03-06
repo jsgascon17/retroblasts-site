@@ -18,48 +18,82 @@
             overflow: hidden;
         }
         h1 { font-size: 2rem; color: #fff; text-shadow: 3px 3px 0 #543847; margin-bottom: 10px; letter-spacing: 2px; }
-        .score-display { font-size: 1.5rem; color: #fff; text-shadow: 2px 2px 0 #543847; margin-bottom: 10px; }
+        .score-display { font-size: 1.2rem; color: #fff; text-shadow: 2px 2px 0 #543847; margin-bottom: 10px; }
         #gameCanvas { border: 4px solid #543847; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); cursor: pointer; }
         .instructions { margin-top: 15px; color: #543847; font-size: 0.9rem; text-align: center; }
         .instructions span { background: #fff; padding: 5px 15px; border-radius: 5px; border: 2px solid #543847; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; overflow-y: auto; padding: 20px; }
         .overlay.hidden { display: none; }
-        .overlay h2 { font-size: 3rem; color: #FFD700; text-shadow: 3px 3px 0 #543847; margin-bottom: 20px; }
-        .overlay p { color: #fff; margin-bottom: 15px; font-size: 1.2rem; }
-        .overlay .final-score { font-size: 4rem; color: #fff; margin-bottom: 10px; }
-        .overlay .high-score { color: #FFD700; margin-bottom: 30px; font-size: 1.2rem; }
+        .overlay h2 { font-size: 2.5rem; color: #FFD700; text-shadow: 3px 3px 0 #543847; margin-bottom: 15px; }
+        .overlay p { color: #fff; margin-bottom: 10px; font-size: 1rem; }
+        .overlay .final-score { font-size: 3.5rem; color: #fff; margin-bottom: 10px; }
+        .overlay .high-score { color: #FFD700; margin-bottom: 20px; font-size: 1.1rem; }
         .overlay .bird-icon { font-size: 4rem; margin-bottom: 20px; animation: bounce 0.5s ease-in-out infinite alternate; }
         @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
-        .btn { padding: 15px 40px; font-size: 1.2rem; font-family: 'Courier New', monospace; background: linear-gradient(to bottom, #8BC34A, #689F38); color: #fff; border: 3px solid #33691E; border-radius: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 5px 0 #33691E; transition: all 0.1s; margin: 5px; }
+
+        .btn { padding: 12px 30px; font-size: 1rem; font-family: 'Courier New', monospace; background: linear-gradient(to bottom, #8BC34A, #689F38); color: #fff; border: 3px solid #33691E; border-radius: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 5px 0 #33691E; transition: all 0.1s; margin: 5px; }
         .btn:hover { transform: translateY(2px); box-shadow: 0 3px 0 #33691E; }
         .btn:active { transform: translateY(5px); box-shadow: none; }
         .btn-secondary { background: linear-gradient(to bottom, #9C27B0, #7B1FA2); border-color: #4A148C; box-shadow: 0 5px 0 #4A148C; }
-        .btn-leaderboard { background: linear-gradient(to bottom, #FF9800, #F57C00); border-color: #E65100; box-shadow: 0 5px 0 #E65100; }
-        .medal { font-size: 3rem; margin-bottom: 20px; }
-        .button-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-        .skins-grid { display: grid; grid-template-columns: repeat(4, 70px); gap: 10px; margin: 20px 0; }
-        .skin-item { width: 70px; height: 70px; border: 3px solid #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,255,255,0.1); transition: all 0.2s; position: relative; }
-        .skin-item:hover { transform: scale(1.1); }
+        .btn-shop { background: linear-gradient(to bottom, #FF9800, #F57C00); border-color: #E65100; box-shadow: 0 5px 0 #E65100; }
+        .btn-daily { background: linear-gradient(to bottom, #00BCD4, #0097A7); border-color: #006064; box-shadow: 0 5px 0 #006064; }
+        .btn-small { padding: 8px 20px; font-size: 0.9rem; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .medal { font-size: 2.5rem; margin-bottom: 15px; }
+        .button-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .tab { padding: 10px 20px; background: rgba(255,255,255,0.1); border: 2px solid #fff; border-radius: 10px 10px 0 0; color: #fff; cursor: pointer; transition: all 0.2s; }
+        .tab:hover { background: rgba(255,255,255,0.2); }
+        .tab.active { background: #FFD700; color: #000; border-color: #FFD700; }
+
+        .shop-content { display: none; max-height: 350px; overflow-y: auto; }
+        .shop-content.active { display: block; }
+
+        .skins-grid { display: grid; grid-template-columns: repeat(4, 80px); gap: 10px; justify-content: center; }
+        .skin-item { width: 80px; height: 100px; border: 3px solid #fff; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,255,255,0.1); transition: all 0.2s; position: relative; }
+        .skin-item:hover { transform: scale(1.05); }
         .skin-item.selected { border-color: #FFD700; box-shadow: 0 0 15px #FFD700; }
-        .skin-item.locked { opacity: 0.4; cursor: not-allowed; }
-        .skin-item.locked::after { content: '🔒'; position: absolute; font-size: 1.2rem; }
-        .skin-item.secret { border-color: #ff00ff; animation: secretGlow 1s ease-in-out infinite alternate; }
-        @keyframes secretGlow { from { box-shadow: 0 0 5px #ff00ff; } to { box-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff; } }
-        .leaderboard { background: rgba(0,0,0,0.5); border-radius: 10px; padding: 20px; min-width: 300px; max-height: 400px; overflow-y: auto; }
-        .leaderboard-entry { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.2); color: #fff; }
-        .leaderboard-entry.you { background: rgba(255,215,0,0.2); border-radius: 5px; }
-        .rank { font-weight: bold; width: 30px; }
-        .rank.gold { color: #FFD700; }
-        .rank.silver { color: #C0C0C0; }
-        .rank.bronze { color: #CD7F32; }
-        .player-name { flex: 1; margin-left: 10px; }
-        .new-skin-unlock { animation: glow 0.5s ease-in-out infinite alternate; }
-        @keyframes glow { from { box-shadow: 0 0 10px #FFD700; } to { box-shadow: 0 0 30px #FFD700, 0 0 50px #FFA500; } }
+        .skin-item.locked { opacity: 0.6; }
+        .skin-item .price { font-size: 0.7rem; color: #FFD700; margin-top: 5px; }
+        .skin-item .owned { font-size: 0.7rem; color: #8BC34A; margin-top: 5px; }
+
+        .upgrades-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-width: 400px; }
+        .upgrade-item { background: rgba(255,255,255,0.1); border: 2px solid #fff; border-radius: 10px; padding: 10px; text-align: center; }
+        .upgrade-item h4 { color: #FFD700; font-size: 0.9rem; margin-bottom: 5px; }
+        .upgrade-item p { color: #aaa; font-size: 0.7rem; margin-bottom: 5px; }
+        .upgrade-bar { display: flex; gap: 3px; justify-content: center; margin: 5px 0; }
+        .upgrade-pip { width: 12px; height: 12px; border: 2px solid #fff; border-radius: 3px; }
+        .upgrade-pip.filled { background: #8BC34A; border-color: #8BC34A; }
+        .upgrade-btn { padding: 5px 15px; font-size: 0.8rem; }
+        .upgrade-item.maxed { border-color: #8BC34A; }
+        .upgrade-item.maxed h4::after { content: ' MAX'; color: #8BC34A; }
+
+        .achievements-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 450px; max-height: 300px; overflow-y: auto; }
+        .achievement { background: rgba(255,255,255,0.1); border: 2px solid #555; border-radius: 10px; padding: 10px; text-align: center; opacity: 0.5; }
+        .achievement.unlocked { border-color: #FFD700; opacity: 1; }
+        .achievement .icon { font-size: 1.5rem; }
+        .achievement .name { font-size: 0.7rem; color: #fff; margin-top: 5px; }
+        .achievement .progress { font-size: 0.6rem; color: #aaa; }
+
+        .daily-banner { background: linear-gradient(135deg, #00BCD4, #006064); border-radius: 15px; padding: 20px; margin: 15px 0; text-align: center; min-width: 300px; }
+        .daily-banner h3 { color: #fff; font-size: 1.2rem; margin-bottom: 10px; }
+        .daily-banner .challenge-type { font-size: 1.5rem; margin: 10px 0; }
+        .daily-banner .reward { color: #FFD700; font-size: 1rem; }
+        .daily-banner .streak { color: #8BC34A; font-size: 0.9rem; margin-top: 10px; }
+        .daily-complete { background: linear-gradient(135deg, #8BC34A, #33691E); }
+
+        .stats-display { color: #aaa; font-size: 0.8rem; margin: 10px 0; }
     </style>
 </head>
 <body>
     <h1>FLAPPY BIRD</h1>
-    <div class="score-display">Score: <span id="score">0</span> | Best: <span id="highScore">0</span> | <span style="color: #FFD700;">Coins: <span id="coinCount">0</span></span></div>
+    <div class="score-display">
+        Score: <span id="score">0</span> | Best: <span id="highScore">0</span> |
+        <span style="color: #FFD700;">Coins: <span id="coinCount">0</span></span>
+    </div>
     <canvas id="gameCanvas" width="400" height="600"></canvas>
     <div class="instructions">
         <span>SPACE</span> or <span>CLICK</span> to Flap | <span>P</span> Pause
@@ -71,58 +105,55 @@
         <div class="bird-icon" id="startBirdIcon">🐤</div>
         <h2>FLAPPY BIRD</h2>
         <p>Tap to flap! Avoid the pipes!</p>
-        <p style="color: #FFD700; font-size: 1.2rem;">Total Coins: <span id="totalCoinsDisplay">0</span></p>
-        <p style="color: #ff9800;" id="bossHint">Beat the BOSS at 50 to unlock skins!</p>
-        <p style="color: #00ffff; font-size: 0.9rem;">Fly into a cloud for a SECRET...</p>
+        <p style="color: #FFD700; font-size: 1.1rem;">Coins: <span id="totalCoinsDisplay">0</span></p>
+        <div id="dailyPreview"></div>
         <div class="button-row">
-            <button class="btn" id="startBtn">START</button>
-            <button class="btn btn-secondary" id="skinsBtn">SKINS</button>
-            <button class="btn btn-leaderboard" id="leaderboardBtn">TOP 10</button>
+            <button class="btn" id="startBtn">PLAY</button>
+            <button class="btn btn-daily" id="dailyBtn">DAILY</button>
+        </div>
+        <div class="button-row">
+            <button class="btn btn-shop" id="shopBtn">SHOP</button>
+            <button class="btn btn-secondary" id="achieveBtn">BADGES</button>
         </div>
     </div>
 
-    <!-- Skins Screen -->
-    <div class="overlay hidden" id="skinsScreen">
-        <h2>BIRD SKINS</h2>
-        <p id="skinsSubtitle">Beat bosses and find secrets to unlock!</p>
-        <div class="skins-grid" id="skinsGrid"></div>
-        <button class="btn" id="skinsBackBtn">BACK</button>
+    <!-- Shop Screen -->
+    <div class="overlay hidden" id="shopScreen">
+        <h2>SHOP</h2>
+        <p style="color: #FFD700;">Coins: <span id="shopCoins">0</span></p>
+        <div class="tabs">
+            <div class="tab active" data-tab="skins">Skins</div>
+            <div class="tab" data-tab="upgrades">Upgrades</div>
+        </div>
+        <div class="shop-content active" id="skinsContent">
+            <div class="skins-grid" id="skinsGrid"></div>
+        </div>
+        <div class="shop-content" id="upgradesContent">
+            <div class="upgrades-grid" id="upgradesGrid"></div>
+        </div>
+        <button class="btn btn-small" id="shopBackBtn">BACK</button>
     </div>
 
-    <!-- Leaderboard Screen -->
-    <div class="overlay hidden" id="leaderboardScreen">
-        <h2>TOP 10</h2>
-        <div class="leaderboard" id="leaderboardList"><p style="color: #fff; text-align: center;">Loading...</p></div>
-        <input type="text" id="playerNameInput" placeholder="Your name" maxlength="12" style="margin-top: 15px; padding: 10px; font-size: 1rem; border-radius: 5px; border: none; width: 200px; text-align: center;">
-        <button class="btn" id="leaderboardBackBtn">BACK</button>
+    <!-- Achievements Screen -->
+    <div class="overlay hidden" id="achieveScreen">
+        <h2>ACHIEVEMENTS</h2>
+        <p id="achieveCount">0/16 Unlocked</p>
+        <div class="achievements-grid" id="achieveGrid"></div>
+        <button class="btn btn-small" id="achieveBackBtn">BACK</button>
     </div>
 
-    <!-- Boss Victory Screen -->
-    <div class="overlay hidden" id="victoryScreen">
-        <h2 style="color: #8BC34A;">BOSS DEFEATED!</h2>
-        <div class="medal">🏆</div>
-        <p>You unlocked a new skin!</p>
-        <div id="newSkinDisplay" class="new-skin-unlock" style="font-size: 5rem; margin: 20px;"></div>
-        <p id="skinUnlockName" style="color: #FFD700;"></p>
-        <button class="btn" id="victoryBtn">AWESOME!</button>
-    </div>
-
-    <!-- Cloud World Victory Screen -->
-    <div class="overlay hidden" id="cloudVictoryScreen">
-        <h2 style="color: #00ffff;">CLOUD WORLD COMPLETE!</h2>
-        <div class="medal">☁️</div>
-        <p>You found the secret!</p>
-        <div style="font-size: 5rem; margin: 20px;">🐤☁️</div>
-        <p style="color: #00ffff;">Cloud Rider skin unlocked!</p>
-        <button class="btn" id="cloudVictoryBtn">AMAZING!</button>
-    </div>
-
-    <!-- Secret Box Screen -->
-    <div class="overlay hidden" id="secretBoxScreen">
-        <h2 style="color: #ff00ff;">SECRET BOX!</h2>
-        <div style="font-size: 6rem; margin: 20px; animation: bounce 0.3s ease-in-out infinite alternate;">🎁</div>
-        <p>You reached 75! Open your reward!</p>
-        <button class="btn" id="openBoxBtn" style="background: linear-gradient(to bottom, #ff00ff, #cc00cc);">OPEN BOX</button>
+    <!-- Daily Challenge Screen -->
+    <div class="overlay hidden" id="dailyScreen">
+        <h2>DAILY CHALLENGE</h2>
+        <div class="daily-banner" id="dailyBanner">
+            <h3 id="dailyTitle">Today's Challenge</h3>
+            <div class="challenge-type" id="dailyType"></div>
+            <p id="dailyDesc"></p>
+            <div class="reward" id="dailyReward">Reward: +50 Coins</div>
+            <div class="streak" id="dailyStreak">Streak: 0 days</div>
+        </div>
+        <button class="btn btn-daily" id="playDailyBtn">PLAY DAILY</button>
+        <button class="btn btn-small" id="dailyBackBtn">BACK</button>
     </div>
 
     <!-- Game Over Screen -->
@@ -131,8 +162,21 @@
         <div class="medal" id="medal"></div>
         <div class="final-score" id="finalScore">0</div>
         <div class="high-score">BEST: <span id="finalHighScore">0</span></div>
-        <p style="color: #FFD700; font-size: 1.4rem; margin-bottom: 20px;">Coins: +<span id="sessionCoins">0</span></p>
+        <p style="color: #FFD700; font-size: 1.2rem; margin-bottom: 5px;">Coins: +<span id="sessionCoins">0</span></p>
+        <p id="dailyResult" style="color: #00BCD4; display: none;"></p>
+        <div id="newAchievements" style="margin: 10px 0;"></div>
         <button class="btn" id="restartBtn">TRY AGAIN</button>
+        <button class="btn btn-small btn-secondary" id="menuBtn">MENU</button>
+    </div>
+
+    <!-- Boss Victory Screen -->
+    <div class="overlay hidden" id="victoryScreen">
+        <h2 style="color: #8BC34A;" id="victoryTitle">BOSS DEFEATED!</h2>
+        <div class="medal">🏆</div>
+        <p id="victoryText">Amazing job!</p>
+        <div id="victoryReward" style="font-size: 4rem; margin: 15px;"></div>
+        <p id="victoryRewardText" style="color: #FFD700;"></p>
+        <button class="btn" id="victoryBtn">AWESOME!</button>
     </div>
 
     <script>
@@ -161,8 +205,8 @@
                 fireball: () => { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(80, now + 0.15); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15); osc.start(now); osc.stop(now + 0.15); },
                 bossRoar: () => { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now); osc.frequency.exponentialRampToValueAtTime(50, now + 0.5); gain.gain.setValueAtTime(0.25, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5); osc.start(now); osc.stop(now + 0.5); },
                 victory: () => { osc.type = 'sine'; osc.frequency.setValueAtTime(523, now); osc.frequency.setValueAtTime(659, now + 0.15); osc.frequency.setValueAtTime(784, now + 0.3); osc.frequency.setValueAtTime(1047, now + 0.45); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7); osc.start(now); osc.stop(now + 0.7); },
-                cloudEnter: () => { osc.type = 'sine'; osc.frequency.setValueAtTime(800, now); osc.frequency.setValueAtTime(1000, now + 0.1); osc.frequency.setValueAtTime(1200, now + 0.2); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4); osc.start(now); osc.stop(now + 0.4); },
-                secretBox: () => { osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(600, now + 0.1); osc.frequency.setValueAtTime(800, now + 0.2); osc.frequency.setValueAtTime(1200, now + 0.3); gain.gain.setValueAtTime(0.25, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5); osc.start(now); osc.stop(now + 0.5); }
+                unlock: () => { osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(500, now + 0.1); osc.frequency.setValueAtTime(600, now + 0.2); osc.frequency.setValueAtTime(800, now + 0.3); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5); osc.start(now); osc.stop(now + 0.5); },
+                purchase: () => { osc.type = 'sine'; osc.frequency.setValueAtTime(800, now); osc.frequency.setValueAtTime(1000, now + 0.1); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2); }
             };
             if (sounds[type]) sounds[type]();
         }
@@ -178,139 +222,141 @@
         // SKINS
         // ============================================
         const SKINS = [
-            { id: 'default', name: 'Classic', emoji: '🐤', colors: { body: '#F7DC6F', wing: '#F4D03F', beak: '#E74C3C' }, unlocked: true },
-            { id: 'bluebird', name: 'Blue Jay', emoji: '🐦', colors: { body: '#3498DB', wing: '#2980B9', beak: '#E74C3C' }, unlocked: false },
-            { id: 'redbird', name: 'Cardinal', emoji: '🔴', colors: { body: '#E74C3C', wing: '#C0392B', beak: '#F39C12' }, unlocked: false },
-            { id: 'greenbird', name: 'Parrot', emoji: '🟢', colors: { body: '#27AE60', wing: '#1E8449', beak: '#F39C12' }, unlocked: false },
-            { id: 'pinkbird', name: 'Flamingo', emoji: '🩷', colors: { body: '#FF69B4', wing: '#FF1493', beak: '#FFA500' }, unlocked: false },
-            { id: 'goldbird', name: 'Phoenix', emoji: '✨', colors: { body: '#FFD700', wing: '#FFA500', beak: '#FF4500' }, unlocked: false },
-            { id: 'purplebird', name: 'Mystic', emoji: '🟣', colors: { body: '#9B59B6', wing: '#8E44AD', beak: '#E74C3C' }, unlocked: false },
-            { id: 'robotbird', name: 'Cyber', emoji: '🤖', colors: { body: '#95A5A6', wing: '#7F8C8D', beak: '#2ECC71' }, unlocked: false },
-            { id: 'nightbird', name: 'Night Owl', emoji: '🦉', colors: { body: '#2C3E50', wing: '#1A252F', beak: '#F39C12' }, unlocked: false },
-            { id: 'cloudbird', name: 'Cloud Rider', emoji: '☁️', colors: { body: '#ECF0F1', wing: '#BDC3C7', beak: '#3498DB' }, unlocked: false, secret: true, hasCloud: true },
-            { id: 'rainbowbird', name: 'Rainbow', emoji: '🌈', colors: { body: 'rainbow', wing: 'rainbow', beak: '#FF4500' }, unlocked: false }
+            { id: 'default', name: 'Classic', emoji: '🐤', colors: { body: '#F7DC6F', wing: '#F4D03F', beak: '#E74C3C' }, price: 0 },
+            { id: 'bluebird', name: 'Blue Jay', emoji: '🐦', colors: { body: '#3498DB', wing: '#2980B9', beak: '#E74C3C' }, price: 50 },
+            { id: 'redbird', name: 'Cardinal', emoji: '🔴', colors: { body: '#E74C3C', wing: '#C0392B', beak: '#F39C12' }, price: 75 },
+            { id: 'greenbird', name: 'Parrot', emoji: '🟢', colors: { body: '#27AE60', wing: '#1E8449', beak: '#F39C12' }, price: 75 },
+            { id: 'pinkbird', name: 'Flamingo', emoji: '🩷', colors: { body: '#FF69B4', wing: '#FF1493', beak: '#FFA500' }, price: 100 },
+            { id: 'nightbird', name: 'Night Owl', emoji: '🦉', colors: { body: '#2C3E50', wing: '#1A252F', beak: '#F39C12' }, price: 100 },
+            { id: 'goldbird', name: 'Phoenix', emoji: '✨', colors: { body: '#FFD700', wing: '#FFA500', beak: '#FF4500' }, price: 150 },
+            { id: 'purplebird', name: 'Mystic', emoji: '🟣', colors: { body: '#9B59B6', wing: '#8E44AD', beak: '#E74C3C' }, price: 150 },
+            { id: 'robotbird', name: 'Cyber', emoji: '🤖', colors: { body: '#95A5A6', wing: '#7F8C8D', beak: '#2ECC71' }, price: 200 },
+            { id: 'cloudbird', name: 'Cloud', emoji: '☁️', colors: { body: '#ECF0F1', wing: '#BDC3C7', beak: '#3498DB' }, price: 200, hasCloud: true },
+            { id: 'firebird', name: 'Fire', emoji: '🔥', colors: { body: '#FF4500', wing: '#FF6347', beak: '#FFD700' }, price: 250 },
+            { id: 'rainbowbird', name: 'Rainbow', emoji: '🌈', colors: { body: 'rainbow', wing: 'rainbow', beak: '#FF4500' }, price: 500 }
         ];
 
-        let currentSkin = 'default';
-        let unlockedSkins = JSON.parse(localStorage.getItem('flappySkins2')) || ['default'];
-        let secretBoxOpened = JSON.parse(localStorage.getItem('flappySecretBox')) || false;
+        // ============================================
+        // UPGRADES
+        // ============================================
+        const UPGRADES = {
+            hitbox: { name: 'Tiny Bird', desc: 'Smaller collision hitbox', icon: '🔬', maxLevel: 5, baseCost: 30, effect: lvl => 1 - lvl * 0.08 },
+            pipeSpeed: { name: 'Slow Motion', desc: 'Pipes move slower', icon: '🐢', maxLevel: 5, baseCost: 40, effect: lvl => 1 - lvl * 0.06 },
+            magnet: { name: 'Coin Magnet', desc: 'Attract coins nearby', icon: '🧲', maxLevel: 5, baseCost: 35, effect: lvl => 20 + lvl * 15 },
+            doubleCoins: { name: 'Lucky Bird', desc: 'Chance for double coins', icon: '🍀', maxLevel: 5, baseCost: 50, effect: lvl => lvl * 0.1 },
+            shield: { name: 'Safety Net', desc: 'Start with shield', icon: '🛡️', maxLevel: 3, baseCost: 100, effect: lvl => lvl },
+            flapPower: { name: 'Strong Wings', desc: 'More powerful flaps', icon: '💪', maxLevel: 5, baseCost: 25, effect: lvl => 1 + lvl * 0.1 }
+        };
 
-        function saveSkins() {
-            localStorage.setItem('flappySkins2', JSON.stringify(unlockedSkins));
-            localStorage.setItem('flappyCurrentSkin', currentSkin);
-        }
+        // ============================================
+        // ACHIEVEMENTS
+        // ============================================
+        const ACHIEVEMENTS = [
+            { id: 'firstFlight', name: 'First Flight', desc: 'Play your first game', icon: '🎮', check: s => s.gamesPlayed >= 1 },
+            { id: 'collector10', name: 'Coin Finder', desc: 'Collect 100 total coins', icon: '🪙', check: s => s.totalCoinsEarned >= 100 },
+            { id: 'collector100', name: 'Treasure Hunter', desc: 'Collect 500 total coins', icon: '💰', check: s => s.totalCoinsEarned >= 500 },
+            { id: 'collector1000', name: 'Rich Bird', desc: 'Collect 2000 total coins', icon: '🤑', check: s => s.totalCoinsEarned >= 2000 },
+            { id: 'score10', name: 'Getting Started', desc: 'Score 10 in one game', icon: '🔟', check: s => s.highScore >= 10 },
+            { id: 'score25', name: 'Skilled Flapper', desc: 'Score 25 in one game', icon: '🎯', check: s => s.highScore >= 25 },
+            { id: 'score50', name: 'Pipe Master', desc: 'Score 50 in one game', icon: '🏅', check: s => s.highScore >= 50 },
+            { id: 'score100', name: 'Centurion', desc: 'Score 100 in one game', icon: '💯', check: s => s.highScore >= 100 },
+            { id: 'bossSlayer', name: 'Boss Slayer', desc: 'Defeat the boss', icon: '⚔️', check: s => s.bossesDefeated >= 1 },
+            { id: 'bossHunter', name: 'Boss Hunter', desc: 'Defeat 5 bosses', icon: '🗡️', check: s => s.bossesDefeated >= 5 },
+            { id: 'skinCollector', name: 'Fashionista', desc: 'Own 6 different skins', icon: '👔', check: s => s.skinsOwned >= 6 },
+            { id: 'skinMaster', name: 'Collector', desc: 'Own all skins', icon: '👑', check: s => s.skinsOwned >= SKINS.length },
+            { id: 'upgrader', name: 'Enhanced', desc: 'Buy 5 upgrades', icon: '⬆️', check: s => s.upgradesBought >= 5 },
+            { id: 'maxUpgrade', name: 'Maxed Out', desc: 'Max out any upgrade', icon: '🔝', check: s => s.upgradesMaxed >= 1 },
+            { id: 'dailyFirst', name: 'Challenger', desc: 'Complete a daily challenge', icon: '📅', check: s => s.dailyCompleted >= 1 },
+            { id: 'dailyStreak', name: 'Dedicated', desc: 'Get a 7-day streak', icon: '🔥', check: s => s.dailyStreak >= 7 }
+        ];
 
-        function loadSkins() {
-            unlockedSkins = JSON.parse(localStorage.getItem('flappySkins2')) || ['default'];
-            currentSkin = localStorage.getItem('flappyCurrentSkin') || 'default';
-            SKINS.forEach(skin => { skin.unlocked = unlockedSkins.includes(skin.id); });
-        }
+        // ============================================
+        // DAILY CHALLENGES
+        // ============================================
+        const DAILY_TYPES = [
+            { id: 'narrow', name: 'Narrow Escape', desc: 'Pipes have smaller gaps!', icon: '📏', gapMod: 0.75 },
+            { id: 'fast', name: 'Speed Run', desc: 'Pipes move faster!', icon: '💨', speedMod: 1.4 },
+            { id: 'moving', name: 'Shifty Pipes', desc: 'All pipes move up and down!', icon: '↕️', allMoving: true },
+            { id: 'zigzag', name: 'Zigzag', desc: 'Pipes alternate high and low!', icon: '〰️', zigzag: true },
+            { id: 'boss', name: 'Boss Rush', desc: 'Boss appears at score 25!', icon: '👹', earlyBoss: true },
+            { id: 'double', name: 'Double Trouble', desc: 'Pipes come in pairs!', icon: '✌️', doublePipes: true },
+            { id: 'coins', name: 'Coin Frenzy', desc: 'Extra coins everywhere!', icon: '🪙', extraCoins: true }
+        ];
 
-        function unlockSkin(skinId) {
-            const skin = SKINS.find(s => s.id === skinId);
-            if (skin && !skin.unlocked) {
-                skin.unlocked = true;
-                unlockedSkins.push(skinId);
-                saveSkins();
-                return skin;
+        // ============================================
+        // SAVE DATA
+        // ============================================
+        let saveData = {
+            coins: 0,
+            highScore: 0,
+            ownedSkins: ['default'],
+            equippedSkin: 'default',
+            upgrades: { hitbox: 0, pipeSpeed: 0, magnet: 0, doubleCoins: 0, shield: 0, flapPower: 0 },
+            achievements: [],
+            stats: {
+                gamesPlayed: 0,
+                totalCoinsEarned: 0,
+                highScore: 0,
+                bossesDefeated: 0,
+                skinsOwned: 1,
+                upgradesBought: 0,
+                upgradesMaxed: 0,
+                dailyCompleted: 0,
+                dailyStreak: 0,
+                lastDailyDate: null,
+                dailyCompletedToday: false
             }
-            return null;
+        };
+
+        function loadSaveData() {
+            const saved = localStorage.getItem('flappyBirdSave');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                saveData = { ...saveData, ...parsed };
+                saveData.stats = { ...saveData.stats, ...parsed.stats };
+                saveData.upgrades = { ...saveData.upgrades, ...parsed.upgrades };
+            }
+            // Check daily reset
+            const today = new Date().toDateString();
+            if (saveData.stats.lastDailyDate !== today) {
+                saveData.stats.dailyCompletedToday = false;
+            }
         }
 
-        function unlockRandomSkin() {
-            const lockedSkins = SKINS.filter(s => !s.unlocked && !s.secret);
-            if (lockedSkins.length === 0) return null;
-            const nonRainbow = lockedSkins.filter(s => s.id !== 'rainbowbird');
-            const skinToUnlock = nonRainbow.length > 0 ? nonRainbow[Math.floor(Math.random() * nonRainbow.length)] : lockedSkins.find(s => s.id === 'rainbowbird');
-            if (skinToUnlock) { skinToUnlock.unlocked = true; unlockedSkins.push(skinToUnlock.id); saveSkins(); }
-            return skinToUnlock;
-        }
-
-        function renderSkinsGrid() {
-            const grid = document.getElementById('skinsGrid');
-            grid.innerHTML = '';
-            SKINS.forEach(skin => {
-                const item = document.createElement('div');
-                item.className = 'skin-item' + (skin.id === currentSkin ? ' selected' : '') + (!skin.unlocked ? ' locked' : '') + (skin.secret && skin.unlocked ? ' secret' : '');
-                item.innerHTML = `<span style="font-size: 2rem;">${skin.emoji}</span>`;
-                item.title = skin.name + (skin.unlocked ? '' : ' (Locked)');
-                if (skin.unlocked) {
-                    item.addEventListener('click', () => { currentSkin = skin.id; saveSkins(); renderSkinsGrid(); updateStartBirdIcon(); });
-                }
-                grid.appendChild(item);
-            });
-        }
-
-        function updateStartBirdIcon() {
-            const skin = SKINS.find(s => s.id === currentSkin);
-            document.getElementById('startBirdIcon').textContent = skin ? skin.emoji : '🐤';
-        }
-
-        // ============================================
-        // LEADERBOARD
-        // ============================================
-        const LEADERBOARD_API = 'leaderboard.php';
-        let leaderboard = [];
-        let playerName = localStorage.getItem('flappyPlayerName') || 'Player';
-
-        async function loadLeaderboard() {
-            try {
-                const response = await fetch(LEADERBOARD_API);
-                const data = await response.json();
-                if (data.success) leaderboard = data.scores;
-            } catch (e) { leaderboard = []; }
-        }
-
-        async function saveToLeaderboard(name, scoreVal) {
-            try { await fetch(LEADERBOARD_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, score: scoreVal }) }); } catch (e) {}
-        }
-
-        async function renderLeaderboard() {
-            const list = document.getElementById('leaderboardList');
-            list.innerHTML = '<p style="color: #fff; text-align: center;">Loading...</p>';
-            await loadLeaderboard();
-            if (leaderboard.length === 0) { list.innerHTML = '<p style="color: #fff; text-align: center;">No scores yet!</p>'; return; }
-            list.innerHTML = leaderboard.map((entry, i) => {
-                const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
-                const medal = i === 0 ? '👑' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
-                return `<div class="leaderboard-entry${entry.name === playerName ? ' you' : ''}"><span class="rank ${rankClass}">${medal || (i + 1)}</span><span class="player-name">${entry.name}</span><span class="score">${entry.score}</span></div>`;
-            }).join('');
+        function saveSaveData() {
+            localStorage.setItem('flappyBirdSave', JSON.stringify(saveData));
         }
 
         // ============================================
         // GAME CONSTANTS
         // ============================================
-        const GRAVITY = 0.5;
-        const FLAP_POWER = -9;
-        const PIPE_SPEED = 3;
+        const BASE_GRAVITY = 0.5;
+        const BASE_FLAP_POWER = -9;
+        const BASE_PIPE_SPEED = 3;
         const PIPE_WIDTH = 70;
-        const PIPE_GAP = 160;
+        const BASE_PIPE_GAP = 160;
         const PIPE_SPAWN_RATE = 100;
         const BOSS_START_SCORE = 50;
         const BOSS_END_SCORE = 100;
-        const SECRET_BOX_SCORE = 75;
-        const CLOUD_WORLD_LENGTH = 15;
 
         // ============================================
         // GAME STATE
         // ============================================
         let gameRunning = false, gameStarted = false, gamePaused = false;
         let bossMode = false, bossDefeated = false;
-        let cloudWorldMode = false, cloudWorldScore = 0, cloudWorldEntered = false;
-        let secretBoxTriggered = false, secretBoxReward = null;
-        let score = 0, highScore = localStorage.getItem('flappyHigh2') || 0;
-        let frameCount = 0, bossScoreTimer = 0;
-        let timeOfDay = 0; // 0-1000, cycles through day/night
+        let isDailyChallenge = false;
+        let dailyChallenge = null;
+        let score = 0, frameCount = 0, bossScoreTimer = 0;
+        let hasShield = false, shieldHits = 0;
+        let sessionCoins = 0;
+        let newAchievementsThisGame = [];
+        let zigzagHigh = true;
 
         let bird = { x: 80, y: H / 2, width: 40, height: 30, velocity: 0, rotation: 0 };
         let boss = { x: W - 100, y: H / 2 - 60, width: 80, height: 100 };
-        let fireballs = [], pipes = [], clouds = [], movingPipes = [];
+        let fireballs = [], pipes = [], clouds = [];
         let coins = [], coinParticles = [];
-        let sessionCoins = 0;
-        let totalCoins = parseInt(localStorage.getItem('flappyTotalCoins')) || 0;
-        let portalCloud = null; // Special cloud that leads to Cloud World
 
-        // Coin types
         const COIN_TYPES = {
             bronze: { value: 1, color: '#CD7F32', radius: 12, chance: 0.6 },
             silver: { value: 3, color: '#C0C0C0', radius: 14, chance: 0.3 },
@@ -324,99 +370,211 @@
         const highScoreDisplay = document.getElementById('highScore');
         const coinCountDisplay = document.getElementById('coinCount');
 
-        loadSkins();
-        highScoreDisplay.textContent = highScore;
-        coinCountDisplay.textContent = totalCoins;
-        document.getElementById('totalCoinsDisplay').textContent = totalCoins;
-        updateStartBirdIcon();
+        // Init
+        loadSaveData();
+        updateDisplays();
+        initClouds();
 
-        // Init clouds
-        for (let i = 0; i < 4; i++) {
-            clouds.push({ x: i * 120, y: 50 + Math.random() * 100, size: 0.8 + Math.random() * 0.5, isPortal: false });
-        }
-
-        // ============================================
-        // TIME OF DAY / COLORS
-        // ============================================
-        function getTimeColors() {
-            const t = timeOfDay / 1000;
-            let skyTop, skyBottom, groundTop, groundGrass;
-
-            if (t < 0.25) { // Morning
-                const p = t / 0.25;
-                skyTop = lerpColor('#1a1a3e', '#4EC0CA', p);
-                skyBottom = lerpColor('#2d2d5e', '#71C5CF', p);
-                groundTop = lerpColor('#1a3d1a', '#DED895', p);
-                groundGrass = lerpColor('#0d2d0d', '#8BC34A', p);
-            } else if (t < 0.5) { // Day
-                skyTop = '#4EC0CA';
-                skyBottom = '#71C5CF';
-                groundTop = '#DED895';
-                groundGrass = '#8BC34A';
-            } else if (t < 0.75) { // Evening
-                const p = (t - 0.5) / 0.25;
-                skyTop = lerpColor('#4EC0CA', '#ff7e5f', p);
-                skyBottom = lerpColor('#71C5CF', '#feb47b', p);
-                groundTop = lerpColor('#DED895', '#c9a55a', p);
-                groundGrass = lerpColor('#8BC34A', '#6d9a2e', p);
-            } else { // Night
-                const p = (t - 0.75) / 0.25;
-                skyTop = lerpColor('#ff7e5f', '#1a1a3e', p);
-                skyBottom = lerpColor('#feb47b', '#2d2d5e', p);
-                groundTop = lerpColor('#c9a55a', '#1a3d1a', p);
-                groundGrass = lerpColor('#6d9a2e', '#0d2d0d', p);
+        function initClouds() {
+            clouds = [];
+            for (let i = 0; i < 4; i++) {
+                clouds.push({ x: i * 120, y: 50 + Math.random() * 100, size: 0.8 + Math.random() * 0.5 });
             }
-
-            return { skyTop, skyBottom, groundTop, groundGrass, isNight: t > 0.7 || t < 0.15 };
         }
 
-        function lerpColor(c1, c2, t) {
-            const hex = c => parseInt(c.slice(1), 16);
-            const r1 = (hex(c1) >> 16) & 255, g1 = (hex(c1) >> 8) & 255, b1 = hex(c1) & 255;
-            const r2 = (hex(c2) >> 16) & 255, g2 = (hex(c2) >> 8) & 255, b2 = hex(c2) & 255;
-            const r = Math.round(r1 + (r2 - r1) * t), g = Math.round(g1 + (g2 - g1) * t), b = Math.round(b1 + (b2 - b1) * t);
-            return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+        function updateDisplays() {
+            highScoreDisplay.textContent = saveData.highScore;
+            coinCountDisplay.textContent = saveData.coins;
+            document.getElementById('totalCoinsDisplay').textContent = saveData.coins;
+            document.getElementById('shopCoins').textContent = saveData.coins;
+            document.getElementById('startBirdIcon').textContent = SKINS.find(s => s.id === saveData.equippedSkin)?.emoji || '🐤';
+            updateDailyPreview();
+        }
+
+        // ============================================
+        // DAILY CHALLENGE SYSTEM
+        // ============================================
+        function getTodaysChallenge() {
+            const today = new Date();
+            const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+            const index = seed % DAILY_TYPES.length;
+            return DAILY_TYPES[index];
+        }
+
+        function updateDailyPreview() {
+            const challenge = getTodaysChallenge();
+            const completed = saveData.stats.dailyCompletedToday;
+            const preview = document.getElementById('dailyPreview');
+
+            if (completed) {
+                preview.innerHTML = `<p style="color: #8BC34A; font-size: 0.9rem;">Daily Challenge Complete!</p>`;
+            } else {
+                preview.innerHTML = `<p style="color: #00BCD4; font-size: 0.9rem;">Daily: ${challenge.icon} ${challenge.name}</p>`;
+            }
+        }
+
+        function renderDailyScreen() {
+            const challenge = getTodaysChallenge();
+            const completed = saveData.stats.dailyCompletedToday;
+            const banner = document.getElementById('dailyBanner');
+
+            document.getElementById('dailyTitle').textContent = completed ? "Completed!" : "Today's Challenge";
+            document.getElementById('dailyType').textContent = challenge.icon;
+            document.getElementById('dailyDesc').textContent = challenge.desc;
+            document.getElementById('dailyReward').textContent = completed ? "Come back tomorrow!" : "Reward: +50 Coins";
+            document.getElementById('dailyStreak').textContent = `Streak: ${saveData.stats.dailyStreak} days`;
+            document.getElementById('playDailyBtn').disabled = completed;
+            document.getElementById('playDailyBtn').textContent = completed ? "COMPLETED" : "PLAY DAILY";
+
+            banner.className = completed ? 'daily-banner daily-complete' : 'daily-banner';
+        }
+
+        // ============================================
+        // SHOP SYSTEM
+        // ============================================
+        function renderSkinsGrid() {
+            const grid = document.getElementById('skinsGrid');
+            grid.innerHTML = '';
+
+            SKINS.forEach(skin => {
+                const owned = saveData.ownedSkins.includes(skin.id);
+                const equipped = saveData.equippedSkin === skin.id;
+                const canBuy = !owned && saveData.coins >= skin.price;
+
+                const item = document.createElement('div');
+                item.className = `skin-item ${equipped ? 'selected' : ''} ${!owned && !canBuy ? 'locked' : ''}`;
+                item.innerHTML = `
+                    <span style="font-size: 2rem;">${skin.emoji}</span>
+                    <span style="font-size: 0.7rem; color: #fff;">${skin.name}</span>
+                    ${owned ? '<span class="owned">OWNED</span>' : `<span class="price">${skin.price} coins</span>`}
+                `;
+
+                item.addEventListener('click', () => {
+                    if (owned) {
+                        saveData.equippedSkin = skin.id;
+                        saveSaveData();
+                        renderSkinsGrid();
+                        updateDisplays();
+                        playSound('flap');
+                    } else if (canBuy) {
+                        saveData.coins -= skin.price;
+                        saveData.ownedSkins.push(skin.id);
+                        saveData.equippedSkin = skin.id;
+                        saveData.stats.skinsOwned = saveData.ownedSkins.length;
+                        saveSaveData();
+                        renderSkinsGrid();
+                        updateDisplays();
+                        playSound('purchase');
+                        checkAchievements();
+                    }
+                });
+
+                grid.appendChild(item);
+            });
+        }
+
+        function renderUpgradesGrid() {
+            const grid = document.getElementById('upgradesGrid');
+            grid.innerHTML = '';
+
+            Object.entries(UPGRADES).forEach(([id, upgrade]) => {
+                const level = saveData.upgrades[id];
+                const isMaxed = level >= upgrade.maxLevel;
+                const cost = Math.floor(upgrade.baseCost * Math.pow(1.5, level));
+                const canBuy = !isMaxed && saveData.coins >= cost;
+
+                const item = document.createElement('div');
+                item.className = `upgrade-item ${isMaxed ? 'maxed' : ''}`;
+                item.innerHTML = `
+                    <h4>${upgrade.icon} ${upgrade.name}</h4>
+                    <p>${upgrade.desc}</p>
+                    <div class="upgrade-bar">
+                        ${Array(upgrade.maxLevel).fill(0).map((_, i) =>
+                            `<div class="upgrade-pip ${i < level ? 'filled' : ''}"></div>`
+                        ).join('')}
+                    </div>
+                    ${isMaxed ? '<span style="color: #8BC34A; font-size: 0.8rem;">MAXED</span>' :
+                    `<button class="btn btn-small upgrade-btn" ${!canBuy ? 'disabled' : ''}>${cost} coins</button>`}
+                `;
+
+                if (!isMaxed) {
+                    const btn = item.querySelector('.upgrade-btn');
+                    btn.addEventListener('click', () => {
+                        if (canBuy) {
+                            saveData.coins -= cost;
+                            saveData.upgrades[id]++;
+                            saveData.stats.upgradesBought++;
+                            if (saveData.upgrades[id] >= upgrade.maxLevel) {
+                                saveData.stats.upgradesMaxed++;
+                            }
+                            saveSaveData();
+                            renderUpgradesGrid();
+                            updateDisplays();
+                            playSound('purchase');
+                            checkAchievements();
+                        }
+                    });
+                }
+
+                grid.appendChild(item);
+            });
+        }
+
+        // ============================================
+        // ACHIEVEMENTS SYSTEM
+        // ============================================
+        function checkAchievements() {
+            ACHIEVEMENTS.forEach(ach => {
+                if (!saveData.achievements.includes(ach.id) && ach.check(saveData.stats)) {
+                    saveData.achievements.push(ach.id);
+                    newAchievementsThisGame.push(ach);
+                    playSound('unlock');
+                }
+            });
+            saveSaveData();
+        }
+
+        function renderAchievements() {
+            const grid = document.getElementById('achieveGrid');
+            grid.innerHTML = '';
+
+            ACHIEVEMENTS.forEach(ach => {
+                const unlocked = saveData.achievements.includes(ach.id);
+                const item = document.createElement('div');
+                item.className = `achievement ${unlocked ? 'unlocked' : ''}`;
+                item.innerHTML = `
+                    <div class="icon">${unlocked ? ach.icon : '🔒'}</div>
+                    <div class="name">${ach.name}</div>
+                `;
+                item.title = ach.desc;
+                grid.appendChild(item);
+            });
+
+            document.getElementById('achieveCount').textContent =
+                `${saveData.achievements.length}/${ACHIEVEMENTS.length} Unlocked`;
         }
 
         // ============================================
         // DRAWING
         // ============================================
         function drawBackground() {
-            const colors = cloudWorldMode ? { skyTop: '#e0f7ff', skyBottom: '#ffffff', isNight: false } : (bossMode ? { skyTop: '#8B0000', skyBottom: '#FF4500', isNight: false } : getTimeColors());
-
             const gradient = ctx.createLinearGradient(0, 0, 0, H - groundHeight);
-            gradient.addColorStop(0, colors.skyTop);
-            gradient.addColorStop(1, colors.skyBottom);
+            if (bossMode) {
+                gradient.addColorStop(0, '#8B0000');
+                gradient.addColorStop(1, '#FF4500');
+            } else if (isDailyChallenge) {
+                gradient.addColorStop(0, '#006064');
+                gradient.addColorStop(1, '#00BCD4');
+            } else {
+                gradient.addColorStop(0, '#4EC0CA');
+                gradient.addColorStop(1, '#71C5CF');
+            }
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, W, H - groundHeight);
 
-            // Stars at night
-            if (colors.isNight && !cloudWorldMode && !bossMode) {
-                ctx.fillStyle = '#fff';
-                for (let i = 0; i < 30; i++) {
-                    const sx = (i * 47 + frameCount * 0.02) % W;
-                    const sy = (i * 23) % (H / 2 - 50) + 20;
-                    ctx.globalAlpha = 0.3 + Math.sin(frameCount * 0.05 + i) * 0.3;
-                    ctx.beginPath();
-                    ctx.arc(sx, sy, 1 + (i % 2), 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                ctx.globalAlpha = 1;
-            }
-
             // Clouds
-            ctx.fillStyle = cloudWorldMode ? '#fff' : (bossMode ? '#555' : '#fff');
-            clouds.forEach(c => {
-                if (c.isPortal && !cloudWorldMode) {
-                    // Glowing portal cloud
-                    ctx.fillStyle = `rgba(0, 255, 255, ${0.5 + Math.sin(frameCount * 0.1) * 0.3})`;
-                    ctx.shadowColor = '#00ffff';
-                    ctx.shadowBlur = 20;
-                }
-                drawCloud(c.x, c.y, c.size);
-                ctx.shadowBlur = 0;
-                ctx.fillStyle = cloudWorldMode ? '#fff' : (bossMode ? '#555' : '#fff');
-            });
+            ctx.fillStyle = bossMode ? '#555' : '#fff';
+            clouds.forEach(c => drawCloud(c.x, c.y, c.size));
         }
 
         function drawCloud(x, y, size = 1) {
@@ -429,41 +587,39 @@
         }
 
         function drawGround() {
-            const colors = cloudWorldMode ? { groundTop: '#e0e0e0', groundGrass: '#c0c0c0' } : (bossMode ? { groundTop: '#4a2c2a', groundGrass: '#2d1a19' } : getTimeColors());
+            const colors = bossMode ? { top: '#4a2c2a', grass: '#2d1a19' } :
+                          isDailyChallenge ? { top: '#1a5f6a', grass: '#0d3d47' } :
+                          { top: '#DED895', grass: '#8BC34A' };
 
-            ctx.fillStyle = colors.groundTop;
+            ctx.fillStyle = colors.top;
             ctx.fillRect(0, H - groundHeight, W, groundHeight);
-            ctx.fillStyle = colors.groundGrass;
+            ctx.fillStyle = colors.grass;
             ctx.fillRect(0, H - groundHeight, W, 20);
-
-            // Cloud World has fluffy ground
-            if (cloudWorldMode) {
-                ctx.fillStyle = '#fff';
-                for (let x = groundX % 60 - 60; x < W; x += 60) {
-                    ctx.beginPath();
-                    ctx.arc(x + 30, H - groundHeight + 10, 25, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
         }
 
         function drawBird() {
-            const skin = SKINS.find(s => s.id === currentSkin) || SKINS[0];
+            const skin = SKINS.find(s => s.id === saveData.equippedSkin) || SKINS[0];
+            const hitboxMod = UPGRADES.hitbox.effect(saveData.upgrades.hitbox);
+
             ctx.save();
             ctx.translate(bird.x + bird.width / 2, bird.y + bird.height / 2);
             bird.rotation = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, bird.velocity * 0.05));
             ctx.rotate(bird.rotation);
+
+            // Shield effect
+            if (hasShield) {
+                ctx.strokeStyle = `rgba(0, 200, 255, ${0.5 + Math.sin(frameCount * 0.1) * 0.3})`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(0, 0, 30, 0, Math.PI * 2);
+                ctx.stroke();
+            }
 
             // Cloud under bird for cloud skin
             if (skin.hasCloud) {
                 ctx.fillStyle = '#fff';
                 ctx.beginPath();
                 ctx.ellipse(0, bird.height / 2 + 5, 25, 12, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#ecf0f1';
-                ctx.beginPath();
-                ctx.arc(-10, bird.height / 2 + 8, 8, 0, Math.PI * 2);
-                ctx.arc(10, bird.height / 2 + 8, 8, 0, Math.PI * 2);
                 ctx.fill();
             }
 
@@ -509,9 +665,10 @@
         }
 
         function drawPipe(pipe) {
-            const pipeColor = cloudWorldMode ? '#b0d4f1' : '#73BF2E';
-            const pipeDark = cloudWorldMode ? '#8ab8d9' : '#558B2F';
-            const pipeLight = cloudWorldMode ? '#d0e8f7' : '#8BC34A';
+            const pipeColor = isDailyChallenge ? '#0097A7' : '#73BF2E';
+            const pipeDark = isDailyChallenge ? '#006064' : '#558B2F';
+            const pipeLight = isDailyChallenge ? '#00BCD4' : '#8BC34A';
+            const pipeGap = getPipeGap();
 
             ctx.fillStyle = pipeColor;
             ctx.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.topHeight);
@@ -521,7 +678,7 @@
             ctx.fillStyle = pipeLight;
             ctx.fillRect(pipe.x, 0, 10, pipe.topHeight - 30);
 
-            const bottomY = pipe.topHeight + PIPE_GAP;
+            const bottomY = pipe.topHeight + pipeGap;
             const bottomHeight = H - groundHeight - bottomY;
             ctx.fillStyle = pipeColor;
             ctx.fillRect(pipe.x, bottomY, PIPE_WIDTH, bottomHeight);
@@ -535,7 +692,7 @@
             if (pipe.moving) {
                 ctx.fillStyle = '#ff0';
                 ctx.beginPath();
-                ctx.arc(pipe.x + PIPE_WIDTH / 2, pipe.topHeight + PIPE_GAP / 2, 5, 0, Math.PI * 2);
+                ctx.arc(pipe.x + PIPE_WIDTH / 2, pipe.topHeight + pipeGap / 2, 5, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
@@ -548,6 +705,7 @@
             ctx.ellipse(x + boss.width / 2, y + boss.height / 2, boss.width / 2, boss.height / 2, 0, 0, Math.PI * 2);
             ctx.fill();
 
+            // Crown
             ctx.fillStyle = '#FFD700';
             for (let i = 0; i < 5; i++) {
                 const spikeX = x + 15 + i * 15;
@@ -559,25 +717,13 @@
                 ctx.fill();
             }
 
+            // Face
             ctx.fillStyle = '#FFA500';
             ctx.beginPath();
             ctx.arc(x + 20, y + 40, 25, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.fillStyle = '#F5F5DC';
-            ctx.beginPath();
-            ctx.moveTo(x + 5, y + 25);
-            ctx.lineTo(x - 10, y + 5);
-            ctx.lineTo(x + 15, y + 30);
-            ctx.closePath();
-            ctx.fill();
-            ctx.beginPath();
-            ctx.moveTo(x + 35, y + 25);
-            ctx.lineTo(x + 50, y + 5);
-            ctx.lineTo(x + 25, y + 30);
-            ctx.closePath();
-            ctx.fill();
-
+            // Eyes
             ctx.fillStyle = '#fff';
             ctx.beginPath();
             ctx.arc(x + 12, y + 35, 8, 0, Math.PI * 2);
@@ -589,19 +735,10 @@
             ctx.arc(x + 28, y + 35, 4, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.fillStyle = '#8B0000';
-            const mouthOpen = Math.sin(frameCount * 0.1) > 0.5;
-            if (mouthOpen) {
-                ctx.fillRect(x + 8, y + 50, 25, 15);
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(x + 10, y + 50, 5, 8);
-                ctx.fillRect(x + 18, y + 50, 5, 8);
-                ctx.fillRect(x + 26, y + 50, 5, 8);
-            } else {
-                ctx.fillRect(x + 8, y + 55, 25, 5);
-            }
-
-            const healthPercent = (BOSS_END_SCORE - score) / (BOSS_END_SCORE - BOSS_START_SCORE);
+            // Health bar
+            const bossEndScore = getBossEndScore();
+            const bossStartScore = getBossStartScore();
+            const healthPercent = Math.max(0, (bossEndScore - score) / (bossEndScore - bossStartScore));
             ctx.fillStyle = '#333';
             ctx.fillRect(x - 10, y - 20, boss.width + 20, 10);
             ctx.fillStyle = healthPercent > 0.3 ? '#f00' : '#ff0';
@@ -635,59 +772,32 @@
             ctx.restore();
         }
 
-        function drawScore() {
-            ctx.fillStyle = '#fff';
-            ctx.strokeStyle = '#543847';
-            ctx.lineWidth = 3;
-            ctx.font = 'bold 48px Courier New';
-            ctx.textAlign = 'center';
-            ctx.strokeText(score, W / 2, 60);
-            ctx.fillText(score, W / 2, 60);
-
-            if (bossMode) {
-                ctx.fillStyle = '#ff0';
-                ctx.font = 'bold 20px Courier New';
-                ctx.fillText('SURVIVE TO ' + BOSS_END_SCORE + '!', W / 2, 90);
-            }
-
-            if (cloudWorldMode) {
-                ctx.fillStyle = '#00ffff';
-                ctx.font = 'bold 16px Courier New';
-                ctx.fillText('CLOUD WORLD: ' + cloudWorldScore + '/' + CLOUD_WORLD_LENGTH, W / 2, 90);
-            }
-        }
-
         function drawCoin(coin) {
             const type = COIN_TYPES[coin.type];
             const wobble = Math.sin(frameCount * 0.15 + coin.x * 0.1) * 3;
+            const scaleX = Math.cos(frameCount * 0.1 + coin.x * 0.05);
 
-            // Glow effect
             ctx.shadowColor = type.color;
             ctx.shadowBlur = 10;
 
-            // Coin body (spinning effect via scale)
-            const scaleX = Math.cos(frameCount * 0.1 + coin.x * 0.05);
             ctx.save();
             ctx.translate(coin.x, coin.y + wobble);
             ctx.scale(Math.abs(scaleX) * 0.5 + 0.5, 1);
 
-            // Outer ring
             ctx.fillStyle = type.color;
             ctx.beginPath();
             ctx.arc(0, 0, type.radius, 0, Math.PI * 2);
             ctx.fill();
 
-            // Inner shine
-            ctx.fillStyle = scaleX > 0 ? '#fff' : type.color;
+            ctx.fillStyle = '#fff';
             ctx.globalAlpha = 0.6;
             ctx.beginPath();
             ctx.arc(-type.radius * 0.3, -type.radius * 0.3, type.radius * 0.4, 0, Math.PI * 2);
             ctx.fill();
             ctx.globalAlpha = 1;
 
-            // Value indicator
             if (coin.type !== 'bronze') {
-                ctx.fillStyle = '#fff';
+                ctx.fillStyle = '#333';
                 ctx.font = `bold ${type.radius - 4}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -709,101 +819,114 @@
             });
         }
 
-        function drawSecretBox() {
-            if (score >= SECRET_BOX_SCORE && !secretBoxTriggered && !bossMode && !cloudWorldMode) {
-                const boxX = W - 60;
-                const boxY = H / 2 - 30 + Math.sin(frameCount * 0.1) * 10;
+        function drawScore() {
+            ctx.fillStyle = '#fff';
+            ctx.strokeStyle = '#543847';
+            ctx.lineWidth = 3;
+            ctx.font = 'bold 48px Courier New';
+            ctx.textAlign = 'center';
+            ctx.strokeText(score, W / 2, 60);
+            ctx.fillText(score, W / 2, 60);
 
-                ctx.fillStyle = '#ff00ff';
-                ctx.shadowColor = '#ff00ff';
-                ctx.shadowBlur = 20;
-                ctx.fillRect(boxX, boxY, 50, 50);
-                ctx.shadowBlur = 0;
+            if (bossMode) {
+                ctx.fillStyle = '#ff0';
+                ctx.font = 'bold 18px Courier New';
+                ctx.fillText(`SURVIVE TO ${getBossEndScore()}!`, W / 2, 90);
+            }
 
-                ctx.fillStyle = '#ffd700';
-                ctx.font = 'bold 30px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('?', boxX + 25, boxY + 37);
+            if (isDailyChallenge) {
+                ctx.fillStyle = '#00ffff';
+                ctx.font = 'bold 14px Courier New';
+                ctx.fillText(`DAILY: ${dailyChallenge.name}`, W / 2, 90);
+            }
 
-                // Check collision
-                if (bird.x + bird.width > boxX && bird.x < boxX + 50 && bird.y + bird.height > boxY && bird.y < boxY + 50) {
-                    secretBoxTriggered = true;
-                    gameRunning = false;
-                    playSound('secretBox');
-                    document.getElementById('secretBoxScreen').classList.remove('hidden');
-                }
+            // Shield indicator
+            if (hasShield) {
+                ctx.fillStyle = '#00d4ff';
+                ctx.font = 'bold 14px Courier New';
+                ctx.textAlign = 'left';
+                ctx.fillText('🛡️ Shield Active', 10, 30);
             }
         }
 
         // ============================================
-        // UPDATE
+        // GAME LOGIC
         // ============================================
-        function updateBird() {
-            bird.velocity += GRAVITY;
-            bird.y += bird.velocity;
-            if (bird.y < 0) { bird.y = 0; bird.velocity = 0; }
-            if (bird.y + bird.height > H - groundHeight) gameOver();
+        function getPipeSpeed() {
+            let speed = BASE_PIPE_SPEED * UPGRADES.pipeSpeed.effect(saveData.upgrades.pipeSpeed);
+            if (isDailyChallenge && dailyChallenge.speedMod) {
+                speed *= dailyChallenge.speedMod;
+            }
+            return speed;
         }
 
-        function updateTimeOfDay() {
-            if (!bossMode && !cloudWorldMode) {
-                timeOfDay = (timeOfDay + 0.3) % 1000;
+        function getPipeGap() {
+            let gap = BASE_PIPE_GAP;
+            if (isDailyChallenge && dailyChallenge.gapMod) {
+                gap *= dailyChallenge.gapMod;
+            }
+            return gap;
+        }
+
+        function getBossStartScore() {
+            if (isDailyChallenge && dailyChallenge.earlyBoss) return 25;
+            return BOSS_START_SCORE;
+        }
+
+        function getBossEndScore() {
+            if (isDailyChallenge && dailyChallenge.earlyBoss) return 50;
+            return BOSS_END_SCORE;
+        }
+
+        function getFlapPower() {
+            return BASE_FLAP_POWER * UPGRADES.flapPower.effect(saveData.upgrades.flapPower);
+        }
+
+        function getMagnetRange() {
+            return UPGRADES.magnet.effect(saveData.upgrades.magnet);
+        }
+
+        function getDoubleCoinsChance() {
+            return UPGRADES.doubleCoins.effect(saveData.upgrades.doubleCoins);
+        }
+
+        function updateBird() {
+            bird.velocity += BASE_GRAVITY;
+            bird.y += bird.velocity;
+            if (bird.y < 0) { bird.y = 0; bird.velocity = 0; }
+            if (bird.y + bird.height > H - groundHeight) {
+                if (hasShield) {
+                    useShield();
+                    bird.y = H - groundHeight - bird.height - 50;
+                    bird.velocity = getFlapPower();
+                } else {
+                    gameOver();
+                }
             }
         }
 
         function updateClouds() {
-            // Portal only appears between scores 10-45
-            const portalActive = score >= 10 && score <= 45 && !cloudWorldMode && !bossMode && !cloudWorldEntered;
-
-            // Ensure at least one portal cloud exists when in range
-            if (portalActive) {
-                const hasPortal = clouds.some(c => c.isPortal);
-                if (!hasPortal) {
-                    // Make a random visible cloud the portal
-                    const visibleClouds = clouds.filter(c => c.x > 0 && c.x < W);
-                    if (visibleClouds.length > 0) {
-                        visibleClouds[Math.floor(Math.random() * visibleClouds.length)].isPortal = true;
-                    } else {
-                        clouds[0].isPortal = true;
-                    }
-                }
-            } else {
-                // Remove portal status outside the score range
-                clouds.forEach(c => c.isPortal = false);
-            }
-
             clouds.forEach(c => {
                 c.x -= 0.5;
                 if (c.x < -80) {
                     c.x = W + 80;
                     c.y = 50 + Math.random() * 100;
-                    // Random chance for additional portal clouds in range
-                    c.isPortal = portalActive && Math.random() < 0.2;
-                }
-
-                // Portal cloud collision
-                if (c.isPortal && !cloudWorldMode) {
-                    const cloudCenterX = c.x + 20;
-                    const cloudCenterY = c.y;
-                    const dx = (bird.x + bird.width / 2) - cloudCenterX;
-                    const dy = (bird.y + bird.height / 2) - cloudCenterY;
-                    if (Math.sqrt(dx * dx + dy * dy) < 40) {
-                        enterCloudWorld();
-                    }
                 }
             });
         }
 
         function updatePipes() {
-            if (bossMode || cloudWorldMode) return;
+            if (bossMode) return;
+            const pipeSpeed = getPipeSpeed();
+            const pipeGap = getPipeGap();
 
             pipes.forEach(pipe => {
-                pipe.x -= PIPE_SPEED;
+                pipe.x -= pipeSpeed;
 
                 // Moving pipes
                 if (pipe.moving) {
                     pipe.topHeight += pipe.moveDir * 1.5;
-                    if (pipe.topHeight < 60 || pipe.topHeight > H - groundHeight - PIPE_GAP - 60) {
+                    if (pipe.topHeight < 60 || pipe.topHeight > H - groundHeight - pipeGap - 60) {
                         pipe.moveDir *= -1;
                     }
                 }
@@ -811,17 +934,33 @@
 
             pipes = pipes.filter(pipe => pipe.x + PIPE_WIDTH > 0);
 
-            if (frameCount % PIPE_SPAWN_RATE === 0 && score < BOSS_START_SCORE) {
+            // Spawn rate
+            let spawnRate = PIPE_SPAWN_RATE;
+            if (isDailyChallenge && dailyChallenge.doublePipes) {
+                spawnRate = 70;
+            }
+
+            if (frameCount % spawnRate === 0 && score < getBossStartScore()) {
                 const minHeight = 80;
-                const maxHeight = H - groundHeight - PIPE_GAP - minHeight;
-                const topHeight = minHeight + Math.random() * (maxHeight - minHeight);
-                const isMoving = score > 20 && Math.random() < 0.3;
+                const maxHeight = H - groundHeight - pipeGap - minHeight;
+                let topHeight;
+
+                if (isDailyChallenge && dailyChallenge.zigzag) {
+                    topHeight = zigzagHigh ? minHeight + 20 : maxHeight - 20;
+                    zigzagHigh = !zigzagHigh;
+                } else {
+                    topHeight = minHeight + Math.random() * (maxHeight - minHeight);
+                }
+
+                const isMoving = (isDailyChallenge && dailyChallenge.allMoving) ||
+                                 (score > 20 && Math.random() < 0.3);
 
                 pipes.push({ x: W, topHeight, passed: false, moving: isMoving, moveDir: Math.random() < 0.5 ? 1 : -1 });
 
-                // Spawn coins in the gap (70% chance)
-                if (Math.random() < 0.7) {
-                    spawnCoinsInGap(W + PIPE_WIDTH / 2, topHeight, PIPE_GAP);
+                // Spawn coins
+                const coinChance = isDailyChallenge && dailyChallenge.extraCoins ? 0.9 : 0.7;
+                if (Math.random() < coinChance) {
+                    spawnCoinsInGap(W + PIPE_WIDTH / 2, topHeight, pipeGap);
                 }
             }
 
@@ -832,85 +971,62 @@
                     scoreDisplay.textContent = score;
                     playSound('score');
 
-                    if (score >= BOSS_START_SCORE && !bossMode) startBossMode();
-                }
-            });
-        }
-
-        function updateCloudWorld() {
-            if (!cloudWorldMode) return;
-
-            pipes.forEach(pipe => { pipe.x -= PIPE_SPEED; });
-            pipes = pipes.filter(pipe => pipe.x + PIPE_WIDTH > 0);
-
-            // Update coins in cloud world too
-            updateCoins();
-
-            if (frameCount % 80 === 0) {
-                const minHeight = 100;
-                const maxHeight = H - groundHeight - PIPE_GAP - minHeight;
-                const topHeight = minHeight + Math.random() * (maxHeight - minHeight);
-                pipes.push({ x: W, topHeight, passed: false, moving: false });
-
-                // Cloud world has more gold coins!
-                if (Math.random() < 0.8) {
-                    const gapCenter = topHeight + PIPE_GAP / 2;
-                    const type = Math.random() < 0.4 ? 'gold' : (Math.random() < 0.5 ? 'silver' : 'bronze');
-                    coins.push({ x: W + PIPE_WIDTH / 2, y: gapCenter, type, collected: false });
-                }
-            }
-
-            pipes.forEach(pipe => {
-                if (!pipe.passed && pipe.x + PIPE_WIDTH < bird.x) {
-                    pipe.passed = true;
-                    cloudWorldScore++;
-                    playSound('score');
-
-                    if (cloudWorldScore >= CLOUD_WORLD_LENGTH) {
-                        cloudWorldVictory();
-                    }
+                    if (score >= getBossStartScore() && !bossMode) startBossMode();
                 }
             });
         }
 
         function spawnCoinsInGap(x, topHeight, gap) {
-            // Determine coin type based on chance
             const rand = Math.random();
             let type = 'bronze';
             if (rand < COIN_TYPES.gold.chance) type = 'gold';
             else if (rand < COIN_TYPES.gold.chance + COIN_TYPES.silver.chance) type = 'silver';
 
-            // Position coin in the middle of the gap
             const gapCenter = topHeight + gap / 2;
-
-            // Sometimes spawn 1-3 coins in a pattern
             const pattern = Math.random();
+
             if (pattern < 0.5) {
-                // Single coin
                 coins.push({ x, y: gapCenter, type, collected: false });
             } else if (pattern < 0.8) {
-                // Vertical line of 3
                 coins.push({ x, y: gapCenter - 30, type: 'bronze', collected: false });
                 coins.push({ x, y: gapCenter, type, collected: false });
                 coins.push({ x, y: gapCenter + 30, type: 'bronze', collected: false });
             } else {
-                // Arc pattern
                 coins.push({ x: x - 20, y: gapCenter - 20, type: 'bronze', collected: false });
                 coins.push({ x, y: gapCenter - 35, type, collected: false });
                 coins.push({ x: x + 20, y: gapCenter - 20, type: 'bronze', collected: false });
             }
+
+            // Extra coins for daily
+            if (isDailyChallenge && dailyChallenge.extraCoins && Math.random() < 0.5) {
+                coins.push({ x: x + 30, y: gapCenter + 15, type: 'silver', collected: false });
+            }
         }
 
         function updateCoins() {
-            // Move coins with pipe speed
+            const pipeSpeed = getPipeSpeed();
+            const magnetRange = getMagnetRange();
+
             coins.forEach(coin => {
-                coin.x -= PIPE_SPEED;
+                coin.x -= pipeSpeed;
+
+                // Magnet effect
+                if (!coin.collected) {
+                    const dx = (bird.x + bird.width / 2) - coin.x;
+                    const dy = (bird.y + bird.height / 2) - coin.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < magnetRange) {
+                        const strength = (magnetRange - dist) / magnetRange * 0.15;
+                        coin.x += dx * strength;
+                        coin.y += dy * strength;
+                    }
+                }
             });
 
-            // Remove off-screen coins
             coins = coins.filter(coin => coin.x > -30 && !coin.collected);
 
-            // Check collection
+            // Collection
             coins.forEach(coin => {
                 if (coin.collected) return;
                 const dx = (bird.x + bird.width / 2) - coin.x;
@@ -920,17 +1036,20 @@
 
                 if (dist < type.radius + 15) {
                     coin.collected = true;
-                    sessionCoins += type.value;
-                    totalCoins += type.value;
-                    localStorage.setItem('flappyTotalCoins', totalCoins);
-                    coinCountDisplay.textContent = totalCoins;
+                    let value = type.value;
+
+                    // Double coins chance
+                    if (Math.random() < getDoubleCoinsChance()) {
+                        value *= 2;
+                    }
+
+                    sessionCoins += value;
                     playSound('coin');
 
-                    // Spawn particle effect
                     coinParticles.push({
                         x: coin.x,
                         y: coin.y,
-                        value: type.value,
+                        value: value,
                         color: type.color,
                         life: 1
                     });
@@ -962,7 +1081,7 @@
                 bossScoreTimer = 0;
                 score++;
                 scoreDisplay.textContent = score;
-                if (score >= BOSS_END_SCORE) { bossVictory(); return; }
+                if (score >= getBossEndScore()) { bossVictory(); return; }
             }
 
             if (frameCount % 45 === 0) {
@@ -974,33 +1093,48 @@
             fireballs = fireballs.filter(fb => fb.x > -30);
         }
 
-        function enterCloudWorld() {
-            cloudWorldMode = true;
-            cloudWorldEntered = true;
-            cloudWorldScore = 0;
-            pipes = [];
-            playSound('cloudEnter');
-        }
-
-        function cloudWorldVictory() {
-            gameRunning = false;
-            playSound('victory');
-            unlockSkin('cloudbird');
-            document.getElementById('cloudVictoryScreen').classList.remove('hidden');
+        function useShield() {
+            shieldHits++;
+            if (shieldHits >= saveData.upgrades.shield) {
+                hasShield = false;
+            }
+            playSound('coin');
         }
 
         function checkCollision() {
+            const hitboxMod = UPGRADES.hitbox.effect(saveData.upgrades.hitbox);
+            const birdW = bird.width * hitboxMod;
+            const birdH = bird.height * hitboxMod;
+            const birdX = bird.x + (bird.width - birdW) / 2;
+            const birdY = bird.y + (bird.height - birdH) / 2;
+            const pipeGap = getPipeGap();
+
             pipes.forEach(pipe => {
-                if (bird.x + bird.width > pipe.x && bird.x < pipe.x + PIPE_WIDTH && bird.y < pipe.topHeight) gameOver();
-                const bottomY = pipe.topHeight + PIPE_GAP;
-                if (bird.x + bird.width > pipe.x && bird.x < pipe.x + PIPE_WIDTH && bird.y + bird.height > bottomY) gameOver();
+                if (birdX + birdW > pipe.x && birdX < pipe.x + PIPE_WIDTH && birdY < pipe.topHeight) {
+                    handleCollision();
+                }
+                const bottomY = pipe.topHeight + pipeGap;
+                if (birdX + birdW > pipe.x && birdX < pipe.x + PIPE_WIDTH && birdY + birdH > bottomY) {
+                    handleCollision();
+                }
             });
 
             fireballs.forEach(fb => {
-                const dx = (bird.x + bird.width / 2) - fb.x;
-                const dy = (bird.y + bird.height / 2) - fb.y;
-                if (Math.sqrt(dx * dx + dy * dy) < 25) gameOver();
+                const dx = (birdX + birdW / 2) - fb.x;
+                const dy = (birdY + birdH / 2) - fb.y;
+                if (Math.sqrt(dx * dx + dy * dy) < 25) {
+                    handleCollision();
+                }
             });
+        }
+
+        function handleCollision() {
+            if (hasShield) {
+                useShield();
+                bird.velocity = getFlapPower() * 0.5;
+            } else {
+                gameOver();
+            }
         }
 
         // ============================================
@@ -1008,7 +1142,7 @@
         // ============================================
         function flap() {
             if (!gameRunning || gamePaused) return;
-            bird.velocity = FLAP_POWER;
+            bird.velocity = getFlapPower();
             playSound('flap');
         }
 
@@ -1016,65 +1150,150 @@
             gameRunning = false;
             bossDefeated = true;
             playSound('victory');
-            if (score > highScore) { highScore = score; localStorage.setItem('flappyHigh2', highScore); highScoreDisplay.textContent = highScore; }
-            saveToLeaderboard(playerName, score);
-            const newSkin = unlockRandomSkin();
-            document.getElementById('newSkinDisplay').textContent = newSkin ? newSkin.emoji : '🎉';
-            document.getElementById('skinUnlockName').textContent = newSkin ? newSkin.name : 'All skins unlocked!';
+
+            saveData.stats.bossesDefeated++;
+
+            // Bonus coins for boss
+            const bossBonus = 50;
+            sessionCoins += bossBonus;
+
+            if (score > saveData.highScore) {
+                saveData.highScore = score;
+                saveData.stats.highScore = score;
+            }
+
+            saveData.coins += sessionCoins;
+            saveData.stats.totalCoinsEarned += sessionCoins;
+            saveData.stats.gamesPlayed++;
+
+            // Daily challenge completion
+            if (isDailyChallenge && !saveData.stats.dailyCompletedToday) {
+                completeDailyChallenge();
+            }
+
+            checkAchievements();
+            saveSaveData();
+
+            document.getElementById('victoryTitle').textContent = 'BOSS DEFEATED!';
+            document.getElementById('victoryText').textContent = `+${sessionCoins} coins earned!`;
+            document.getElementById('victoryReward').textContent = '👹';
+            document.getElementById('victoryRewardText').textContent = 'You survived!';
             document.getElementById('victoryScreen').classList.remove('hidden');
+        }
+
+        function completeDailyChallenge() {
+            saveData.stats.dailyCompleted++;
+            saveData.stats.dailyCompletedToday = true;
+
+            const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+            if (saveData.stats.lastDailyDate === yesterday) {
+                saveData.stats.dailyStreak++;
+            } else if (saveData.stats.lastDailyDate !== today) {
+                saveData.stats.dailyStreak = 1;
+            }
+
+            saveData.stats.lastDailyDate = today;
+
+            // Daily bonus
+            const dailyBonus = 50 + (saveData.stats.dailyStreak - 1) * 10;
+            sessionCoins += dailyBonus;
         }
 
         function gameOver() {
             gameRunning = false;
             playSound('hit');
-            if (score > highScore) { highScore = score; localStorage.setItem('flappyHigh2', highScore); highScoreDisplay.textContent = highScore; }
-            saveToLeaderboard(playerName, score);
+
+            if (score > saveData.highScore) {
+                saveData.highScore = score;
+                saveData.stats.highScore = score;
+            }
+
+            saveData.coins += sessionCoins;
+            saveData.stats.totalCoinsEarned += sessionCoins;
+            saveData.stats.gamesPlayed++;
+
+            // Check daily challenge
+            let dailyMsg = '';
+            if (isDailyChallenge) {
+                const target = getBossStartScore();
+                if (score >= target && !saveData.stats.dailyCompletedToday) {
+                    completeDailyChallenge();
+                    dailyMsg = `Daily Complete! +${50 + (saveData.stats.dailyStreak - 1) * 10} bonus!`;
+                } else if (!saveData.stats.dailyCompletedToday) {
+                    dailyMsg = `Daily: Score ${target} to complete`;
+                }
+            }
+
+            checkAchievements();
+            saveSaveData();
+            updateDisplays();
+
             let medal = '';
             if (score >= 40) medal = '🏆';
             else if (score >= 30) medal = '🥇';
             else if (score >= 20) medal = '🥈';
             else if (score >= 10) medal = '🥉';
+
             document.getElementById('medal').textContent = medal;
             document.getElementById('finalScore').textContent = score;
-            document.getElementById('finalHighScore').textContent = highScore;
+            document.getElementById('finalHighScore').textContent = saveData.highScore;
             document.getElementById('sessionCoins').textContent = sessionCoins;
+
+            const dailyResult = document.getElementById('dailyResult');
+            if (dailyMsg) {
+                dailyResult.textContent = dailyMsg;
+                dailyResult.style.display = 'block';
+            } else {
+                dailyResult.style.display = 'none';
+            }
+
+            // Show new achievements
+            const newAchDiv = document.getElementById('newAchievements');
+            if (newAchievementsThisGame.length > 0) {
+                newAchDiv.innerHTML = newAchievementsThisGame.map(a =>
+                    `<p style="color: #FFD700;">${a.icon} ${a.name} Unlocked!</p>`
+                ).join('');
+            } else {
+                newAchDiv.innerHTML = '';
+            }
+
             document.getElementById('gameOverScreen').classList.remove('hidden');
         }
 
-        function startGame() {
+        function startGame(daily = false) {
             initAudio();
+            isDailyChallenge = daily;
+            dailyChallenge = daily ? getTodaysChallenge() : null;
+
             score = 0; frameCount = 0;
             pipes = []; fireballs = [];
             coins = []; coinParticles = [];
             sessionCoins = 0;
+            newAchievementsThisGame = [];
+            zigzagHigh = true;
+
             bird.y = H / 2; bird.velocity = 0; bird.rotation = 0;
             gamePaused = false; bossMode = false; bossDefeated = false;
-            cloudWorldMode = false; cloudWorldScore = 0;
-            secretBoxTriggered = false;
             bossScoreTimer = 0;
+
+            // Apply shield upgrade
+            hasShield = saveData.upgrades.shield > 0;
+            shieldHits = 0;
+
             scoreDisplay.textContent = score;
             document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
             gameRunning = true; gameStarted = true;
             gameLoop();
         }
 
-        function openSecretBox() {
-            secretBoxOpened = true;
-            localStorage.setItem('flappySecretBox', JSON.stringify(true));
-
-            // Give random reward
-            const rewards = ['nightbird', 'goldbird', 'purplebird'];
-            const reward = rewards[Math.floor(Math.random() * rewards.length)];
-            const skin = unlockSkin(reward);
-
-            document.getElementById('secretBoxScreen').classList.add('hidden');
-
-            if (skin) {
-                document.getElementById('newSkinDisplay').textContent = skin.emoji;
-                document.getElementById('skinUnlockName').textContent = skin.name + ' (Secret Reward!)';
-                document.getElementById('victoryScreen').querySelector('h2').textContent = 'SECRET UNLOCKED!';
-                document.getElementById('victoryScreen').classList.remove('hidden');
-            }
+        function showMenu() {
+            document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
+            document.getElementById('startScreen').classList.remove('hidden');
+            updateDisplays();
+            gameStarted = false;
+            idleLoop();
         }
 
         // ============================================
@@ -1085,28 +1304,26 @@
             ctx.clearRect(0, 0, W, H);
 
             drawBackground();
-            if (!bossMode || cloudWorldMode) {
+            if (!bossMode) {
                 pipes.forEach(drawPipe);
                 coins.forEach(c => !c.collected && drawCoin(c));
                 drawCoinParticles();
             }
-            if (bossMode && !cloudWorldMode) { drawBoss(); fireballs.forEach(drawFireball); }
+            if (bossMode) { drawBoss(); fireballs.forEach(drawFireball); }
             drawGround();
             drawBird();
             drawScore();
-            drawSecretBox();
 
             if (gameRunning && !gamePaused) {
                 updateBird();
-                updateTimeOfDay();
                 updateClouds();
-                if (cloudWorldMode) updateCloudWorld();
-                else if (!bossMode) {
+                if (!bossMode) {
                     updatePipes();
                     updateCoins();
+                } else {
+                    updateBoss();
                 }
-                else updateBoss();
-                groundX -= PIPE_SPEED;
+                groundX -= getPipeSpeed();
                 if (groundX <= -40) groundX = 0;
                 checkCollision();
             }
@@ -1127,7 +1344,6 @@
             if (gameStarted) return;
             frameCount++;
             ctx.clearRect(0, 0, W, H);
-            updateTimeOfDay();
             drawBackground();
             drawGround();
             bird.y = H / 2 + Math.sin(frameCount * 0.05) * 20;
@@ -1139,7 +1355,7 @@
         idleLoop();
 
         // ============================================
-        // INPUT
+        // INPUT & UI
         // ============================================
         document.addEventListener('keydown', e => {
             if (e.code === 'Space') { e.preventDefault(); flap(); }
@@ -1149,28 +1365,60 @@
         canvas.addEventListener('click', flap);
         canvas.addEventListener('touchstart', e => { e.preventDefault(); flap(); });
 
-        document.getElementById('startBtn').addEventListener('click', startGame);
-        document.getElementById('restartBtn').addEventListener('click', startGame);
+        document.getElementById('startBtn').addEventListener('click', () => startGame(false));
+        document.getElementById('restartBtn').addEventListener('click', () => startGame(isDailyChallenge));
+        document.getElementById('menuBtn').addEventListener('click', showMenu);
+
         document.getElementById('victoryBtn').addEventListener('click', () => {
             document.getElementById('victoryScreen').classList.add('hidden');
-            document.getElementById('victoryScreen').querySelector('h2').textContent = 'BOSS DEFEATED!';
-            document.getElementById('startScreen').classList.remove('hidden');
-            gameStarted = false;
-            cloudWorldEntered = false;
-            idleLoop();
+            showMenu();
         });
-        document.getElementById('cloudVictoryBtn').addEventListener('click', () => {
-            document.getElementById('cloudVictoryScreen').classList.add('hidden');
-            document.getElementById('startScreen').classList.remove('hidden');
-            gameStarted = false;
-            idleLoop();
+
+        // Shop
+        document.getElementById('shopBtn').addEventListener('click', () => {
+            document.getElementById('startScreen').classList.add('hidden');
+            renderSkinsGrid();
+            renderUpgradesGrid();
+            document.getElementById('shopScreen').classList.remove('hidden');
         });
-        document.getElementById('openBoxBtn').addEventListener('click', openSecretBox);
-        document.getElementById('skinsBtn').addEventListener('click', () => { document.getElementById('startScreen').classList.add('hidden'); renderSkinsGrid(); document.getElementById('skinsScreen').classList.remove('hidden'); });
-        document.getElementById('skinsBackBtn').addEventListener('click', () => { document.getElementById('skinsScreen').classList.add('hidden'); document.getElementById('startScreen').classList.remove('hidden'); });
-        document.getElementById('leaderboardBtn').addEventListener('click', () => { document.getElementById('startScreen').classList.add('hidden'); document.getElementById('playerNameInput').value = playerName; renderLeaderboard(); document.getElementById('leaderboardScreen').classList.remove('hidden'); });
-        document.getElementById('leaderboardBackBtn').addEventListener('click', () => { playerName = document.getElementById('playerNameInput').value.trim() || 'Player'; localStorage.setItem('flappyPlayerName', playerName); document.getElementById('leaderboardScreen').classList.add('hidden'); document.getElementById('startScreen').classList.remove('hidden'); });
-        document.getElementById('soundBtn').addEventListener('click', () => { soundEnabled = !soundEnabled; document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇'; });
+        document.getElementById('shopBackBtn').addEventListener('click', showMenu);
+
+        // Shop tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.shop-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab + 'Content').classList.add('active');
+            });
+        });
+
+        // Achievements
+        document.getElementById('achieveBtn').addEventListener('click', () => {
+            document.getElementById('startScreen').classList.add('hidden');
+            renderAchievements();
+            document.getElementById('achieveScreen').classList.remove('hidden');
+        });
+        document.getElementById('achieveBackBtn').addEventListener('click', showMenu);
+
+        // Daily
+        document.getElementById('dailyBtn').addEventListener('click', () => {
+            document.getElementById('startScreen').classList.add('hidden');
+            renderDailyScreen();
+            document.getElementById('dailyScreen').classList.remove('hidden');
+        });
+        document.getElementById('dailyBackBtn').addEventListener('click', showMenu);
+        document.getElementById('playDailyBtn').addEventListener('click', () => {
+            if (!saveData.stats.dailyCompletedToday) {
+                startGame(true);
+            }
+        });
+
+        // Sound toggle
+        document.getElementById('soundBtn').addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
+        });
     </script>
 </body>
 </html>
