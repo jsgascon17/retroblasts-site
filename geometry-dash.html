@@ -994,8 +994,8 @@
 
                         if (playerRight > obj.x && playerLeft < blockRight &&
                             playerBottom > blockTop && playerTop < blockBottom) {
-                            // Check if landing on top
-                            if (player.vy > 0 && playerBottom - player.vy <= blockTop + 5) {
+                            // Check if on top of block (landing or standing)
+                            if (player.vy >= 0 && playerBottom <= blockTop + 10 && playerTop < blockTop) {
                                 player.y = blockTop - player.size / 2;
                                 player.vy = 0;
                                 player.onGround = true;
@@ -1086,6 +1086,7 @@
         function die() {
             if (player.dead) return;
             player.dead = true;
+            gameRunning = false; // Stop the game loop to prevent speedup on retry
             playSound('death');
 
             // Death particles
