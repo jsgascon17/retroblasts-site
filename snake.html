@@ -426,6 +426,60 @@
         }
 
         // ============================================
+        // ARCADE STATS TRACKING
+        // ============================================
+        let gameStartTime = 0;
+
+        function loadArcadeStats() {
+            return JSON.parse(localStorage.getItem('arcadeStats')) || {
+                totalGamesPlayed: 0,
+                totalTimePlayed: 0,
+                totalCoinsEarned: 0,
+                games: {}
+            };
+        }
+
+        function saveArcadeStats(stats) {
+            localStorage.setItem('arcadeStats', JSON.stringify(stats));
+        }
+
+        function trackGameStart() {
+            gameStartTime = Date.now();
+        }
+
+        function trackGameEnd(finalScore, coinsEarned, maxLength) {
+            const stats = loadArcadeStats();
+            const gameId = 'snake';
+
+            if (!stats.games[gameId]) {
+                stats.games[gameId] = {
+                    gamesPlayed: 0,
+                    timePlayed: 0,
+                    highScore: 0,
+                    totalScore: 0,
+                    coinsEarned: 0,
+                    maxLength: 0
+                };
+            }
+
+            const gameStats = stats.games[gameId];
+            const sessionTime = (Date.now() - gameStartTime) / 1000;
+
+            gameStats.gamesPlayed++;
+            gameStats.timePlayed += sessionTime;
+            gameStats.totalScore += finalScore;
+            gameStats.coinsEarned += coinsEarned;
+            if (finalScore > gameStats.highScore) gameStats.highScore = finalScore;
+            if (maxLength > gameStats.maxLength) gameStats.maxLength = maxLength;
+
+            stats.totalGamesPlayed++;
+            stats.totalTimePlayed += sessionTime;
+            stats.totalCoinsEarned += coinsEarned;
+
+            saveArcadeStats(stats);
+        }
+
+        // ============================================
         // SKINS
         // ============================================
         const SKINS = {
@@ -872,6 +926,9 @@
             save();
             checkAllAchievements();
 
+            // Track arcade stats
+            trackGameEnd(score, coinsEarned, snake.length);
+
             document.getElementById('finalScore').textContent = score;
             document.getElementById('finalLength').textContent = snake.length;
             document.getElementById('coinsEarned').textContent = coinsEarned;
@@ -1108,6 +1165,9 @@
             lastMove = performance.now();
             document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
             updateBestDisplay();
+
+            // Track arcade stats
+            trackGameStart();
 
             // Track mode plays
             if (gameMode === 'obstacles') {

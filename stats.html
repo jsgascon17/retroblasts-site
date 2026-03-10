@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Statistics - Learning Sandbox</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        header { text-align: center; margin-bottom: 40px; }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #00d9ff, #a855f7, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle { color: #888; font-size: 1rem; }
+
+        .back-btn {
+            display: inline-block;
+            padding: 10px 25px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+
+        /* Global Stats */
+        .global-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-card .icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #00d9ff, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-card .label { color: #888; font-size: 0.9rem; margin-top: 5px; }
+
+        /* Game Stats Grid */
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.3), transparent);
+        }
+
+        .games-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .game-stat-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        .game-stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255,255,255,0.3);
+        }
+        .game-stat-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .game-stat-header .game-icon { font-size: 2.5rem; }
+        .game-stat-header .game-name { font-size: 1.2rem; font-weight: bold; }
+        .game-stat-header .game-plays { color: #888; font-size: 0.85rem; }
+
+        .game-stat-body { padding: 15px 20px; }
+        .game-stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .game-stat-row:last-child { border-bottom: none; }
+        .game-stat-row .label { color: #888; }
+        .game-stat-row .value { color: #00d9ff; font-weight: bold; }
+        .game-stat-row .value.gold { color: #ffd700; }
+        .game-stat-row .value.green { color: #00ff88; }
+
+        .play-btn {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            background: linear-gradient(135deg, #00d9ff, #0099ff);
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .play-btn:hover { filter: brightness(1.2); }
+
+        /* No Stats Message */
+        .no-stats {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        .no-stats .icon { font-size: 4rem; margin-bottom: 20px; opacity: 0.5; }
+        .no-stats p { margin-bottom: 20px; }
+        .no-stats a {
+            color: #00d9ff;
+            text-decoration: none;
+        }
+
+        /* Reset Button */
+        .reset-section {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .reset-btn {
+            padding: 10px 25px;
+            background: rgba(255,100,100,0.2);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        .reset-btn:hover { background: rgba(255,100,100,0.3); }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #555;
+        }
+        footer a { color: #00d9ff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">← Back to Games</a>
+
+        <header>
+            <h1>📊 Arcade Statistics</h1>
+            <p class="subtitle">Track your gaming progress across all games</p>
+        </header>
+
+        <!-- Global Stats -->
+        <div class="global-stats" id="globalStats">
+            <div class="stat-card">
+                <div class="icon">🎮</div>
+                <div class="value" id="totalGames">0</div>
+                <div class="label">Games Played</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">⏱️</div>
+                <div class="value" id="totalTime">0m</div>
+                <div class="label">Time Played</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🪙</div>
+                <div class="value" id="totalCoins">0</div>
+                <div class="label">Total Coins</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">⭐</div>
+                <div class="value" id="favoriteGame">-</div>
+                <div class="label">Favorite Game</div>
+            </div>
+        </div>
+
+        <!-- Per-Game Stats -->
+        <h2 class="section-title">Game Statistics</h2>
+        <div class="games-stats" id="gamesStats">
+            <!-- Populated by JS -->
+        </div>
+
+        <div class="no-stats hidden" id="noStats">
+            <div class="icon">🎮</div>
+            <p>No stats yet! Start playing some games to track your progress.</p>
+            <a href="index.html">Browse Games →</a>
+        </div>
+
+        <div class="reset-section">
+            <button class="reset-btn" onclick="resetStats()">Reset All Statistics</button>
+        </div>
+
+        <footer>
+            <p>Built by Joseph Gascon | <a href="https://freshbuild.co">FreshBuild</a></p>
+        </footer>
+    </div>
+
+    <script>
+        // Game definitions with their icons and stat keys
+        const GAMES = {
+            'space-invaders': { name: 'Space Invaders', icon: '👾', url: 'space-invaders.html', color: '#0f0' },
+            'snake': { name: 'Snake', icon: '🐍', url: 'snake.html', color: '#0f0' },
+            'pacman': { name: 'Pac-Man', icon: '🟡', url: 'pacman.html', color: '#ffff00' },
+            'flappy-bird': { name: 'Flappy Bird', icon: '🐤', url: 'flappy-bird.html', color: '#4EC0CA' },
+            'whack-a-mole': { name: 'Whack-a-Mole', icon: '🐹', url: 'whack-a-mole.html', color: '#764ba2' },
+            'platformer': { name: 'Super Jump Quest', icon: '🏃', url: 'platformer.html', color: '#87CEEB' },
+            'zombie-shooter': { name: 'Zombie Run', icon: '🧟', url: 'zombie-shooter.html', color: '#e94560' },
+            'tower-defense': { name: 'Galactic Defense', icon: '🛸', url: 'tower-defense.html', color: '#00d4ff' },
+            'capybara-clicker': { name: 'Capybara Clicker', icon: '🦫', url: 'capybara-clicker.html', color: '#98D8AA' },
+            'fruit-ninja': { name: 'Fruit Ninja', icon: '🍉', url: 'fruit-ninja.html', color: '#ff6b6b' },
+            'fishing': { name: 'Gone Fishing', icon: '🎣', url: 'fishing.html', color: '#4A90A4' },
+            'asteroids': { name: 'Asteroids', icon: '☄️', url: 'asteroids.html', color: '#fff' },
+            'geometry-dash': { name: 'Geometry Dash', icon: '◆', url: 'geometry-dash.html', color: '#00ffff' },
+            'crossy-road': { name: 'Crossy Road', icon: '🐔', url: 'crossy-road.html', color: '#4CAF50' }
+        };
+
+        // Load stats from localStorage
+        function loadStats() {
+            return JSON.parse(localStorage.getItem('arcadeStats')) || {
+                totalGamesPlayed: 0,
+                totalTimePlayed: 0,
+                totalCoinsEarned: 0,
+                games: {}
+            };
+        }
+
+        // Format time from seconds to readable string
+        function formatTime(seconds) {
+            if (seconds < 60) return `${Math.floor(seconds)}s`;
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            return `${hours}h ${mins}m`;
+        }
+
+        // Format large numbers
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        // Find favorite game (most played)
+        function getFavoriteGame(stats) {
+            let maxPlays = 0;
+            let favorite = null;
+            for (const [gameId, gameStats] of Object.entries(stats.games)) {
+                if (gameStats.gamesPlayed > maxPlays) {
+                    maxPlays = gameStats.gamesPlayed;
+                    favorite = gameId;
+                }
+            }
+            return favorite ? GAMES[favorite]?.name || favorite : '-';
+        }
+
+        // Render the stats page
+        function renderStats() {
+            const stats = loadStats();
+            const gamesContainer = document.getElementById('gamesStats');
+            const noStats = document.getElementById('noStats');
+
+            // Update global stats
+            document.getElementById('totalGames').textContent = formatNumber(stats.totalGamesPlayed);
+            document.getElementById('totalTime').textContent = formatTime(stats.totalTimePlayed);
+            document.getElementById('totalCoins').textContent = formatNumber(stats.totalCoinsEarned);
+            document.getElementById('favoriteGame').textContent = getFavoriteGame(stats);
+
+            // Check if we have any game stats
+            const hasStats = Object.keys(stats.games).length > 0;
+
+            if (!hasStats) {
+                gamesContainer.style.display = 'none';
+                noStats.classList.remove('hidden');
+                return;
+            }
+
+            noStats.classList.add('hidden');
+            gamesContainer.style.display = 'grid';
+            gamesContainer.innerHTML = '';
+
+            // Sort games by most played
+            const sortedGames = Object.entries(stats.games)
+                .sort((a, b) => b[1].gamesPlayed - a[1].gamesPlayed);
+
+            for (const [gameId, gameStats] of sortedGames) {
+                const game = GAMES[gameId];
+                if (!game) continue;
+
+                const card = document.createElement('div');
+                card.className = 'game-stat-card';
+
+                // Build stats rows based on what data exists
+                let statsHTML = '';
+
+                if (gameStats.highScore !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">High Score</span>
+                            <span class="value gold">${formatNumber(gameStats.highScore)}</span>
+                        </div>`;
+                }
+
+                if (gameStats.timePlayed !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Time Played</span>
+                            <span class="value">${formatTime(gameStats.timePlayed)}</span>
+                        </div>`;
+                }
+
+                if (gameStats.totalScore !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Total Score</span>
+                            <span class="value">${formatNumber(gameStats.totalScore)}</span>
+                        </div>`;
+                }
+
+                if (gameStats.coinsEarned !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Coins Earned</span>
+                            <span class="value gold">${formatNumber(gameStats.coinsEarned)}</span>
+                        </div>`;
+                }
+
+                // Game-specific stats
+                if (gameStats.aliensKilled !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Aliens Killed</span>
+                            <span class="value green">${formatNumber(gameStats.aliensKilled)}</span>
+                        </div>`;
+                }
+
+                if (gameStats.maxLength !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Max Length</span>
+                            <span class="value green">${gameStats.maxLength}</span>
+                        </div>`;
+                }
+
+                if (gameStats.highestWave !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Highest Wave</span>
+                            <span class="value green">${gameStats.highestWave}</span>
+                        </div>`;
+                }
+
+                if (gameStats.bestDistance !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Best Distance</span>
+                            <span class="value green">${gameStats.bestDistance}</span>
+                        </div>`;
+                }
+
+                if (gameStats.fishCaught !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Fish Caught</span>
+                            <span class="value green">${formatNumber(gameStats.fishCaught)}</span>
+                        </div>`;
+                }
+
+                if (gameStats.fruitsSliced !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Fruits Sliced</span>
+                            <span class="value green">${formatNumber(gameStats.fruitsSliced)}</span>
+                        </div>`;
+                }
+
+                if (gameStats.zombiesKilled !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Zombies Killed</span>
+                            <span class="value green">${formatNumber(gameStats.zombiesKilled)}</span>
+                        </div>`;
+                }
+
+                if (gameStats.molesWhacked !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Moles Whacked</span>
+                            <span class="value green">${formatNumber(gameStats.molesWhacked)}</span>
+                        </div>`;
+                }
+
+                if (gameStats.levelsCompleted !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Levels Completed</span>
+                            <span class="value green">${gameStats.levelsCompleted}</span>
+                        </div>`;
+                }
+
+                if (gameStats.clicks !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Total Clicks</span>
+                            <span class="value green">${formatNumber(gameStats.clicks)}</span>
+                        </div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="game-stat-header">
+                        <span class="game-icon">${game.icon}</span>
+                        <div>
+                            <div class="game-name">${game.name}</div>
+                            <div class="game-plays">${gameStats.gamesPlayed} games played</div>
+                        </div>
+                    </div>
+                    <div class="game-stat-body">
+                        ${statsHTML || '<div class="game-stat-row"><span class="label">No detailed stats yet</span></div>'}
+                    </div>
+                    <a href="${game.url}" class="play-btn">Play Now</a>
+                `;
+
+                gamesContainer.appendChild(card);
+            }
+        }
+
+        // Reset all statistics
+        function resetStats() {
+            if (confirm('Are you sure you want to reset ALL statistics? This cannot be undone.')) {
+                localStorage.removeItem('arcadeStats');
+                renderStats();
+            }
+        }
+
+        // Initialize
+        renderStats();
+    </script>
+</body>
+</html>

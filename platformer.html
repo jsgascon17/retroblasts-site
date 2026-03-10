@@ -269,6 +269,26 @@
         function save() { localStorage.setItem('platformerSave3', JSON.stringify(saveData)); }
 
         // ============================================
+        // ARCADE STATS TRACKING
+        // ============================================
+        let gameStartTime = 0;
+        function loadArcadeStats() { return JSON.parse(localStorage.getItem('arcadeStats')) || { totalGamesPlayed: 0, totalTimePlayed: 0, totalCoinsEarned: 0, games: {} }; }
+        function saveArcadeStats(stats) { localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
+        function trackGameStart() { gameStartTime = Date.now(); }
+        function trackGameEnd(finalLevel, coinsEarned) {
+            const stats = loadArcadeStats();
+            const gameId = 'platformer';
+            if (!stats.games[gameId]) stats.games[gameId] = { gamesPlayed: 0, timePlayed: 0, highScore: 0, totalScore: 0, coinsEarned: 0, levelsCompleted: 0 };
+            const gameStats = stats.games[gameId];
+            const sessionTime = (Date.now() - gameStartTime) / 1000;
+            gameStats.gamesPlayed++; gameStats.timePlayed += sessionTime; gameStats.totalScore += finalLevel; gameStats.coinsEarned += coinsEarned;
+            if (finalLevel > gameStats.highScore) gameStats.highScore = finalLevel;
+            if (finalLevel > gameStats.levelsCompleted) gameStats.levelsCompleted = finalLevel;
+            stats.totalGamesPlayed++; stats.totalTimePlayed += sessionTime; stats.totalCoinsEarned += coinsEarned;
+            saveArcadeStats(stats);
+        }
+
+        // ============================================
         // UPGRADE EFFECTS
         // ============================================
         function getJumpForce() { return BASE_JUMP_FORCE * (1 + saveData.upgrades.jumpHeight * UPGRADES.jumpHeight.effect); }
@@ -764,6 +784,7 @@
             saveData.coins += totalCoinsThisRun;
             const newAchievements = checkAchievements();
             save();
+            trackGameEnd(currentLevel, totalCoinsThisRun);
             document.getElementById('finalCoins').textContent = totalCoinsThisRun;
             document.getElementById('finalLevel').textContent = currentLevel;
             document.getElementById('newAchievements').innerHTML = newAchievements.length > 0 ? '🏆 ' + newAchievements.map(a => a.name).join(', ') : '';
@@ -773,6 +794,7 @@
 
         function startGame() {
             initAudio();
+            trackGameStart();
             coins = 0; totalCoinsThisRun = 0; lives = getStartingLives(); currentLevel = 1;
             levelTime = 0; damageTaken = 0; gamePaused = false;
             coinsDisplay.textContent = coins; levelDisplay.textContent = currentLevel;

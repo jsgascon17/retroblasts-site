@@ -445,6 +445,35 @@
         }
 
         // ============================================
+        // ARCADE STATS TRACKING
+        // ============================================
+        let gameStartTime = 0;
+        function loadArcadeStats() {
+            return JSON.parse(localStorage.getItem('arcadeStats')) || { totalGamesPlayed: 0, totalTimePlayed: 0, totalCoinsEarned: 0, games: {} };
+        }
+        function saveArcadeStats(stats) { localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
+        function trackGameStart() { gameStartTime = Date.now(); }
+        function trackGameEnd(finalScore, coinsEarned, levelsCompleted) {
+            const stats = loadArcadeStats();
+            const gameId = 'pacman';
+            if (!stats.games[gameId]) {
+                stats.games[gameId] = { gamesPlayed: 0, timePlayed: 0, highScore: 0, totalScore: 0, coinsEarned: 0, levelsCompleted: 0 };
+            }
+            const gameStats = stats.games[gameId];
+            const sessionTime = (Date.now() - gameStartTime) / 1000;
+            gameStats.gamesPlayed++;
+            gameStats.timePlayed += sessionTime;
+            gameStats.totalScore += finalScore;
+            gameStats.coinsEarned += coinsEarned;
+            if (finalScore > gameStats.highScore) gameStats.highScore = finalScore;
+            if (levelsCompleted > gameStats.levelsCompleted) gameStats.levelsCompleted = levelsCompleted;
+            stats.totalGamesPlayed++;
+            stats.totalTimePlayed += sessionTime;
+            stats.totalCoinsEarned += coinsEarned;
+            saveArcadeStats(stats);
+        }
+
+        // ============================================
         // GAME STATE
         // ============================================
         let maze = [];
@@ -1084,6 +1113,7 @@
             checkAchievements();
             saveSaveData();
             updateDisplays();
+            trackGameEnd(score, sessionCoins, level - 1);
 
             document.getElementById('finalScore').textContent = score;
             document.getElementById('finalHighScore').textContent = saveData.highScore;
@@ -1123,6 +1153,7 @@
 
         function startGame() {
             initAudio();
+            trackGameStart();
 
             score = 0;
             lives = 3;

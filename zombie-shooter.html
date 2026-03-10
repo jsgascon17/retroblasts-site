@@ -310,6 +310,25 @@
         let saveData = loadSave();
 
         // ============================================
+        // ARCADE STATS TRACKING
+        // ============================================
+        let gameStartTime = 0;
+        function loadArcadeStats() { return JSON.parse(localStorage.getItem('arcadeStats')) || { totalGamesPlayed: 0, totalTimePlayed: 0, totalCoinsEarned: 0, games: {} }; }
+        function saveArcadeStats(stats) { localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
+        function trackGameStart() { gameStartTime = Date.now(); }
+        function trackGameEnd(finalScore, coinsEarned, zombiesKilled) {
+            const stats = loadArcadeStats();
+            const gameId = 'zombie-shooter';
+            if (!stats.games[gameId]) stats.games[gameId] = { gamesPlayed: 0, timePlayed: 0, highScore: 0, totalScore: 0, coinsEarned: 0, zombiesKilled: 0 };
+            const gameStats = stats.games[gameId];
+            const sessionTime = (Date.now() - gameStartTime) / 1000;
+            gameStats.gamesPlayed++; gameStats.timePlayed += sessionTime; gameStats.totalScore += finalScore; gameStats.coinsEarned += coinsEarned; gameStats.zombiesKilled += zombiesKilled;
+            if (finalScore > gameStats.highScore) gameStats.highScore = finalScore;
+            stats.totalGamesPlayed++; stats.totalTimePlayed += sessionTime; stats.totalCoinsEarned += coinsEarned;
+            saveArcadeStats(stats);
+        }
+
+        // ============================================
         // GUNS (with magazine system)
         // ============================================
         const GUNS = {
@@ -2770,6 +2789,7 @@
             // Check achievements
             checkAchievements();
             saveSave();
+            trackGameEnd(distance, runGold, kills);
             submitScore(distance, kills, headshots);
             renderLeaderboard('deathLeaderboard', distance);
             document.getElementById('gameOverScreen').classList.remove('hidden');
@@ -2789,6 +2809,7 @@
 
         function startRun() {
             initAudio();
+            trackGameStart();
             gameMode = 'run';
             distance = 0; runGold = 0; kills = 0; headshots = 0; frame = 0;
             nextBossDistance = gameType === 'bossrush' ? 100 : 1000;

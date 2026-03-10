@@ -345,6 +345,27 @@
         }
 
         // ============================================
+        // ARCADE STATS TRACKING
+        // ============================================
+        let gameStartTime = 0;
+        let fishCaughtThisSession = 0;
+        let coinsThisSession = 0;
+        function loadArcadeStats() { return JSON.parse(localStorage.getItem('arcadeStats')) || { totalGamesPlayed: 0, totalTimePlayed: 0, totalCoinsEarned: 0, games: {} }; }
+        function saveArcadeStats(stats) { localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
+        function trackGameStart() { gameStartTime = Date.now(); fishCaughtThisSession = 0; coinsThisSession = 0; }
+        function trackGameEnd() {
+            const stats = loadArcadeStats();
+            const gameId = 'fishing';
+            if (!stats.games[gameId]) stats.games[gameId] = { gamesPlayed: 0, timePlayed: 0, highScore: 0, totalScore: 0, coinsEarned: 0, fishCaught: 0 };
+            const gameStats = stats.games[gameId];
+            const sessionTime = (Date.now() - gameStartTime) / 1000;
+            gameStats.gamesPlayed++; gameStats.timePlayed += sessionTime; gameStats.totalScore += fishCaughtThisSession; gameStats.coinsEarned += coinsThisSession; gameStats.fishCaught += fishCaughtThisSession;
+            if (fishCaughtThisSession > gameStats.highScore) gameStats.highScore = fishCaughtThisSession;
+            stats.totalGamesPlayed++; stats.totalTimePlayed += sessionTime; stats.totalCoinsEarned += coinsThisSession;
+            saveArcadeStats(stats);
+        }
+
+        // ============================================
         // CANVAS & GAME STATE
         // ============================================
         const canvas = document.getElementById('gameCanvas');
@@ -626,6 +647,8 @@
             saveData.fishCaught[fish.id] = (saveData.fishCaught[fish.id] || 0) + 1;
             saveData.money += fish.value;
             saveData.totalEarned += fish.value;
+            fishCaughtThisSession++;
+            coinsThisSession += fish.value;
 
             if (fish.rarity === 'rare') saveData.raresCaught++;
             if (fish.rarity === 'epic') saveData.epicsCaught++;
@@ -860,6 +883,7 @@
 
         function startGame() {
             initAudio();
+            trackGameStart();
             gameRunning = true;
             hookY = 80;
             hookX = W / 2;
@@ -904,6 +928,7 @@
             if (e.code === 'Space' && gameRunning) {
                 e.preventDefault();
                 gameRunning = false;
+                trackGameEnd();
                 document.getElementById('startScreen').classList.remove('hidden');
                 renderLocations();
                 updateDisplays();

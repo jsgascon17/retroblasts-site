@@ -328,6 +328,42 @@
         }
 
         // ============================================
+        // ARCADE STATS TRACKING
+        // ============================================
+        let gameStartTime = 0;
+
+        function loadArcadeStats() {
+            return JSON.parse(localStorage.getItem('arcadeStats')) || {
+                totalGamesPlayed: 0, totalTimePlayed: 0, totalCoinsEarned: 0, games: {}
+            };
+        }
+
+        function saveArcadeStats(stats) {
+            localStorage.setItem('arcadeStats', JSON.stringify(stats));
+        }
+
+        function trackGameStart() { gameStartTime = Date.now(); }
+
+        function trackGameEnd(finalScore, coinsEarned) {
+            const stats = loadArcadeStats();
+            const gameId = 'flappy-bird';
+            if (!stats.games[gameId]) {
+                stats.games[gameId] = { gamesPlayed: 0, timePlayed: 0, highScore: 0, totalScore: 0, coinsEarned: 0 };
+            }
+            const gameStats = stats.games[gameId];
+            const sessionTime = (Date.now() - gameStartTime) / 1000;
+            gameStats.gamesPlayed++;
+            gameStats.timePlayed += sessionTime;
+            gameStats.totalScore += finalScore;
+            gameStats.coinsEarned += coinsEarned;
+            if (finalScore > gameStats.highScore) gameStats.highScore = finalScore;
+            stats.totalGamesPlayed++;
+            stats.totalTimePlayed += sessionTime;
+            stats.totalCoinsEarned += coinsEarned;
+            saveArcadeStats(stats);
+        }
+
+        // ============================================
         // GAME CONSTANTS
         // ============================================
         const BASE_GRAVITY = 0.5;
@@ -1229,6 +1265,7 @@
             checkAchievements();
             saveSaveData();
             updateDisplays();
+            trackGameEnd(score, sessionCoins);
 
             let medal = '';
             if (score >= 40) medal = '🏆';
@@ -1264,6 +1301,7 @@
 
         function startGame(daily = false) {
             initAudio();
+            trackGameStart();
             isDailyChallenge = daily;
             dailyChallenge = daily ? getTodaysChallenge() : null;
 

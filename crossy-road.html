@@ -297,6 +297,35 @@
         let unlockedCharacters = JSON.parse(localStorage.getItem('crossyCharacters')) || ['chicken', 'duck'];
         let selectedCharacter = localStorage.getItem('crossySelected') || 'chicken';
 
+        // ============================================
+        // ARCADE STATS TRACKING
+        // ============================================
+        let gameStartTime = 0;
+        function loadArcadeStats() {
+            return JSON.parse(localStorage.getItem('arcadeStats')) || { totalGamesPlayed: 0, totalTimePlayed: 0, totalCoinsEarned: 0, games: {} };
+        }
+        function saveArcadeStats(stats) { localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
+        function trackGameStart() { gameStartTime = Date.now(); }
+        function trackGameEnd(finalScore, coinsEarned) {
+            const stats = loadArcadeStats();
+            const gameId = 'crossy-road';
+            if (!stats.games[gameId]) {
+                stats.games[gameId] = { gamesPlayed: 0, timePlayed: 0, highScore: 0, totalScore: 0, coinsEarned: 0, bestDistance: 0 };
+            }
+            const gameStats = stats.games[gameId];
+            const sessionTime = (Date.now() - gameStartTime) / 1000;
+            gameStats.gamesPlayed++;
+            gameStats.timePlayed += sessionTime;
+            gameStats.totalScore += finalScore;
+            gameStats.coinsEarned += coinsEarned;
+            if (finalScore > gameStats.highScore) gameStats.highScore = finalScore;
+            if (finalScore > gameStats.bestDistance) gameStats.bestDistance = finalScore;
+            stats.totalGamesPlayed++;
+            stats.totalTimePlayed += sessionTime;
+            stats.totalCoinsEarned += coinsEarned;
+            saveArcadeStats(stats);
+        }
+
         // Player
         let player = null;
 
@@ -584,6 +613,8 @@
                     highScore = score;
                     localStorage.setItem('crossyHighScore', highScore);
                 }
+
+                trackGameEnd(score, coinsThisRun);
 
                 document.getElementById('finalScore').textContent = score;
                 document.getElementById('finalHighScore').textContent = highScore;
@@ -891,6 +922,7 @@
 
         function startGame() {
             initAudio();
+            trackGameStart();
 
             score = 0;
             maxScore = 0;

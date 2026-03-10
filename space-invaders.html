@@ -93,6 +93,7 @@
     <div class="controls">
         <span>A/D</span> Move <span>SPACE</span> Fire <span>P</span> Pause
         <button id="soundBtn" style="background: #111; border: 1px solid #0f0; color: #0f0; padding: 2px 6px; cursor: pointer; margin-left: 10px;">🔊</button>
+        <button id="musicBtn" style="background: #111; border: 1px solid #0f0; color: #0f0; padding: 2px 6px; cursor: pointer; margin-left: 5px;">🎵</button>
     </div>
 
     <div class="mobile-controls">
@@ -164,7 +165,11 @@
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
         let soundEnabled = true;
+        let musicEnabled = true;
+        let musicNodes = null;
+
         function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); }
+
         function playSound(type) {
             if (!soundEnabled || !audioCtx) return;
             const osc = audioCtx.createOscillator();
@@ -185,6 +190,156 @@
                 drone: () => { osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(400, now + 0.08); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08); osc.start(now); osc.stop(now + 0.08); }
             };
             if (sounds[type]) sounds[type]();
+        }
+
+        // ============================================
+        // BACKGROUND MUSIC SYSTEM
+        // ============================================
+        function startMusic() {
+            if (!audioCtx || musicNodes) return;
+
+            const masterGain = audioCtx.createGain();
+            masterGain.gain.value = 0.15;
+            masterGain.connect(audioCtx.destination);
+
+            // Bass line oscillator
+            const bassOsc = audioCtx.createOscillator();
+            const bassGain = audioCtx.createGain();
+            bassOsc.type = 'sawtooth';
+            bassOsc.frequency.value = 55;
+            bassGain.gain.value = 0.4;
+            bassOsc.connect(bassGain);
+            bassGain.connect(masterGain);
+
+            // Pulse/arpeggio oscillator
+            const pulseOsc = audioCtx.createOscillator();
+            const pulseGain = audioCtx.createGain();
+            pulseOsc.type = 'square';
+            pulseOsc.frequency.value = 110;
+            pulseGain.gain.value = 0.2;
+            pulseOsc.connect(pulseGain);
+            pulseGain.connect(masterGain);
+
+            // Pad oscillator for atmosphere
+            const padOsc = audioCtx.createOscillator();
+            const padGain = audioCtx.createGain();
+            const padFilter = audioCtx.createBiquadFilter();
+            padOsc.type = 'sine';
+            padOsc.frequency.value = 220;
+            padFilter.type = 'lowpass';
+            padFilter.frequency.value = 400;
+            padGain.gain.value = 0.3;
+            padOsc.connect(padFilter);
+            padFilter.connect(padGain);
+            padGain.connect(masterGain);
+
+            // Start oscillators
+            bassOsc.start();
+            pulseOsc.start();
+            padOsc.start();
+
+            // Animate the music
+            const bassNotes = [55, 55, 73.4, 55, 82.4, 82.4, 73.4, 55]; // A1, A1, D2, A1, E2, E2, D2, A1
+            const pulseNotes = [220, 277, 330, 277, 220, 330, 277, 220]; // A3, C#4, E4, etc
+            const padNotes = [110, 110, 146.8, 146.8, 164.8, 164.8, 146.8, 110];
+            let noteIndex = 0;
+
+            const musicInterval = setInterval(() => {
+                if (!musicNodes) {
+                    clearInterval(musicInterval);
+                    return;
+                }
+                const now = audioCtx.currentTime;
+                bassOsc.frequency.setValueAtTime(bassNotes[noteIndex], now);
+                pulseOsc.frequency.setValueAtTime(pulseNotes[noteIndex], now);
+                padOsc.frequency.setValueAtTime(padNotes[noteIndex], now);
+
+                // Pulse effect on the arpeggio
+                pulseGain.gain.setValueAtTime(0.25, now);
+                pulseGain.gain.exponentialRampToValueAtTime(0.1, now + 0.15);
+
+                noteIndex = (noteIndex + 1) % bassNotes.length;
+            }, 250);
+
+            musicNodes = { bassOsc, pulseOsc, padOsc, masterGain, interval: musicInterval };
+        }
+
+        function stopMusic() {
+            if (!musicNodes) return;
+            clearInterval(musicNodes.interval);
+            musicNodes.bassOsc.stop();
+            musicNodes.pulseOsc.stop();
+            musicNodes.padOsc.stop();
+            musicNodes = null;
+        }
+
+        function toggleMusic() {
+            musicEnabled = !musicEnabled;
+            document.getElementById('musicBtn').textContent = musicEnabled ? '🎵' : '🎵❌';
+            if (musicEnabled && gameRunning) {
+                startMusic();
+            } else {
+                stopMusic();
+            }
+        }
+
+        // ============================================
+        // ARCADE STATS TRACKING
+        // ============================================
+        let gameStartTime = 0;
+
+        function loadArcadeStats() {
+            return JSON.parse(localStorage.getItem('arcadeStats')) || {
+                totalGamesPlayed: 0,
+                totalTimePlayed: 0,
+                totalCoinsEarned: 0,
+                games: {}
+            };
+        }
+
+        function saveArcadeStats(stats) {
+            localStorage.setItem('arcadeStats', JSON.stringify(stats));
+        }
+
+        function trackGameStart() {
+            gameStartTime = Date.now();
+        }
+
+        function trackGameEnd(finalScore, coinsEarned, aliensKilledThisGame, waveReached) {
+            const stats = loadArcadeStats();
+            const gameId = 'space-invaders';
+
+            // Initialize game stats if needed
+            if (!stats.games[gameId]) {
+                stats.games[gameId] = {
+                    gamesPlayed: 0,
+                    timePlayed: 0,
+                    highScore: 0,
+                    totalScore: 0,
+                    coinsEarned: 0,
+                    aliensKilled: 0,
+                    highestWave: 0
+                };
+            }
+
+            const gameStats = stats.games[gameId];
+            const sessionTime = (Date.now() - gameStartTime) / 1000;
+
+            // Update game-specific stats
+            gameStats.gamesPlayed++;
+            gameStats.timePlayed += sessionTime;
+            gameStats.totalScore += finalScore;
+            gameStats.coinsEarned += coinsEarned;
+            gameStats.aliensKilled += aliensKilledThisGame;
+            if (finalScore > gameStats.highScore) gameStats.highScore = finalScore;
+            if (waveReached > gameStats.highestWave) gameStats.highestWave = waveReached;
+
+            // Update global stats
+            stats.totalGamesPlayed++;
+            stats.totalTimePlayed += sessionTime;
+            stats.totalCoinsEarned += coinsEarned;
+
+            saveArcadeStats(stats);
         }
 
         // ============================================
@@ -584,6 +739,7 @@
                         score += points;
                         coinsThisGame += 1;
                         saveData.stats.aliensKilled++;
+                        aliensKilledThisGame++;
                         scoreDisplay.textContent = score;
                         const remaining = aliens.filter(a => a.alive).length;
                         alienSpeed = 1 + (ALIEN_ROWS * ALIEN_COLS - remaining) * 0.05;
@@ -665,6 +821,7 @@
             gameRunning = false;
             boss = null; bossActive = false;
             playSound('gameOver');
+            stopMusic();
 
             // Update stats
             saveData.coins += coinsThisGame;
@@ -675,6 +832,9 @@
             // Check achievements
             const newAchievements = checkAchievements();
             save();
+
+            // Track arcade stats
+            trackGameEnd(score, coinsThisGame, aliensKilledThisGame, wave);
 
             // Display
             document.getElementById('gameOverTitle').textContent = won ? 'VICTORY!' : 'GAME OVER';
@@ -689,6 +849,8 @@
             gameOverScreen.classList.remove('hidden');
         }
 
+        let aliensKilledThisGame = 0;
+
         function startGame() {
             initAudio();
             score = 0; lives = 3; wave = 1;
@@ -696,6 +858,7 @@
             bullets = []; alienBullets = []; powerups = [];
             boss = null; bossActive = false; gamePaused = false;
             coinsThisGame = 0; damageTakenThisWave = false;
+            aliensKilledThisGame = 0;
             activeEffects = { shield: 0, rapid: 0, triple: 0, pierce: 0, missile: 0, upgradeShield: getShieldHits() };
 
             player.x = canvas.width / 2 - PLAYER_WIDTH / 2;
@@ -709,6 +872,11 @@
             startScreen.classList.add('hidden');
             gameOverScreen.classList.add('hidden');
             gameRunning = true;
+
+            // Start tracking and music
+            trackGameStart();
+            if (musicEnabled) startMusic();
+
             gameLoop();
         }
 
@@ -878,6 +1046,7 @@
         document.getElementById('achievementsBtn').addEventListener('click', () => { renderAchievements(); achievementsScreen.classList.remove('hidden'); });
         document.getElementById('closeAchievements').addEventListener('click', () => achievementsScreen.classList.add('hidden'));
         document.getElementById('soundBtn').addEventListener('click', () => { soundEnabled = !soundEnabled; document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇'; });
+        document.getElementById('musicBtn').addEventListener('click', toggleMusic);
 
         // Mode tabs
         document.querySelectorAll('.mode-tab').forEach(btn => {

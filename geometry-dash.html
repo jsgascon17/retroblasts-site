@@ -662,6 +662,26 @@
         let selectedColor = 0;
         let levelProgress = JSON.parse(localStorage.getItem('gdProgress')) || {};
 
+        // ============================================
+        // ARCADE STATS TRACKING
+        // ============================================
+        let gameStartTime = 0;
+        let attemptsThisSession = 0;
+        function loadArcadeStats() { return JSON.parse(localStorage.getItem('arcadeStats')) || { totalGamesPlayed: 0, totalTimePlayed: 0, totalCoinsEarned: 0, games: {} }; }
+        function saveArcadeStats(stats) { localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
+        function trackGameStart() { gameStartTime = Date.now(); attemptsThisSession = 0; }
+        function trackGameEnd(levelsCompleted, totalAttempts) {
+            const stats = loadArcadeStats();
+            const gameId = 'geometry-dash';
+            if (!stats.games[gameId]) stats.games[gameId] = { gamesPlayed: 0, timePlayed: 0, highScore: 0, totalScore: 0, coinsEarned: 0, levelsCompleted: 0 };
+            const gameStats = stats.games[gameId];
+            const sessionTime = (Date.now() - gameStartTime) / 1000;
+            gameStats.gamesPlayed++; gameStats.timePlayed += sessionTime; gameStats.totalScore += totalAttempts;
+            if (levelsCompleted > gameStats.levelsCompleted) gameStats.levelsCompleted = levelsCompleted;
+            stats.totalGamesPlayed++; stats.totalTimePlayed += sessionTime;
+            saveArcadeStats(stats);
+        }
+
         // Player
         let player = null;
         let gameMode = 'cube'; // cube, ship, ball, ufo
@@ -1276,6 +1296,7 @@
 
         function startGame(practice = false) {
             initAudio();
+            trackGameStart();
 
             practiceMode = practice;
             const level = LEVELS[currentLevel];
@@ -1438,6 +1459,7 @@
         document.getElementById('retryBtn').addEventListener('click', retry);
         document.getElementById('menuBtn').addEventListener('click', () => {
             gameRunning = false;
+            trackGameEnd(Object.keys(levelProgress).filter(k => levelProgress[k].completed).length, attempts);
             attempts = 1;
             document.getElementById('deathScreen').classList.add('hidden');
             document.getElementById('startScreen').classList.remove('hidden');
@@ -1455,6 +1477,7 @@
             }
         });
         document.getElementById('victoryMenuBtn').addEventListener('click', () => {
+            trackGameEnd(Object.keys(levelProgress).filter(k => levelProgress[k].completed).length, attempts);
             document.getElementById('victoryScreen').classList.add('hidden');
             document.getElementById('startScreen').classList.remove('hidden');
             renderLevelSelect();

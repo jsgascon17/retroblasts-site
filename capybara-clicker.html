@@ -617,6 +617,8 @@
 
             state.points += amount;
             state.totalEarned += amount;
+            clicksThisSession++;
+            capybarasThisSession += amount;
 
             spawnClickText(e, amount, isCrit);
             spawnSplash(e);
@@ -1029,6 +1031,27 @@
         function saveGame() {
             localStorage.setItem('capybaraClicker', JSON.stringify(state));
         }
+
+        // ============================================
+        // ARCADE STATS TRACKING
+        // ============================================
+        let gameStartTime = Date.now();
+        let clicksThisSession = 0;
+        let capybarasThisSession = 0;
+        function loadArcadeStats() { return JSON.parse(localStorage.getItem('arcadeStats')) || { totalGamesPlayed: 0, totalTimePlayed: 0, totalCoinsEarned: 0, games: {} }; }
+        function saveArcadeStats(stats) { localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
+        function trackGameEnd() {
+            const stats = loadArcadeStats();
+            const gameId = 'capybara-clicker';
+            if (!stats.games[gameId]) stats.games[gameId] = { gamesPlayed: 0, timePlayed: 0, highScore: 0, totalScore: 0, coinsEarned: 0, clicks: 0 };
+            const gameStats = stats.games[gameId];
+            const sessionTime = (Date.now() - gameStartTime) / 1000;
+            gameStats.gamesPlayed++; gameStats.timePlayed += sessionTime; gameStats.totalScore += Math.floor(capybarasThisSession); gameStats.clicks += clicksThisSession;
+            if (capybarasThisSession > gameStats.highScore) gameStats.highScore = Math.floor(capybarasThisSession);
+            stats.totalGamesPlayed++; stats.totalTimePlayed += sessionTime;
+            saveArcadeStats(stats);
+        }
+        window.addEventListener('beforeunload', trackGameEnd);
 
         function loadGame() {
             const saved = localStorage.getItem('capybaraClicker');
