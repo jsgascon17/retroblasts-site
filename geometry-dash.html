@@ -724,6 +724,9 @@
             const groundY = gravityFlipped ? 80 + player.size / 2 : GROUND_Y - player.size / 2;
             const ceilingY = gravityFlipped ? GROUND_Y - player.size / 2 : 80 + player.size / 2;
 
+            // Reset onGround - will be set true by ground or block collisions
+            player.onGround = false;
+
             switch (gameMode) {
                 case 'cube':
                     player.vy += gravity;
@@ -738,16 +741,8 @@
                         player.y = groundY;
                         player.vy = 0;
                         player.onGround = true;
-                    } else {
-                        player.onGround = false;
                     }
-
-                    // Jump
-                    if (isHolding && player.onGround) {
-                        player.vy = gravityFlipped ? 15 : -15;
-                        player.onGround = false;
-                        playSound('jump');
-                    }
+                    // Note: onGround for blocks is set in checkCollisions, jump handled in handleInput
 
                     // Rotation
                     player.rotation += 0.15;
@@ -783,17 +778,8 @@
                         player.y = groundY;
                         player.vy = 0;
                         player.onGround = true;
-                    } else {
-                        player.onGround = false;
                     }
-
-                    // Tap to flip gravity
-                    if (isHolding && player.onGround) {
-                        gravityFlipped = !gravityFlipped;
-                        player.onGround = false;
-                        playSound('jump');
-                        isHolding = false; // Require release
-                    }
+                    // Note: onGround for blocks is set in checkCollisions, input handled in handleInput
 
                     player.rotation += gravityFlipped ? -0.15 : 0.15;
                     break;
@@ -824,6 +810,28 @@
                     life: 1,
                     color: COLORS[selectedColor]
                 });
+            }
+        }
+
+        // Handle input after collisions are checked so onGround is accurate
+        function handleInput() {
+            if (player.dead) return;
+
+            if (gameMode === 'cube') {
+                // Jump
+                if (isHolding && player.onGround) {
+                    player.vy = gravityFlipped ? 15 : -15;
+                    player.onGround = false;
+                    playSound('jump');
+                }
+            } else if (gameMode === 'ball') {
+                // Tap to flip gravity
+                if (isHolding && player.onGround) {
+                    gravityFlipped = !gravityFlipped;
+                    player.onGround = false;
+                    playSound('jump');
+                    isHolding = false; // Require release
+                }
             }
         }
 
@@ -1281,6 +1289,7 @@
             // Update
             updatePlayer();
             checkCollisions();
+            handleInput();  // Process input after collisions so onGround includes blocks
             updateParticles();
 
             // Draw
