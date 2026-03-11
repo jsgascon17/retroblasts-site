@@ -305,16 +305,16 @@
         ];
 
         const SKINS = [
-            { id: 'classic', name: 'Classic Capy', desc: 'The original', bodyColor: '#8B7355', faceColor: '#9C8565', cost: 0 },
-            { id: 'golden', name: 'Golden Capy', desc: 'Shiny and special', bodyColor: '#FFD700', faceColor: '#FFC107', cost: 5000 },
-            { id: 'pink', name: 'Pink Capy', desc: 'Cute and cuddly', bodyColor: '#FFB6C1', faceColor: '#FFC0CB', cost: 7500 },
-            { id: 'blue', name: 'Blue Capy', desc: 'Cool and calm', bodyColor: '#6495ED', faceColor: '#87CEEB', cost: 7500 },
-            { id: 'green', name: 'Forest Capy', desc: 'One with nature', bodyColor: '#228B22', faceColor: '#32CD32', cost: 10000 },
-            { id: 'purple', name: 'Mystic Capy', desc: 'Mysterious vibes', bodyColor: '#9370DB', faceColor: '#BA55D3', cost: 15000 },
-            { id: 'rainbow', name: 'Rainbow Capy', desc: 'All the colors!', bodyColor: 'rainbow', faceColor: 'rainbow', cost: 50000 },
-            { id: 'ghost', name: 'Ghost Capy', desc: 'Spooky chill', bodyColor: '#E8E8E8', faceColor: '#F5F5F5', cost: 75000, alpha: 0.7 },
-            { id: 'lava', name: 'Lava Capy', desc: 'Hot but cool', bodyColor: '#FF4500', faceColor: '#FF6347', cost: 100000 },
-            { id: 'cosmic', name: 'Cosmic Capy', desc: 'From the stars', bodyColor: '#191970', faceColor: '#483D8B', cost: 250000, stars: true }
+            { id: 'classic', name: 'Classic Capy', desc: 'The original', bodyColor: '#8B7355', faceColor: '#9C8565', cost: 0, clickBonus: 0, perSecBonus: 0 },
+            { id: 'golden', name: 'Golden Capy', desc: '+15% click power', bodyColor: '#FFD700', faceColor: '#FFC107', cost: 5000, clickBonus: 0.15, perSecBonus: 0, effect: 'sparkle' },
+            { id: 'pink', name: 'Pink Capy', desc: '+10% per second', bodyColor: '#FFB6C1', faceColor: '#FFC0CB', cost: 7500, clickBonus: 0, perSecBonus: 0.10, effect: 'hearts' },
+            { id: 'blue', name: 'Blue Capy', desc: '+15% per second', bodyColor: '#6495ED', faceColor: '#87CEEB', cost: 7500, clickBonus: 0, perSecBonus: 0.15, effect: 'bubbles' },
+            { id: 'green', name: 'Forest Capy', desc: '+20% per second', bodyColor: '#228B22', faceColor: '#32CD32', cost: 10000, clickBonus: 0, perSecBonus: 0.20, effect: 'leaves' },
+            { id: 'purple', name: 'Mystic Capy', desc: '+10% click & +10% per sec', bodyColor: '#9370DB', faceColor: '#BA55D3', cost: 15000, clickBonus: 0.10, perSecBonus: 0.10, effect: 'mystic' },
+            { id: 'rainbow', name: 'Rainbow Capy', desc: '+25% to everything!', bodyColor: 'rainbow', faceColor: 'rainbow', cost: 50000, clickBonus: 0.25, perSecBonus: 0.25 },
+            { id: 'ghost', name: 'Ghost Capy', desc: '+30% per second', bodyColor: '#E8E8E8', faceColor: '#F5F5F5', cost: 75000, alpha: 0.7, clickBonus: 0, perSecBonus: 0.30, effect: 'ghost' },
+            { id: 'lava', name: 'Lava Capy', desc: '+30% click power', bodyColor: 'lava', faceColor: 'lava', cost: 100000, clickBonus: 0.30, perSecBonus: 0, effect: 'fire' },
+            { id: 'cosmic', name: 'Cosmic Capy', desc: '+35% to everything!', bodyColor: 'cosmic', faceColor: 'cosmic', cost: 250000, clickBonus: 0.35, perSecBonus: 0.35, effect: 'stars' }
         ];
 
         const ACHIEVEMENTS = [
@@ -392,24 +392,141 @@
 
             ctx.globalAlpha = skin.alpha || 1;
 
-            // Get colors
+            // Get colors based on skin type
             let bodyColor = skin.bodyColor;
             let faceColor = skin.faceColor;
 
+            // Rainbow - cycling through all hues
             if (bodyColor === 'rainbow') {
                 const hue = (frameCount * 2) % 360;
                 bodyColor = `hsl(${hue}, 70%, 60%)`;
                 faceColor = `hsl(${(hue + 30) % 360}, 70%, 65%)`;
             }
 
-            // Cosmic stars
-            if (skin.stars) {
-                ctx.fillStyle = '#fff';
-                for (let i = 0; i < 20; i++) {
-                    const sx = (cx + Math.sin(i * 0.7 + frameCount * 0.02) * 60) % w;
-                    const sy = (cy + Math.cos(i * 0.9 + frameCount * 0.02) * 50) % h;
+            // Cosmic - cycling through cosmic colors (purples, blues, pinks)
+            if (bodyColor === 'cosmic') {
+                const cosmicHues = [260, 280, 300, 240, 220, 200]; // purples, magentas, blues
+                const idx = Math.floor((frameCount * 0.05) % cosmicHues.length);
+                const nextIdx = (idx + 1) % cosmicHues.length;
+                const blend = (frameCount * 0.05) % 1;
+                const hue = cosmicHues[idx] + (cosmicHues[nextIdx] - cosmicHues[idx]) * blend;
+                bodyColor = `hsl(${hue}, 60%, 25%)`;
+                faceColor = `hsl(${(hue + 20) % 360}, 70%, 35%)`;
+            }
+
+            // Lava - cycling through fire colors (reds, oranges, yellows)
+            if (bodyColor === 'lava') {
+                const t = frameCount * 0.1;
+                const hue = 0 + Math.sin(t) * 30; // oscillate between red and orange
+                bodyColor = `hsl(${hue}, 100%, ${45 + Math.sin(t * 2) * 10}%)`;
+                faceColor = `hsl(${hue + 15}, 100%, ${55 + Math.sin(t * 2) * 10}%)`;
+            }
+
+            // Draw effects behind capybara
+            if (skin.effect === 'stars') {
+                // Cosmic stars effect
+                for (let i = 0; i < 30; i++) {
+                    const sx = (cx + Math.sin(i * 0.7 + frameCount * 0.02) * 80) % w;
+                    const sy = (cy + Math.cos(i * 0.9 + frameCount * 0.015) * 70) % h;
+                    const starSize = 1.5 + Math.sin(frameCount * 0.1 + i) * 1;
+                    const starHue = (frameCount + i * 20) % 360;
+                    ctx.fillStyle = `hsl(${starHue}, 80%, 80%)`;
                     ctx.beginPath();
-                    ctx.arc(sx, sy, 1 + Math.sin(frameCount * 0.1 + i) * 0.5, 0, Math.PI * 2);
+                    ctx.arc(sx, sy, starSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            if (skin.effect === 'sparkle') {
+                // Golden sparkles
+                for (let i = 0; i < 15; i++) {
+                    const sx = cx + Math.sin(i * 1.2 + frameCount * 0.05) * 70;
+                    const sy = cy + Math.cos(i * 0.8 + frameCount * 0.04) * 60;
+                    const sparkleSize = 2 + Math.sin(frameCount * 0.15 + i * 2) * 1.5;
+                    ctx.fillStyle = `rgba(255, 215, 0, ${0.5 + Math.sin(frameCount * 0.1 + i) * 0.3})`;
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, sparkleSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            if (skin.effect === 'hearts') {
+                // Floating hearts
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                for (let i = 0; i < 8; i++) {
+                    const hx = cx + Math.sin(i * 1.5 + frameCount * 0.03) * 60;
+                    const hy = cy - 20 + Math.cos(i + frameCount * 0.02) * 50;
+                    ctx.globalAlpha = 0.4 + Math.sin(frameCount * 0.1 + i) * 0.3;
+                    ctx.fillText('💕', hx, hy);
+                }
+                ctx.globalAlpha = skin.alpha || 1;
+            }
+
+            if (skin.effect === 'bubbles') {
+                // Blue bubbles
+                for (let i = 0; i < 12; i++) {
+                    const bx = cx + Math.sin(i * 1.3 + frameCount * 0.04) * 65;
+                    const by = cy + Math.cos(i * 0.9 + frameCount * 0.03) * 55;
+                    const bubbleSize = 4 + Math.sin(frameCount * 0.08 + i) * 2;
+                    ctx.strokeStyle = `rgba(135, 206, 250, ${0.5 + Math.sin(frameCount * 0.1 + i) * 0.3})`;
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.arc(bx, by, bubbleSize, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+
+            if (skin.effect === 'leaves') {
+                // Floating leaves
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                const leafEmojis = ['🍃', '🌿', '☘️'];
+                for (let i = 0; i < 10; i++) {
+                    const lx = cx + Math.sin(i * 1.1 + frameCount * 0.025) * 70;
+                    const ly = cy + Math.cos(i * 0.7 + frameCount * 0.02) * 60;
+                    ctx.globalAlpha = 0.5 + Math.sin(frameCount * 0.08 + i) * 0.3;
+                    ctx.fillText(leafEmojis[i % 3], lx, ly);
+                }
+                ctx.globalAlpha = skin.alpha || 1;
+            }
+
+            if (skin.effect === 'mystic') {
+                // Mystic swirls
+                for (let i = 0; i < 20; i++) {
+                    const angle = (i / 20) * Math.PI * 2 + frameCount * 0.02;
+                    const radius = 50 + Math.sin(frameCount * 0.05 + i) * 20;
+                    const mx = cx + Math.cos(angle) * radius;
+                    const my = cy + Math.sin(angle) * radius * 0.7;
+                    const hue = (280 + i * 5 + frameCount) % 360;
+                    ctx.fillStyle = `hsla(${hue}, 70%, 60%, ${0.3 + Math.sin(frameCount * 0.1 + i) * 0.2})`;
+                    ctx.beginPath();
+                    ctx.arc(mx, my, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            if (skin.effect === 'ghost') {
+                // Ghostly wisps
+                for (let i = 0; i < 15; i++) {
+                    const gx = cx + Math.sin(i * 1.4 + frameCount * 0.03) * 60;
+                    const gy = cy + Math.cos(i * 0.6 + frameCount * 0.02) * 50 - Math.sin(frameCount * 0.05 + i) * 20;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.2 + Math.sin(frameCount * 0.08 + i) * 0.15})`;
+                    ctx.beginPath();
+                    ctx.arc(gx, gy, 5 + Math.sin(frameCount * 0.1 + i) * 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            if (skin.effect === 'fire') {
+                // Fire embers
+                for (let i = 0; i < 20; i++) {
+                    const fx = cx + Math.sin(i * 1.2 + frameCount * 0.06) * 55;
+                    const fy = cy + Math.cos(i * 0.8 + frameCount * 0.04) * 45 - Math.abs(Math.sin(frameCount * 0.1 + i)) * 30;
+                    const fireHue = Math.random() < 0.3 ? 50 : (Math.random() < 0.5 ? 30 : 10);
+                    ctx.fillStyle = `hsla(${fireHue}, 100%, 50%, ${0.4 + Math.sin(frameCount * 0.15 + i) * 0.3})`;
+                    ctx.beginPath();
+                    ctx.arc(fx, fy, 3 + Math.random() * 2, 0, Math.PI * 2);
                     ctx.fill();
                 }
             }
@@ -484,8 +601,16 @@
             ctx.fill();
 
             // Legs
-            const legColor = bodyColor === 'rainbow' ? `hsl(${(frameCount * 2 + 180) % 360}, 70%, 50%)` : '#7A6550';
-            ctx.fillStyle = skin.bodyColor === 'rainbow' ? legColor : (skin.id === 'classic' ? '#7A6550' : bodyColor);
+            // Legs use same animated color for special skins, or darker body color for others
+            let legColor;
+            if (skin.bodyColor === 'rainbow' || skin.bodyColor === 'lava' || skin.bodyColor === 'cosmic') {
+                legColor = bodyColor; // Use the animated color
+            } else if (skin.id === 'classic') {
+                legColor = '#7A6550';
+            } else {
+                legColor = bodyColor;
+            }
+            ctx.fillStyle = legColor;
             ctx.fillRect(cx - 42, cy + 42, 22, 25);
             ctx.fillRect(cx + 20, cy + 42, 22, 25);
             ctx.fillRect(cx - 30, cy + 47, 18, 20);
@@ -528,6 +653,11 @@
                     power += u.clickBonus * state.upgrades[u.id];
                 }
             });
+            // Apply skin click bonus
+            const skin = SKINS.find(s => s.id === state.equippedSkin);
+            if (skin && skin.clickBonus) {
+                power *= (1 + skin.clickBonus);
+            }
             return power;
         }
 
@@ -568,6 +698,11 @@
                     ps += f.perSec * state.friends[f.id];
                 }
             });
+            // Apply skin per-second bonus
+            const skin = SKINS.find(s => s.id === state.equippedSkin);
+            if (skin && skin.perSecBonus) {
+                ps *= (1 + skin.perSecBonus);
+            }
             return ps * state.multiplier;
         }
 
