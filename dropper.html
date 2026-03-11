@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Dropper</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            overflow: hidden;
+        }
+        .game-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+        }
+        .stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+        .stat { text-align: center; }
+        .stat-label { color: #888; font-size: 0.8rem; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: #4ecdc4; }
+        #gameCanvas {
+            border: 3px solid #4ecdc4;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(78, 205, 196, 0.3);
+        }
+        .controls {
+            margin-top: 15px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            z-index: 10;
+        }
+        .overlay.hidden { display: none; }
+        .overlay h2 { font-size: 2.5rem; margin-bottom: 10px; color: #4ecdc4; }
+        .overlay p { margin: 10px 0; font-size: 1.2rem; }
+        .btn {
+            margin-top: 15px;
+            padding: 12px 35px;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { transform: scale(1.05); }
+        .level-select {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .level-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            border: 2px solid #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .level-btn:hover { background: rgba(78, 205, 196, 0.3); }
+        .level-btn.locked { opacity: 0.4; cursor: not-allowed; }
+        .level-btn.completed { background: rgba(78, 205, 196, 0.5); }
+        .home-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+        .home-link:hover { opacity: 1; }
+        .death-count { color: #ff6b6b; }
+        .mobile-controls {
+            display: none;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .mobile-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(78, 205, 196, 0.3);
+            border: 2px solid #4ecdc4;
+            color: #fff;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        @media (max-width: 600px) {
+            .mobile-controls { display: flex; }
+            .controls { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-link">< Back to Games</a>
+
+    <div class="game-container">
+        <h1>The Dropper</h1>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-label">Level</div>
+                <div class="stat-value" id="levelNum">1</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Deaths</div>
+                <div class="stat-value death-count" id="deaths">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Best</div>
+                <div class="stat-value" id="bestLevel">1</div>
+            </div>
+        </div>
+
+        <div style="position: relative;">
+            <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+            <div class="overlay" id="startOverlay">
+                <h2>The Dropper</h2>
+                <p>Fall through the obstacles!</p>
+                <p>Land in the water to survive</p>
+                <div class="level-select" id="levelSelect"></div>
+                <button class="btn" id="startBtn">Start Level 1</button>
+            </div>
+
+            <div class="overlay hidden" id="winOverlay">
+                <h2>Level Complete!</h2>
+                <p id="winMessage">Nice drop!</p>
+                <button class="btn" id="nextLevelBtn">Next Level</button>
+            </div>
+
+            <div class="overlay hidden" id="deathOverlay">
+                <h2 style="color: #ff6b6b;">Splat!</h2>
+                <p>You hit an obstacle</p>
+                <button class="btn" id="retryBtn">Try Again</button>
+            </div>
+
+            <div class="overlay hidden" id="completeOverlay">
+                <h2>You Beat All Levels!</h2>
+                <p id="completeMessage"></p>
+                <button class="btn" id="replayBtn">Play Again</button>
+            </div>
+        </div>
+
+        <div class="controls">Arrow Keys or A/D to move</div>
+        <div class="mobile-controls">
+            <button class="mobile-btn" id="leftBtn">←</button>
+            <button class="mobile-btn" id="rightBtn">→</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+
+        // UI elements
+        const levelNumEl = document.getElementById('levelNum');
+        const deathsEl = document.getElementById('deaths');
+        const bestLevelEl = document.getElementById('bestLevel');
+        const startOverlay = document.getElementById('startOverlay');
+        const winOverlay = document.getElementById('winOverlay');
+        const deathOverlay = document.getElementById('deathOverlay');
+        const completeOverlay = document.getElementById('completeOverlay');
+        const levelSelect = document.getElementById('levelSelect');
+
+        // Game state
+        let gameRunning = false;
+        let currentLevel = 0;
+        let deaths = 0;
+        let bestLevel = parseInt(localStorage.getItem('dropperBestLevel')) || 1;
+        let unlockedLevels = parseInt(localStorage.getItem('dropperUnlocked')) || 1;
+
+        // Player
+        let player = { x: W / 2, y: 50, vx: 0, vy: 0, width: 20, height: 20 };
+        const gravity = 0.4;
+        const maxFallSpeed = 12;
+        const moveSpeed = 6;
+
+        // Input
+        let keys = { left: false, right: false };
+
+        // Levels - each level has obstacles, theme colors, and water position
+        const LEVELS = [
+            {
+                name: "Easy Drop",
+                bg: '#1a1a2e',
+                obstacleColor: '#e74c3c',
+                waterColor: '#3498db',
+                obstacles: [
+                    { x: 0, y: 150, w: 150, h: 20 },
+                    { x: 250, y: 150, w: 150, h: 20 },
+                    { x: 100, y: 300, w: 200, h: 20 },
+                    { x: 0, y: 450, w: 120, h: 20 },
+                    { x: 280, y: 450, w: 120, h: 20 }
+                ],
+                waterY: 560
+            },
+            {
+                name: "Zigzag",
+                bg: '#0f3460',
+                obstacleColor: '#f39c12',
+                waterColor: '#2ecc71',
+                obstacles: [
+                    { x: 0, y: 120, w: 280, h: 20 },
+                    { x: 120, y: 220, w: 280, h: 20 },
+                    { x: 0, y: 320, w: 280, h: 20 },
+                    { x: 120, y: 420, w: 280, h: 20 },
+                    { x: 0, y: 520, w: 150, h: 20 },
+                    { x: 250, y: 520, w: 150, h: 20 }
+                ],
+                waterY: 560
+            },
+            {
+                name: "The Gauntlet",
+                bg: '#16213e',
+                obstacleColor: '#9b59b6',
+                waterColor: '#1abc9c',
+                obstacles: [
+                    { x: 0, y: 100, w: 170, h: 15 },
+                    { x: 230, y: 100, w: 170, h: 15 },
+                    { x: 80, y: 180, w: 100, h: 15 },
+                    { x: 220, y: 180, w: 100, h: 15 },
+                    { x: 0, y: 260, w: 140, h: 15 },
+                    { x: 260, y: 260, w: 140, h: 15 },
+                    { x: 150, y: 340, w: 100, h: 15 },
+                    { x: 0, y: 420, w: 180, h: 15 },
+                    { x: 220, y: 420, w: 180, h: 15 },
+                    { x: 100, y: 500, w: 80, h: 15 },
+                    { x: 220, y: 500, w: 80, h: 15 }
+                ],
+                waterY: 560
+            },
+            {
+                name: "Neon Nightmare",
+                bg: '#0a0a15',
+                obstacleColor: '#ff00ff',
+                waterColor: '#00ffff',
+                obstacles: [
+                    { x: 50, y: 100, w: 300, h: 12 },
+                    { x: 0, y: 170, w: 100, h: 12 },
+                    { x: 300, y: 170, w: 100, h: 12 },
+                    { x: 120, y: 240, w: 160, h: 12 },
+                    { x: 0, y: 310, w: 180, h: 12 },
+                    { x: 220, y: 310, w: 180, h: 12 },
+                    { x: 80, y: 380, w: 80, h: 12 },
+                    { x: 240, y: 380, w: 80, h: 12 },
+                    { x: 150, y: 450, w: 100, h: 12 },
+                    { x: 0, y: 520, w: 160, h: 12 },
+                    { x: 240, y: 520, w: 160, h: 12 }
+                ],
+                waterY: 560
+            },
+            {
+                name: "The Maze",
+                bg: '#1e272e',
+                obstacleColor: '#ffc048',
+                waterColor: '#0be881',
+                obstacles: [
+                    { x: 0, y: 80, w: 320, h: 15 },
+                    { x: 80, y: 140, w: 320, h: 15 },
+                    { x: 0, y: 200, w: 320, h: 15 },
+                    { x: 80, y: 260, w: 320, h: 15 },
+                    { x: 0, y: 320, w: 320, h: 15 },
+                    { x: 80, y: 380, w: 320, h: 15 },
+                    { x: 0, y: 440, w: 320, h: 15 },
+                    { x: 80, y: 500, w: 320, h: 15 }
+                ],
+                waterY: 560
+            },
+            {
+                name: "Precision",
+                bg: '#2d132c',
+                obstacleColor: '#ee5a24',
+                waterColor: '#686de0',
+                obstacles: [
+                    { x: 0, y: 100, w: 175, h: 18 },
+                    { x: 225, y: 100, w: 175, h: 18 },
+                    { x: 0, y: 180, w: 185, h: 18 },
+                    { x: 215, y: 180, w: 185, h: 18 },
+                    { x: 0, y: 260, w: 180, h: 18 },
+                    { x: 220, y: 260, w: 180, h: 18 },
+                    { x: 0, y: 340, w: 190, h: 18 },
+                    { x: 210, y: 340, w: 190, h: 18 },
+                    { x: 0, y: 420, w: 175, h: 18 },
+                    { x: 225, y: 420, w: 175, h: 18 },
+                    { x: 0, y: 500, w: 185, h: 18 },
+                    { x: 215, y: 500, w: 185, h: 18 }
+                ],
+                waterY: 560
+            },
+            {
+                name: "Chaos",
+                bg: '#200122',
+                obstacleColor: '#c0392b',
+                waterColor: '#27ae60',
+                obstacles: [
+                    { x: 20, y: 80, w: 80, h: 15 },
+                    { x: 160, y: 100, w: 80, h: 15 },
+                    { x: 300, y: 90, w: 80, h: 15 },
+                    { x: 0, y: 160, w: 100, h: 15 },
+                    { x: 220, y: 180, w: 120, h: 15 },
+                    { x: 80, y: 240, w: 90, h: 15 },
+                    { x: 280, y: 260, w: 100, h: 15 },
+                    { x: 0, y: 320, w: 130, h: 15 },
+                    { x: 180, y: 340, w: 100, h: 15 },
+                    { x: 60, y: 400, w: 80, h: 15 },
+                    { x: 200, y: 420, w: 120, h: 15 },
+                    { x: 0, y: 480, w: 90, h: 15 },
+                    { x: 150, y: 500, w: 80, h: 15 },
+                    { x: 300, y: 490, w: 100, h: 15 }
+                ],
+                waterY: 560
+            },
+            {
+                name: "The Spiral",
+                bg: '#0c0c1e',
+                obstacleColor: '#e056fd',
+                waterColor: '#22a6b3',
+                obstacles: [
+                    { x: 0, y: 90, w: 300, h: 15 },
+                    { x: 100, y: 150, w: 300, h: 15 },
+                    { x: 0, y: 210, w: 300, h: 15 },
+                    { x: 100, y: 270, w: 300, h: 15 },
+                    { x: 0, y: 330, w: 300, h: 15 },
+                    { x: 100, y: 390, w: 300, h: 15 },
+                    { x: 0, y: 450, w: 300, h: 15 },
+                    { x: 100, y: 510, w: 300, h: 15 }
+                ],
+                waterY: 560
+            }
+        ];
+
+        bestLevelEl.textContent = bestLevel;
+
+        function renderLevelSelect() {
+            levelSelect.innerHTML = '';
+            LEVELS.forEach((level, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'level-btn';
+                if (i >= unlockedLevels) btn.classList.add('locked');
+                if (i < unlockedLevels - 1) btn.classList.add('completed');
+                btn.textContent = i + 1;
+                btn.title = level.name;
+                btn.onclick = () => {
+                    if (i < unlockedLevels) {
+                        currentLevel = i;
+                        startLevel();
+                    }
+                };
+                levelSelect.appendChild(btn);
+            });
+            document.getElementById('startBtn').textContent = `Start Level ${currentLevel + 1}`;
+        }
+
+        function resetPlayer() {
+            player.x = W / 2;
+            player.y = 30;
+            player.vx = 0;
+            player.vy = 0;
+        }
+
+        function startLevel() {
+            resetPlayer();
+            gameRunning = true;
+            hideAllOverlays();
+            levelNumEl.textContent = currentLevel + 1;
+            trackGameStart();
+            gameLoop();
+        }
+
+        function hideAllOverlays() {
+            startOverlay.classList.add('hidden');
+            winOverlay.classList.add('hidden');
+            deathOverlay.classList.add('hidden');
+            completeOverlay.classList.add('hidden');
+        }
+
+        function update() {
+            // Horizontal movement
+            if (keys.left) player.vx = -moveSpeed;
+            else if (keys.right) player.vx = moveSpeed;
+            else player.vx = 0;
+
+            // Gravity
+            player.vy += gravity;
+            if (player.vy > maxFallSpeed) player.vy = maxFallSpeed;
+
+            // Move
+            player.x += player.vx;
+            player.y += player.vy;
+
+            // Wall bounds
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > W) player.x = W - player.width;
+
+            // Check collision with obstacles
+            const level = LEVELS[currentLevel];
+            for (const obs of level.obstacles) {
+                if (checkCollision(player, obs)) {
+                    die();
+                    return;
+                }
+            }
+
+            // Check water landing
+            if (player.y + player.height >= level.waterY) {
+                win();
+            }
+        }
+
+        function checkCollision(p, obs) {
+            return p.x < obs.x + obs.w &&
+                   p.x + p.width > obs.x &&
+                   p.y < obs.y + obs.h &&
+                   p.y + p.height > obs.y;
+        }
+
+        function die() {
+            gameRunning = false;
+            deaths++;
+            deathsEl.textContent = deaths;
+            deathOverlay.classList.remove('hidden');
+            playSound('death');
+        }
+
+        function win() {
+            gameRunning = false;
+            playSound('win');
+
+            if (currentLevel + 1 > unlockedLevels) {
+                unlockedLevels = currentLevel + 1;
+                localStorage.setItem('dropperUnlocked', unlockedLevels);
+            }
+
+            if (currentLevel + 1 > bestLevel) {
+                bestLevel = currentLevel + 1;
+                localStorage.setItem('dropperBestLevel', bestLevel);
+                bestLevelEl.textContent = bestLevel;
+            }
+
+            trackGameEnd();
+
+            if (currentLevel >= LEVELS.length - 1) {
+                // Beat all levels!
+                completeOverlay.classList.remove('hidden');
+                document.getElementById('completeMessage').textContent =
+                    `Total deaths: ${deaths}`;
+            } else {
+                winOverlay.classList.remove('hidden');
+                document.getElementById('winMessage').textContent =
+                    `${LEVELS[currentLevel].name} complete!`;
+            }
+
+            renderLevelSelect();
+        }
+
+        function draw() {
+            const level = LEVELS[currentLevel];
+
+            // Background
+            ctx.fillStyle = level.bg;
+            ctx.fillRect(0, 0, W, H);
+
+            // Draw grid lines for style
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < W; i += 40) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, H);
+                ctx.stroke();
+            }
+            for (let i = 0; i < H; i += 40) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(W, i);
+                ctx.stroke();
+            }
+
+            // Draw obstacles
+            ctx.fillStyle = level.obstacleColor;
+            ctx.shadowColor = level.obstacleColor;
+            ctx.shadowBlur = 10;
+            for (const obs of level.obstacles) {
+                ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+            }
+            ctx.shadowBlur = 0;
+
+            // Draw water
+            ctx.fillStyle = level.waterColor;
+            ctx.shadowColor = level.waterColor;
+            ctx.shadowBlur = 15;
+            ctx.fillRect(0, level.waterY, W, H - level.waterY);
+            ctx.shadowBlur = 0;
+
+            // Water waves
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            for (let i = 0; i < W; i += 30) {
+                const waveY = level.waterY + Math.sin(Date.now() / 500 + i / 30) * 3;
+                ctx.beginPath();
+                ctx.arc(i + 15, waveY, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw player
+            ctx.fillStyle = '#fff';
+            ctx.shadowColor = '#fff';
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc(player.x + player.width / 2, player.y + player.height / 2, player.width / 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Trail effect
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.beginPath();
+            ctx.arc(player.x + player.width / 2, player.y - 5, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(player.x + player.width / 2, player.y - 15, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Audio
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playSound(type) {
+            initAudio();
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'win') {
+                osc.frequency.value = 523;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+
+                setTimeout(() => {
+                    const o2 = audioCtx.createOscillator();
+                    const g2 = audioCtx.createGain();
+                    o2.connect(g2);
+                    g2.connect(audioCtx.destination);
+                    o2.frequency.value = 659;
+                    o2.type = 'sine';
+                    g2.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    g2.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                    o2.start();
+                    o2.stop(audioCtx.currentTime + 0.3);
+                }, 150);
+            } else if (type === 'death') {
+                osc.frequency.value = 150;
+                osc.type = 'sawtooth';
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        // Controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+        });
+
+        // Mobile controls
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+
+        leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.left = true; });
+        leftBtn.addEventListener('touchend', () => keys.left = false);
+        rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.right = true; });
+        rightBtn.addEventListener('touchend', () => keys.right = false);
+
+        // Button handlers
+        document.getElementById('startBtn').addEventListener('click', startLevel);
+        document.getElementById('nextLevelBtn').addEventListener('click', () => {
+            currentLevel++;
+            startLevel();
+        });
+        document.getElementById('retryBtn').addEventListener('click', startLevel);
+        document.getElementById('replayBtn').addEventListener('click', () => {
+            currentLevel = 0;
+            deaths = 0;
+            deathsEl.textContent = 0;
+            startLevel();
+        });
+
+        // Stats tracking
+        let gameStartTime = 0;
+        function loadArcadeStats() {
+            const saved = localStorage.getItem('arcadeStats');
+            return saved ? JSON.parse(saved) : {
+                totalGamesPlayed: 0, totalTimePlayed: 0, totalCoinsEarned: 0,
+                games: {}
+            };
+        }
+        function saveArcadeStats(stats) { localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
+        function trackGameStart() { gameStartTime = Date.now(); }
+        function trackGameEnd() {
+            const stats = loadArcadeStats();
+            const gameTime = Math.floor((Date.now() - gameStartTime) / 1000);
+            stats.totalGamesPlayed++;
+            stats.totalTimePlayed += gameTime;
+            if (!stats.games['dropper']) {
+                stats.games['dropper'] = { gamesPlayed: 0, timePlayed: 0, highestLevel: 0, totalDeaths: 0 };
+            }
+            const g = stats.games['dropper'];
+            g.gamesPlayed++;
+            g.timePlayed += gameTime;
+            g.totalDeaths += deaths;
+            if (currentLevel + 1 > g.highestLevel) g.highestLevel = currentLevel + 1;
+            saveArcadeStats(stats);
+        }
+
+        // Init
+        renderLevelSelect();
+        draw();
+    </script>
+</body>
+</html>

@@ -221,6 +221,35 @@
             font-size: 4rem;
         }
 
+        /* Pop the Lock */
+        .poplock-preview {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+
+        .poplock-preview .icon {
+            font-size: 4rem;
+            animation: popSpin 2s linear infinite;
+        }
+
+        @keyframes popSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* The Dropper */
+        .dropper-preview {
+            background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 70%, #3498db 100%);
+        }
+
+        .dropper-preview .icon {
+            font-size: 4rem;
+            animation: dropBounce 1s ease-in-out infinite;
+        }
+
+        @keyframes dropBounce {
+            0%, 100% { transform: translateY(-10px); }
+            50% { transform: translateY(10px); }
+        }
 
         .game-info {
             padding: 25px;
@@ -639,6 +668,46 @@
                         <span class="tag">Endless</span>
                         <span class="tag">Hopper</span>
                         <span class="tag">Collect</span>
+                    </div>
+                    <span class="play-btn">Play Now</span>
+                </div>
+            </a>
+
+            <!-- Pop the Lock -->
+            <a href="pop-the-lock.html" class="game-card">
+                <div class="game-preview poplock-preview">
+                    <span class="icon">🔓</span>
+                </div>
+                <div class="game-info">
+                    <h2 class="game-title">Pop the Lock</h2>
+                    <p class="game-description">
+                        Test your timing! Tap when the spinning pin hits the target.
+                        How many can you hit in a row? Simple, addictive, challenging!
+                    </p>
+                    <div class="game-tags">
+                        <span class="tag">Timing</span>
+                        <span class="tag">Reflex</span>
+                        <span class="tag">Endless</span>
+                    </div>
+                    <span class="play-btn">Play Now</span>
+                </div>
+            </a>
+
+            <!-- The Dropper -->
+            <a href="dropper.html" class="game-card">
+                <div class="game-preview dropper-preview">
+                    <span class="icon">💧</span>
+                </div>
+                <div class="game-info">
+                    <h2 class="game-title">The Dropper</h2>
+                    <p class="game-description">
+                        Fall through deadly obstacles and land in the water!
+                        8 unique levels with increasing difficulty. Don't splat!
+                    </p>
+                    <div class="game-tags">
+                        <span class="tag">Falling</span>
+                        <span class="tag">Levels</span>
+                        <span class="tag">Precision</span>
                     </div>
                     <span class="play-btn">Play Now</span>
                 </div>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pop the Lock</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            overflow: hidden;
+        }
+        .game-container {
+            text-align: center;
+            position: relative;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+        .stats {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        .stat-label { color: #888; font-size: 0.9rem; }
+        .stat-value { font-size: 2rem; font-weight: bold; color: #ff6b6b; }
+        #gameCanvas {
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(255, 107, 107, 0.3);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        #gameCanvas:active { transform: scale(0.98); }
+        .message {
+            margin-top: 20px;
+            font-size: 1.3rem;
+            color: #4ecdc4;
+            min-height: 40px;
+        }
+        .instructions {
+            margin-top: 15px;
+            color: #666;
+            font-size: 0.95rem;
+        }
+        .btn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
+        }
+        .home-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+        .home-link:hover { opacity: 1; }
+        .combo {
+            position: absolute;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #4ecdc4;
+            animation: popIn 0.3s ease-out;
+            pointer-events: none;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 1; }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); opacity: 0; }
+        }
+        .perfect {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            color: #ffd700;
+            animation: perfectPop 0.5s ease-out forwards;
+            pointer-events: none;
+        }
+        @keyframes perfectPop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-link">< Back to Games</a>
+
+    <div class="game-container">
+        <h1>Pop the Lock</h1>
+        <div class="stats">
+            <div>
+                <div class="stat-label">Score</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div>
+                <div class="stat-label">Best</div>
+                <div class="stat-value" id="highScore">0</div>
+            </div>
+        </div>
+        <canvas id="gameCanvas" width="350" height="350"></canvas>
+        <div class="message" id="message">Tap when the pin hits the target!</div>
+        <div class="instructions">Click, tap, or press SPACE to pop</div>
+        <button class="btn" id="startBtn">Start Game</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const highScoreEl = document.getElementById('highScore');
+        const messageEl = document.getElementById('message');
+        const startBtn = document.getElementById('startBtn');
+        const container = document.querySelector('.game-container');
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const lockRadius = 130;
+        const pinLength = 100;
+
+        let gameRunning = false;
+        let score = 0;
+        let highScore = parseInt(localStorage.getItem('popTheLockHighScore')) || 0;
+        let pinAngle = 0;
+        let targetAngle = 0;
+        let pinSpeed = 0.03;
+        let direction = 1;
+        let targetHitZone = 0.15; // Radians tolerance for hitting target
+
+        // Colors
+        const colors = {
+            lock: '#2d3436',
+            lockBorder: '#636e72',
+            pin: '#ff6b6b',
+            pinGlow: 'rgba(255, 107, 107, 0.5)',
+            target: '#4ecdc4',
+            targetGlow: 'rgba(78, 205, 196, 0.5)'
+        };
+
+        highScoreEl.textContent = highScore;
+
+        // Audio context for sounds
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'hit') {
+                osc.frequency.value = 600 + score * 10;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialDecayTo && gain.gain.exponentialDecayTo(0.01, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'miss') {
+                osc.frequency.value = 150;
+                osc.type = 'sawtooth';
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'perfect') {
+                osc.frequency.value = 800;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+
+                // Second tone
+                setTimeout(() => {
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.frequency.value = 1000;
+                    osc2.type = 'sine';
+                    gain2.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain2.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.15);
+                    osc2.start();
+                    osc2.stop(audioCtx.currentTime + 0.15);
+                }, 100);
+            }
+        }
+
+        function setNewTarget() {
+            // Random angle, but not too close to current pin position
+            let newAngle;
+            do {
+                newAngle = Math.random() * Math.PI * 2;
+            } while (Math.abs(newAngle - pinAngle) < 0.5);
+
+            targetAngle = newAngle;
+            direction *= -1; // Reverse direction each time
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw lock body (outer ring)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, lockRadius + 20, 0, Math.PI * 2);
+            ctx.fillStyle = colors.lock;
+            ctx.fill();
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = colors.lockBorder;
+            ctx.stroke();
+
+            // Draw inner circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, lockRadius - 30, 0, Math.PI * 2);
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fill();
+
+            // Draw target zone
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(targetAngle);
+
+            // Target glow
+            ctx.shadowColor = colors.targetGlow;
+            ctx.shadowBlur = 20;
+
+            // Target dot
+            ctx.beginPath();
+            ctx.arc(lockRadius - 5, 0, 18, 0, Math.PI * 2);
+            ctx.fillStyle = colors.target;
+            ctx.fill();
+
+            // Target inner
+            ctx.beginPath();
+            ctx.arc(lockRadius - 5, 0, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fill();
+
+            ctx.restore();
+
+            // Draw pin
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(pinAngle);
+
+            // Pin glow
+            ctx.shadowColor = colors.pinGlow;
+            ctx.shadowBlur = 15;
+
+            // Pin line
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(pinLength, 0);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = colors.pin;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // Pin head
+            ctx.beginPath();
+            ctx.arc(pinLength, 0, 12, 0, Math.PI * 2);
+            ctx.fillStyle = colors.pin;
+            ctx.fill();
+
+            ctx.restore();
+
+            // Draw center
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 15, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff6b6b';
+            ctx.fill();
+
+            // Draw score in center if game running
+            if (gameRunning) {
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 48px Segoe UI';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(score, centerX, centerY);
+            }
+        }
+
+        function update() {
+            if (!gameRunning) return;
+
+            pinAngle += pinSpeed * direction;
+
+            // Keep angle in bounds
+            if (pinAngle > Math.PI * 2) pinAngle -= Math.PI * 2;
+            if (pinAngle < 0) pinAngle += Math.PI * 2;
+
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        function checkHit() {
+            if (!gameRunning) return;
+
+            // Calculate angle difference
+            let diff = Math.abs(pinAngle - targetAngle);
+            if (diff > Math.PI) diff = Math.PI * 2 - diff;
+
+            if (diff < targetHitZone) {
+                // Hit!
+                score++;
+                scoreEl.textContent = score;
+
+                // Check for perfect hit
+                if (diff < 0.05) {
+                    playSound('perfect');
+                    showPerfect();
+                } else {
+                    playSound('hit');
+                }
+
+                showCombo();
+
+                // Increase difficulty
+                pinSpeed = Math.min(0.08, 0.03 + score * 0.002);
+                targetHitZone = Math.max(0.1, 0.15 - score * 0.002);
+
+                setNewTarget();
+            } else {
+                // Miss!
+                gameOver();
+            }
+        }
+
+        function showCombo() {
+            const combo = document.createElement('div');
+            combo.className = 'combo';
+            combo.textContent = '+1';
+            combo.style.left = '50%';
+            combo.style.top = '30%';
+            combo.style.transform = 'translateX(-50%)';
+            container.appendChild(combo);
+            setTimeout(() => combo.remove(), 300);
+        }
+
+        function showPerfect() {
+            const perfect = document.createElement('div');
+            perfect.className = 'perfect';
+            perfect.textContent = 'PERFECT!';
+            container.appendChild(perfect);
+            setTimeout(() => perfect.remove(), 500);
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            playSound('miss');
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('popTheLockHighScore', highScore);
+                highScoreEl.textContent = highScore;
+                messageEl.textContent = `New High Score: ${score}!`;
+            } else {
+                messageEl.textContent = `Game Over! Score: ${score}`;
+            }
+
+            startBtn.textContent = 'Play Again';
+            startBtn.style.display = 'block';
+
+            // Flash effect
+            canvas.style.boxShadow = '0 0 50px rgba(255, 0, 0, 0.5)';
+            setTimeout(() => {
+                canvas.style.boxShadow = '0 0 50px rgba(255, 107, 107, 0.3)';
+            }, 200);
+
+            // Track stats
+            trackGameEnd();
+        }
+
+        function startGame() {
+            initAudio();
+            gameRunning = true;
+            score = 0;
+            pinAngle = 0;
+            pinSpeed = 0.03;
+            targetHitZone = 0.15;
+            direction = 1;
+
+            scoreEl.textContent = '0';
+            messageEl.textContent = 'Tap when the pin hits the target!';
+            startBtn.style.display = 'none';
+
+            setNewTarget();
+            trackGameStart();
+            update();
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startGame);
+        canvas.addEventListener('click', checkHit);
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (gameRunning) {
+                    checkHit();
+                } else {
+                    startGame();
+                }
+            }
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            checkHit();
+        });
+
+        // Stats tracking
+        let gameStartTime = 0;
+        function loadArcadeStats() {
+            const saved = localStorage.getItem('arcadeStats');
+            return saved ? JSON.parse(saved) : {
+                totalGamesPlayed: 0, totalTimePlayed: 0, totalCoinsEarned: 0,
+                games: {}
+            };
+        }
+        function saveArcadeStats(stats) { localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
+        function trackGameStart() { gameStartTime = Date.now(); }
+        function trackGameEnd() {
+            const stats = loadArcadeStats();
+            const gameTime = Math.floor((Date.now() - gameStartTime) / 1000);
+            stats.totalGamesPlayed++;
+            stats.totalTimePlayed += gameTime;
+            if (!stats.games['pop-the-lock']) {
+                stats.games['pop-the-lock'] = { gamesPlayed: 0, timePlayed: 0, highScore: 0, totalScore: 0 };
+            }
+            const g = stats.games['pop-the-lock'];
+            g.gamesPlayed++;
+            g.timePlayed += gameTime;
+            g.totalScore += score;
+            if (score > g.highScore) g.highScore = score;
+            saveArcadeStats(stats);
+        }
+
+        // Initial draw
+        draw();
+    </script>
+</body>
+</html>
