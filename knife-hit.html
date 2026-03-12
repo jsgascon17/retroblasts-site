@@ -511,6 +511,289 @@
             document.getElementById('soundBtn').textContent = saveData.soundEnabled ? '🔊' : '🔇';
         }
 
+        // Draw knife based on skin
+        function drawKnife(ctx, x, y, skin) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            switch(skin.id) {
+                case 'golden':
+                    // Golden dagger with shine
+                    const goldGrad = ctx.createLinearGradient(-6, -25, 6, 10);
+                    goldGrad.addColorStop(0, '#FFD700');
+                    goldGrad.addColorStop(0.5, '#FFF8DC');
+                    goldGrad.addColorStop(1, '#DAA520');
+                    ctx.fillStyle = goldGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -28);
+                    ctx.lineTo(-7, 8);
+                    ctx.lineTo(0, 5);
+                    ctx.lineTo(7, 8);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.strokeStyle = '#B8860B';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    // Gold handle
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(-5, 8, 10, 18);
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillRect(-6, 8, 12, 3);
+                    ctx.fillRect(-6, 23, 12, 3);
+                    break;
+
+                case 'flame':
+                    // Flaming blade
+                    const flameGrad = ctx.createLinearGradient(0, -30, 0, 10);
+                    flameGrad.addColorStop(0, '#ff0000');
+                    flameGrad.addColorStop(0.3, '#ff6600');
+                    flameGrad.addColorStop(0.6, '#ffcc00');
+                    flameGrad.addColorStop(1, '#ff6600');
+                    ctx.fillStyle = flameGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -30);
+                    ctx.quadraticCurveTo(-10, -15, -8, 0);
+                    ctx.quadraticCurveTo(-6, 8, 0, 10);
+                    ctx.quadraticCurveTo(6, 8, 8, 0);
+                    ctx.quadraticCurveTo(10, -15, 0, -30);
+                    ctx.fill();
+                    // Dark handle
+                    ctx.fillStyle = '#222';
+                    ctx.fillRect(-5, 10, 10, 20);
+                    ctx.fillStyle = '#ff4400';
+                    ctx.fillRect(-6, 10, 12, 3);
+                    break;
+
+                case 'ice':
+                    // Crystal ice blade
+                    const iceGrad = ctx.createLinearGradient(-8, -25, 8, 10);
+                    iceGrad.addColorStop(0, '#e0ffff');
+                    iceGrad.addColorStop(0.5, '#00d4ff');
+                    iceGrad.addColorStop(1, '#0099cc');
+                    ctx.fillStyle = iceGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -28);
+                    ctx.lineTo(-4, -20);
+                    ctx.lineTo(-8, -10);
+                    ctx.lineTo(-6, 0);
+                    ctx.lineTo(-7, 10);
+                    ctx.lineTo(0, 8);
+                    ctx.lineTo(7, 10);
+                    ctx.lineTo(6, 0);
+                    ctx.lineTo(8, -10);
+                    ctx.lineTo(4, -20);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    // Ice handle
+                    ctx.fillStyle = '#4a90a4';
+                    ctx.fillRect(-5, 10, 10, 18);
+                    break;
+
+                case 'toxic':
+                    // Toxic dripping blade
+                    ctx.fillStyle = '#00ff00';
+                    ctx.beginPath();
+                    ctx.moveTo(0, -25);
+                    ctx.lineTo(-6, 10);
+                    ctx.lineTo(6, 10);
+                    ctx.closePath();
+                    ctx.fill();
+                    // Drip effects
+                    ctx.fillStyle = '#00cc00';
+                    ctx.beginPath();
+                    ctx.ellipse(-4, 12, 3, 5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.ellipse(3, 15, 2, 4, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Handle
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.fillRect(-5, 10, 10, 20);
+                    ctx.fillStyle = '#00ff00';
+                    ctx.fillRect(-3, 12, 6, 2);
+                    ctx.fillRect(-3, 18, 6, 2);
+                    ctx.fillRect(-3, 24, 6, 2);
+                    break;
+
+                case 'royal':
+                    // Ornate royal dagger
+                    const royalGrad = ctx.createLinearGradient(-6, -25, 6, 10);
+                    royalGrad.addColorStop(0, '#9b59b6');
+                    royalGrad.addColorStop(0.5, '#8e44ad');
+                    royalGrad.addColorStop(1, '#6c3483');
+                    ctx.fillStyle = royalGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -28);
+                    ctx.lineTo(-8, -5);
+                    ctx.lineTo(-6, 10);
+                    ctx.lineTo(6, 10);
+                    ctx.lineTo(8, -5);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.strokeStyle = '#FFD700';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    // Gem
+                    ctx.fillStyle = '#e74c3c';
+                    ctx.beginPath();
+                    ctx.arc(0, -5, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Fancy handle
+                    ctx.fillStyle = '#4a235a';
+                    ctx.fillRect(-6, 10, 12, 20);
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillRect(-7, 10, 14, 3);
+                    ctx.fillRect(-7, 27, 14, 3);
+                    break;
+
+                case 'rainbow':
+                    // Rainbow blade
+                    const rainbowGrad = ctx.createLinearGradient(0, -25, 0, 10);
+                    rainbowGrad.addColorStop(0, '#ff0000');
+                    rainbowGrad.addColorStop(0.2, '#ff9900');
+                    rainbowGrad.addColorStop(0.4, '#ffff00');
+                    rainbowGrad.addColorStop(0.6, '#00ff00');
+                    rainbowGrad.addColorStop(0.8, '#0099ff');
+                    rainbowGrad.addColorStop(1, '#9900ff');
+                    ctx.fillStyle = rainbowGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -25);
+                    ctx.lineTo(-6, 10);
+                    ctx.lineTo(6, 10);
+                    ctx.closePath();
+                    ctx.fill();
+                    // Sparkly handle
+                    ctx.fillStyle = '#ff69b4';
+                    ctx.fillRect(-5, 10, 10, 20);
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(-2, 14, 4, 4);
+                    ctx.fillRect(-2, 22, 4, 4);
+                    break;
+
+                case 'shadow':
+                    // Dark shadow blade
+                    const shadowGrad = ctx.createRadialGradient(0, -5, 0, 0, -5, 30);
+                    shadowGrad.addColorStop(0, '#333');
+                    shadowGrad.addColorStop(1, '#000');
+                    ctx.fillStyle = shadowGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -28);
+                    ctx.lineTo(-7, 8);
+                    ctx.lineTo(0, 12);
+                    ctx.lineTo(7, 8);
+                    ctx.closePath();
+                    ctx.fill();
+                    // Shadow aura
+                    ctx.strokeStyle = 'rgba(100, 0, 150, 0.5)';
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                    // Dark handle
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.fillRect(-5, 12, 10, 18);
+                    ctx.fillStyle = '#4a0080';
+                    ctx.fillRect(-6, 12, 12, 2);
+                    break;
+
+                case 'karambit':
+                    // Curved karambit blade
+                    ctx.fillStyle = skin.color;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -20);
+                    ctx.quadraticCurveTo(-20, -10, -15, 10);
+                    ctx.quadraticCurveTo(-10, 15, 0, 10);
+                    ctx.quadraticCurveTo(-5, 0, 0, -20);
+                    ctx.fill();
+                    ctx.strokeStyle = '#8B0000';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    // Ring handle
+                    ctx.fillStyle = '#222';
+                    ctx.beginPath();
+                    ctx.arc(5, 18, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#444';
+                    ctx.beginPath();
+                    ctx.arc(5, 18, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+
+                case 'balisong':
+                    // Butterfly knife
+                    ctx.fillStyle = skin.color;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -25);
+                    ctx.lineTo(-5, 5);
+                    ctx.lineTo(5, 5);
+                    ctx.closePath();
+                    ctx.fill();
+                    // Two handles
+                    ctx.fillStyle = '#2c3e50';
+                    ctx.save();
+                    ctx.translate(-3, 8);
+                    ctx.rotate(-0.2);
+                    ctx.fillRect(-4, 0, 8, 22);
+                    ctx.restore();
+                    ctx.save();
+                    ctx.translate(3, 8);
+                    ctx.rotate(0.2);
+                    ctx.fillRect(-4, 0, 8, 22);
+                    ctx.restore();
+                    // Hinges
+                    ctx.fillStyle = '#7f8c8d';
+                    ctx.beginPath();
+                    ctx.arc(-3, 8, 3, 0, Math.PI * 2);
+                    ctx.arc(3, 8, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+
+                case 'slipper':
+                    // Mom's slipper (chancla)
+                    ctx.fillStyle = skin.color;
+                    // Sole
+                    ctx.beginPath();
+                    ctx.ellipse(0, -5, 10, 20, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#c0392b';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    // Strap
+                    ctx.fillStyle = '#d35400';
+                    ctx.beginPath();
+                    ctx.moveTo(-8, -10);
+                    ctx.quadraticCurveTo(0, -20, 8, -10);
+                    ctx.quadraticCurveTo(0, -5, -8, -10);
+                    ctx.fill();
+                    // Texture dots
+                    ctx.fillStyle = '#f39c12';
+                    for (let i = -5; i <= 5; i += 5) {
+                        for (let j = -15; j <= 10; j += 8) {
+                            ctx.beginPath();
+                            ctx.arc(i, j, 1.5, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                    break;
+
+                default:
+                    // Classic knife
+                    ctx.fillStyle = skin.color;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -25);
+                    ctx.lineTo(-6, 10);
+                    ctx.lineTo(6, 10);
+                    ctx.closePath();
+                    ctx.fill();
+                    // Handle
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(-5, 10, 10, 20);
+            }
+
+            ctx.restore();
+        }
+
         // Show combo
         function showCombo() {
             if (gameState.combo >= 3) {
@@ -985,21 +1268,7 @@
             gameState.stuckKnives.forEach(knife => {
                 ctx.save();
                 ctx.rotate(knife.angle);
-                ctx.translate(0, -gameState.logRadius - 30);
-
-                // Knife blade
-                ctx.fillStyle = skin.color;
-                ctx.beginPath();
-                ctx.moveTo(0, -25);
-                ctx.lineTo(-6, 10);
-                ctx.lineTo(6, 10);
-                ctx.closePath();
-                ctx.fill();
-
-                // Knife handle
-                ctx.fillStyle = '#333';
-                ctx.fillRect(-5, 10, 10, 20);
-
+                drawKnife(ctx, 0, -gameState.logRadius - 30, skin);
                 ctx.restore();
             });
 
@@ -1019,33 +1288,12 @@
             // Draw flying knife
             if (gameState.flyingKnife) {
                 const k = gameState.flyingKnife;
-                ctx.fillStyle = skin.color;
-                ctx.beginPath();
-                ctx.moveTo(k.x, k.y - 25);
-                ctx.lineTo(k.x - 6, k.y + 10);
-                ctx.lineTo(k.x + 6, k.y + 10);
-                ctx.closePath();
-                ctx.fill();
-
-                ctx.fillStyle = '#333';
-                ctx.fillRect(k.x - 5, k.y + 10, 10, 20);
+                drawKnife(ctx, k.x, k.y, skin);
             }
 
             // Draw waiting knife
             if (!gameState.flyingKnife && gameState.knivesLeft > 0) {
-                const waitX = centerX;
-                const waitY = canvas.height - 80;
-
-                ctx.fillStyle = skin.color;
-                ctx.beginPath();
-                ctx.moveTo(waitX, waitY - 25);
-                ctx.lineTo(waitX - 6, waitY + 10);
-                ctx.lineTo(waitX + 6, waitY + 10);
-                ctx.closePath();
-                ctx.fill();
-
-                ctx.fillStyle = '#333';
-                ctx.fillRect(waitX - 5, waitY + 10, 10, 20);
+                drawKnife(ctx, centerX, canvas.height - 80, skin);
             }
 
             // Draw particles
