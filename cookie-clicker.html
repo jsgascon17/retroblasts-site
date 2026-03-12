@@ -569,7 +569,28 @@
         }
 
         // Init
-        document.getElementById('cookie').addEventListener('click', clickCookie);
+        const cookieEl = document.getElementById('cookie');
+        let mouseOverCookie = false;
+        let lastMousePos = { x: 0, y: 0 };
+
+        cookieEl.addEventListener('click', clickCookie);
+        cookieEl.addEventListener('mouseenter', () => mouseOverCookie = true);
+        cookieEl.addEventListener('mouseleave', () => mouseOverCookie = false);
+
+        // Track mouse position for spacebar clicks
+        document.addEventListener('mousemove', (e) => {
+            lastMousePos = { x: e.clientX, y: e.clientY };
+        });
+
+        // Spacebar to click cookie when hovering
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && mouseOverCookie) {
+                e.preventDefault();
+                // Create a fake event with the last known mouse position
+                clickCookie({ clientX: lastMousePos.x, clientY: lastMousePos.y });
+            }
+        });
+
         loadSaveData();
         updateUI();
 
