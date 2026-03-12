@@ -405,6 +405,15 @@
             if (saved) {
                 const data = JSON.parse(saved);
                 saveData = { ...saveData, ...data };
+
+                // Migrate old click upgrades from upgrades to clickUpgrades
+                const clickUpgradeIds = CLICK_UPGRADES.map(u => u.id);
+                clickUpgradeIds.forEach(id => {
+                    if (saveData.upgrades.includes(id) && !saveData.clickUpgrades.includes(id)) {
+                        saveData.clickUpgrades.push(id);
+                        saveData.upgrades = saveData.upgrades.filter(u => u !== id);
+                    }
+                });
             }
         }
 
