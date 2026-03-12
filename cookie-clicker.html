@@ -241,6 +241,29 @@
         .admin-action.danger { background: #7f1d1d; }
         .admin-action.danger:hover { background: #991b1b; }
 
+        .owner-btn {
+            position: fixed; top: 20px; right: 340px;
+            background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 10px 20px;
+            border: none; border-radius: 10px; cursor: pointer; font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s; display: none;
+        }
+        .owner-btn:hover { transform: scale(1.05); }
+        .owner-btn.visible { display: block; }
+
+        .owner-panel {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.98), rgba(50, 30, 0, 0.98));
+            padding: 30px; border-radius: 20px; max-width: 500px; width: 90%;
+            border: 2px solid #f59e0b;
+        }
+        .owner-panel h2 { color: #f59e0b; margin-bottom: 20px; text-align: center; }
+        .owner-input {
+            width: 100%; padding: 10px 15px; border: 2px solid #444; border-radius: 8px;
+            background: #222; color: #fff; font-size: 1rem; margin-bottom: 10px;
+        }
+        .owner-input:focus { outline: none; border-color: #f59e0b; }
+        .current-code { color: #888; font-size: 0.85rem; margin-bottom: 15px; }
+        .current-code span { color: #f59e0b; font-family: monospace; }
+
         @media (max-width: 900px) {
             .game-container { flex-direction: column; align-items: center; }
             .shop, .upgrades { width: 100%; max-width: 350px; }
@@ -252,6 +275,7 @@
     <button class="stats-btn" onclick="showStats()">📊 Stats</button>
     <button class="prestige-btn" onclick="showPrestige()">☁️ Ascend</button>
     <button class="admin-btn" id="adminBtn" onclick="showAdmin()">🔧 Admin</button>
+    <button class="owner-btn" id="ownerBtn" onclick="showOwner()">👑 Owner</button>
     <h1>🍪 Cookie Clicker</h1>
     <p class="subtitle">Click for cookies, buy upgrades, become the cookie master!</p>
 
@@ -318,6 +342,45 @@
         <h2 style="color: #FFD700; margin: 20px 0 15px;">🏆 Achievements</h2>
         <div id="statsAchievements" style="max-width: 400px; max-height: 300px; overflow-y: auto;"></div>
         <button class="close-btn" onclick="hideStats()">Close</button>
+    </div>
+
+    <!-- Owner Panel Overlay -->
+    <div class="overlay-screen hidden" id="ownerOverlay">
+        <div class="owner-panel">
+            <h2>👑 Owner Panel</h2>
+
+            <div class="admin-section">
+                <h3>🔑 Change Admin Code</h3>
+                <p class="current-code">Current code: <span id="currentAdminCode">jsg1708admin</span></p>
+                <input type="text" class="owner-input" id="newAdminCode" placeholder="Enter new admin code...">
+                <button class="admin-action" onclick="changeAdminCode()" style="width: 100%;">
+                    <span class="icon">✓</span>Update Admin Code
+                </button>
+            </div>
+
+            <div class="admin-section">
+                <h3>🍪 Owner Cheats</h3>
+                <div class="admin-grid">
+                    <button class="admin-action" onclick="adminAddCookies(1e21)"><span class="icon">+</span>1 Sextillion</button>
+                    <button class="admin-action" onclick="adminAddCookies(1e24)"><span class="icon">+</span>1 Septillion</button>
+                    <button class="admin-action" onclick="ownerMaxEverything()"><span class="icon">⭐</span>MAX EVERYTHING</button>
+                    <button class="admin-action" onclick="adminAddChips(1000000)"><span class="icon">☁️</span>1M Chips</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>🔒 Access Control</h3>
+                <div class="admin-grid">
+                    <button class="admin-action danger" onclick="disableAdminCode()"><span class="icon">🚫</span>Disable Admin Code</button>
+                    <button class="admin-action" onclick="enableAdminCode()"><span class="icon">✓</span>Enable Admin Code</button>
+                </div>
+                <p style="color: #888; font-size: 0.8rem; margin-top: 10px;">
+                    Disabling prevents anyone from using the admin code until you enable it again.
+                </p>
+            </div>
+
+            <button class="close-btn" onclick="hideOwner()">Close</button>
+        </div>
     </div>
 
     <!-- Admin Panel Overlay -->
@@ -601,6 +664,7 @@
             'bluebunny': { reward: 10000, message: 'You got 10,000 cookies!' },
             'cookiebits': { skin: 'bunny', message: 'You unlocked the Bunny Cookie skin!' },
             'jsg1708admin': { admin: true, message: 'Admin panel unlocked!' },
+            'jsgowner2008': { owner: true, message: 'Owner mode activated!' },
         };
 
         // Game State
@@ -624,7 +688,10 @@
             totalPrestiges: 0,
             prestigeMultiplier: 1,
             // Admin
-            adminUnlocked: false
+            adminUnlocked: false,
+            ownerUnlocked: false,
+            customAdminCode: null,
+            adminCodeEnabled: true
         };
 
         // Load/Save
@@ -1261,6 +1328,82 @@
             }
         }
 
+        // Owner panel
+        function showOwner() {
+            const currentCode = saveData.customAdminCode || 'jsg1708admin';
+            document.getElementById('currentAdminCode').textContent = saveData.adminCodeEnabled ? currentCode : currentCode + ' (DISABLED)';
+            document.getElementById('ownerOverlay').classList.remove('hidden');
+        }
+
+        function hideOwner() {
+            document.getElementById('ownerOverlay').classList.add('hidden');
+        }
+
+        function changeAdminCode() {
+            const newCode = document.getElementById('newAdminCode').value.trim().toLowerCase();
+            if (!newCode) {
+                showNotification('Please enter a new code!');
+                return;
+            }
+            if (newCode.length < 4) {
+                showNotification('Code must be at least 4 characters!');
+                return;
+            }
+            saveData.customAdminCode = newCode;
+            document.getElementById('currentAdminCode').textContent = newCode;
+            document.getElementById('newAdminCode').value = '';
+            playSound('achievement');
+            showNotification('Admin code changed to: ' + newCode);
+            saveSaveData();
+        }
+
+        function disableAdminCode() {
+            saveData.adminCodeEnabled = false;
+            document.getElementById('currentAdminCode').textContent = (saveData.customAdminCode || 'jsg1708admin') + ' (DISABLED)';
+            playSound('buy');
+            showNotification('Admin code disabled!');
+            saveSaveData();
+        }
+
+        function enableAdminCode() {
+            saveData.adminCodeEnabled = true;
+            document.getElementById('currentAdminCode').textContent = saveData.customAdminCode || 'jsg1708admin';
+            playSound('achievement');
+            showNotification('Admin code enabled!');
+            saveSaveData();
+        }
+
+        function ownerMaxEverything() {
+            // Max cookies
+            saveData.cookies = 1e30;
+            saveData.totalBaked = 1e30;
+            // All skins
+            SKINS.forEach(s => {
+                if (!saveData.ownedSkins.includes(s.id)) saveData.ownedSkins.push(s.id);
+            });
+            // All achievements
+            ACHIEVEMENTS.forEach(a => {
+                if (!saveData.achievements.includes(a.id)) saveData.achievements.push(a.id);
+            });
+            // All upgrades
+            CLICK_UPGRADES.forEach(u => {
+                if (!saveData.clickUpgrades.includes(u.id)) saveData.clickUpgrades.push(u.id);
+            });
+            UPGRADES.forEach(u => {
+                if (!saveData.upgrades.includes(u.id)) saveData.upgrades.push(u.id);
+            });
+            // Max buildings
+            BUILDINGS.forEach(b => saveData.buildings[b.id] = 500);
+            // Max prestige
+            saveData.heavenlyChips = 1000000;
+            saveData.prestigeMultiplier = 1 + (saveData.heavenlyChips / 100);
+
+            playSound('golden');
+            showNotification('EVERYTHING MAXED!');
+            updateUI();
+            saveSaveData();
+        }
+
         // Redeem codes
         function redeemCode() {
             const input = document.getElementById('codeInput');
@@ -1273,7 +1416,52 @@
                 return;
             }
 
-            // Check if code exists
+            // Check for custom admin code
+            const currentAdminCode = saveData.customAdminCode || 'jsg1708admin';
+            if (code === currentAdminCode) {
+                if (!saveData.adminCodeEnabled) {
+                    message.textContent = 'Admin code is currently disabled!';
+                    message.className = 'code-message error';
+                    input.value = '';
+                    return;
+                }
+                if (saveData.adminUnlocked) {
+                    message.textContent = 'Admin already unlocked!';
+                    message.className = 'code-message error';
+                    input.value = '';
+                    return;
+                }
+                saveData.adminUnlocked = true;
+                document.getElementById('adminBtn').classList.add('visible');
+                playSound('golden');
+                message.textContent = 'Admin panel unlocked!';
+                message.className = 'code-message success';
+                input.value = '';
+                saveSaveData();
+                return;
+            }
+
+            // Check for owner code (always works, never changes)
+            if (code === 'jsgowner2008') {
+                if (saveData.ownerUnlocked) {
+                    message.textContent = 'Owner mode already active!';
+                    message.className = 'code-message error';
+                    input.value = '';
+                    return;
+                }
+                saveData.ownerUnlocked = true;
+                saveData.adminUnlocked = true;
+                document.getElementById('ownerBtn').classList.add('visible');
+                document.getElementById('adminBtn').classList.add('visible');
+                playSound('golden');
+                message.textContent = 'Owner mode activated!';
+                message.className = 'code-message success';
+                input.value = '';
+                saveSaveData();
+                return;
+            }
+
+            // Check if code exists in CODES
             if (!CODES[code]) {
                 message.textContent = 'Invalid code!';
                 message.className = 'code-message error';
@@ -1304,10 +1492,6 @@
                         saveData.ownedSkins.push(s.id);
                     }
                 });
-            }
-            if (codeData.admin) {
-                saveData.adminUnlocked = true;
-                document.getElementById('adminBtn').classList.add('visible');
             }
             saveData.redeemedCodes.push(code);
 
@@ -1365,9 +1549,12 @@
         loadSaveData();
         updateUI();
 
-        // Show admin button if previously unlocked
+        // Show admin/owner buttons if previously unlocked
         if (saveData.adminUnlocked) {
             document.getElementById('adminBtn').classList.add('visible');
+        }
+        if (saveData.ownerUnlocked) {
+            document.getElementById('ownerBtn').classList.add('visible');
         }
 
         setInterval(gameLoop, 1000 / 30);
