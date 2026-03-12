@@ -384,7 +384,7 @@
         // Cookie Skins
         const SKINS = [
             { id: 'default', name: 'Classic Cookie', icon: '🍪', desc: 'The original cookie' },
-            { id: 'bunny', name: 'Bunny Cookie', icon: '🐰', desc: 'A cute bunny cookie!', code: true },
+            { id: 'bunny', name: 'Blue Bunny', icon: '🐰', desc: 'A cute blue bunny cookie!', code: true },
             { id: 'choco', name: 'Chocolate Chip', icon: '🍫', desc: 'Extra chocolatey', price: 5000 },
             { id: 'rainbow', name: 'Rainbow Cookie', icon: '🌈', desc: 'Taste the rainbow', price: 25000 },
             { id: 'gold', name: 'Golden Cookie', icon: '🥇', desc: 'Made of pure gold', price: 100000 },
@@ -610,9 +610,10 @@
                     buttonAction = canAfford ? `onclick="buySkin('${s.id}')"` : '';
                 }
 
+                const iconStyle = s.id === 'bunny' ? 'font-size: 2.5rem; filter: hue-rotate(180deg) saturate(1.5);' : 'font-size: 2.5rem;';
                 return `
                     <div class="shop-item ${equipped ? 'equipped' : ''} ${!owned && !canAfford ? 'disabled' : ''}" ${buttonAction}>
-                        <div class="shop-item-icon" style="font-size: 2.5rem;">${s.icon}</div>
+                        <div class="shop-item-icon" style="${iconStyle}">${s.icon}</div>
                         <div class="shop-item-info">
                             <div class="shop-item-name">${s.name}</div>
                             <div class="shop-item-desc">${s.desc}</div>
@@ -648,7 +649,14 @@
 
         function updateCookieDisplay() {
             const skin = SKINS.find(s => s.id === saveData.equippedSkin) || SKINS[0];
-            document.getElementById('cookie').textContent = skin.icon;
+            const cookieEl = document.getElementById('cookie');
+            cookieEl.textContent = skin.icon;
+            // Apply color filter for certain skins
+            if (skin.id === 'bunny') {
+                cookieEl.style.filter = 'hue-rotate(180deg) saturate(1.5)';
+            } else {
+                cookieEl.style.filter = 'none';
+            }
         }
 
         // Tab switching
