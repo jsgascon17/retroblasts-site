@@ -161,6 +161,32 @@
         }
         .stats-btn:hover { background: rgba(255,255,255,0.2); }
 
+        .codes-btn {
+            position: fixed; top: 100px; left: 20px;
+            background: rgba(255,255,255,0.1); color: #fff; padding: 10px 20px;
+            border: none; border-radius: 10px; cursor: pointer; font-weight: bold;
+            z-index: 250;
+        }
+        .codes-btn:hover { background: rgba(255,255,255,0.2); }
+
+        .codes-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 300;
+        }
+        .codes-overlay.hidden { display: none; }
+        .code-input {
+            background: rgba(255,255,255,0.1); border: 2px solid #444;
+            color: #fff; padding: 15px 20px; border-radius: 10px;
+            font-size: 1.2rem; text-align: center; width: 250px;
+            margin: 20px 0;
+        }
+        .code-input:focus { outline: none; border-color: #e94560; }
+        .code-message {
+            color: #4CAF50; font-size: 1.1rem; min-height: 30px; margin-bottom: 20px;
+        }
+        .code-message.error { color: #e94560; }
+
         .stats-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); display: flex; flex-direction: column;
@@ -196,6 +222,7 @@
 <body>
     <a href="index.html" class="back-btn">← Back</a>
     <button class="stats-btn" onclick="showStats()">📊 Stats</button>
+    <button class="codes-btn" onclick="showCodes()">🎁 Codes</button>
     <button class="shop-btn" onclick="showShop()">🔪 Skins</button>
     <button class="sound-btn" id="soundBtn" onclick="toggleSound()">🔊</button>
 
@@ -261,6 +288,18 @@
         <h2 style="color: #f39c12; margin-top: 20px;">🏆 Achievements</h2>
         <div class="achievements-grid" id="achievementsGrid"></div>
         <button class="btn" onclick="hideStats()" style="margin-top: 20px;">CLOSE</button>
+    </div>
+
+    <!-- Codes -->
+    <div class="codes-overlay hidden" id="codesScreen">
+        <h1 style="color: #fff;">🎁 Redeem Code</h1>
+        <p style="color: #888;">Enter a code to get rewards!</p>
+        <input type="text" class="code-input" id="codeInput" placeholder="Enter code..." maxlength="30">
+        <div class="code-message" id="codeMessage"></div>
+        <div style="display: flex; gap: 15px;">
+            <button class="btn" onclick="redeemCode()">REDEEM</button>
+            <button class="btn" onclick="hideCodes()" style="background: linear-gradient(135deg, #666, #888);">CLOSE</button>
+        </div>
     </div>
 
     <script>
@@ -390,6 +429,15 @@
             { id: 'perfectionist', name: 'Perfectionist', icon: '💎', desc: 'Complete a boss without missing', check: s => s.perfectBosses >= 1 },
         ];
 
+        // Codes
+        const CODES = {
+            'sharp': { coins: 100, message: 'You got 100 coins!' },
+            'knifeparty': { coins: 500, message: 'You got 500 coins!' },
+            'bossmode': { coins: 1000, message: 'You got 1000 coins!' },
+            'goldenknife': { skin: 'golden', message: 'You unlocked the Golden knife!' },
+            'shadowblade': { skin: 'shadow', message: 'You unlocked the Shadow knife!' },
+        };
+
         // Game state
         let saveData = {
             coins: 0,
@@ -405,7 +453,8 @@
             bestCombo: 0,
             perfectBosses: 0,
             achievements: [],
-            soundEnabled: true
+            soundEnabled: true,
+            redeemedCodes: []
         };
 
         let gameState = {
@@ -545,6 +594,63 @@
 
         function hideStats() {
             document.getElementById('statsScreen').classList.add('hidden');
+        }
+
+        // Codes
+        function showCodes() {
+            document.getElementById('codeInput').value = '';
+            document.getElementById('codeMessage').textContent = '';
+            document.getElementById('codeMessage').className = 'code-message';
+            document.getElementById('codesScreen').classList.remove('hidden');
+        }
+
+        function hideCodes() {
+            document.getElementById('codesScreen').classList.add('hidden');
+        }
+
+        function redeemCode() {
+            const input = document.getElementById('codeInput');
+            const messageEl = document.getElementById('codeMessage');
+            const code = input.value.toLowerCase().trim();
+
+            if (!code) {
+                messageEl.textContent = 'Please enter a code!';
+                messageEl.className = 'code-message error';
+                return;
+            }
+
+            if (saveData.redeemedCodes.includes(code)) {
+                messageEl.textContent = 'Code already redeemed!';
+                messageEl.className = 'code-message error';
+                return;
+            }
+
+            const codeData = CODES[code];
+            if (!codeData) {
+                messageEl.textContent = 'Invalid code!';
+                messageEl.className = 'code-message error';
+                return;
+            }
+
+            // Redeem the code
+            saveData.redeemedCodes.push(code);
+
+            if (codeData.coins) {
+                saveData.coins += codeData.coins;
+                saveData.totalCoinsEarned += codeData.coins;
+            }
+
+            if (codeData.skin && !saveData.ownedSkins.includes(codeData.skin)) {
+                saveData.ownedSkins.push(codeData.skin);
+            }
+
+            saveSaveData();
+            updateUI();
+            playSound('achievement');
+
+            messageEl.textContent = codeData.message;
+            messageEl.className = 'code-message';
+            input.value = '';
         }
 
         // Update background based on stage
@@ -1012,8 +1118,10 @@
             if (!e.target.closest('.overlay') &&
                 !e.target.closest('.shop-overlay') &&
                 !e.target.closest('.stats-overlay') &&
+                !e.target.closest('.codes-overlay') &&
                 !e.target.closest('.shop-btn') &&
                 !e.target.closest('.stats-btn') &&
+                !e.target.closest('.codes-btn') &&
                 !e.target.closest('.sound-btn') &&
                 !e.target.closest('.back-btn')) {
                 throwKnife();
