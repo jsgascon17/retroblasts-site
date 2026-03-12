@@ -285,18 +285,77 @@
             { id: 'bank', name: 'Bank', icon: '🏦', baseCost: 1400000, baseCps: 1400, desc: 'Generates cookies from interest' },
             { id: 'temple', name: 'Temple', icon: '🏛️', baseCost: 20000000, baseCps: 7800, desc: 'Full of worshippers of the cookie' },
             { id: 'wizard', name: 'Wizard Tower', icon: '🧙', baseCost: 330000000, baseCps: 44000, desc: 'Summons cookies with magic' },
+            { id: 'shipment', name: 'Shipment', icon: '🚀', baseCost: 5100000000, baseCps: 260000, desc: 'Imports cookies from the cookie planet' },
+            { id: 'alchemy', name: 'Alchemy Lab', icon: '⚗️', baseCost: 75000000000, baseCps: 1600000, desc: 'Turns gold into cookies' },
+            { id: 'portal', name: 'Portal', icon: '🌀', baseCost: 1000000000000, baseCps: 10000000, desc: 'Opens a door to the cookieverse' },
+            { id: 'timemachine', name: 'Time Machine', icon: '⏰', baseCost: 14000000000000, baseCps: 65000000, desc: 'Brings cookies from the past' },
         ];
 
         // Upgrades
         const UPGRADES = [
+            // Click upgrades
             { id: 'fingers', name: 'Reinforced Fingers', icon: '💪', cost: 100, effect: 'click', mult: 2, desc: 'Clicking is twice as powerful' },
             { id: 'ambidextrous', name: 'Ambidextrous', icon: '🤲', cost: 500, effect: 'click', mult: 2, desc: 'Clicking is twice as powerful again' },
             { id: 'carpal', name: 'Carpal Tunnel', icon: '⌨️', cost: 10000, effect: 'click', mult: 2, desc: 'Even more clicking power' },
+            { id: 'mouseclick', name: 'Thousand Fingers', icon: '🖱️', cost: 100000, effect: 'click', mult: 2, desc: 'Clicks worth 16x base' },
+            { id: 'robofinger', name: 'Robot Fingers', icon: '🤖', cost: 1000000, effect: 'click', mult: 2, desc: 'Clicks worth 32x base' },
+            { id: 'laserfinger', name: 'Laser Fingers', icon: '🔫', cost: 10000000, effect: 'click', mult: 2, desc: 'Clicks worth 64x base' },
+            { id: 'quantumfinger', name: 'Quantum Fingers', icon: '⚛️', cost: 100000000, effect: 'click', mult: 2, desc: 'Clicks worth 128x base' },
+            { id: 'cosmicfinger', name: 'Cosmic Fingers', icon: '🌌', cost: 1000000000, effect: 'click', mult: 2, desc: 'Clicks worth 256x base' },
+
+            // Cursor upgrades
+            { id: 'cursor1', name: 'Faster Cursors', icon: '👆', cost: 100, effect: 'cursor', mult: 2, desc: 'Cursors are twice as efficient' },
+            { id: 'cursor2', name: 'Titanium Mouse', icon: '🖲️', cost: 500, effect: 'cursor', mult: 2, desc: 'Cursors are twice as efficient again' },
+
+            // Grandma upgrades
             { id: 'forwards', name: 'Forwards From Grandma', icon: '📧', cost: 1000, effect: 'grandma', mult: 2, desc: 'Grandmas are twice as efficient' },
+            { id: 'grandma2', name: 'Steel Ovens', icon: '🔥', cost: 5000, effect: 'grandma', mult: 2, desc: 'Grandmas are twice as efficient again' },
+            { id: 'grandma3', name: 'Secret Recipe', icon: '📜', cost: 50000, effect: 'grandma', mult: 2, desc: 'Grandmas bake even faster' },
+
+            // Farm upgrades
             { id: 'steel', name: 'Steel Plows', icon: '🔧', cost: 11000, effect: 'farm', mult: 2, desc: 'Farms are twice as efficient' },
+            { id: 'farm2', name: 'Fertilizer', icon: '💩', cost: 55000, effect: 'farm', mult: 2, desc: 'Farms are twice as efficient again' },
+            { id: 'farm3', name: 'Cookie Trees', icon: '🌳', cost: 550000, effect: 'farm', mult: 2, desc: 'Farms grow cookie trees' },
+
+            // Mine upgrades
             { id: 'sugar', name: 'Sugar Gas', icon: '⛽', cost: 120000, effect: 'mine', mult: 2, desc: 'Mines are twice as efficient' },
+            { id: 'mine2', name: 'Diamond Drills', icon: '💎', cost: 600000, effect: 'mine', mult: 2, desc: 'Mines are twice as efficient again' },
+            { id: 'mine3', name: 'Underground Ovens', icon: '🕳️', cost: 6000000, effect: 'mine', mult: 2, desc: 'Mines bake cookies underground' },
+
+            // Factory upgrades
             { id: 'lubricant', name: 'Lubricant', icon: '🛢️', cost: 1300000, effect: 'factory', mult: 2, desc: 'Factories are twice as efficient' },
+            { id: 'factory2', name: 'Child Labor', icon: '👶', cost: 6500000, effect: 'factory', mult: 2, desc: 'Factories are twice as efficient again' },
+            { id: 'factory3', name: 'Robot Workers', icon: '🤖', cost: 65000000, effect: 'factory', mult: 2, desc: 'Factories run 24/7' },
+
+            // Bank upgrades
+            { id: 'bank1', name: 'Taller Vaults', icon: '🏗️', cost: 14000000, effect: 'bank', mult: 2, desc: 'Banks are twice as efficient' },
+            { id: 'bank2', name: 'Compound Interest', icon: '📈', cost: 70000000, effect: 'bank', mult: 2, desc: 'Banks are twice as efficient again' },
+
+            // Temple upgrades
+            { id: 'temple1', name: 'Golden Idols', icon: '🗿', cost: 200000000, effect: 'temple', mult: 2, desc: 'Temples are twice as efficient' },
+            { id: 'temple2', name: 'Sacrifices', icon: '🔮', cost: 1000000000, effect: 'temple', mult: 2, desc: 'Temples are twice as efficient again' },
+
+            // Wizard upgrades
+            { id: 'wizard1', name: 'Arcane Ovens', icon: '✨', cost: 3300000000, effect: 'wizard', mult: 2, desc: 'Wizard Towers are twice as efficient' },
+            { id: 'wizard2', name: 'Cookie Spells', icon: '📖', cost: 16500000000, effect: 'wizard', mult: 2, desc: 'Wizard Towers are twice as efficient again' },
+
+            // Shipment upgrades
+            { id: 'ship1', name: 'Warp Drive', icon: '💫', cost: 51000000000, effect: 'shipment', mult: 2, desc: 'Shipments are twice as efficient' },
+            { id: 'ship2', name: 'Wormholes', icon: '🕳️', cost: 255000000000, effect: 'shipment', mult: 2, desc: 'Shipments are twice as efficient again' },
+
+            // Alchemy upgrades
+            { id: 'alchemy1', name: 'Essence Extract', icon: '🧪', cost: 750000000000, effect: 'alchemy', mult: 2, desc: 'Alchemy Labs are twice as efficient' },
+            { id: 'alchemy2', name: 'True Gold', icon: '🥇', cost: 3750000000000, effect: 'alchemy', mult: 2, desc: 'Alchemy Labs are twice as efficient again' },
+
+            // Portal upgrades
+            { id: 'portal1', name: 'Ancient Tablet', icon: '📋', cost: 10000000000000, effect: 'portal', mult: 2, desc: 'Portals are twice as efficient' },
+
+            // Time Machine upgrades
+            { id: 'time1', name: 'Flux Capacitor', icon: '⚡', cost: 140000000000000, effect: 'timemachine', mult: 2, desc: 'Time Machines are twice as efficient' },
+
+            // Golden cookie upgrade
             { id: 'golden', name: 'Lucky Day', icon: '🍀', cost: 777777, effect: 'golden', mult: 2, desc: 'Golden cookies appear more often' },
+            { id: 'golden2', name: 'Four Leaf Clover', icon: '☘️', cost: 77777777, effect: 'golden', mult: 2, desc: 'Golden cookies are even luckier' },
         ];
 
         // Achievements
