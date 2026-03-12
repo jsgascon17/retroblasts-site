@@ -214,6 +214,33 @@
         .ascend-btn:hover { transform: scale(1.05); box-shadow: 0 8px 30px rgba(156, 39, 176, 0.6); }
         .ascend-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
+        .admin-btn {
+            position: fixed; top: 20px; right: 230px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; padding: 10px 20px;
+            border: none; border-radius: 10px; cursor: pointer; font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s; display: none;
+        }
+        .admin-btn:hover { transform: scale(1.05); }
+        .admin-btn.visible { display: block; }
+
+        .admin-panel {
+            background: rgba(30, 30, 30, 0.95); padding: 30px; border-radius: 20px;
+            max-width: 500px; width: 90%;
+        }
+        .admin-panel h2 { color: #e74c3c; margin-bottom: 20px; text-align: center; }
+        .admin-section { margin-bottom: 20px; }
+        .admin-section h3 { color: #fff; font-size: 0.9rem; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        .admin-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .admin-action {
+            background: #333; border: none; color: #fff; padding: 12px 15px;
+            border-radius: 10px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+            text-align: left;
+        }
+        .admin-action:hover { background: #444; transform: translateY(-2px); }
+        .admin-action .icon { margin-right: 8px; }
+        .admin-action.danger { background: #7f1d1d; }
+        .admin-action.danger:hover { background: #991b1b; }
+
         @media (max-width: 900px) {
             .game-container { flex-direction: column; align-items: center; }
             .shop, .upgrades { width: 100%; max-width: 350px; }
@@ -224,6 +251,7 @@
     <a href="index.html" class="back-btn">← Back</a>
     <button class="stats-btn" onclick="showStats()">📊 Stats</button>
     <button class="prestige-btn" onclick="showPrestige()">☁️ Ascend</button>
+    <button class="admin-btn" id="adminBtn" onclick="showAdmin()">🔧 Admin</button>
     <h1>🍪 Cookie Clicker</h1>
     <p class="subtitle">Click for cookies, buy upgrades, become the cookie master!</p>
 
@@ -290,6 +318,55 @@
         <h2 style="color: #FFD700; margin: 20px 0 15px;">🏆 Achievements</h2>
         <div id="statsAchievements" style="max-width: 400px; max-height: 300px; overflow-y: auto;"></div>
         <button class="close-btn" onclick="hideStats()">Close</button>
+    </div>
+
+    <!-- Admin Panel Overlay -->
+    <div class="overlay-screen hidden" id="adminOverlay">
+        <div class="admin-panel">
+            <h2>🔧 Admin Panel</h2>
+
+            <div class="admin-section">
+                <h3>🍪 Add Cookies</h3>
+                <div class="admin-grid">
+                    <button class="admin-action" onclick="adminAddCookies(1000)"><span class="icon">+</span>1,000</button>
+                    <button class="admin-action" onclick="adminAddCookies(1000000)"><span class="icon">+</span>1 Million</button>
+                    <button class="admin-action" onclick="adminAddCookies(1000000000)"><span class="icon">+</span>1 Billion</button>
+                    <button class="admin-action" onclick="adminAddCookies(1000000000000)"><span class="icon">+</span>1 Trillion</button>
+                    <button class="admin-action" onclick="adminAddCookies(1000000000000000)"><span class="icon">+</span>1 Quadrillion</button>
+                    <button class="admin-action" onclick="adminAddCookies(1e18)"><span class="icon">+</span>1 Quintillion</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>🎁 Unlock Items</h3>
+                <div class="admin-grid">
+                    <button class="admin-action" onclick="adminUnlockAllSkins()"><span class="icon">🎨</span>All Skins</button>
+                    <button class="admin-action" onclick="adminUnlockAllAchievements()"><span class="icon">🏆</span>All Achievements</button>
+                    <button class="admin-action" onclick="adminUnlockAllUpgrades()"><span class="icon">⬆️</span>All Upgrades</button>
+                    <button class="admin-action" onclick="adminMaxBuildings()"><span class="icon">🏢</span>Max Buildings</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>☁️ Prestige</h3>
+                <div class="admin-grid">
+                    <button class="admin-action" onclick="adminAddChips(100)"><span class="icon">+</span>100 Chips</button>
+                    <button class="admin-action" onclick="adminAddChips(1000)"><span class="icon">+</span>1,000 Chips</button>
+                    <button class="admin-action" onclick="adminAddChips(10000)"><span class="icon">+</span>10,000 Chips</button>
+                    <button class="admin-action" onclick="adminAddChips(100000)"><span class="icon">+</span>100,000 Chips</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>⚠️ Danger Zone</h3>
+                <div class="admin-grid">
+                    <button class="admin-action danger" onclick="adminResetGame()"><span class="icon">🗑️</span>Reset Everything</button>
+                    <button class="admin-action danger" onclick="adminRevokeAdmin()"><span class="icon">🔒</span>Revoke Admin</button>
+                </div>
+            </div>
+
+            <button class="close-btn" onclick="hideAdmin()">Close</button>
+        </div>
     </div>
 
     <!-- Prestige Overlay -->
@@ -523,7 +600,7 @@
             'i love cookies': { reward: 200, message: 'You got 200 cookies!' },
             'bluebunny': { reward: 10000, message: 'You got 10,000 cookies!' },
             'cookiebits': { skin: 'bunny', message: 'You unlocked the Bunny Cookie skin!' },
-            'freshbuildadmin': { reward: 999999999999999, allSkins: true, message: 'Admin mode activated! Max cookies + all skins!' },
+            'jsg1708admin': { admin: true, message: 'Admin panel unlocked!' },
         };
 
         // Game State
@@ -545,7 +622,9 @@
             // Prestige
             heavenlyChips: 0,
             totalPrestiges: 0,
-            prestigeMultiplier: 1
+            prestigeMultiplier: 1,
+            // Admin
+            adminUnlocked: false
         };
 
         // Load/Save
@@ -1087,6 +1166,101 @@
             saveSaveData();
         }
 
+        // Admin panel
+        function showAdmin() {
+            document.getElementById('adminOverlay').classList.remove('hidden');
+        }
+
+        function hideAdmin() {
+            document.getElementById('adminOverlay').classList.add('hidden');
+        }
+
+        function adminAddCookies(amount) {
+            saveData.cookies += amount;
+            saveData.totalBaked += amount;
+            playSound('golden');
+            showNotification('+' + formatNumber(amount) + ' cookies!');
+            updateUI();
+            saveSaveData();
+        }
+
+        function adminUnlockAllSkins() {
+            SKINS.forEach(s => {
+                if (!saveData.ownedSkins.includes(s.id)) {
+                    saveData.ownedSkins.push(s.id);
+                }
+            });
+            playSound('achievement');
+            showNotification('All skins unlocked!');
+            updateUI();
+            saveSaveData();
+        }
+
+        function adminUnlockAllAchievements() {
+            ACHIEVEMENTS.forEach(a => {
+                if (!saveData.achievements.includes(a.id)) {
+                    saveData.achievements.push(a.id);
+                }
+            });
+            playSound('achievement');
+            showNotification('All achievements unlocked!');
+            updateUI();
+            saveSaveData();
+        }
+
+        function adminUnlockAllUpgrades() {
+            CLICK_UPGRADES.forEach(u => {
+                if (!saveData.clickUpgrades.includes(u.id)) {
+                    saveData.clickUpgrades.push(u.id);
+                }
+            });
+            UPGRADES.forEach(u => {
+                if (!saveData.upgrades.includes(u.id)) {
+                    saveData.upgrades.push(u.id);
+                }
+            });
+            playSound('achievement');
+            showNotification('All upgrades unlocked!');
+            updateUI();
+            saveSaveData();
+        }
+
+        function adminMaxBuildings() {
+            BUILDINGS.forEach(b => {
+                saveData.buildings[b.id] = 100;
+            });
+            playSound('achievement');
+            showNotification('All buildings maxed to 100!');
+            updateUI();
+            saveSaveData();
+        }
+
+        function adminAddChips(amount) {
+            saveData.heavenlyChips += amount;
+            saveData.prestigeMultiplier = 1 + (saveData.heavenlyChips / 100);
+            playSound('golden');
+            showNotification('+' + formatNumber(amount) + ' heavenly chips!');
+            updateUI();
+            saveSaveData();
+        }
+
+        function adminResetGame() {
+            if (confirm('Are you sure you want to reset EVERYTHING? This cannot be undone!')) {
+                localStorage.removeItem('cookieClicker');
+                location.reload();
+            }
+        }
+
+        function adminRevokeAdmin() {
+            if (confirm('Revoke admin access? You will need to enter the code again.')) {
+                saveData.adminUnlocked = false;
+                document.getElementById('adminBtn').classList.remove('visible');
+                hideAdmin();
+                saveSaveData();
+                showNotification('Admin access revoked');
+            }
+        }
+
         // Redeem codes
         function redeemCode() {
             const input = document.getElementById('codeInput');
@@ -1130,6 +1304,10 @@
                         saveData.ownedSkins.push(s.id);
                     }
                 });
+            }
+            if (codeData.admin) {
+                saveData.adminUnlocked = true;
+                document.getElementById('adminBtn').classList.add('visible');
             }
             saveData.redeemedCodes.push(code);
 
@@ -1186,6 +1364,11 @@
 
         loadSaveData();
         updateUI();
+
+        // Show admin button if previously unlocked
+        if (saveData.adminUnlocked) {
+            document.getElementById('adminBtn').classList.add('visible');
+        }
 
         setInterval(gameLoop, 1000 / 30);
         setInterval(saveSaveData, 10000);
