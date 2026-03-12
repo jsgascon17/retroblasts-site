@@ -1009,7 +1009,13 @@
 
         // Input
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.overlay') && !e.target.closest('.shop-btn') && !e.target.closest('.back-btn')) {
+            if (!e.target.closest('.overlay') &&
+                !e.target.closest('.shop-overlay') &&
+                !e.target.closest('.stats-overlay') &&
+                !e.target.closest('.shop-btn') &&
+                !e.target.closest('.stats-btn') &&
+                !e.target.closest('.sound-btn') &&
+                !e.target.closest('.back-btn')) {
                 throwKnife();
             }
         });
