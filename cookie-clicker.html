@@ -350,12 +350,17 @@
             return Math.floor(building.baseCost * Math.pow(1.15, count));
         }
 
-        // UI Updates
-        function updateUI() {
+        // UI Updates - light version for game loop (doesn't rebuild shop)
+        function updateStats() {
             document.getElementById('cookies').textContent = formatNumber(saveData.cookies);
             document.getElementById('perClick').textContent = formatNumber(calculateClickPower());
             document.getElementById('perSecond').textContent = formatNumber(calculateCps());
             document.getElementById('totalBaked').textContent = formatNumber(saveData.totalBaked);
+        }
+
+        // Full UI update including shop (call after purchases)
+        function updateUI() {
+            updateStats();
 
             // Milk level based on achievements
             const milkLevel = Math.min(saveData.achievements.length * 4, 40);
@@ -486,7 +491,7 @@
             }
 
             checkAchievements();
-            updateUI();
+            updateStats();
         }
 
         function spawnFallingCookie(x) {
@@ -552,7 +557,7 @@
             });
         }
 
-        // Game loop
+        // Game loop - only update stats, don't rebuild shop
         function gameLoop() {
             const cps = calculateCps();
             if (cps > 0) {
@@ -560,7 +565,7 @@
                 saveData.totalBaked += cps / 30;
             }
             checkAchievements();
-            updateUI();
+            updateStats();
         }
 
         // Init
