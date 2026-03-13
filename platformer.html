@@ -156,6 +156,17 @@
         <div style="color: #ffd700; font-size: 1.3rem; margin: 15px;">TOTAL COINS: <span id="finalCoins">0</span></div>
         <p>You reached Level <span id="finalLevel">1</span></p>
         <div id="newAchievements" style="color: #ffd700; margin: 10px;"></div>
+
+        <!-- Leaderboard Submission -->
+        <div id="leaderboardSubmit" style="margin: 15px 0; padding: 15px; background: rgba(144,238,144,0.2); border-radius: 10px; border: 1px solid #90EE90;">
+            <p style="color: #90EE90; margin-bottom: 10px; font-size: 0.9rem;">Submit to Global Leaderboard:</p>
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <input type="text" id="playerName" placeholder="Your name" maxlength="15" style="width: 120px; padding: 8px 12px; border: 2px solid #90EE90; border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff; font-family: inherit;">
+                <button class="btn" id="submitScoreBtn" style="padding: 8px 15px;">Submit</button>
+            </div>
+            <p id="leaderboardMsg" style="margin-top: 8px; font-size: 0.8rem; min-height: 1.2em;"></p>
+        </div>
+
         <button class="btn" id="restartBtn">TRY AGAIN</button>
     </div>
 
@@ -789,6 +800,12 @@
             document.getElementById('finalLevel').textContent = currentLevel;
             document.getElementById('newAchievements').innerHTML = newAchievements.length > 0 ? '🏆 ' + newAchievements.map(a => a.name).join(', ') : '';
             totalCoinsDisplay.textContent = saveData.coins;
+
+            // Reset leaderboard submit
+            const submitBtn = document.getElementById('submitScoreBtn');
+            submitBtn.disabled = false; submitBtn.textContent = 'Submit';
+            document.getElementById('leaderboardMsg').textContent = '';
+
             gameOverScreen.classList.remove('hidden');
         }
 
@@ -878,6 +895,32 @@
         document.getElementById('achievementsBtn').addEventListener('click', () => { renderAchievements(); achievementsScreen.classList.remove('hidden'); });
         document.getElementById('closeAchievements').addEventListener('click', () => achievementsScreen.classList.add('hidden'));
         document.getElementById('soundBtn').addEventListener('click', () => { soundEnabled = !soundEnabled; document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇'; });
+
+        // Leaderboard submission
+        document.getElementById('submitScoreBtn').addEventListener('click', async function() {
+            const nameInput = document.getElementById('playerName');
+            const msgEl = document.getElementById('leaderboardMsg');
+            const btn = this;
+            const playerName = nameInput.value.trim() || 'Anonymous';
+            const playerScore = currentLevel;
+            btn.disabled = true; btn.textContent = '...';
+            msgEl.textContent = 'Submitting...'; msgEl.style.color = '#888';
+            try {
+                const response = await fetch('leaderboard-global.php', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ game: 'platformer', name: playerName, score: playerScore })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    msgEl.style.color = '#90EE90';
+                    msgEl.textContent = data.isTopTen ? '🏆 #' + data.rank + ' - Top 10!' : '✓ Rank #' + data.rank;
+                    btn.textContent = 'Done!';
+                    localStorage.setItem('platformerPlayerName', playerName);
+                } else { throw new Error(data.error); }
+            } catch (e) { msgEl.style.color = '#f00'; msgEl.textContent = 'Failed!'; btn.disabled = false; btn.textContent = 'Submit'; }
+        });
+        const sn = localStorage.getItem('platformerPlayerName');
+        if (sn) document.getElementById('playerName').value = sn;
 
         // Init
         renderSkins();

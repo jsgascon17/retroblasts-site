@@ -205,6 +205,18 @@
         <div style="color: #ffd700; margin-bottom: 10px;">+<span id="coinsEarned">0</span> COINS EARNED</div>
         <div class="high-score">HIGH SCORE: <span id="finalHighScore">0</span></div>
         <div id="newAchievements" style="color: #ffd700; margin-bottom: 15px;"></div>
+
+        <!-- Leaderboard Submission -->
+        <div id="leaderboardSubmit" style="margin: 15px 0; padding: 15px; background: rgba(0,255,0,0.1); border-radius: 10px; border: 1px solid #0f0;">
+            <p style="color: #0f0; margin-bottom: 10px; font-size: 0.9rem;">Submit to Global Leaderboard:</p>
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <input type="text" id="playerName" placeholder="Your name" maxlength="15"
+                       style="width: 120px; padding: 8px 12px; border: 2px solid #0f0; border-radius: 8px; background: #000; color: #0f0; font-family: inherit;">
+                <button class="btn" id="submitScoreBtn" style="padding: 8px 15px; font-size: 0.9rem;">Submit</button>
+            </div>
+            <p id="leaderboardMsg" style="margin-top: 8px; font-size: 0.8rem; min-height: 1.2em;"></p>
+        </div>
+
         <button class="btn" id="restartBtn">PLAY AGAIN</button>
     </div>
 
@@ -1149,6 +1161,13 @@
 
             highScoreDisplay.textContent = saveData.highScore;
             coinsDisplay.textContent = saveData.coins;
+
+            // Reset leaderboard submit
+            const submitBtn = document.getElementById('submitScoreBtn');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit';
+            document.getElementById('leaderboardMsg').textContent = '';
+
             gameOverScreen.classList.remove('hidden');
         }
 
@@ -1346,6 +1365,56 @@
         // Buttons
         document.getElementById('startBtn').addEventListener('click', startGame);
         document.getElementById('restartBtn').addEventListener('click', startGame);
+
+        // Leaderboard submission
+        document.getElementById('submitScoreBtn').addEventListener('click', async function() {
+            const nameInput = document.getElementById('playerName');
+            const msgEl = document.getElementById('leaderboardMsg');
+            const btn = this;
+            const playerName = nameInput.value.trim() || 'Anonymous';
+            const playerScore = score;
+
+            btn.disabled = true;
+            btn.textContent = '...';
+            msgEl.textContent = 'Submitting...';
+            msgEl.style.color = '#888';
+
+            try {
+                const response = await fetch('leaderboard-global.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        game: 'space-invaders',
+                        name: playerName,
+                        score: playerScore
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    msgEl.style.color = '#0f0';
+                    if (data.isTopTen) {
+                        msgEl.textContent = '🏆 #' + data.rank + ' - Top 10!';
+                    } else {
+                        msgEl.textContent = '✓ Rank #' + data.rank;
+                    }
+                    btn.textContent = 'Done!';
+                    localStorage.setItem('spacePlayerName', playerName);
+                } else {
+                    throw new Error(data.error || 'Failed');
+                }
+            } catch (error) {
+                msgEl.style.color = '#f00';
+                msgEl.textContent = 'Failed. Try again!';
+                btn.disabled = false;
+                btn.textContent = 'Submit';
+            }
+        });
+
+        // Load saved player name
+        const savedName = localStorage.getItem('spacePlayerName');
+        if (savedName) document.getElementById('playerName').value = savedName;
+
         document.getElementById('shopBtn').addEventListener('click', () => { renderShop(); shopScreen.classList.remove('hidden'); });
         document.getElementById('closeShop').addEventListener('click', () => shopScreen.classList.add('hidden'));
         document.getElementById('achievementsBtn').addEventListener('click', () => { renderAchievements(); achievementsScreen.classList.remove('hidden'); });

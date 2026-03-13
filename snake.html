@@ -345,6 +345,18 @@
             <p>Length: <span id="finalLength" style="color: #0f0;">0</span></p>
             <p id="newBest" style="color: #ffd700; display: none;">NEW HIGH SCORE!</p>
             <p style="color: #ffd700; margin-top: 10px;">+<span id="coinsEarned">0</span> Coins</p>
+
+            <!-- Leaderboard Submission -->
+            <div id="leaderboardSubmit" style="margin: 15px 0; padding: 15px; background: rgba(0,255,0,0.1); border-radius: 10px; border: 1px solid #0f0;">
+                <p style="color: #0f0; margin-bottom: 10px;">Submit to Global Leaderboard:</p>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="playerName" placeholder="Your name" maxlength="15"
+                           style="flex: 1; padding: 8px 12px; border: 2px solid #0f0; border-radius: 8px; background: #000; color: #0f0; font-family: inherit;">
+                    <button class="btn" id="submitScoreBtn" style="padding: 8px 15px;">Submit</button>
+                </div>
+                <p id="leaderboardMsg" style="margin-top: 8px; font-size: 0.85rem; min-height: 1.2em;"></p>
+            </div>
+
             <button class="btn" id="retryBtn">PLAY AGAIN</button>
         </div>
     </div>
@@ -933,6 +945,13 @@
             document.getElementById('finalLength').textContent = snake.length;
             document.getElementById('coinsEarned').textContent = coinsEarned;
             document.getElementById('newBest').style.display = score >= saveData.stats.highScore ? 'block' : 'none';
+
+            // Reset leaderboard submit
+            const submitBtn = document.getElementById('submitScoreBtn');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit';
+            document.getElementById('leaderboardMsg').textContent = '';
+
             document.getElementById('gameOverScreen').classList.remove('hidden');
         }
 
@@ -1182,6 +1201,57 @@
 
         document.getElementById('startBtn').onclick = startGame;
         document.getElementById('retryBtn').onclick = startGame;
+
+        // Leaderboard submission
+        document.getElementById('submitScoreBtn').onclick = async function() {
+            const nameInput = document.getElementById('playerName');
+            const msgEl = document.getElementById('leaderboardMsg');
+            const btn = this;
+            const playerName = nameInput.value.trim() || 'Anonymous';
+            const playerScore = score;
+
+            btn.disabled = true;
+            btn.textContent = '...';
+            msgEl.textContent = 'Submitting...';
+            msgEl.style.color = '#888';
+
+            try {
+                const response = await fetch('leaderboard-global.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        game: 'snake',
+                        name: playerName,
+                        score: playerScore
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    msgEl.style.color = '#0f0';
+                    if (data.isTopTen) {
+                        msgEl.textContent = '🏆 #' + data.rank + ' - You made the top 10!';
+                    } else {
+                        msgEl.textContent = '✓ Submitted! Rank #' + data.rank;
+                    }
+                    btn.textContent = 'Submitted!';
+                    localStorage.setItem('snakePlayerName', playerName);
+                } else {
+                    throw new Error(data.error || 'Failed');
+                }
+            } catch (error) {
+                msgEl.style.color = '#f00';
+                msgEl.textContent = 'Failed to submit. Try again!';
+                btn.disabled = false;
+                btn.textContent = 'Submit';
+            }
+        };
+
+        // Load saved player name
+        const savedName = localStorage.getItem('snakePlayerName');
+        if (savedName) {
+            document.getElementById('playerName').value = savedName;
+        }
 
         // Mode selection
         document.querySelectorAll('.mode-card').forEach(card => {

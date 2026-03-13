@@ -209,6 +209,18 @@
             <div class="label">Progress</div>
         </div>
         <p>Attempt: <span id="attemptCount">1</span></p>
+
+        <!-- Leaderboard Submission -->
+        <div id="leaderboardSubmit" style="margin: 15px 0; padding: 15px; background: rgba(0,255,255,0.1); border-radius: 10px; border: 1px solid #00ffff;">
+            <p style="color: #00ffff; margin-bottom: 10px; font-size: 0.9rem;">Submit Progress to Leaderboard:</p>
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <input type="text" id="playerName" placeholder="Your name" maxlength="15"
+                       style="width: 120px; padding: 8px 12px; border: 2px solid #00ffff; border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff; font-family: inherit;">
+                <button class="btn" id="submitScoreBtn" style="padding: 8px 15px;">Submit</button>
+            </div>
+            <p id="leaderboardMsg" style="margin-top: 8px; font-size: 0.8rem; min-height: 1.2em;"></p>
+        </div>
+
         <button class="btn" id="retryBtn">RETRY</button>
         <button class="btn" id="menuBtn" style="background: #555;">MENU</button>
     </div>
@@ -1115,6 +1127,12 @@
                 const progress = Math.floor((levelX / levelLength) * 100);
                 document.getElementById('deathProgress').textContent = progress;
                 document.getElementById('attemptCount').textContent = attempts;
+
+                // Reset leaderboard submit
+                const submitBtn = document.getElementById('submitScoreBtn');
+                submitBtn.disabled = false; submitBtn.textContent = 'Submit';
+                document.getElementById('leaderboardMsg').textContent = '';
+
                 document.getElementById('deathScreen').classList.remove('hidden');
             }, 500);
         }
@@ -1467,6 +1485,39 @@
         document.getElementById('startBtn').addEventListener('click', () => startGame(false));
         document.getElementById('practiceBtn').addEventListener('click', () => startGame(true));
         document.getElementById('retryBtn').addEventListener('click', retry);
+
+        // Leaderboard submission
+        document.getElementById('submitScoreBtn').addEventListener('click', async function() {
+            const nameInput = document.getElementById('playerName');
+            const msgEl = document.getElementById('leaderboardMsg');
+            const btn = this;
+            const playerName = nameInput.value.trim() || 'Anonymous';
+            const playerScore = Math.floor(progress);
+
+            btn.disabled = true; btn.textContent = '...';
+            msgEl.textContent = 'Submitting...'; msgEl.style.color = '#888';
+
+            try {
+                const response = await fetch('leaderboard-global.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ game: 'geometry-dash', name: playerName, score: playerScore })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    msgEl.style.color = '#00ffff';
+                    msgEl.textContent = data.isTopTen ? '🏆 #' + data.rank + ' - Top 10!' : '✓ Rank #' + data.rank;
+                    btn.textContent = 'Done!';
+                    localStorage.setItem('gdPlayerName', playerName);
+                } else { throw new Error(data.error); }
+            } catch (error) {
+                msgEl.style.color = '#f00'; msgEl.textContent = 'Failed. Try again!';
+                btn.disabled = false; btn.textContent = 'Submit';
+            }
+        });
+        const savedGdName = localStorage.getItem('gdPlayerName');
+        if (savedGdName) document.getElementById('playerName').value = savedGdName;
+
         document.getElementById('menuBtn').addEventListener('click', () => {
             gameRunning = false;
             trackGameEnd(Object.keys(levelProgress).filter(k => levelProgress[k].completed).length, attempts);

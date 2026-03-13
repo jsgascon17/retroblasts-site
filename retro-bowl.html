@@ -194,6 +194,17 @@
         <h2 id="gameOverTitle">Game Over</h2>
         <p id="finalScore" style="font-size: 1.5rem; margin: 15px 0;"></p>
         <p id="seasonRecord"></p>
+
+        <!-- Leaderboard Submission -->
+        <div id="leaderboardSubmit" style="margin: 15px 0; padding: 15px; background: rgba(76,175,80,0.2); border-radius: 10px; border: 1px solid #4caf50;">
+            <p style="color: #4caf50; margin-bottom: 10px; font-size: 0.9rem;">Submit to Global Leaderboard:</p>
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <input type="text" id="playerName" placeholder="Your name" maxlength="15" style="width: 120px; padding: 8px 12px; border: 2px solid #4caf50; border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff; font-family: inherit;">
+                <button class="btn" id="submitScoreBtn" style="padding: 8px 15px;">Submit</button>
+            </div>
+            <p id="leaderboardMsg" style="margin-top: 8px; font-size: 0.8rem; min-height: 1.2em;"></p>
+        </div>
+
         <button class="btn" id="nextGameBtn">Next Game</button>
         <button class="btn btn-secondary" id="menuBtn">Main Menu</button>
     </div>
@@ -939,6 +950,12 @@
             document.getElementById('nextGameBtn').style.display =
                 (seasonMode && currentWeek < 7) ? 'inline-block' : 'none';
 
+            // Reset leaderboard submit
+            const submitBtn = document.getElementById('submitScoreBtn');
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit'; }
+            const msgEl = document.getElementById('leaderboardMsg');
+            if (msgEl) msgEl.textContent = '';
+
             gameOverOverlay.classList.remove('hidden');
             trackGameEnd();
         }
@@ -1123,6 +1140,32 @@
             myScore > oppScore ? g.wins++ : g.losses++;
             saveArcadeStats(stats);
         }
+
+        // Leaderboard submission
+        document.getElementById('submitScoreBtn').addEventListener('click', async function() {
+            const nameInput = document.getElementById('playerName');
+            const msgEl = document.getElementById('leaderboardMsg');
+            const btn = this;
+            const playerName = nameInput.value.trim() || 'Anonymous';
+            const playerScore = myScore;
+            btn.disabled = true; btn.textContent = '...';
+            msgEl.textContent = 'Submitting...'; msgEl.style.color = '#888';
+            try {
+                const response = await fetch('leaderboard-global.php', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ game: 'retro-bowl', name: playerName, score: playerScore })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    msgEl.style.color = '#4caf50';
+                    msgEl.textContent = data.isTopTen ? '🏆 #' + data.rank + ' - Top 10!' : '✓ Rank #' + data.rank;
+                    btn.textContent = 'Done!';
+                    localStorage.setItem('retroPlayerName', playerName);
+                } else { throw new Error(data.error); }
+            } catch (e) { msgEl.style.color = '#f00'; msgEl.textContent = 'Failed!'; btn.disabled = false; btn.textContent = 'Submit'; }
+        });
+        const sn = localStorage.getItem('retroPlayerName');
+        if (sn) document.getElementById('playerName').value = sn;
 
         // Start
         gameLoop();

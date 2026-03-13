@@ -341,6 +341,18 @@
                 <div class="label">Coins Earned</div>
             </div>
         </div>
+
+        <!-- Leaderboard Submission -->
+        <div id="leaderboardSubmit" style="margin: 15px 0; padding: 15px; background: rgba(76,175,80,0.2); border-radius: 10px; border: 1px solid #4caf50;">
+            <p style="color: #4caf50; margin-bottom: 10px; font-size: 0.9rem;">Submit to Global Leaderboard:</p>
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <input type="text" id="playerName" placeholder="Your name" maxlength="15"
+                       style="width: 120px; padding: 8px 12px; border: 2px solid #4caf50; border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff; font-family: inherit;">
+                <button class="btn" id="submitScoreBtn" style="padding: 8px 15px;">Submit</button>
+            </div>
+            <p id="leaderboardMsg" style="margin-top: 8px; font-size: 0.8rem; min-height: 1.2em;"></p>
+        </div>
+
         <button class="btn" onclick="startGame()">TRY AGAIN</button>
     </div>
 
@@ -1100,6 +1112,12 @@
             document.getElementById('finalHeight').textContent = gameState.maxHeight + 'm';
             document.getElementById('coinsEarned').textContent = gameState.coinsThisGame;
             document.getElementById('powerupIndicator').style.display = 'none';
+
+            // Reset leaderboard submit
+            const submitBtn = document.getElementById('submitScoreBtn');
+            submitBtn.disabled = false; submitBtn.textContent = 'Submit';
+            document.getElementById('leaderboardMsg').textContent = '';
+
             document.getElementById('gameOverScreen').classList.remove('hidden');
         }
 
@@ -1538,6 +1556,38 @@
         updateUI();
         if (saveData.adminUnlocked) document.getElementById('adminBtn').classList.add('visible');
         if (saveData.ownerUnlocked) document.getElementById('ownerBtn').classList.add('visible');
+
+        // Leaderboard submission
+        document.getElementById('submitScoreBtn').addEventListener('click', async function() {
+            const nameInput = document.getElementById('playerName');
+            const msgEl = document.getElementById('leaderboardMsg');
+            const btn = this;
+            const playerName = nameInput.value.trim() || 'Anonymous';
+            const playerScore = gameState.score;
+
+            btn.disabled = true; btn.textContent = '...';
+            msgEl.textContent = 'Submitting...'; msgEl.style.color = '#888';
+
+            try {
+                const response = await fetch('leaderboard-global.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ game: 'doodle-jump', name: playerName, score: playerScore })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    msgEl.style.color = '#4caf50';
+                    msgEl.textContent = data.isTopTen ? '🏆 #' + data.rank + ' - Top 10!' : '✓ Rank #' + data.rank;
+                    btn.textContent = 'Done!';
+                    localStorage.setItem('doodlePlayerName', playerName);
+                } else { throw new Error(data.error); }
+            } catch (error) {
+                msgEl.style.color = '#f00'; msgEl.textContent = 'Failed. Try again!';
+                btn.disabled = false; btn.textContent = 'Submit';
+            }
+        });
+        const savedDoodleName = localStorage.getItem('doodlePlayerName');
+        if (savedDoodleName) document.getElementById('playerName').value = savedDoodleName;
     </script>
 </body>
 </html>

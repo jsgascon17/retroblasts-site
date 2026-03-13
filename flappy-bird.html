@@ -165,6 +165,18 @@
         <p style="color: #FFD700; font-size: 1.2rem; margin-bottom: 5px;">Coins: +<span id="sessionCoins">0</span></p>
         <p id="dailyResult" style="color: #00BCD4; display: none;"></p>
         <div id="newAchievements" style="margin: 10px 0;"></div>
+
+        <!-- Leaderboard Submission -->
+        <div id="leaderboardSubmit" style="margin: 15px 0; padding: 15px; background: rgba(78,192,202,0.2); border-radius: 10px; border: 1px solid #4EC0CA;">
+            <p style="color: #4EC0CA; margin-bottom: 10px; font-size: 0.9rem;">Submit to Global Leaderboard:</p>
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <input type="text" id="playerName" placeholder="Your name" maxlength="15"
+                       style="width: 120px; padding: 8px 12px; border: 2px solid #4EC0CA; border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff; font-family: inherit;">
+                <button class="btn btn-small" id="submitScoreBtn">Submit</button>
+            </div>
+            <p id="leaderboardMsg" style="margin-top: 8px; font-size: 0.8rem; min-height: 1.2em;"></p>
+        </div>
+
         <button class="btn" id="restartBtn">TRY AGAIN</button>
         <button class="btn btn-small btn-secondary" id="menuBtn">MENU</button>
     </div>
@@ -1296,6 +1308,12 @@
                 newAchDiv.innerHTML = '';
             }
 
+            // Reset leaderboard submit
+            const submitBtn = document.getElementById('submitScoreBtn');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit';
+            document.getElementById('leaderboardMsg').textContent = '';
+
             document.getElementById('gameOverScreen').classList.remove('hidden');
         }
 
@@ -1406,6 +1424,55 @@
         document.getElementById('startBtn').addEventListener('click', () => startGame(false));
         document.getElementById('restartBtn').addEventListener('click', () => startGame(isDailyChallenge));
         document.getElementById('menuBtn').addEventListener('click', showMenu);
+
+        // Leaderboard submission
+        document.getElementById('submitScoreBtn').addEventListener('click', async function() {
+            const nameInput = document.getElementById('playerName');
+            const msgEl = document.getElementById('leaderboardMsg');
+            const btn = this;
+            const playerName = nameInput.value.trim() || 'Anonymous';
+            const playerScore = score;
+
+            btn.disabled = true;
+            btn.textContent = '...';
+            msgEl.textContent = 'Submitting...';
+            msgEl.style.color = '#888';
+
+            try {
+                const response = await fetch('leaderboard-global.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        game: 'flappy-bird',
+                        name: playerName,
+                        score: playerScore
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    msgEl.style.color = '#4EC0CA';
+                    if (data.isTopTen) {
+                        msgEl.textContent = '🏆 #' + data.rank + ' - Top 10!';
+                    } else {
+                        msgEl.textContent = '✓ Rank #' + data.rank;
+                    }
+                    btn.textContent = 'Done!';
+                    localStorage.setItem('flappyPlayerName', playerName);
+                } else {
+                    throw new Error(data.error || 'Failed');
+                }
+            } catch (error) {
+                msgEl.style.color = '#ff6b6b';
+                msgEl.textContent = 'Failed. Try again!';
+                btn.disabled = false;
+                btn.textContent = 'Submit';
+            }
+        });
+
+        // Load saved player name
+        const savedName = localStorage.getItem('flappyPlayerName');
+        if (savedName) document.getElementById('playerName').value = savedName;
 
         document.getElementById('victoryBtn').addEventListener('click', () => {
             document.getElementById('victoryScreen').classList.add('hidden');

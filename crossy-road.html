@@ -175,6 +175,17 @@
         <div class="score-display"><span id="finalScore">0</span></div>
         <div class="high-score">HIGH SCORE: <span id="finalHighScore">0</span></div>
         <div class="coins-display">+<span id="coinsEarned">0</span> coins</div>
+
+        <!-- Leaderboard Submission -->
+        <div id="leaderboardSubmit" style="margin: 15px 0; padding: 15px; background: rgba(76,175,80,0.2); border-radius: 10px; border: 1px solid #4caf50;">
+            <p style="color: #4caf50; margin-bottom: 10px; font-size: 0.9rem;">Submit to Global Leaderboard:</p>
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <input type="text" id="playerName" placeholder="Your name" maxlength="15" style="width: 120px; padding: 8px 12px; border: 2px solid #4caf50; border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff; font-family: inherit;">
+                <button class="btn" id="submitScoreBtn" style="padding: 8px 15px;">Submit</button>
+            </div>
+            <p id="leaderboardMsg" style="margin-top: 8px; font-size: 0.8rem; min-height: 1.2em;"></p>
+        </div>
+
         <button class="btn" id="restartBtn">PLAY AGAIN</button>
         <button class="btn btn-shop" id="menuBtn">MENU</button>
     </div>
@@ -619,6 +630,12 @@
                 document.getElementById('finalScore').textContent = score;
                 document.getElementById('finalHighScore').textContent = highScore;
                 document.getElementById('coinsEarned').textContent = coinsThisRun;
+
+                // Reset leaderboard submit
+                const submitBtn = document.getElementById('submitScoreBtn');
+                submitBtn.disabled = false; submitBtn.textContent = 'Submit';
+                document.getElementById('leaderboardMsg').textContent = '';
+
                 document.getElementById('gameOverScreen').classList.remove('hidden');
             }, 500);
         }
@@ -1065,6 +1082,32 @@
             document.getElementById('highScoreDisplay').textContent = highScore;
             document.getElementById('totalCoinsDisplay').textContent = totalCoins;
         });
+
+        // Leaderboard submission
+        document.getElementById('submitScoreBtn').addEventListener('click', async function() {
+            const nameInput = document.getElementById('playerName');
+            const msgEl = document.getElementById('leaderboardMsg');
+            const btn = this;
+            const playerName = nameInput.value.trim() || 'Anonymous';
+            const playerScore = score;
+            btn.disabled = true; btn.textContent = '...';
+            msgEl.textContent = 'Submitting...'; msgEl.style.color = '#888';
+            try {
+                const response = await fetch('leaderboard-global.php', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ game: 'crossy-road', name: playerName, score: playerScore })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    msgEl.style.color = '#4caf50';
+                    msgEl.textContent = data.isTopTen ? '🏆 #' + data.rank + ' - Top 10!' : '✓ Rank #' + data.rank;
+                    btn.textContent = 'Done!';
+                    localStorage.setItem('crossyPlayerName', playerName);
+                } else { throw new Error(data.error); }
+            } catch (e) { msgEl.style.color = '#f00'; msgEl.textContent = 'Failed!'; btn.disabled = false; btn.textContent = 'Submit'; }
+        });
+        const sn = localStorage.getItem('crossyPlayerName');
+        if (sn) document.getElementById('playerName').value = sn;
     </script>
 </body>
 </html>
