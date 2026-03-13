@@ -20,13 +20,13 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
         header {
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 30px;
         }
 
         h1 {
@@ -43,10 +43,276 @@
             font-size: 1.1rem;
         }
 
+        .header-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .header-btn {
+            display: inline-block;
+            padding: 10px 25px;
+            color: #fff;
+            border-radius: 25px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .header-btn.stats {
+            background: linear-gradient(135deg, #a855f7, #f5576c);
+        }
+
+        .header-btn.settings {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .header-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        /* Leaderboard Section */
+        .leaderboard-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .leaderboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .leaderboard-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .leaderboard-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.08);
+        }
+
+        .leaderboard-rank {
+            font-size: 1.5rem;
+            font-weight: bold;
+            width: 35px;
+            text-align: center;
+        }
+
+        .leaderboard-rank.gold { color: #ffd700; }
+        .leaderboard-rank.silver { color: #c0c0c0; }
+        .leaderboard-rank.bronze { color: #cd7f32; }
+
+        .leaderboard-icon {
+            font-size: 2rem;
+        }
+
+        .leaderboard-info {
+            flex: 1;
+        }
+
+        .leaderboard-game {
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .leaderboard-score {
+            color: #00d9ff;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .no-scores {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn:hover {
+            border-color: rgba(255,255,255,0.4);
+            color: #fff;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #00d9ff, #0099ff);
+            border-color: transparent;
+            color: #fff;
+        }
+
+        /* Mobile indicator */
+        .mobile-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,255,136,0.9);
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Settings Modal */
+        .settings-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .settings-modal.hidden {
+            display: none;
+        }
+
+        .settings-content {
+            background: #1a1a2e;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .settings-content h3 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            color: #00d9ff;
+        }
+
+        .setting-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+
+        .setting-item label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .setting-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .setting-desc {
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            margin-left: 30px;
+        }
+
+        .settings-close {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #00d9ff, #0099ff);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .settings-close:hover {
+            transform: scale(1.02);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .leaderboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-bar {
+                gap: 8px;
+            }
+
+            .filter-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+
+            .header-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
             margin-bottom: 50px;
         }
 
@@ -67,8 +333,12 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
+        .game-card.hidden {
+            display: none;
+        }
+
         .game-preview {
-            height: 180px;
+            height: 160px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -467,13 +737,36 @@
         <header>
             <h1>Game Arcade</h1>
             <p class="subtitle">Games built with HTML, CSS & JavaScript</p>
-            <a href="stats.html" style="display: inline-block; margin-top: 15px; padding: 10px 25px; background: linear-gradient(135deg, #a855f7, #f5576c); color: #fff; border-radius: 25px; font-weight: bold; text-decoration: none; transition: all 0.3s;">📊 View Stats</a>
+            <div class="header-buttons">
+                <a href="stats.html" class="header-btn stats">📊 View Stats</a>
+                <button class="header-btn settings" onclick="toggleSettings()">⚙️ Settings</button>
+            </div>
         </header>
 
-        <div class="games-grid">
+        <!-- Leaderboard Section -->
+        <div class="leaderboard-section">
+            <div class="section-header">
+                <h2 class="section-title">🏆 High Scores</h2>
+            </div>
+            <div class="leaderboard-grid" id="leaderboardGrid">
+                <div class="no-scores">Play some games to see your high scores here!</div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <button class="filter-btn active" data-filter="all">All Games</button>
+            <button class="filter-btn" data-filter="mobile">📱 Mobile Ready</button>
+            <button class="filter-btn" data-filter="arcade">🕹️ Arcade</button>
+            <button class="filter-btn" data-filter="clicker">👆 Clicker</button>
+            <button class="filter-btn" data-filter="action">⚡ Action</button>
+        </div>
+
+        <div class="games-grid" id="gamesGrid">
             <!-- Whack-a-Mole -->
-            <a href="whack-a-mole.html" class="game-card">
+            <a href="whack-a-mole.html" class="game-card" data-game="whack-a-mole" data-tags="arcade,mobile">
                 <div class="game-preview whack-preview">
+                    <span class="mobile-badge">📱 TOUCH</span>
                     <span class="icon">🐹</span>
                 </div>
                 <div class="game-info">
@@ -492,7 +785,7 @@
             </a>
 
             <!-- Space Invaders -->
-            <a href="space-invaders.html" class="game-card">
+            <a href="space-invaders.html" class="game-card" data-game="space-invaders" data-tags="arcade,action">
                 <div class="game-preview space-preview">
                     <span class="icon">👾</span>
                 </div>
@@ -512,7 +805,7 @@
             </a>
 
             <!-- Platformer -->
-            <a href="platformer.html" class="game-card">
+            <a href="platformer.html" class="game-card" data-game="platformer" data-tags="arcade,action">
                 <div class="game-preview platformer-preview">
                     <span class="icon">🏃</span>
                 </div>
@@ -532,8 +825,9 @@
             </a>
 
             <!-- Flappy Bird -->
-            <a href="flappy-bird.html" class="game-card">
+            <a href="flappy-bird.html" class="game-card" data-game="flappy-bird" data-tags="arcade,mobile">
                 <div class="game-preview flappy-preview">
+                    <span class="mobile-badge">📱 TOUCH</span>
                     <span class="icon">🐤</span>
                 </div>
                 <div class="game-info">
@@ -552,7 +846,7 @@
             </a>
 
             <!-- Pac-Man -->
-            <a href="pacman.html" class="game-card">
+            <a href="pacman.html" class="game-card" data-game="pacman" data-tags="arcade">
                 <div class="game-preview pacman-preview">
                     <span class="icon">🟡</span>
                 </div>
@@ -572,7 +866,7 @@
             </a>
 
             <!-- Zombie Shooter -->
-            <a href="zombie-shooter.html" class="game-card">
+            <a href="zombie-shooter.html" class="game-card" data-game="zombie-shooter" data-tags="action">
                 <div class="game-preview zombie-preview">
                     <span class="icon">🧟</span>
                 </div>
@@ -592,7 +886,7 @@
             </a>
 
             <!-- Tower Defense -->
-            <a href="tower-defense.html" class="game-card">
+            <a href="tower-defense.html" class="game-card" data-game="tower-defense" data-tags="action">
                 <div class="game-preview tower-preview">
                     <span class="icon">🛸</span>
                 </div>
@@ -612,7 +906,7 @@
             </a>
 
             <!-- Snake -->
-            <a href="snake.html" class="game-card">
+            <a href="snake.html" class="game-card" data-game="snake" data-tags="arcade">
                 <div class="game-preview snake-preview">
                     <span class="icon">🐍</span>
                 </div>
@@ -632,8 +926,9 @@
             </a>
 
             <!-- Capybara Clicker -->
-            <a href="capybara-clicker.html" class="game-card">
+            <a href="capybara-clicker.html" class="game-card" data-game="capybara-clicker" data-tags="clicker,mobile">
                 <div class="game-preview capy-preview">
+                    <span class="mobile-badge">📱 TOUCH</span>
                     <span class="icon">🦫</span>
                 </div>
                 <div class="game-info">
@@ -652,8 +947,9 @@
             </a>
 
             <!-- Fruit Ninja -->
-            <a href="fruit-ninja.html" class="game-card">
+            <a href="fruit-ninja.html" class="game-card" data-game="fruit-ninja" data-tags="action,mobile">
                 <div class="game-preview fruit-preview">
+                    <span class="mobile-badge">📱 TOUCH</span>
                     <span class="icon">🍉</span>
                 </div>
                 <div class="game-info">
@@ -672,8 +968,9 @@
             </a>
 
             <!-- Fishing -->
-            <a href="fishing.html" class="game-card">
+            <a href="fishing.html" class="game-card" data-game="fishing" data-tags="clicker,mobile">
                 <div class="game-preview fishing-preview">
+                    <span class="mobile-badge">📱 TOUCH</span>
                     <span class="icon">🎣</span>
                 </div>
                 <div class="game-info">
@@ -692,7 +989,7 @@
             </a>
 
             <!-- Asteroids -->
-            <a href="asteroids.html" class="game-card">
+            <a href="asteroids.html" class="game-card" data-game="asteroids" data-tags="arcade,action">
                 <div class="game-preview asteroids-preview">
                     <span class="icon">☄️</span>
                 </div>
@@ -712,8 +1009,9 @@
             </a>
 
             <!-- Geometry Dash -->
-            <a href="geometry-dash.html" class="game-card">
+            <a href="geometry-dash.html" class="game-card" data-game="geometry-dash" data-tags="arcade,mobile">
                 <div class="game-preview geometry-preview">
+                    <span class="mobile-badge">📱 TOUCH</span>
                     <span class="icon">◆</span>
                 </div>
                 <div class="game-info">
@@ -732,8 +1030,9 @@
             </a>
 
             <!-- Crossy Road -->
-            <a href="crossy-road.html" class="game-card">
+            <a href="crossy-road.html" class="game-card" data-game="crossy-road" data-tags="arcade,mobile">
                 <div class="game-preview crossy-preview">
+                    <span class="mobile-badge">📱 TOUCH</span>
                     <span class="icon">🐔</span>
                 </div>
                 <div class="game-info">
@@ -752,8 +1051,9 @@
             </a>
 
             <!-- Pop the Lock -->
-            <a href="pop-the-lock.html" class="game-card">
+            <a href="pop-the-lock.html" class="game-card" data-game="pop-the-lock" data-tags="arcade,mobile">
                 <div class="game-preview poplock-preview">
+                    <span class="mobile-badge">📱 TOUCH</span>
                     <span class="icon">🔓</span>
                 </div>
                 <div class="game-info">
@@ -772,7 +1072,7 @@
             </a>
 
             <!-- The Dropper -->
-            <a href="dropper.html" class="game-card">
+            <a href="dropper.html" class="game-card" data-game="dropper" data-tags="arcade">
                 <div class="game-preview dropper-preview">
                     <span class="icon">💧</span>
                 </div>
@@ -792,8 +1092,9 @@
             </a>
 
             <!-- Retro Bowl -->
-            <a href="retro-bowl.html" class="game-card">
+            <a href="retro-bowl.html" class="game-card" data-game="retro-bowl" data-tags="action,mobile">
                 <div class="game-preview retrobowl-preview">
+                    <span class="mobile-badge">📱 TOUCH</span>
                     <span class="icon">🏈</span>
                 </div>
                 <div class="game-info">
@@ -812,7 +1113,7 @@
             </a>
 
             <!-- War Simulator -->
-            <a href="war-simulator.html" class="game-card">
+            <a href="war-simulator.html" class="game-card" data-game="war-simulator" data-tags="action">
                 <div class="game-preview warsim-preview">
                     <span class="icon">🪖</span>
                 </div>
@@ -832,8 +1133,9 @@
             </a>
 
             <!-- Cookie Clicker -->
-            <a href="cookie-clicker.html" class="game-card">
+            <a href="cookie-clicker.html" class="game-card" data-game="cookie-clicker" data-tags="clicker,mobile">
                 <div class="game-preview cookie-preview">
+                    <span class="mobile-badge">📱 TOUCH</span>
                     <span class="icon">🍪</span>
                 </div>
                 <div class="game-info">
@@ -852,8 +1154,9 @@
             </a>
 
             <!-- Knife Hit -->
-            <a href="knife-hit.html" class="game-card">
+            <a href="knife-hit.html" class="game-card" data-game="knife-hit" data-tags="arcade,mobile">
                 <div class="game-preview knife-preview">
+                    <span class="mobile-badge">📱 TOUCH</span>
                     <span class="icon">🔪</span>
                 </div>
                 <div class="game-info">
@@ -872,8 +1175,9 @@
             </a>
 
             <!-- Doodle Jump -->
-            <a href="doodle-jump.html" class="game-card">
+            <a href="doodle-jump.html" class="game-card" data-game="doodle-jump" data-tags="arcade,mobile">
                 <div class="game-preview doodle-preview">
+                    <span class="mobile-badge">📱 TOUCH</span>
                     <span class="icon">🐸</span>
                 </div>
                 <div class="game-info">
@@ -903,9 +1207,175 @@
             </a>
         </div>
 
+        <!-- Settings Modal -->
+        <div class="settings-modal hidden" id="settingsModal">
+            <div class="settings-content">
+                <h3>Settings</h3>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="touchMode" checked>
+                        Enable Touch Controls
+                    </label>
+                    <p class="setting-desc">Show touch controls on mobile devices</p>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="soundEnabled" checked>
+                        Sound Effects
+                    </label>
+                    <p class="setting-desc">Enable game sounds</p>
+                </div>
+                <button class="settings-close" onclick="toggleSettings()">Close</button>
+            </div>
+        </div>
+
         <footer>
             <p>Built by Joseph Gascon | <a href="https://freshbuild.co">FreshBuild</a></p>
         </footer>
     </div>
+
+    <script>
+        // Game definitions for leaderboard
+        const GAMES = {
+            'space-invaders': { name: 'Space Invaders', icon: '👾', url: 'space-invaders.html' },
+            'snake': { name: 'Snake', icon: '🐍', url: 'snake.html' },
+            'pacman': { name: 'Pac-Man', icon: '🟡', url: 'pacman.html' },
+            'flappy-bird': { name: 'Flappy Bird', icon: '🐤', url: 'flappy-bird.html' },
+            'whack-a-mole': { name: 'Whack-a-Mole', icon: '🐹', url: 'whack-a-mole.html' },
+            'platformer': { name: 'Super Jump Quest', icon: '🏃', url: 'platformer.html' },
+            'zombie-shooter': { name: 'Zombie Run', icon: '🧟', url: 'zombie-shooter.html' },
+            'tower-defense': { name: 'Galactic Defense', icon: '🛸', url: 'tower-defense.html' },
+            'capybara-clicker': { name: 'Capybara Clicker', icon: '🦫', url: 'capybara-clicker.html' },
+            'fruit-ninja': { name: 'Fruit Ninja', icon: '🍉', url: 'fruit-ninja.html' },
+            'fishing': { name: 'Gone Fishing', icon: '🎣', url: 'fishing.html' },
+            'asteroids': { name: 'Asteroids', icon: '☄️', url: 'asteroids.html' },
+            'geometry-dash': { name: 'Geometry Dash', icon: '◆', url: 'geometry-dash.html' },
+            'crossy-road': { name: 'Crossy Road', icon: '🐔', url: 'crossy-road.html' },
+            'pop-the-lock': { name: 'Pop the Lock', icon: '🔓', url: 'pop-the-lock.html' },
+            'dropper': { name: 'The Dropper', icon: '💧', url: 'dropper.html' },
+            'retro-bowl': { name: 'Retro Bowl', icon: '🏈', url: 'retro-bowl.html' },
+            'war-simulator': { name: 'War Simulator', icon: '🪖', url: 'war-simulator.html' },
+            'cookie-clicker': { name: 'Cookie Clicker', icon: '🍪', url: 'cookie-clicker.html' },
+            'knife-hit': { name: 'Knife Hit', icon: '🔪', url: 'knife-hit.html' },
+            'doodle-jump': { name: 'Doodle Jump', icon: '🐸', url: 'doodle-jump.html' }
+        };
+
+        // Load arcade stats from localStorage
+        function loadStats() {
+            return JSON.parse(localStorage.getItem('arcadeStats')) || { games: {} };
+        }
+
+        // Format large numbers
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        // Render leaderboard
+        function renderLeaderboard() {
+            const stats = loadStats();
+            const grid = document.getElementById('leaderboardGrid');
+
+            // Get all games with high scores
+            const scores = [];
+            for (const [gameId, gameStats] of Object.entries(stats.games)) {
+                if (gameStats.highScore && GAMES[gameId]) {
+                    scores.push({
+                        id: gameId,
+                        score: gameStats.highScore,
+                        ...GAMES[gameId]
+                    });
+                }
+            }
+
+            // Sort by score descending
+            scores.sort((a, b) => b.score - a.score);
+
+            // Show top 6 scores
+            const topScores = scores.slice(0, 6);
+
+            if (topScores.length === 0) {
+                grid.innerHTML = '<div class="no-scores">Play some games to see your high scores here!</div>';
+                return;
+            }
+
+            grid.innerHTML = topScores.map((game, index) => {
+                const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+                return `
+                    <a href="${game.url}" class="leaderboard-card">
+                        <div class="leaderboard-rank ${rankClass}">#${index + 1}</div>
+                        <div class="leaderboard-icon">${game.icon}</div>
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-game">${game.name}</div>
+                            <div class="leaderboard-score">${formatNumber(game.score)}</div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+        }
+
+        // Filter games
+        function setupFilters() {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const gameCards = document.querySelectorAll('.game-card');
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Update active button
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    const filter = btn.dataset.filter;
+
+                    gameCards.forEach(card => {
+                        const tags = card.dataset.tags || '';
+
+                        if (filter === 'all') {
+                            card.classList.remove('hidden');
+                        } else if (tags.includes(filter)) {
+                            card.classList.remove('hidden');
+                        } else {
+                            card.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+        }
+
+        // Settings modal
+        function toggleSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.toggle('hidden');
+        }
+
+        // Load settings
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('arcadeSettings')) || {
+                touchMode: true,
+                soundEnabled: true
+            };
+
+            document.getElementById('touchMode').checked = settings.touchMode;
+            document.getElementById('soundEnabled').checked = settings.soundEnabled;
+
+            // Save on change
+            document.getElementById('touchMode').addEventListener('change', saveSettings);
+            document.getElementById('soundEnabled').addEventListener('change', saveSettings);
+        }
+
+        function saveSettings() {
+            const settings = {
+                touchMode: document.getElementById('touchMode').checked,
+                soundEnabled: document.getElementById('soundEnabled').checked
+            };
+            localStorage.setItem('arcadeSettings', JSON.stringify(settings));
+        }
+
+        // Initialize
+        renderLeaderboard();
+        setupFilters();
+        loadSettings();
+    </script>
 </body>
 </html>
