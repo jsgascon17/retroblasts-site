@@ -113,6 +113,31 @@
         }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
+        /* St. Patrick's Day Event */
+        .stpatricks-event-banner {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, #228B22, #32CD32);
+            color: #fff; padding: 12px 25px; border-radius: 25px;
+            font-weight: bold; box-shadow: 0 5px 20px rgba(34,139,34,0.4);
+            z-index: 100; display: flex; align-items: center; gap: 10px;
+            border: 3px solid #90EE90;
+        }
+        .stpatricks-event-banner.hidden { display: none; }
+
+        .lucky-clover {
+            position: fixed; font-size: 3.5rem; cursor: pointer;
+            animation: cloverFloat 2s ease-in-out infinite, cloverGlow 0.5s ease-in-out infinite alternate;
+            z-index: 200; filter: drop-shadow(0 0 15px #32CD32);
+        }
+        @keyframes cloverFloat { 0%, 100% { transform: translateY(0) rotate(-10deg); } 50% { transform: translateY(-20px) rotate(10deg); } }
+        @keyframes cloverGlow { from { filter: drop-shadow(0 0 15px #32CD32); } to { filter: drop-shadow(0 0 30px #90EE90); } }
+
+        .stpatricks-bg {
+            background: linear-gradient(180deg, #228B22 0%, #32CD32 30%, #90EE90 60%, #DEB887 100%) !important;
+        }
+
+        .seasonal-skin { border-color: #32CD32 !important; box-shadow: 0 0 10px rgba(50,205,50,0.3); }
+
         .shop-item.owner-skin { border-color: #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); }
         .owner-skin-btn {
             display: flex; align-items: center; gap: 8px;
@@ -302,6 +327,10 @@
 </head>
 <body>
     <a href="index.html" class="back-btn">← Back</a>
+    <!-- St. Patrick's Day Event Banner -->
+    <div class="stpatricks-event-banner hidden" id="stpatricksBanner">
+        ☘️ St. Patrick's Day Event! Lucky Clovers give 1.5x cookies! ☘️
+    </div>
     <button class="stats-btn" onclick="showStats()">📊 Stats</button>
     <button class="prestige-btn" onclick="showPrestige()">☁️ Ascend</button>
     <button class="admin-btn" id="adminBtn" onclick="showAdmin()">🔧 Admin</button>
@@ -733,6 +762,11 @@
             // Upgrades
             { id: 'upgrades10', name: 'Upgrader', icon: '⬆️', desc: 'Purchase 10 upgrades', check: s => (s.upgrades.length + s.clickUpgrades.length) >= 10 },
             { id: 'upgrades25', name: 'Upgrade Master', icon: '🔝', desc: 'Purchase 25 upgrades', check: s => (s.upgrades.length + s.clickUpgrades.length) >= 25 },
+            // St. Patrick's Day (seasonal)
+            { id: 'stpatricks_lucky', name: 'Feeling Lucky!', icon: '☘️', desc: 'Click a Lucky Clover', check: s => s.luckyCloverClicked >= 1, seasonal: 'stpatricks' },
+            { id: 'stpatricks_gold', name: 'Pot o\' Gold', icon: '🪙', desc: 'Click 10 Lucky Clovers', check: s => s.luckyCloverClicked >= 10, seasonal: 'stpatricks' },
+            { id: 'stpatricks_rainbow', name: 'Rainbow Hunter', icon: '🌈', desc: 'Click 25 Lucky Clovers', check: s => s.luckyCloverClicked >= 25, seasonal: 'stpatricks' },
+            { id: 'stpatricks_skin', name: 'Irish Style', icon: '🧙‍♂️', desc: 'Own a St. Patrick\'s skin', check: s => s.ownedSkins.some(sk => sk.startsWith('stpatrick_')), seasonal: 'stpatricks' },
         ];
 
         // Cookie Skins
@@ -752,6 +786,11 @@
             { id: 'owner_crown', name: 'Royal Cookie', icon: '👑', desc: 'Fit for a king', ownerOnly: true },
             { id: 'owner_earth', name: 'Earth Cookie', icon: '🌍', desc: 'World domination', ownerOnly: true },
             { id: 'owner_dev', name: 'Dev Cookie', icon: '💻', desc: 'Coded with love', ownerOnly: true },
+            // St. Patrick's Day seasonal skins
+            { id: 'stpatrick_shamrock', name: 'Shamrock Cookie', icon: '☘️', desc: 'Lucky green cookie!', seasonal: 'stpatricks', price: 1000 },
+            { id: 'stpatrick_gold', name: 'Pot of Gold', icon: '🪙', desc: 'End of the rainbow!', seasonal: 'stpatricks', price: 5000 },
+            { id: 'stpatrick_leprechaun', name: 'Leprechaun Cookie', icon: '🧙‍♂️', desc: 'Magically delicious!', seasonal: 'stpatricks', price: 25000 },
+            { id: 'stpatrick_rainbow', name: 'Rainbow Cookie', icon: '🌈', desc: 'Follow the rainbow!', seasonal: 'stpatricks', price: 50000 },
         ];
 
         // Codes
@@ -775,6 +814,7 @@
             clickUpgrades: [],
             achievements: [],
             goldenClicked: 0,
+            luckyCloverClicked: 0,
             redeemedCodes: [],
             ownedSkins: ['default'],
             equippedSkin: 'default',
@@ -982,14 +1022,22 @@
 
         function renderSkins() {
             const list = document.getElementById('skinsList');
-            // Filter out owner-only skins unless owned
-            const visibleSkins = SKINS.filter(s => !s.ownerOnly || saveData.ownedSkins.includes(s.id));
+            const currentSeason = getCurrentSeason();
+
+            // Filter skins: hide owner-only (unless owned) and seasonal skins (unless in season or owned)
+            const visibleSkins = SKINS.filter(s => {
+                if (s.ownerOnly && !saveData.ownedSkins.includes(s.id)) return false;
+                if (s.seasonal && s.seasonal !== currentSeason && !saveData.ownedSkins.includes(s.id)) return false;
+                return true;
+            });
+
             list.innerHTML = visibleSkins.map(s => {
                 const owned = saveData.ownedSkins.includes(s.id);
                 const equipped = saveData.equippedSkin === s.id;
                 const canAfford = s.price ? saveData.cookies >= s.price : false;
                 const isCodeOnly = s.code && !owned;
                 const isOwnerSkin = s.ownerOnly;
+                const isSeasonal = s.seasonal;
 
                 let buttonText = '';
                 let buttonAction = '';
@@ -1009,13 +1057,15 @@
 
                 const iconStyle = s.id === 'bunny' ? 'font-size: 2.5rem; filter: hue-rotate(200deg) saturate(2) brightness(0.6);' : 'font-size: 2.5rem;';
                 const ownerTag = isOwnerSkin ? '<div style="color: #f59e0b; font-size: 0.7rem;">👑 OWNER</div>' : '';
+                const seasonalTag = isSeasonal ? '<div style="color: #32CD32; font-size: 0.7rem;">☘️ LIMITED</div>' : '';
+
                 return `
-                    <div class="shop-item ${equipped ? 'equipped' : ''} ${!owned && !canAfford ? 'disabled' : ''} ${isOwnerSkin ? 'owner-skin' : ''}" ${buttonAction}>
+                    <div class="shop-item ${equipped ? 'equipped' : ''} ${!owned && !canAfford ? 'disabled' : ''} ${isOwnerSkin ? 'owner-skin' : ''} ${isSeasonal ? 'seasonal-skin' : ''}" ${buttonAction}>
                         <div class="shop-item-icon" style="${iconStyle}">${s.icon}</div>
                         <div class="shop-item-info">
                             <div class="shop-item-name">${s.name}</div>
                             <div class="shop-item-desc">${s.desc}</div>
-                            ${ownerTag}
+                            ${ownerTag}${seasonalTag}
                         </div>
                         <div class="shop-item-cost" style="${equipped ? 'background: #4CAF50;' : ''}">${buttonText}</div>
                     </div>
@@ -1143,7 +1193,8 @@
         function spawnFallingCookie(x) {
             const cookie = document.createElement('div');
             cookie.className = 'falling-cookie';
-            cookie.textContent = '🍪';
+            // Use shamrocks during St. Patrick's Day
+            cookie.textContent = isStPatricksDay() ? (Math.random() > 0.5 ? '☘️' : '🍀') : '🍪';
             cookie.style.left = (x + (Math.random() - 0.5) * 50) + 'px';
             cookie.style.top = '0px';
             cookie.style.animationDuration = (2 + Math.random() * 2) + 's';
@@ -1151,39 +1202,71 @@
             setTimeout(() => cookie.remove(), 4000);
         }
 
-        // Golden cookie
+        // Seasonal event detection
+        function isStPatricksDay() {
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+            return month === 3 && day >= 10 && day <= 17; // March 10-17
+        }
+
+        function getCurrentSeason() {
+            if (isStPatricksDay()) return 'stpatricks';
+            // Add more seasons here: Halloween, Christmas, etc.
+            return null;
+        }
+
+        // Golden cookie / Lucky Clover
         let goldenTimeout = null;
         function spawnGoldenCookie() {
+            const isSaintPatricks = isStPatricksDay();
             const golden = document.createElement('div');
-            golden.className = 'golden-cookie';
-            golden.textContent = '🍪';
+            golden.className = isSaintPatricks ? 'lucky-clover' : 'golden-cookie';
+            golden.textContent = isSaintPatricks ? '☘️' : '🍪';
             golden.style.left = (100 + Math.random() * (window.innerWidth - 200)) + 'px';
             golden.style.top = (100 + Math.random() * (window.innerHeight - 300)) + 'px';
-            golden.style.filter = 'hue-rotate(45deg) saturate(2) drop-shadow(0 0 10px gold)';
+
+            if (!isSaintPatricks) {
+                golden.style.filter = 'hue-rotate(45deg) saturate(2) drop-shadow(0 0 10px gold)';
+            }
 
             golden.onclick = () => {
                 initAudio();
-                const bonus = Math.floor(calculateCps() * 60 + 100);
+                // St. Patrick's Day gives bonus luck (1.5x cookies)
+                const luckBonus = isSaintPatricks ? 1.5 : 1;
+                const bonus = Math.floor((calculateCps() * 60 + 100) * luckBonus);
                 saveData.cookies += bonus;
                 saveData.totalBaked += bonus;
                 saveData.goldenClicked++;
-                playSound('golden');
-                showNotification('Golden Cookie! +' + formatNumber(bonus) + ' cookies!');
+
+                if (isSaintPatricks) {
+                    if (!saveData.luckyCloverClicked) saveData.luckyCloverClicked = 0;
+                    saveData.luckyCloverClicked++;
+                    playSound('golden');
+                    showNotification('☘️ Lucky Clover! +' + formatNumber(bonus) + ' cookies! ☘️');
+                } else {
+                    playSound('golden');
+                    showNotification('Golden Cookie! +' + formatNumber(bonus) + ' cookies!');
+                }
+
                 golden.remove();
                 checkAchievements();
                 updateUI();
+                saveSaveData();
             };
 
             document.body.appendChild(golden);
-            setTimeout(() => golden.remove(), 10000);
+            setTimeout(() => golden.remove(), isSaintPatricks ? 12000 : 10000); // Clovers last longer
 
-            // Schedule next golden cookie (faster with owner golden rate)
+            // Schedule next (faster during St. Patrick's Day!)
             const hasLucky = saveData.upgrades.includes('golden');
             let baseDelay = hasLucky ? 60000 : 120000;
-            // Owner golden rate: reduce delay by 5% per level
+            if (isSaintPatricks) baseDelay *= 0.7; // 30% faster during event!
+
+            // Owner golden rate: reduce delay by 10% per level
             if (saveData.ownerStats && saveData.ownerStats.goldenRate > 0) {
                 const reduction = saveData.ownerStats.goldenRate * 0.1;
-                baseDelay *= Math.max(0.1, 1 - reduction); // Min 10% of original delay
+                baseDelay *= Math.max(0.1, 1 - reduction);
             }
             const delay = baseDelay + Math.random() * baseDelay * 0.5;
             goldenTimeout = setTimeout(spawnGoldenCookie, delay);
@@ -1798,6 +1881,18 @@
         if (saveData.ownerStats && saveData.ownerStats.autoClick > 0) {
             startAutoClicker();
         }
+
+        // Initialize seasonal events
+        function initSeasonalEvents() {
+            if (isStPatricksDay()) {
+                // Show event banner
+                document.getElementById('stpatricksBanner').classList.remove('hidden');
+                // Apply green background
+                document.body.classList.add('stpatricks-bg');
+                console.log('☘️ St. Patrick\'s Day event active!');
+            }
+        }
+        initSeasonalEvents();
     </script>
 </body>
 </html>
