@@ -271,6 +271,23 @@
         .owner-skin-btn .skin-name { font-weight: bold; }
         .owner-skin-btn .skin-status { font-size: 0.8rem; color: #888; }
         .owner-skin-btn.owned .skin-status { color: #10B981; }
+
+        .owner-stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
+        .owner-stat {
+            background: #1a3d1a; border: 2px solid #2e7d32; border-radius: 8px;
+            padding: 10px; text-align: center;
+        }
+        .owner-stat-name { color: #81c784; font-size: 0.8rem; margin-bottom: 5px; }
+        .owner-stat-value { color: #fff; font-size: 1.2rem; font-weight: bold; margin: 5px 0; }
+        .owner-stat-controls { display: flex; justify-content: center; gap: 5px; }
+        .owner-stat-controls button {
+            width: 30px; height: 30px; border: 2px solid #4caf50; border-radius: 5px;
+            background: #2e7d32; color: #fff; font-size: 1rem; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .owner-stat-controls button:hover { background: #388e3c; }
+        #invincibleBtn { width: 60px; }
+        #invincibleBtn.active { background: #0f0; color: #000; border-color: #0f0; }
     </style>
 </head>
 <body>
@@ -408,6 +425,57 @@
                 <h3>🎨 Owner Exclusive Skins</h3>
                 <div class="admin-grid" id="ownerSkinsGrid">
                     <!-- Populated by JS -->
+                </div>
+            </div>
+            <div class="admin-section">
+                <h3>⚡ Owner Stats (Beyond Max!)</h3>
+                <div class="owner-stat-grid" id="ownerStatsGrid">
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">🦘 Jump Power</div>
+                        <div class="owner-stat-value" id="ownerJumpPower">0</div>
+                        <div class="owner-stat-controls">
+                            <button onclick="adjustOwnerStat('jumpPower', -1)">-</button>
+                            <button onclick="adjustOwnerStat('jumpPower', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">💨 Move Speed</div>
+                        <div class="owner-stat-value" id="ownerSpeed">0</div>
+                        <div class="owner-stat-controls">
+                            <button onclick="adjustOwnerStat('speed', -1)">-</button>
+                            <button onclick="adjustOwnerStat('speed', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">🪶 Low Gravity</div>
+                        <div class="owner-stat-value" id="ownerGravity">0</div>
+                        <div class="owner-stat-controls">
+                            <button onclick="adjustOwnerStat('gravity', -1)">-</button>
+                            <button onclick="adjustOwnerStat('gravity', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">🪙 Coin Mult</div>
+                        <div class="owner-stat-value" id="ownerCoinMult">0</div>
+                        <div class="owner-stat-controls">
+                            <button onclick="adjustOwnerStat('coinMult', -1)">-</button>
+                            <button onclick="adjustOwnerStat('coinMult', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">📊 Score Mult</div>
+                        <div class="owner-stat-value" id="ownerScoreMult">0</div>
+                        <div class="owner-stat-controls">
+                            <button onclick="adjustOwnerStat('scoreMult', -1)">-</button>
+                            <button onclick="adjustOwnerStat('scoreMult', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">🛡️ Invincible</div>
+                        <div class="owner-stat-value">
+                            <button id="invincibleBtn" onclick="toggleInvincible()">OFF</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="admin-section">
@@ -572,7 +640,15 @@
             adminUnlocked: false,
             ownerUnlocked: false,
             customAdminCode: null,
-            adminCodeEnabled: true
+            adminCodeEnabled: true,
+            ownerStats: {
+                jumpPower: 0,
+                speed: 0,
+                gravity: 0,
+                coinMult: 0,
+                scoreMult: 0,
+                invincible: false
+            }
         };
 
         let gameState = {
@@ -752,13 +828,15 @@
 
         function update() {
             const player = gameState.player;
+            const moveSpeed = getMoveSpeed();
+            const gravity = getGravity();
 
             // Input
             if (keys['ArrowLeft'] || keys['KeyA']) {
-                player.vx = -MOVE_SPEED;
+                player.vx = -moveSpeed;
                 gameState.facingRight = false;
             } else if (keys['ArrowRight'] || keys['KeyD']) {
-                player.vx = MOVE_SPEED;
+                player.vx = moveSpeed;
                 gameState.facingRight = true;
             } else {
                 player.vx *= 0.8;
@@ -779,8 +857,8 @@
                     document.getElementById('powerupIndicator').style.display = 'none';
                 }
             } else {
-                // Gravity
-                player.vy += GRAVITY;
+                // Gravity (with owner stat reduction)
+                player.vy += gravity;
             }
 
             // Movement
@@ -793,6 +871,9 @@
 
             // Platform collision (only when falling)
             if (player.vy > 0) {
+                const jumpForce = getJumpForce();
+                const springForce = SPRING_FORCE - (saveData.ownerStats ? saveData.ownerStats.jumpPower * 0.3 : 0);
+
                 gameState.platforms.forEach(plat => {
                     if (plat.broken) return;
 
@@ -809,10 +890,10 @@
                             plat.broken = true;
                             playSound('break');
                         } else if (plat.type === 'spring') {
-                            player.vy = SPRING_FORCE;
+                            player.vy = springForce;
                             playSound('spring');
                         } else {
-                            player.vy = JUMP_FORCE;
+                            player.vy = jumpForce;
                             playSound('jump');
                         }
 
@@ -831,16 +912,18 @@
                 }
             });
 
-            // Collect coins
+            // Collect coins (with owner multiplier)
+            const coinMult = getCoinMultiplier();
             gameState.coins.forEach(coin => {
                 if (coin.collected) return;
                 const coinScreenY = coin.y - gameState.cameraY;
                 if (Math.abs(player.x + player.width/2 - coin.x) < 25 &&
                     Math.abs(player.y + player.height/2 - (coinScreenY + gameState.cameraY)) < 25) {
                     coin.collected = true;
-                    gameState.coinsThisGame++;
-                    saveData.coins++;
-                    saveData.totalCoins++;
+                    const coinsEarned = Math.floor(1 * coinMult);
+                    gameState.coinsThisGame += coinsEarned;
+                    saveData.coins += coinsEarned;
+                    saveData.totalCoins += coinsEarned;
                     playSound('coin');
                     updateUI();
                     checkAchievements();
@@ -868,11 +951,12 @@
                 gameState.cameraY = player.y - canvas.height / 3;
             }
 
-            // Update score based on height
+            // Update score based on height (with owner multiplier)
+            const scoreMult = getScoreMultiplier();
             const currentHeight = Math.floor(-player.y / 10);
             if (currentHeight > gameState.maxHeight) {
                 gameState.maxHeight = currentHeight;
-                gameState.score = currentHeight;
+                gameState.score = Math.floor(currentHeight * scoreMult);
                 updateUI();
             }
 
@@ -887,10 +971,17 @@
             gameState.coins = gameState.coins.filter(c => c.y < gameState.cameraY + canvas.height + 100);
             gameState.powerups = gameState.powerups.filter(p => p.y < gameState.cameraY + canvas.height + 100);
 
-            // Check game over (fall below screen)
+            // Check game over (fall below screen) - unless invincible
             if (player.y > gameState.cameraY + canvas.height + 50) {
-                playSound('fall');
-                endGame();
+                if (saveData.ownerStats && saveData.ownerStats.invincible) {
+                    // Teleport back to highest point
+                    player.y = gameState.cameraY + 100;
+                    player.vy = getJumpForce();
+                    playSound('spring');
+                } else {
+                    playSound('fall');
+                    endGame();
+                }
             }
         }
 
@@ -1260,6 +1351,7 @@
             const currentCode = saveData.customAdminCode || 'jsg1708admin';
             document.getElementById('currentAdminCode').textContent = saveData.adminCodeEnabled ? currentCode : currentCode + ' (DISABLED)';
             renderOwnerSkins();
+            updateOwnerStatsDisplay();
             document.getElementById('ownerOverlay').classList.remove('hidden');
         }
         function hideOwner() { document.getElementById('ownerOverlay').classList.add('hidden'); }
@@ -1338,6 +1430,71 @@
             updateUI();
             saveSaveData();
             showNotification('EVERYTHING MAXED!');
+        }
+
+        // ============================================
+        // OWNER STATS SYSTEM
+        // ============================================
+        function adjustOwnerStat(stat, delta) {
+            if (!saveData.ownerStats) saveData.ownerStats = { jumpPower: 0, speed: 0, gravity: 0, coinMult: 0, scoreMult: 0, invincible: false };
+            let newValue = saveData.ownerStats[stat] + delta;
+            if (newValue < 0) newValue = 0;
+            if (newValue > 20) newValue = 20;
+            saveData.ownerStats[stat] = newValue;
+
+            const displayId = 'owner' + stat.charAt(0).toUpperCase() + stat.slice(1);
+            document.getElementById(displayId).textContent = newValue;
+
+            playSound('coin');
+            saveSaveData();
+            showNotification(stat.charAt(0).toUpperCase() + stat.slice(1) + ' set to ' + newValue);
+        }
+
+        function toggleInvincible() {
+            if (!saveData.ownerStats) saveData.ownerStats = { jumpPower: 0, speed: 0, gravity: 0, coinMult: 0, scoreMult: 0, invincible: false };
+            saveData.ownerStats.invincible = !saveData.ownerStats.invincible;
+            const btn = document.getElementById('invincibleBtn');
+            btn.textContent = saveData.ownerStats.invincible ? 'ON' : 'OFF';
+            btn.classList.toggle('active', saveData.ownerStats.invincible);
+            playSound(saveData.ownerStats.invincible ? 'spring' : 'break');
+            saveSaveData();
+            showNotification('Invincibility ' + (saveData.ownerStats.invincible ? 'ENABLED' : 'disabled'));
+        }
+
+        function updateOwnerStatsDisplay() {
+            if (!saveData.ownerStats) saveData.ownerStats = { jumpPower: 0, speed: 0, gravity: 0, coinMult: 0, scoreMult: 0, invincible: false };
+            document.getElementById('ownerJumpPower').textContent = saveData.ownerStats.jumpPower;
+            document.getElementById('ownerSpeed').textContent = saveData.ownerStats.speed;
+            document.getElementById('ownerGravity').textContent = saveData.ownerStats.gravity;
+            document.getElementById('ownerCoinMult').textContent = saveData.ownerStats.coinMult;
+            document.getElementById('ownerScoreMult').textContent = saveData.ownerStats.scoreMult;
+            const btn = document.getElementById('invincibleBtn');
+            btn.textContent = saveData.ownerStats.invincible ? 'ON' : 'OFF';
+            btn.classList.toggle('active', saveData.ownerStats.invincible);
+        }
+
+        // Helper functions for game mechanics with owner stats
+        function getJumpForce() {
+            const bonus = saveData.ownerStats ? saveData.ownerStats.jumpPower * 0.5 : 0;
+            return JUMP_FORCE - bonus; // More negative = higher jump
+        }
+
+        function getMoveSpeed() {
+            const bonus = saveData.ownerStats ? saveData.ownerStats.speed * 0.5 : 0;
+            return MOVE_SPEED + bonus;
+        }
+
+        function getGravity() {
+            const reduction = saveData.ownerStats ? saveData.ownerStats.gravity * 0.02 : 0;
+            return Math.max(0.1, GRAVITY - reduction);
+        }
+
+        function getCoinMultiplier() {
+            return 1 + (saveData.ownerStats ? saveData.ownerStats.coinMult : 0);
+        }
+
+        function getScoreMultiplier() {
+            return 1 + (saveData.ownerStats ? saveData.ownerStats.scoreMult : 0);
         }
 
         // Achievements

@@ -286,6 +286,23 @@
         .owner-skin-btn .skin-name { font-weight: bold; }
         .owner-skin-btn .skin-status { font-size: 0.8rem; color: #888; }
         .owner-skin-btn.owned .skin-status { color: #10B981; }
+
+        .owner-stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
+        .owner-stat {
+            background: #1a1a1a; border: 2px solid #333; border-radius: 8px;
+            padding: 10px; text-align: center;
+        }
+        .owner-stat-name { color: #e94560; font-size: 0.8rem; margin-bottom: 5px; }
+        .owner-stat-value { color: #fff; font-size: 1.2rem; font-weight: bold; margin: 5px 0; }
+        .owner-stat-controls { display: flex; justify-content: center; gap: 5px; }
+        .owner-stat-controls button {
+            width: 30px; height: 30px; border: 2px solid #e94560; border-radius: 5px;
+            background: #333; color: #fff; font-size: 1rem; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .owner-stat-controls button:hover { background: #444; }
+        .owner-toggle-btn { width: 60px !important; }
+        .owner-toggle-btn.active { background: #4CAF50; color: #fff; border-color: #4CAF50; }
     </style>
 </head>
 <body>
@@ -425,6 +442,55 @@
                 <h3>🔪 Owner Exclusive Skins</h3>
                 <div class="admin-grid" id="ownerSkinsGrid">
                     <!-- Populated by JS -->
+                </div>
+            </div>
+            <div class="admin-section">
+                <h3>⚡ Owner Stats (Beyond Max!)</h3>
+                <div class="owner-stat-grid" id="ownerStatsGrid">
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">🚀 Knife Speed</div>
+                        <div class="owner-stat-value" id="ownerKnifeSpeed">0</div>
+                        <div class="owner-stat-controls">
+                            <button onclick="adjustOwnerStat('knifeSpeed', -1)">-</button>
+                            <button onclick="adjustOwnerStat('knifeSpeed', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">🐢 Slow Log</div>
+                        <div class="owner-stat-value" id="ownerSlowLog">0</div>
+                        <div class="owner-stat-controls">
+                            <button onclick="adjustOwnerStat('slowLog', -1)">-</button>
+                            <button onclick="adjustOwnerStat('slowLog', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">🪙 Coin Mult</div>
+                        <div class="owner-stat-value" id="ownerCoinMult">0</div>
+                        <div class="owner-stat-controls">
+                            <button onclick="adjustOwnerStat('coinMult', -1)">-</button>
+                            <button onclick="adjustOwnerStat('coinMult', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">📊 Score Mult</div>
+                        <div class="owner-stat-value" id="ownerScoreMult">0</div>
+                        <div class="owner-stat-controls">
+                            <button onclick="adjustOwnerStat('scoreMult', -1)">-</button>
+                            <button onclick="adjustOwnerStat('scoreMult', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">♾️ Infinite Knives</div>
+                        <div class="owner-stat-value">
+                            <button id="infiniteKnivesBtn" class="owner-toggle-btn" onclick="toggleInfiniteKnives()">OFF</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">🛡️ No Collision</div>
+                        <div class="owner-stat-value">
+                            <button id="noCollisionBtn" class="owner-toggle-btn" onclick="toggleNoCollision()">OFF</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="admin-section">
@@ -601,7 +667,15 @@
             adminUnlocked: false,
             ownerUnlocked: false,
             customAdminCode: null,
-            adminCodeEnabled: true
+            adminCodeEnabled: true,
+            ownerStats: {
+                knifeSpeed: 0,
+                slowLog: 0,
+                coinMult: 0,
+                scoreMult: 0,
+                infiniteKnives: false,
+                noCollision: false
+            }
         };
 
         let gameState = {
@@ -1190,6 +1264,7 @@
             const currentCode = saveData.customAdminCode || 'jsg1708admin';
             document.getElementById('currentAdminCode').textContent = saveData.adminCodeEnabled ? currentCode : currentCode + ' (DISABLED)';
             renderOwnerSkins();
+            updateOwnerStatsDisplay();
             document.getElementById('ownerOverlay').classList.remove('hidden');
         }
         function hideOwner() { document.getElementById('ownerOverlay').classList.add('hidden'); }
@@ -1267,6 +1342,81 @@
             updateUI();
             saveSaveData();
             showNotification('EVERYTHING MAXED!');
+        }
+
+        // ============================================
+        // OWNER STATS SYSTEM
+        // ============================================
+        function adjustOwnerStat(stat, delta) {
+            if (!saveData.ownerStats) saveData.ownerStats = { knifeSpeed: 0, slowLog: 0, coinMult: 0, scoreMult: 0, infiniteKnives: false, noCollision: false };
+            let newValue = saveData.ownerStats[stat] + delta;
+            if (newValue < 0) newValue = 0;
+            if (newValue > 20) newValue = 20;
+            saveData.ownerStats[stat] = newValue;
+
+            const displayId = 'owner' + stat.charAt(0).toUpperCase() + stat.slice(1);
+            document.getElementById(displayId).textContent = newValue;
+
+            playSound('hit');
+            saveSaveData();
+            showNotification(stat.charAt(0).toUpperCase() + stat.slice(1) + ' set to ' + newValue);
+        }
+
+        function toggleInfiniteKnives() {
+            if (!saveData.ownerStats) saveData.ownerStats = { knifeSpeed: 0, slowLog: 0, coinMult: 0, scoreMult: 0, infiniteKnives: false, noCollision: false };
+            saveData.ownerStats.infiniteKnives = !saveData.ownerStats.infiniteKnives;
+            const btn = document.getElementById('infiniteKnivesBtn');
+            btn.textContent = saveData.ownerStats.infiniteKnives ? 'ON' : 'OFF';
+            btn.classList.toggle('active', saveData.ownerStats.infiniteKnives);
+            playSound(saveData.ownerStats.infiniteKnives ? 'stage' : 'fail');
+            saveSaveData();
+            showNotification('Infinite Knives ' + (saveData.ownerStats.infiniteKnives ? 'ENABLED' : 'disabled'));
+        }
+
+        function toggleNoCollision() {
+            if (!saveData.ownerStats) saveData.ownerStats = { knifeSpeed: 0, slowLog: 0, coinMult: 0, scoreMult: 0, infiniteKnives: false, noCollision: false };
+            saveData.ownerStats.noCollision = !saveData.ownerStats.noCollision;
+            const btn = document.getElementById('noCollisionBtn');
+            btn.textContent = saveData.ownerStats.noCollision ? 'ON' : 'OFF';
+            btn.classList.toggle('active', saveData.ownerStats.noCollision);
+            playSound(saveData.ownerStats.noCollision ? 'stage' : 'fail');
+            saveSaveData();
+            showNotification('No Collision ' + (saveData.ownerStats.noCollision ? 'ENABLED' : 'disabled'));
+        }
+
+        function updateOwnerStatsDisplay() {
+            if (!saveData.ownerStats) saveData.ownerStats = { knifeSpeed: 0, slowLog: 0, coinMult: 0, scoreMult: 0, infiniteKnives: false, noCollision: false };
+            document.getElementById('ownerKnifeSpeed').textContent = saveData.ownerStats.knifeSpeed;
+            document.getElementById('ownerSlowLog').textContent = saveData.ownerStats.slowLog;
+            document.getElementById('ownerCoinMult').textContent = saveData.ownerStats.coinMult;
+            document.getElementById('ownerScoreMult').textContent = saveData.ownerStats.scoreMult;
+
+            const infiniteBtn = document.getElementById('infiniteKnivesBtn');
+            infiniteBtn.textContent = saveData.ownerStats.infiniteKnives ? 'ON' : 'OFF';
+            infiniteBtn.classList.toggle('active', saveData.ownerStats.infiniteKnives);
+
+            const collisionBtn = document.getElementById('noCollisionBtn');
+            collisionBtn.textContent = saveData.ownerStats.noCollision ? 'ON' : 'OFF';
+            collisionBtn.classList.toggle('active', saveData.ownerStats.noCollision);
+        }
+
+        // Helper functions for game mechanics with owner stats
+        function getKnifeSpeed() {
+            const bonus = saveData.ownerStats ? saveData.ownerStats.knifeSpeed * 2 : 0;
+            return 20 + bonus; // Base 20 + bonus
+        }
+
+        function getLogSpeedMultiplier() {
+            const reduction = saveData.ownerStats ? saveData.ownerStats.slowLog * 0.05 : 0;
+            return Math.max(0.1, 1 - reduction); // Min 10% speed
+        }
+
+        function getKnifeCoinMultiplier() {
+            return 1 + (saveData.ownerStats ? saveData.ownerStats.coinMult : 0);
+        }
+
+        function getKnifeScoreMultiplier() {
+            return 1 + (saveData.ownerStats ? saveData.ownerStats.scoreMult : 0);
         }
 
         // Update background based on stage
@@ -1437,15 +1587,15 @@
                 return p.life > 0;
             });
 
-            // Rotate log (with direction changes for boss)
+            // Rotate log (with direction changes for boss) - apply slow log multiplier
             if (gameState.isBoss && Math.random() < 0.01) {
                 gameState.logSpeed *= -1;
             }
-            gameState.logAngle += gameState.logSpeed;
+            gameState.logAngle += gameState.logSpeed * getLogSpeedMultiplier();
 
-            // Move flying knife
+            // Move flying knife (with owner speed bonus)
             if (gameState.flyingKnife) {
-                gameState.flyingKnife.y -= gameState.flyingKnife.speed;
+                gameState.flyingKnife.y -= getKnifeSpeed();
 
                 const logCenterX = canvas.width / 2;
                 const logCenterY = 180;
@@ -1484,8 +1634,8 @@
                     const newKnifeAngle = Math.PI - gameState.logAngle;
                     const normalizedNew = normalize(newKnifeAngle);
 
-                    if (hitKnife) {
-                        // Game over - reset combo
+                    if (hitKnife && !(saveData.ownerStats && saveData.ownerStats.noCollision)) {
+                        // Game over - reset combo (unless no collision is on)
                         gameState.combo = 0;
                         gameState.perfectStage = false;
                         playSound('fail');
@@ -1519,7 +1669,9 @@
                     // Track stats
                     saveData.totalKnivesThrown++;
 
-                    // Check apple collision
+                    // Check apple collision (with multipliers)
+                    const coinMult = getKnifeCoinMultiplier();
+                    const scoreMult = getKnifeScoreMultiplier();
                     let hitApple = false;
                     gameState.apples = gameState.apples.filter(apple => {
                         const appleAngle = apple.angle + gameState.logAngle;
@@ -1529,11 +1681,13 @@
                         if (diff < 0.3 || diff > Math.PI * 2 - 0.3) {
                             playSound('apple');
                             hitApple = true;
-                            gameState.score += 5;
-                            gameState.coinsThisGame += 2;
-                            saveData.coins += 2;
+                            const scoreEarned = Math.floor(5 * scoreMult);
+                            const coinsEarned = Math.floor(2 * coinMult);
+                            gameState.score += scoreEarned;
+                            gameState.coinsThisGame += coinsEarned;
+                            saveData.coins += coinsEarned;
                             saveData.totalApples++;
-                            saveData.totalCoinsEarned += 2;
+                            saveData.totalCoinsEarned += coinsEarned;
                             spawnParticles(logCenterX, logCenterY - gameState.logRadius - 25, '#ff0000', 12);
                             return false;
                         }
@@ -1541,8 +1695,11 @@
                     });
 
                     gameState.flyingKnife = null;
-                    gameState.knivesLeft--;
-                    gameState.score++;
+                    // Don't decrease knives if infinite knives is on
+                    if (!(saveData.ownerStats && saveData.ownerStats.infiniteKnives)) {
+                        gameState.knivesLeft--;
+                    }
+                    gameState.score += Math.floor(1 * scoreMult);
                     updateKnivesUI();
                     updateUI();
 
@@ -1559,7 +1716,8 @@
                         }
 
                         gameState.stage++;
-                        const stageBonus = gameState.isBoss ? 10 : 5;
+                        const baseStageBonun = gameState.isBoss ? 10 : 5;
+                        const stageBonus = Math.floor(baseStageBonun * getKnifeCoinMultiplier());
                         gameState.coinsThisGame += stageBonus;
                         saveData.coins += stageBonus;
                         saveData.totalCoinsEarned += stageBonus;

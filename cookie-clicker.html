@@ -281,6 +281,23 @@
             .game-container { flex-direction: column; align-items: center; }
             .shop, .upgrades { width: 100%; max-width: 350px; }
         }
+
+        .owner-stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
+        .owner-stat {
+            background: #3d2314; border: 2px solid #8B4513; border-radius: 8px;
+            padding: 10px; text-align: center;
+        }
+        .owner-stat-name { color: #DEB887; font-size: 0.8rem; margin-bottom: 5px; }
+        .owner-stat-value { color: #fff; font-size: 1.2rem; font-weight: bold; margin: 5px 0; }
+        .owner-stat-controls { display: flex; justify-content: center; gap: 5px; }
+        .owner-stat-controls button {
+            width: 30px; height: 30px; border: 2px solid #D2691E; border-radius: 5px;
+            background: #8B4513; color: #fff; font-size: 1rem; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .owner-stat-controls button:hover { background: #A0522D; }
+        .owner-toggle-btn { width: 60px !important; }
+        .owner-toggle-btn.active { background: #4CAF50; color: #fff; border-color: #4CAF50; }
     </style>
 </head>
 <body>
@@ -385,6 +402,58 @@
                 <h3>🍪 Owner Exclusive Skins</h3>
                 <div class="admin-grid" id="ownerSkinsGrid">
                     <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>⚡ Owner Stats (Beyond Max!)</h3>
+                <div class="owner-stat-grid" id="ownerStatsGrid">
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">👆 Click Power</div>
+                        <div class="owner-stat-value" id="ownerClickMult">0</div>
+                        <div class="owner-stat-controls">
+                            <button onclick="adjustOwnerStat('clickMult', -1)">-</button>
+                            <button onclick="adjustOwnerStat('clickMult', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">⚡ CPS Boost</div>
+                        <div class="owner-stat-value" id="ownerCpsMult">0</div>
+                        <div class="owner-stat-controls">
+                            <button onclick="adjustOwnerStat('cpsMult', -1)">-</button>
+                            <button onclick="adjustOwnerStat('cpsMult', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">✨ Golden Rate</div>
+                        <div class="owner-stat-value" id="ownerGoldenRate">0</div>
+                        <div class="owner-stat-controls">
+                            <button onclick="adjustOwnerStat('goldenRate', -1)">-</button>
+                            <button onclick="adjustOwnerStat('goldenRate', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">🤖 Auto-Click/s</div>
+                        <div class="owner-stat-value" id="ownerAutoClick">0</div>
+                        <div class="owner-stat-controls">
+                            <button onclick="adjustOwnerStat('autoClick', -1)">-</button>
+                            <button onclick="adjustOwnerStat('autoClick', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">🏭 Building CPS</div>
+                        <div class="owner-stat-value" id="ownerBuildingMult">0</div>
+                        <div class="owner-stat-controls">
+                            <button onclick="adjustOwnerStat('buildingMult', -1)">-</button>
+                            <button onclick="adjustOwnerStat('buildingMult', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="owner-stat">
+                        <div class="owner-stat-name">♾️ Infinite</div>
+                        <div class="owner-stat-value">
+                            <button id="infiniteCookiesBtn" class="owner-toggle-btn" onclick="toggleInfiniteCookies()">OFF</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -718,7 +787,15 @@
             adminUnlocked: false,
             ownerUnlocked: false,
             customAdminCode: null,
-            adminCodeEnabled: true
+            adminCodeEnabled: true,
+            ownerStats: {
+                clickMult: 0,
+                cpsMult: 0,
+                goldenRate: 0,
+                autoClick: 0,
+                buildingMult: 0,
+                infiniteCookies: false
+            }
         };
 
         // Load/Save
@@ -752,9 +829,12 @@
             return Math.floor(n).toString();
         }
 
-        // Calculate CPS
+        // Calculate CPS (with owner stat bonuses)
         function calculateCps() {
             let cps = 0;
+            // Building multiplier from owner stats
+            const buildingMult = 1 + (saveData.ownerStats ? saveData.ownerStats.buildingMult * 0.5 : 0);
+
             BUILDINGS.forEach(b => {
                 const count = saveData.buildings[b.id] || 0;
                 let mult = 1;
@@ -763,14 +843,18 @@
                         mult *= u.mult;
                     }
                 });
-                cps += count * b.baseCps * mult;
+                cps += count * b.baseCps * mult * buildingMult;
             });
             // Apply prestige multiplier (1% per heavenly chip)
             cps *= saveData.prestigeMultiplier;
+            // Owner CPS multiplier: +50% per level
+            if (saveData.ownerStats && saveData.ownerStats.cpsMult > 0) {
+                cps *= (1 + saveData.ownerStats.cpsMult * 0.5);
+            }
             return cps;
         }
 
-        // Calculate click power
+        // Calculate click power (with owner stat bonus)
         function calculateClickPower() {
             let power = 1;
             CLICK_UPGRADES.forEach(u => {
@@ -778,6 +862,10 @@
                     power *= u.mult;
                 }
             });
+            // Owner click multiplier: +100% per level
+            if (saveData.ownerStats && saveData.ownerStats.clickMult > 0) {
+                power *= (1 + saveData.ownerStats.clickMult);
+            }
             return power;
         }
 
@@ -980,12 +1068,13 @@
             document.getElementById('skinsList').style.display = tab === 'skins' ? 'block' : 'none';
         }
 
-        // Buy clicker upgrade
+        // Buy clicker upgrade (free if infinite cookies)
         function buyClicker(id) {
             initAudio();
             const clicker = CLICK_UPGRADES.find(u => u.id === id);
-            if (saveData.cookies >= clicker.cost && !saveData.clickUpgrades.includes(id)) {
-                saveData.cookies -= clicker.cost;
+            const infiniteCookies = saveData.ownerStats && saveData.ownerStats.infiniteCookies;
+            if ((infiniteCookies || saveData.cookies >= clicker.cost) && !saveData.clickUpgrades.includes(id)) {
+                if (!infiniteCookies) saveData.cookies -= clicker.cost;
                 saveData.clickUpgrades.push(id);
                 playSound('buy');
                 updateUI();
@@ -993,13 +1082,14 @@
             }
         }
 
-        // Buy building
+        // Buy building (free if infinite cookies)
         function buyBuilding(id) {
             initAudio();
             const building = BUILDINGS.find(b => b.id === id);
             const cost = getBuildingCost(building);
-            if (saveData.cookies >= cost) {
-                saveData.cookies -= cost;
+            const infiniteCookies = saveData.ownerStats && saveData.ownerStats.infiniteCookies;
+            if (infiniteCookies || saveData.cookies >= cost) {
+                if (!infiniteCookies) saveData.cookies -= cost;
                 saveData.buildings[id] = (saveData.buildings[id] || 0) + 1;
                 playSound('buy');
                 updateUI();
@@ -1007,12 +1097,13 @@
             }
         }
 
-        // Buy upgrade
+        // Buy upgrade (free if infinite cookies)
         function buyUpgrade(id) {
             initAudio();
             const upgrade = UPGRADES.find(u => u.id === id);
-            if (saveData.cookies >= upgrade.cost && !saveData.upgrades.includes(id)) {
-                saveData.cookies -= upgrade.cost;
+            const infiniteCookies = saveData.ownerStats && saveData.ownerStats.infiniteCookies;
+            if ((infiniteCookies || saveData.cookies >= upgrade.cost) && !saveData.upgrades.includes(id)) {
+                if (!infiniteCookies) saveData.cookies -= upgrade.cost;
                 saveData.upgrades.push(id);
                 playSound('buy');
                 updateUI();
@@ -1086,9 +1177,15 @@
             document.body.appendChild(golden);
             setTimeout(() => golden.remove(), 10000);
 
-            // Schedule next golden cookie
+            // Schedule next golden cookie (faster with owner golden rate)
             const hasLucky = saveData.upgrades.includes('golden');
-            const delay = (hasLucky ? 60000 : 120000) + Math.random() * 60000;
+            let baseDelay = hasLucky ? 60000 : 120000;
+            // Owner golden rate: reduce delay by 5% per level
+            if (saveData.ownerStats && saveData.ownerStats.goldenRate > 0) {
+                const reduction = saveData.ownerStats.goldenRate * 0.1;
+                baseDelay *= Math.max(0.1, 1 - reduction); // Min 10% of original delay
+            }
+            const delay = baseDelay + Math.random() * baseDelay * 0.5;
             goldenTimeout = setTimeout(spawnGoldenCookie, delay);
         }
 
@@ -1365,6 +1462,7 @@
             const currentCode = saveData.customAdminCode || 'jsg1708admin';
             document.getElementById('currentAdminCode').textContent = saveData.adminCodeEnabled ? currentCode : currentCode + ' (DISABLED)';
             renderOwnerSkins();
+            updateOwnerStatsDisplay();
             document.getElementById('ownerOverlay').classList.remove('hidden');
         }
 
@@ -1468,6 +1566,73 @@
             showNotification('EVERYTHING MAXED!');
             updateUI();
             saveSaveData();
+        }
+
+        // ============================================
+        // OWNER STATS SYSTEM
+        // ============================================
+        function adjustOwnerStat(stat, delta) {
+            if (!saveData.ownerStats) saveData.ownerStats = { clickMult: 0, cpsMult: 0, goldenRate: 0, autoClick: 0, buildingMult: 0, infiniteCookies: false };
+            let newValue = saveData.ownerStats[stat] + delta;
+            if (newValue < 0) newValue = 0;
+            if (newValue > 20) newValue = 20;
+            saveData.ownerStats[stat] = newValue;
+
+            const displayId = 'owner' + stat.charAt(0).toUpperCase() + stat.slice(1);
+            document.getElementById(displayId).textContent = newValue;
+
+            // Restart auto-clicker if that stat changed
+            if (stat === 'autoClick') {
+                startAutoClicker();
+            }
+
+            playSound('buy');
+            saveSaveData();
+            showNotification(stat.charAt(0).toUpperCase() + stat.slice(1) + ' set to ' + newValue);
+            updateUI(); // Refresh UI to show new values
+        }
+
+        function toggleInfiniteCookies() {
+            if (!saveData.ownerStats) saveData.ownerStats = { clickMult: 0, cpsMult: 0, goldenRate: 0, autoClick: 0, buildingMult: 0, infiniteCookies: false };
+            saveData.ownerStats.infiniteCookies = !saveData.ownerStats.infiniteCookies;
+            const btn = document.getElementById('infiniteCookiesBtn');
+            btn.textContent = saveData.ownerStats.infiniteCookies ? 'ON' : 'OFF';
+            btn.classList.toggle('active', saveData.ownerStats.infiniteCookies);
+            playSound(saveData.ownerStats.infiniteCookies ? 'golden' : 'click');
+            saveSaveData();
+            showNotification('Infinite Cookies ' + (saveData.ownerStats.infiniteCookies ? 'ENABLED' : 'disabled'));
+        }
+
+        function updateOwnerStatsDisplay() {
+            if (!saveData.ownerStats) saveData.ownerStats = { clickMult: 0, cpsMult: 0, goldenRate: 0, autoClick: 0, buildingMult: 0, infiniteCookies: false };
+            document.getElementById('ownerClickMult').textContent = saveData.ownerStats.clickMult;
+            document.getElementById('ownerCpsMult').textContent = saveData.ownerStats.cpsMult;
+            document.getElementById('ownerGoldenRate').textContent = saveData.ownerStats.goldenRate;
+            document.getElementById('ownerAutoClick').textContent = saveData.ownerStats.autoClick;
+            document.getElementById('ownerBuildingMult').textContent = saveData.ownerStats.buildingMult;
+
+            const btn = document.getElementById('infiniteCookiesBtn');
+            btn.textContent = saveData.ownerStats.infiniteCookies ? 'ON' : 'OFF';
+            btn.classList.toggle('active', saveData.ownerStats.infiniteCookies);
+        }
+
+        // Auto-clicker interval
+        let autoClickInterval = null;
+        function startAutoClicker() {
+            if (autoClickInterval) clearInterval(autoClickInterval);
+            if (!saveData.ownerStats || saveData.ownerStats.autoClick <= 0) return;
+
+            const clicksPerSecond = saveData.ownerStats.autoClick * 5; // 5 clicks per level
+            const interval = 1000 / clicksPerSecond;
+
+            autoClickInterval = setInterval(() => {
+                if (saveData.ownerStats && saveData.ownerStats.autoClick > 0) {
+                    const power = calculateClickPower();
+                    saveData.cookies += power;
+                    saveData.totalBaked += power;
+                    updateStats();
+                }
+            }, interval);
         }
 
         // Redeem codes
@@ -1628,6 +1793,11 @@
 
         // First golden cookie after 30-90 seconds
         setTimeout(spawnGoldenCookie, 30000 + Math.random() * 60000);
+
+        // Start auto-clicker if owner stats are set
+        if (saveData.ownerStats && saveData.ownerStats.autoClick > 0) {
+            startAutoClicker();
+        }
     </script>
 </body>
 </html>
