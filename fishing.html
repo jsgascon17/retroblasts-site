@@ -163,6 +163,16 @@
             <button class="btn" id="startBtn">START FISHING</button>
             <button class="btn btn-shop" id="shopBtn">SHOP</button>
         </div>
+        <!-- Leaderboard Submission (shown after session) -->
+        <div id="leaderboardSubmit" style="display: none; margin-top: 20px; padding: 20px; background: rgba(74, 144, 164, 0.2); border-radius: 15px; border: 2px solid #4A90A4; max-width: 350px;">
+            <p style="color: #4A90A4; margin-bottom: 12px;">Submit session to Leaderboard (<span id="sessionFish">0</span> fish caught):</p>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <input type="text" id="playerName" placeholder="Your name" maxlength="15"
+                    style="padding: 12px 15px; border-radius: 25px; border: 2px solid #4A90A4; background: rgba(0,0,0,0.5); color: #fff; font-size: 1rem; width: 150px;">
+                <button class="btn btn-small" id="submitScoreBtn">Submit</button>
+            </div>
+            <p id="leaderboardMsg" style="margin-top: 10px; font-size: 0.9rem; min-height: 1.2em; color: #4A90A4;"></p>
+        </div>
     </div>
 
     <!-- Shop Screen -->
@@ -889,6 +899,7 @@
             hookX = W / 2;
             fishInWater = [];
             document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('leaderboardSubmit').style.display = 'none';
             document.body.style.background = 'linear-gradient(to bottom, #87CEEB 0%, #87CEEB 40%, #4A90A4 40%, #2C5F7C 100%)';
             gameLoop();
         }
@@ -932,6 +943,19 @@
                 document.getElementById('startScreen').classList.remove('hidden');
                 renderLocations();
                 updateDisplays();
+                // Show leaderboard submit if caught fish
+                if (fishCaughtThisSession > 0) {
+                    document.getElementById('sessionFish').textContent = fishCaughtThisSession;
+                    document.getElementById('leaderboardSubmit').style.display = 'block';
+                    const submitBtn = document.getElementById('submitScoreBtn');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit';
+                    document.getElementById('leaderboardMsg').textContent = '';
+                    const savedName = localStorage.getItem('arcadePlayerName');
+                    if (savedName) document.getElementById('playerName').value = savedName;
+                } else {
+                    document.getElementById('leaderboardSubmit').style.display = 'none';
+                }
             }
         });
 
@@ -962,6 +986,40 @@
                 tab.classList.add('active');
                 document.getElementById(tab.dataset.tab + 'Content').classList.add('active');
             });
+        });
+
+        // Leaderboard submission
+        document.getElementById('submitScoreBtn').addEventListener('click', async function() {
+            const playerName = document.getElementById('playerName').value.trim() || 'Anonymous';
+            const playerScore = fishCaughtThisSession;
+            const msgEl = document.getElementById('leaderboardMsg');
+
+            localStorage.setItem('arcadePlayerName', playerName);
+
+            this.disabled = true;
+            this.textContent = 'Submitting...';
+            msgEl.textContent = '';
+
+            try {
+                const response = await fetch('leaderboard-global.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ game: 'fishing', name: playerName, score: playerScore })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    msgEl.style.color = '#4A90A4';
+                    msgEl.textContent = data.rank ? `Submitted! Rank #${data.rank}` : 'Score submitted!';
+                    this.textContent = 'Submitted!';
+                } else {
+                    throw new Error(data.error || 'Failed');
+                }
+            } catch (err) {
+                msgEl.style.color = '#ff6b6b';
+                msgEl.textContent = 'Failed to submit. Try again!';
+                this.disabled = false;
+                this.textContent = 'Submit';
+            }
         });
 
         // Init

@@ -176,6 +176,16 @@
             <div class="overlay hidden" id="completeOverlay">
                 <h2>You Beat All Levels!</h2>
                 <p id="completeMessage"></p>
+                <!-- Leaderboard Submission -->
+                <div id="leaderboardSubmit" style="margin: 20px 0; padding: 20px; background: rgba(78, 205, 196, 0.1); border-radius: 15px; border: 2px solid #4ecdc4;">
+                    <p style="color: #4ecdc4; margin-bottom: 12px;">Submit to Global Leaderboard (fewest deaths wins!):</p>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <input type="text" id="playerName" placeholder="Your name" maxlength="15"
+                            style="padding: 12px 15px; border-radius: 25px; border: 2px solid #4ecdc4; background: rgba(0,0,0,0.5); color: #fff; font-size: 1rem; width: 150px;">
+                        <button class="btn" id="submitScoreBtn">Submit</button>
+                    </div>
+                    <p id="leaderboardMsg" style="margin-top: 10px; font-size: 0.9rem; min-height: 1.2em; color: #4ecdc4;"></p>
+                </div>
                 <button class="btn" id="replayBtn">Play Again</button>
             </div>
         </div>
@@ -485,6 +495,13 @@
                 completeOverlay.classList.remove('hidden');
                 document.getElementById('completeMessage').textContent =
                     `Total deaths: ${deaths}`;
+                // Reset leaderboard form
+                const submitBtn = document.getElementById('submitScoreBtn');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
+                document.getElementById('leaderboardMsg').textContent = '';
+                const savedName = localStorage.getItem('arcadePlayerName');
+                if (savedName) document.getElementById('playerName').value = savedName;
             } else {
                 winOverlay.classList.remove('hidden');
                 document.getElementById('winMessage').textContent =
@@ -644,6 +661,42 @@
             deaths = 0;
             deathsEl.textContent = 0;
             startLevel();
+        });
+
+        // Leaderboard submission
+        document.getElementById('submitScoreBtn').addEventListener('click', async function() {
+            const playerName = document.getElementById('playerName').value.trim() || 'Anonymous';
+            // For dropper, lower deaths = better, so we use negative score or special handling
+            // We'll submit deaths as score, leaderboard will sort ascending
+            const playerScore = 10000 - deaths; // Higher score = fewer deaths (max 10000)
+            const msgEl = document.getElementById('leaderboardMsg');
+
+            localStorage.setItem('arcadePlayerName', playerName);
+
+            this.disabled = true;
+            this.textContent = 'Submitting...';
+            msgEl.textContent = '';
+
+            try {
+                const response = await fetch('leaderboard-global.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ game: 'dropper', name: playerName, score: playerScore, deaths: deaths })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    msgEl.style.color = '#4ecdc4';
+                    msgEl.textContent = data.rank ? `Submitted! Rank #${data.rank} (${deaths} deaths)` : `Score submitted! (${deaths} deaths)`;
+                    this.textContent = 'Submitted!';
+                } else {
+                    throw new Error(data.error || 'Failed');
+                }
+            } catch (err) {
+                msgEl.style.color = '#ff6b6b';
+                msgEl.textContent = 'Failed to submit. Try again!';
+                this.disabled = false;
+                this.textContent = 'Submit';
+            }
         });
 
         // Stats tracking

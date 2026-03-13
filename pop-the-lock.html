@@ -129,6 +129,17 @@
         <div class="message" id="message">Tap when the pin hits the target!</div>
         <div class="instructions">Click, tap, or press SPACE to pop</div>
         <button class="btn" id="startBtn">Start Game</button>
+
+        <!-- Leaderboard Submission -->
+        <div id="leaderboardSubmit" style="display: none; margin-top: 20px; padding: 20px; background: rgba(78, 205, 196, 0.1); border-radius: 15px; border: 2px solid #4ecdc4;">
+            <p style="color: #4ecdc4; margin-bottom: 12px; font-size: 1rem;">Submit to Global Leaderboard:</p>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <input type="text" id="playerName" placeholder="Your name" maxlength="15"
+                    style="padding: 12px 15px; border-radius: 25px; border: 2px solid #4ecdc4; background: rgba(0,0,0,0.3); color: #fff; font-size: 1rem; width: 150px;">
+                <button class="btn" id="submitScoreBtn" style="margin: 0; padding: 12px 25px;">Submit</button>
+            </div>
+            <p id="leaderboardMsg" style="margin-top: 10px; font-size: 0.9rem; min-height: 1.2em; color: #4ecdc4;"></p>
+        </div>
     </div>
 
     <script>
@@ -394,6 +405,16 @@
             startBtn.textContent = 'Play Again';
             startBtn.style.display = 'block';
 
+            // Show leaderboard submission
+            document.getElementById('leaderboardSubmit').style.display = 'block';
+            const submitBtn = document.getElementById('submitScoreBtn');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit';
+            document.getElementById('leaderboardMsg').textContent = '';
+            // Load saved name
+            const savedName = localStorage.getItem('arcadePlayerName');
+            if (savedName) document.getElementById('playerName').value = savedName;
+
             // Flash effect
             canvas.style.boxShadow = '0 0 50px rgba(255, 0, 0, 0.5)';
             setTimeout(() => {
@@ -416,6 +437,7 @@
             scoreEl.textContent = '0';
             messageEl.textContent = 'Tap when the pin hits the target!';
             startBtn.style.display = 'none';
+            document.getElementById('leaderboardSubmit').style.display = 'none';
 
             setNewTarget();
             trackGameStart();
@@ -440,6 +462,41 @@
         canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
             checkHit();
+        });
+
+        // Leaderboard submission
+        document.getElementById('submitScoreBtn').addEventListener('click', async function() {
+            const playerName = document.getElementById('playerName').value.trim() || 'Anonymous';
+            const playerScore = score;
+            const msgEl = document.getElementById('leaderboardMsg');
+
+            // Save name for next time
+            localStorage.setItem('arcadePlayerName', playerName);
+
+            this.disabled = true;
+            this.textContent = 'Submitting...';
+            msgEl.textContent = '';
+
+            try {
+                const response = await fetch('leaderboard-global.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ game: 'pop-the-lock', name: playerName, score: playerScore })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    msgEl.style.color = '#4ecdc4';
+                    msgEl.textContent = data.rank ? `Submitted! Rank #${data.rank}` : 'Score submitted!';
+                    this.textContent = 'Submitted!';
+                } else {
+                    throw new Error(data.error || 'Failed');
+                }
+            } catch (err) {
+                msgEl.style.color = '#ff6b6b';
+                msgEl.textContent = 'Failed to submit. Try again!';
+                this.disabled = false;
+                this.textContent = 'Submit';
+            }
         });
 
         // Stats tracking
