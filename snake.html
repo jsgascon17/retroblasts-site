@@ -401,6 +401,34 @@
 
     <script>
         // ============================================
+        // TOURNAMENT MODE DETECTION
+        // ============================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const tournamentId = urlParams.get('tournament') ? parseInt(urlParams.get('tournament')) : null;
+        let tournamentInfo = null;
+
+        if (tournamentId) {
+            // Show tournament banner
+            const banner = document.createElement('div');
+            banner.id = 'tournamentBanner';
+            banner.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(90deg, #ffd700, #ff8c00); color: #000; text-align: center; padding: 10px; font-weight: bold; z-index: 1000; font-size: 1rem;';
+            banner.innerHTML = '&#127942; TOURNAMENT MODE - Scores count toward the tournament! <a href="tournaments.html" style="color: #000; margin-left: 15px;">View Standings</a>';
+            document.body.prepend(banner);
+            document.body.style.paddingTop = '50px';
+
+            // Fetch tournament info
+            fetch('tournament.php?action=scores&id=' + tournamentId)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        tournamentInfo = data.tournament;
+                        banner.innerHTML = '&#127942; ' + tournamentInfo.name + ' - ' + tournamentInfo.timeRemaining + ' <a href="tournaments.html" style="color: #000; margin-left: 15px;">View Standings</a>';
+                    }
+                })
+                .catch(() => {});
+        }
+
+        // ============================================
         // SAVE DATA
         // ============================================
         const defaultSave = {
@@ -1236,6 +1264,26 @@
                     }
                     btn.textContent = 'Submitted!';
                     localStorage.setItem('snakePlayerName', playerName);
+
+                    // Also submit to tournament if in tournament mode
+                    if (tournamentId) {
+                        try {
+                            const tResponse = await fetch('tournament.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    action: 'submit',
+                                    tournamentId: tournamentId,
+                                    name: playerName,
+                                    score: playerScore
+                                })
+                            });
+                            const tData = await tResponse.json();
+                            if (tData.success) {
+                                msgEl.textContent += ' | Tournament #' + tData.rank;
+                            }
+                        } catch (e) {}
+                    }
                 } else {
                     throw new Error(data.error || 'Failed');
                 }

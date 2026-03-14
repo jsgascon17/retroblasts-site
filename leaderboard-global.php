@@ -162,12 +162,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $dataFile = getDataFile($game);
     $data = readData($dataFile);
 
-    // Add new score
-    $data['scores'][] = [
-        'name' => $name,
-        'score' => $score,
-        'date' => date('Y-m-d H:i:s')
-    ];
+    // Check if player already has a score - replace if new score is higher
+    $existingIndex = -1;
+    $existingScore = 0;
+    foreach ($data['scores'] as $index => $entry) {
+        if (strtolower($entry['name']) === strtolower($name)) {
+            $existingIndex = $index;
+            $existingScore = $entry['score'];
+            break;
+        }
+    }
+
+    if ($existingIndex >= 0) {
+        // Player exists - only update if new score is higher
+        if ($score > $existingScore) {
+            $data['scores'][$existingIndex] = [
+                'name' => $name,
+                'score' => $score,
+                'date' => date('Y-m-d H:i:s')
+            ];
+        } else {
+            // Score not higher, return existing rank
+            usort($data['scores'], function($a, $b) {
+                return $b['score'] - $a['score'];
+            });
+            $rank = 1;
+            foreach ($data['scores'] as $entry) {
+                if (strtolower($entry['name']) === strtolower($name)) {
+                    break;
+                }
+                $rank++;
+            }
+            echo json_encode([
+                'success' => true,
+                'rank' => $rank,
+                'totalPlayers' => count($data['scores']),
+                'isTopTen' => $rank <= 10,
+                'message' => "Your best is still $existingScore (Rank #$rank)"
+            ]);
+            exit();
+        }
+    } else {
+        // New player - add score
+        $data['scores'][] = [
+            'name' => $name,
+            'score' => $score,
+            'date' => date('Y-m-d H:i:s')
+        ];
+    }
 
     // Sort and keep top 100
     usort($data['scores'], function($a, $b) {
@@ -180,18 +222,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Find rank
     $rank = 1;
     foreach ($data['scores'] as $entry) {
-        if ($entry['score'] === $score && $entry['name'] === $name) {
+        if (strtolower($entry['name']) === strtolower($name)) {
             break;
         }
         $rank++;
     }
+
+    $wasUpdate = $existingIndex >= 0;
+    $message = $wasUpdate ? "New personal best! Rank #$rank" : ($rank <= 10 ? 'You made the top 10!' : 'Score submitted!');
 
     echo json_encode([
         'success' => true,
         'rank' => $rank,
         'totalPlayers' => count($data['scores']),
         'isTopTen' => $rank <= 10,
-        'message' => $rank <= 10 ? 'You made the top 10!' : 'Score submitted!'
+        'wasUpdate' => $wasUpdate,
+        'message' => $message
     ]);
 
 } else {

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournaments - St. Paddy's Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0d4f21 0%, #116b35 50%, #1a8f4a 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 2.5rem; text-shadow: 3px 3px 6px rgba(0,0,0,0.4); margin-bottom: 10px; }
+        .subtitle { color: #98FB98; font-size: 1.1rem; }
+        .nav-links { margin-top: 15px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        .nav-link {
+            display: inline-block; padding: 10px 25px; background: rgba(0,0,0,0.3);
+            color: #ffd700; text-decoration: none; border-radius: 25px;
+            border: 2px solid #ffd700; transition: all 0.3s;
+        }
+        .nav-link:hover { background: #ffd700; color: #0d4f21; transform: scale(1.05); }
+
+        .section-title {
+            font-size: 1.8rem; color: #ffd700; margin: 30px 0 20px;
+            text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tournaments-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px; margin-bottom: 30px;
+        }
+
+        .tournament-card {
+            background: rgba(0,0,0,0.4); border-radius: 20px; padding: 25px;
+            border: 3px solid rgba(255,215,0,0.3); transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .tournament-card:hover { border-color: #ffd700; transform: translateY(-5px); }
+        .tournament-card.active { border-color: #32CD32; box-shadow: 0 0 20px rgba(50,205,50,0.3); }
+        .tournament-card.ended { opacity: 0.7; }
+
+        .tournament-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .tournament-icon { font-size: 3rem; }
+        .tournament-info { flex: 1; }
+        .tournament-name { font-size: 1.3rem; font-weight: bold; color: #ffd700; }
+        .tournament-game { color: #98FB98; font-size: 0.9rem; }
+
+        .tournament-status {
+            display: inline-block; padding: 5px 15px; border-radius: 15px;
+            font-size: 0.8rem; font-weight: bold; text-transform: uppercase;
+        }
+        .status-active { background: #32CD32; color: #fff; }
+        .status-upcoming { background: #ffd700; color: #0d4f21; }
+        .status-ended { background: #666; color: #fff; }
+
+        .tournament-time {
+            display: flex; align-items: center; gap: 10px; margin: 15px 0;
+            padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px;
+        }
+        .time-icon { font-size: 1.5rem; }
+        .time-text { color: #98FB98; }
+        .time-remaining { font-weight: bold; color: #ffd700; }
+
+        .tournament-scores { margin-top: 15px; }
+        .scores-title { color: #98FB98; font-size: 0.9rem; margin-bottom: 10px; }
+        .score-row {
+            display: flex; align-items: center; padding: 8px 12px;
+            background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 5px;
+        }
+        .score-rank { width: 30px; font-weight: bold; color: #ffd700; }
+        .score-rank.gold { color: #ffd700; }
+        .score-rank.silver { color: #c0c0c0; }
+        .score-rank.bronze { color: #cd7f32; }
+        .score-name { flex: 1; }
+        .score-value { font-weight: bold; color: #32CD32; }
+
+        .play-btn {
+            display: block; width: 100%; padding: 12px; margin-top: 15px;
+            background: linear-gradient(135deg, #228B22, #32CD32); color: #fff;
+            border: 2px solid #ffd700; border-radius: 25px; font-size: 1rem;
+            font-weight: bold; cursor: pointer; text-decoration: none;
+            text-align: center; transition: all 0.3s;
+        }
+        .play-btn:hover { transform: scale(1.02); box-shadow: 0 5px 20px rgba(255,215,0,0.4); }
+        .play-btn:disabled { background: #666; cursor: not-allowed; border-color: #444; }
+
+        .no-tournaments {
+            text-align: center; padding: 40px; background: rgba(0,0,0,0.3);
+            border-radius: 20px; color: #98FB98;
+        }
+        .no-tournaments-icon { font-size: 4rem; margin-bottom: 15px; }
+
+        /* Admin Panel */
+        .admin-panel {
+            background: rgba(0,0,0,0.4); border-radius: 20px; padding: 25px;
+            border: 3px solid rgba(255,215,0,0.3); margin-top: 30px;
+        }
+        .admin-title { color: #ffd700; font-size: 1.3rem; margin-bottom: 20px; }
+        .admin-form { display: grid; gap: 15px; }
+        .form-row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .form-group { flex: 1; min-width: 150px; }
+        .form-group label { display: block; color: #98FB98; margin-bottom: 5px; font-size: 0.9rem; }
+        .form-group select, .form-group input {
+            width: 100%; padding: 10px 15px; border-radius: 10px; border: 2px solid #32CD32;
+            background: rgba(0,0,0,0.5); color: #fff; font-size: 1rem;
+        }
+        .form-group select option { background: #0d4f21; }
+        .create-btn {
+            padding: 12px 30px; background: linear-gradient(135deg, #ffd700, #ffb300);
+            color: #0d4f21; border: none; border-radius: 25px; font-size: 1rem;
+            font-weight: bold; cursor: pointer; transition: all 0.3s;
+        }
+        .create-btn:hover { transform: scale(1.05); }
+
+        .message { padding: 15px; border-radius: 10px; margin-top: 15px; text-align: center; }
+        .message.success { background: rgba(50,205,50,0.3); border: 1px solid #32CD32; }
+        .message.error { background: rgba(255,0,0,0.3); border: 1px solid #ff6b6b; }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .tournaments-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>&#9752; Tournament Mode &#9752;</h1>
+            <p class="subtitle">Compete for glory! Timed challenges with prizes!</p>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">&#127968; Home</a>
+                <a href="leaderboards.html" class="nav-link">&#127942; Leaderboards</a>
+            </div>
+        </header>
+
+        <h2 class="section-title">&#127942; Active Tournaments</h2>
+        <div class="tournaments-grid" id="activeTournaments">
+            <div class="no-tournaments">
+                <div class="no-tournaments-icon">&#9203;</div>
+                <p>Loading tournaments...</p>
+            </div>
+        </div>
+
+        <h2 class="section-title">&#128196; Past Tournaments</h2>
+        <div class="tournaments-grid" id="pastTournaments">
+            <div class="no-tournaments">
+                <div class="no-tournaments-icon">&#128220;</div>
+                <p>No past tournaments yet</p>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div class="admin-panel">
+            <h3 class="admin-title">&#9881; Create New Tournament</h3>
+            <div class="admin-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Game</label>
+                        <select id="gameSelect">
+                            <option value="snake">Snake</option>
+                            <option value="flappy-bird">Flappy Bird</option>
+                            <option value="space-invaders">Space Invaders</option>
+                            <option value="pac-man">Pac-Man</option>
+                            <option value="whack-a-mole">Whack-a-Mole</option>
+                            <option value="geometry-dash">Geometry Dash</option>
+                            <option value="doodle-jump">Doodle Jump</option>
+                            <option value="knife-hit">Knife Hit</option>
+                            <option value="pop-the-lock">Pop the Lock</option>
+                            <option value="crossy-road">Crossy Road</option>
+                            <option value="fruit-ninja">Fruit Ninja</option>
+                            <option value="asteroids">Asteroids</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Duration</label>
+                        <select id="durationSelect">
+                            <option value="3600">1 Hour</option>
+                            <option value="21600">6 Hours</option>
+                            <option value="43200">12 Hours</option>
+                            <option value="86400" selected>24 Hours</option>
+                            <option value="259200">3 Days</option>
+                            <option value="604800">1 Week</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tournament Name (optional)</label>
+                    <input type="text" id="tournamentName" placeholder="e.g., St. Paddy's Snake Sprint">
+                </div>
+                <button class="create-btn" onclick="createTournament()">&#127942; Create Tournament</button>
+                <div id="createMessage"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tournaments = [];
+        let games = {};
+
+        async function loadTournaments() {
+            try {
+                const response = await fetch('tournament.php?action=list');
+                const data = await response.json();
+                if (data.success) {
+                    tournaments = data.tournaments;
+                    games = data.games || {};
+                    renderTournaments();
+                }
+            } catch (err) {
+                console.error('Failed to load tournaments:', err);
+            }
+        }
+
+        function renderTournaments() {
+            const active = tournaments.filter(t => t.status === 'active');
+            const past = tournaments.filter(t => t.status === 'ended');
+
+            const activeEl = document.getElementById('activeTournaments');
+            const pastEl = document.getElementById('pastTournaments');
+
+            if (active.length === 0) {
+                activeEl.innerHTML = `
+                    <div class="no-tournaments">
+                        <div class="no-tournaments-icon">&#128549;</div>
+                        <p>No active tournaments right now</p>
+                        <p style="font-size: 0.9rem; margin-top: 10px;">Create one below!</p>
+                    </div>
+                `;
+            } else {
+                activeEl.innerHTML = active.map(t => renderTournamentCard(t)).join('');
+            }
+
+            if (past.length === 0) {
+                pastEl.innerHTML = `
+                    <div class="no-tournaments">
+                        <div class="no-tournaments-icon">&#128220;</div>
+                        <p>No past tournaments yet</p>
+                    </div>
+                `;
+            } else {
+                pastEl.innerHTML = past.slice(0, 6).map(t => renderTournamentCard(t)).join('');
+            }
+        }
+
+        function renderTournamentCard(t) {
+            const statusClass = t.status === 'active' ? 'status-active' :
+                               t.status === 'upcoming' ? 'status-upcoming' : 'status-ended';
+
+            const topScores = (t.scores || [])
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 3);
+
+            const scoresHtml = topScores.length > 0 ? `
+                <div class="tournament-scores">
+                    <div class="scores-title">Top Players:</div>
+                    ${topScores.map((s, i) => `
+                        <div class="score-row">
+                            <span class="score-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : 'bronze'}">#${i + 1}</span>
+                            <span class="score-name">${escapeHtml(s.name)}</span>
+                            <span class="score-value">${s.score.toLocaleString()}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : '<div class="tournament-scores"><div class="scores-title">No scores yet - be the first!</div></div>';
+
+            const gameFile = t.game + '.html';
+            const playBtn = t.status === 'active' ?
+                `<a href="${gameFile}?tournament=${t.id}" class="play-btn">&#127918; Play Now</a>` :
+                `<button class="play-btn" disabled>Tournament Ended</button>`;
+
+            return `
+                <div class="tournament-card ${t.status}">
+                    <div class="tournament-header">
+                        <span class="tournament-icon">${t.gameIcon || '🎮'}</span>
+                        <div class="tournament-info">
+                            <div class="tournament-name">${escapeHtml(t.name)}</div>
+                            <div class="tournament-game">${t.gameName}</div>
+                        </div>
+                        <span class="tournament-status ${statusClass}">${t.status}</span>
+                    </div>
+                    <div class="tournament-time">
+                        <span class="time-icon">&#9203;</span>
+                        <span class="time-text">
+                            ${t.status === 'ended' ? 'Ended' : '<span class="time-remaining">' + t.timeRemaining + '</span>'}
+                        </span>
+                    </div>
+                    ${scoresHtml}
+                    ${playBtn}
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function createTournament() {
+            const game = document.getElementById('gameSelect').value;
+            const duration = parseInt(document.getElementById('durationSelect').value);
+            const name = document.getElementById('tournamentName').value.trim();
+
+            const msgEl = document.getElementById('createMessage');
+            msgEl.innerHTML = '<div class="message">Creating tournament...</div>';
+
+            try {
+                const response = await fetch('tournament.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'create', game, duration, name })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    msgEl.innerHTML = '<div class="message success">Tournament created! &#127881;</div>';
+                    document.getElementById('tournamentName').value = '';
+                    loadTournaments();
+                } else {
+                    msgEl.innerHTML = `<div class="message error">${data.error || 'Failed to create'}</div>`;
+                }
+            } catch (err) {
+                msgEl.innerHTML = '<div class="message error">Error creating tournament</div>';
+            }
+
+            setTimeout(() => msgEl.innerHTML = '', 3000);
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadTournaments, 30000);
+
+        // Initial load
+        loadTournaments();
+    </script>
+</body>
+</html>
