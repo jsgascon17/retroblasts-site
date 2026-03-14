@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Profile - St. Paddy's Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0d4f21 0%, #116b35 50%, #1a8f4a 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 2.5rem; color: #ffd700; text-shadow: 3px 3px 6px rgba(0,0,0,0.4); margin-bottom: 10px; }
+        .subtitle { color: #98FB98; font-size: 1.1rem; }
+        .nav-links { display: flex; gap: 15px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+        .nav-link { padding: 10px 25px; background: rgba(0,0,0,0.3); color: #ffd700; text-decoration: none; border-radius: 25px; border: 2px solid #ffd700; transition: all 0.3s; }
+        .nav-link:hover { background: #ffd700; color: #0d4f21; }
+
+        .profile-header { display: flex; align-items: center; gap: 25px; background: rgba(0,0,0,0.4); padding: 25px; border-radius: 20px; border: 3px solid #ffd700; margin-bottom: 25px; flex-wrap: wrap; justify-content: center; }
+        .avatar { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #ffd700, #ff8c00); display: flex; align-items: center; justify-content: center; font-size: 4rem; border: 4px solid #fff; }
+        .profile-info { flex: 1; min-width: 200px; }
+        .player-name { font-size: 2rem; color: #ffd700; margin-bottom: 5px; }
+        .player-title { color: #98FB98; font-size: 1rem; margin-bottom: 10px; }
+        .edit-name { padding: 8px 15px; font-size: 0.9rem; background: rgba(255,255,255,0.1); color: #fff; border: 2px solid #98FB98; border-radius: 20px; cursor: pointer; transition: all 0.3s; }
+        .edit-name:hover { background: #32CD32; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; text-align: center; border: 2px solid rgba(255,215,0,0.3); }
+        .stat-icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .stat-value { font-size: 1.8rem; font-weight: bold; color: #ffd700; }
+        .stat-label { color: #98FB98; font-size: 0.85rem; margin-top: 5px; }
+
+        .section-title { font-size: 1.5rem; color: #ffd700; margin: 25px 0 15px; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+
+        .games-list { background: rgba(0,0,0,0.4); border-radius: 15px; border: 2px solid rgba(255,215,0,0.3); overflow: hidden; }
+        .game-row { display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid rgba(255,215,0,0.2); }
+        .game-row:last-child { border-bottom: none; }
+        .game-row:hover { background: rgba(255,215,0,0.1); }
+        .game-icon { font-size: 2rem; margin-right: 15px; }
+        .game-info { flex: 1; }
+        .game-name { font-weight: bold; color: #fff; }
+        .game-stats { font-size: 0.85rem; color: #98FB98; }
+        .game-best { text-align: right; }
+        .best-label { font-size: 0.8rem; color: #98FB98; }
+        .best-value { font-size: 1.3rem; font-weight: bold; color: #ffd700; }
+
+        .achievements-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; }
+        .achievement { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; text-align: center; border: 2px solid #333; opacity: 0.5; }
+        .achievement.unlocked { border-color: #ffd700; opacity: 1; background: rgba(255,215,0,0.1); }
+        .achievement-icon { font-size: 2.5rem; }
+        .achievement-name { font-size: 0.75rem; margin-top: 8px; color: #98FB98; }
+
+        .level-bar { background: rgba(0,0,0,0.5); border-radius: 10px; height: 30px; margin: 15px 0; overflow: hidden; border: 2px solid #ffd700; }
+        .level-progress { height: 100%; background: linear-gradient(90deg, #32CD32, #ffd700); display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; font-weight: bold; color: #000; transition: width 0.5s; }
+
+        .name-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .name-modal.hidden { display: none; }
+        .name-modal-content { background: linear-gradient(135deg, #0d4f21, #116b35); padding: 30px; border-radius: 20px; border: 3px solid #ffd700; text-align: center; max-width: 400px; }
+        .name-modal input { padding: 15px; font-size: 1.2rem; border-radius: 10px; border: 2px solid #ffd700; background: rgba(0,0,0,0.5); color: #fff; width: 100%; margin: 15px 0; }
+        .btn { padding: 12px 30px; font-size: 1rem; background: linear-gradient(135deg, #228B22, #32CD32); color: #fff; border: 2px solid #ffd700; border-radius: 25px; cursor: pointer; margin: 5px; }
+        .btn:hover { transform: scale(1.05); }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .avatar { width: 80px; height: 80px; font-size: 2.5rem; }
+            .player-name { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>&#127942; Player Profile &#127942;</h1>
+            <p class="subtitle">Your gaming journey across St. Paddy's Arcade!</p>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">&#127968; Home</a>
+                <a href="leaderboards.html" class="nav-link">&#127942; Leaderboards</a>
+                <a href="tournaments.html" class="nav-link">&#127942; Tournaments</a>
+            </div>
+        </header>
+
+        <div class="profile-header">
+            <div class="avatar" id="avatar">&#127920;</div>
+            <div class="profile-info">
+                <div class="player-name" id="playerName">Player</div>
+                <div class="player-title" id="playerTitle">Arcade Newbie</div>
+                <div>Level <span id="playerLevel">1</span></div>
+                <div class="level-bar">
+                    <div class="level-progress" id="levelProgress" style="width: 0%">0%</div>
+                </div>
+                <button class="edit-name" onclick="showNameModal()">Edit Name</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">&#127918;</div>
+                <div class="stat-value" id="totalGames">0</div>
+                <div class="stat-label">Games Played</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">&#9203;</div>
+                <div class="stat-value" id="totalTime">0h</div>
+                <div class="stat-label">Time Played</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">&#127942;</div>
+                <div class="stat-value" id="totalAchievements">0</div>
+                <div class="stat-label">Achievements</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">&#128176;</div>
+                <div class="stat-value" id="totalCoins">0</div>
+                <div class="stat-label">Coins Earned</div>
+            </div>
+        </div>
+
+        <h2 class="section-title">&#127918; Game Statistics</h2>
+        <div class="games-list" id="gamesList"></div>
+
+        <h2 class="section-title">&#127942; Achievements</h2>
+        <div class="achievements-grid" id="achievementsGrid"></div>
+    </div>
+
+    <div class="name-modal hidden" id="nameModal">
+        <div class="name-modal-content">
+            <h2 style="color: #ffd700; margin-bottom: 15px;">Set Your Name</h2>
+            <input type="text" id="nameInput" placeholder="Enter your name" maxlength="20">
+            <div>
+                <button class="btn" onclick="saveName()">Save</button>
+                <button class="btn" onclick="hideNameModal()" style="background: #666;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GAME_INFO = {
+            'snake': { name: 'Snake', icon: '&#128013;' },
+            'flappy-bird': { name: 'Flappy Bird', icon: '&#128036;' },
+            'space-invaders': { name: 'Space Invaders', icon: '&#128126;' },
+            'pac-man': { name: 'Pac-Man', icon: '&#128993;' },
+            'whack-a-mole': { name: 'Whack-a-Mole', icon: '&#128057;' },
+            'cookie-clicker': { name: 'Cookie Clicker', icon: '&#127850;' },
+            'zombie-shooter': { name: 'Zombie Shooter', icon: '&#129503;' },
+            'geometry-dash': { name: 'Geometry Dash', icon: '&#128310;' },
+            'doodle-jump': { name: 'Doodle Jump', icon: '&#129432;' },
+            'knife-hit': { name: 'Knife Hit', icon: '&#128298;' },
+            'tower-defense': { name: 'Tower Defense', icon: '&#127984;' },
+            'asteroids': { name: 'Asteroids', icon: '&#11088;' },
+            'fruit-ninja': { name: 'Fruit Ninja', icon: '&#127819;' },
+            'crossy-road': { name: 'Crossy Road', icon: '&#128020;' },
+            'platformer': { name: 'Platformer', icon: '&#127939;' },
+            'fishing': { name: 'Fishing', icon: '&#127907;' },
+            'capybara-clicker': { name: 'Capybara Clicker', icon: '&#129451;' },
+            'retro-bowl': { name: 'Retro Bowl', icon: '&#127944;' },
+            'pop-the-lock': { name: 'Pop the Lock', icon: '&#128274;' },
+            'dropper': { name: 'Dropper', icon: '&#128998;' },
+            'war-simulator': { name: 'War Simulator', icon: '&#9876;' },
+            '2048': { name: '2048', icon: '&#128290;' },
+            'tetris': { name: 'Tetris', icon: '&#129513;' },
+            'minesweeper': { name: 'Minesweeper', icon: '&#128163;' }
+        };
+
+        const ACHIEVEMENTS = [
+            { id: 'first_game', name: 'First Steps', icon: '&#128095;', desc: 'Play your first game', check: s => s.totalGamesPlayed >= 1 },
+            { id: 'games_10', name: 'Casual Gamer', icon: '&#127918;', desc: 'Play 10 games', check: s => s.totalGamesPlayed >= 10 },
+            { id: 'games_50', name: 'Dedicated', icon: '&#127942;', desc: 'Play 50 games', check: s => s.totalGamesPlayed >= 50 },
+            { id: 'games_100', name: 'Arcade Master', icon: '&#128081;', desc: 'Play 100 games', check: s => s.totalGamesPlayed >= 100 },
+            { id: 'time_1h', name: 'Time Flies', icon: '&#9203;', desc: 'Play for 1 hour', check: s => s.totalTimePlayed >= 3600 },
+            { id: 'time_5h', name: 'Marathon', icon: '&#127939;', desc: 'Play for 5 hours', check: s => s.totalTimePlayed >= 18000 },
+            { id: 'coins_1000', name: 'Coin Collector', icon: '&#128176;', desc: 'Earn 1,000 coins', check: s => s.totalCoinsEarned >= 1000 },
+            { id: 'coins_10000', name: 'Rich', icon: '&#128176;', desc: 'Earn 10,000 coins', check: s => s.totalCoinsEarned >= 10000 },
+            { id: 'games_5_types', name: 'Variety', icon: '&#127922;', desc: 'Play 5 different games', check: s => Object.keys(s.games || {}).length >= 5 },
+            { id: 'games_10_types', name: 'Explorer', icon: '&#127758;', desc: 'Play 10 different games', check: s => Object.keys(s.games || {}).length >= 10 },
+            { id: 'games_all', name: 'Completionist', icon: '&#127775;', desc: 'Play every game', check: s => Object.keys(s.games || {}).length >= Object.keys(GAME_INFO).length },
+            { id: 'lucky', name: 'Lucky', icon: '&#127808;', desc: 'Find a secret code', check: s => s.secretCodesFound >= 1 }
+        ];
+
+        const TITLES = [
+            { level: 1, title: 'Arcade Newbie' },
+            { level: 5, title: 'Casual Gamer' },
+            { level: 10, title: 'Game Enthusiast' },
+            { level: 20, title: 'Arcade Regular' },
+            { level: 30, title: 'Pro Gamer' },
+            { level: 50, title: 'Arcade Master' },
+            { level: 75, title: 'Gaming Legend' },
+            { level: 100, title: 'Arcade God' }
+        ];
+
+        let playerName = localStorage.getItem('arcadePlayerName') || 'Player';
+        let stats = JSON.parse(localStorage.getItem('arcadeStats')) || {
+            totalGamesPlayed: 0,
+            totalTimePlayed: 0,
+            totalCoinsEarned: 0,
+            games: {},
+            achievements: [],
+            secretCodesFound: 0
+        };
+
+        function calculateLevel() {
+            const xp = stats.totalGamesPlayed * 10 + Math.floor(stats.totalTimePlayed / 60) + Math.floor(stats.totalCoinsEarned / 100);
+            return Math.floor(Math.sqrt(xp / 10)) + 1;
+        }
+
+        function getLevelProgress() {
+            const level = calculateLevel();
+            const currentLevelXP = Math.pow(level - 1, 2) * 10;
+            const nextLevelXP = Math.pow(level, 2) * 10;
+            const xp = stats.totalGamesPlayed * 10 + Math.floor(stats.totalTimePlayed / 60) + Math.floor(stats.totalCoinsEarned / 100);
+            return Math.min(100, Math.floor(((xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100));
+        }
+
+        function getTitle(level) {
+            let title = TITLES[0].title;
+            for (const t of TITLES) {
+                if (level >= t.level) title = t.title;
+            }
+            return title;
+        }
+
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            if (hours > 0) return hours + 'h ' + mins + 'm';
+            return mins + 'm';
+        }
+
+        function updateProfile() {
+            document.getElementById('playerName').textContent = playerName;
+
+            const level = calculateLevel();
+            const progress = getLevelProgress();
+            document.getElementById('playerLevel').textContent = level;
+            document.getElementById('playerTitle').textContent = getTitle(level);
+            document.getElementById('levelProgress').style.width = progress + '%';
+            document.getElementById('levelProgress').textContent = progress + '%';
+
+            document.getElementById('totalGames').textContent = stats.totalGamesPlayed || 0;
+            document.getElementById('totalTime').textContent = formatTime(stats.totalTimePlayed || 0);
+            document.getElementById('totalCoins').textContent = (stats.totalCoinsEarned || 0).toLocaleString();
+
+            // Check achievements
+            let unlockedCount = 0;
+            const achievedIds = stats.achievements || [];
+            for (const a of ACHIEVEMENTS) {
+                if (!achievedIds.includes(a.id) && a.check(stats)) {
+                    achievedIds.push(a.id);
+                }
+                if (achievedIds.includes(a.id)) unlockedCount++;
+            }
+            stats.achievements = achievedIds;
+            localStorage.setItem('arcadeStats', JSON.stringify(stats));
+            document.getElementById('totalAchievements').textContent = unlockedCount;
+
+            renderGames();
+            renderAchievements();
+        }
+
+        function renderGames() {
+            const container = document.getElementById('gamesList');
+            container.innerHTML = '';
+
+            for (const [gameId, info] of Object.entries(GAME_INFO)) {
+                const gameStats = stats.games?.[gameId] || { gamesPlayed: 0, timePlayed: 0, highScore: 0 };
+                if (gameStats.gamesPlayed === 0) continue;
+
+                const row = document.createElement('div');
+                row.className = 'game-row';
+                row.innerHTML = `
+                    <span class="game-icon">${info.icon}</span>
+                    <div class="game-info">
+                        <div class="game-name">${info.name}</div>
+                        <div class="game-stats">${gameStats.gamesPlayed} games | ${formatTime(gameStats.timePlayed || 0)}</div>
+                    </div>
+                    <div class="game-best">
+                        <div class="best-label">Best</div>
+                        <div class="best-value">${(gameStats.highScore || 0).toLocaleString()}</div>
+                    </div>
+                `;
+                container.appendChild(row);
+            }
+
+            if (container.children.length === 0) {
+                container.innerHTML = '<div style="padding: 30px; text-align: center; color: #98FB98;">No games played yet! Go play some games!</div>';
+            }
+        }
+
+        function renderAchievements() {
+            const container = document.getElementById('achievementsGrid');
+            container.innerHTML = '';
+            const achieved = stats.achievements || [];
+
+            for (const a of ACHIEVEMENTS) {
+                const unlocked = achieved.includes(a.id);
+                const div = document.createElement('div');
+                div.className = 'achievement' + (unlocked ? ' unlocked' : '');
+                div.innerHTML = `
+                    <div class="achievement-icon">${unlocked ? a.icon : '&#128274;'}</div>
+                    <div class="achievement-name">${a.name}</div>
+                `;
+                div.title = a.desc;
+                container.appendChild(div);
+            }
+        }
+
+        function showNameModal() {
+            document.getElementById('nameInput').value = playerName;
+            document.getElementById('nameModal').classList.remove('hidden');
+        }
+
+        function hideNameModal() {
+            document.getElementById('nameModal').classList.add('hidden');
+        }
+
+        function saveName() {
+            const name = document.getElementById('nameInput').value.trim();
+            if (name) {
+                playerName = name;
+                localStorage.setItem('arcadePlayerName', name);
+                updateProfile();
+            }
+            hideNameModal();
+        }
+
+        updateProfile();
+    </script>
+</body>
+</html>

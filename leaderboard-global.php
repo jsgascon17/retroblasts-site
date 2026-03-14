@@ -44,6 +44,9 @@ $validGames = [
     'pop-the-lock' => ['name' => 'Pop the Lock', 'icon' => '🔓', 'maxScore' => 1000],
     'dropper' => ['name' => 'The Dropper', 'icon' => '⬇️', 'maxScore' => 100],
     'war-simulator' => ['name' => 'War Simulator', 'icon' => '⚔️', 'maxScore' => 1000000],
+    '2048' => ['name' => '2048', 'icon' => '🔢', 'maxScore' => 1000000],
+    'tetris' => ['name' => 'Tetris', 'icon' => '🧱', 'maxScore' => 10000000],
+    'minesweeper' => ['name' => 'Minesweeper', 'icon' => '💣', 'maxScore' => 100000],
 ];
 
 $dataDir = __DIR__ . '/leaderboards/';

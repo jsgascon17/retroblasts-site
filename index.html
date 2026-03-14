@@ -587,6 +587,7 @@
             .games-grid { grid-template-columns: 1fr; }
         }
     </style>
+    <script src="themes.js"></script>
 </head>
 <body>
     <!-- Floating Shamrocks -->
@@ -614,6 +615,7 @@
                 <a href="stats.html" class="header-btn stats">&#127942; View Stats</a>
                 <a href="leaderboards.html" class="header-btn stats">&#127942; Leaderboards</a>
                 <a href="tournaments.html" class="header-btn stats">&#127942; Tournaments</a>
+                <a href="profile.html" class="header-btn stats">&#128100; Profile</a>
                 <button class="header-btn settings" onclick="toggleSettings()">&#9881; Settings</button>
             </div>
         </header>
@@ -1071,6 +1073,64 @@
                     <span class="play-btn">Play Now</span>
                 </div>
             </a>
+
+            <!-- 2048 -->
+            <a href="2048.html" class="game-card" data-game="2048" data-tags="puzzle,mobile">
+                <div class="game-preview" style="background: linear-gradient(135deg, #edc22e, #f9f6f2);">
+                    <span class="mobile-badge">&#128241; TOUCH</span>
+                    <span class="icon" style="color: #776e65; font-size: 3rem; font-weight: bold;">2048</span>
+                </div>
+                <div class="game-info">
+                    <h2 class="game-title">2048</h2>
+                    <p class="game-description">
+                        Slide tiles and combine matching numbers. Can you reach 2048?
+                    </p>
+                    <div class="game-tags">
+                        <span class="tag">Puzzle</span>
+                        <span class="tag">Numbers</span>
+                        <span class="tag">Strategy</span>
+                    </div>
+                    <span class="play-btn">Play Now</span>
+                </div>
+            </a>
+
+            <!-- Tetris -->
+            <a href="tetris.html" class="game-card" data-game="tetris" data-tags="puzzle,classic">
+                <div class="game-preview" style="background: linear-gradient(135deg, #1a1a2e, #16213e);">
+                    <span class="icon">&#129513;</span>
+                </div>
+                <div class="game-info">
+                    <h2 class="game-title">Tetris</h2>
+                    <p class="game-description">
+                        The classic block-stacking game! Clear lines and rack up points.
+                    </p>
+                    <div class="game-tags">
+                        <span class="tag">Classic</span>
+                        <span class="tag">Puzzle</span>
+                        <span class="tag">Retro</span>
+                    </div>
+                    <span class="play-btn">Play Now</span>
+                </div>
+            </a>
+
+            <!-- Minesweeper -->
+            <a href="minesweeper.html" class="game-card" data-game="minesweeper" data-tags="puzzle,strategy">
+                <div class="game-preview" style="background: linear-gradient(135deg, #333, #555);">
+                    <span class="icon">&#128163;</span>
+                </div>
+                <div class="game-info">
+                    <h2 class="game-title">Minesweeper</h2>
+                    <p class="game-description">
+                        Find all the mines without triggering any! Logic puzzle classic.
+                    </p>
+                    <div class="game-tags">
+                        <span class="tag">Logic</span>
+                        <span class="tag">Classic</span>
+                        <span class="tag">Strategy</span>
+                    </div>
+                    <span class="play-btn">Play Now</span>
+                </div>
+            </a>
         </div>
 
         <footer>
@@ -1099,6 +1159,11 @@
                     &#10024; Animations
                 </label>
                 <p class="setting-desc">Enable floating shamrocks</p>
+            </div>
+            <div class="setting-item">
+                <label><button class="settings-close" onclick="toggleSettings()">Done</button>#127912; Theme</label>
+                <p class="setting-desc">Choose your arcade theme</p>
+                <div id="themeSelector"></div>
             </div>
             <button class="settings-close" onclick="toggleSettings()">Done</button>
         </div>
@@ -1194,3 +1259,90 @@
     </script>
 </body>
 </html>
+<style>
+    .theme-selector {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 10px;
+    }
+    .theme-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px 5px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .theme-option:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+    .theme-option.active {
+        border-color: #ffd700;
+        box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+    }
+    .theme-option .theme-icon { font-size: 1.5rem; }
+    .theme-option .theme-name { font-size: 0.7rem; text-align: center; color: #fff; margin-top: 4px; }
+    .theme-preview { width: 100%; height: 6px; border-radius: 3px; margin-top: 6px; }
+    .theme-toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.85);
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 8px;
+        z-index: 10000;
+        animation: fadeInUp 0.3s ease;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+</style>
+<script>
+function initThemeSelector() {
+    const container = document.getElementById("themeSelector");
+    if (!container || !window.ThemeSystem) return;
+    
+    const themes = window.ThemeSystem.getThemes();
+    const current = localStorage.getItem("arcadeTheme") || "auto";
+    let html = "";
+    
+    themes.forEach(t => {
+        const themeData = window.ThemeSystem.THEMES[t.id];
+        const isActive = current === t.id || (current === "auto" && t.id === window.ThemeSystem.getSeasonalTheme());
+        html += `<div class="theme-option ${isActive ? "active" : ""}" onclick="selectTheme('${t.id}')" data-theme="${t.id}">
+            <span class="theme-icon">${t.icon}</span>
+            <span class="theme-name">${t.name}</span>
+            <div class="theme-preview" style="background: ${themeData.gradient}"></div>
+        </div>`;
+    });
+    container.innerHTML = html;
+}
+
+function selectTheme(themeId) {
+    document.querySelectorAll(".theme-option").forEach(el => el.classList.remove("active"));
+    const activeEl = document.querySelector(`[data-theme="${themeId}"]`);
+    if (activeEl) activeEl.classList.add("active");
+    window.ThemeSystem.setTheme(themeId);
+    showThemeToast(`${window.ThemeSystem.THEMES[themeId].name} theme applied!`);
+}
+
+function showThemeToast(msg) {
+    const existing = document.querySelector(".theme-toast");
+    if (existing) existing.remove();
+    const toast = document.createElement("div");
+    toast.className = "theme-toast";
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+}
+
+document.addEventListener("DOMContentLoaded", initThemeSelector);
+</script>

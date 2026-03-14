@@ -517,6 +517,23 @@
     </div>
 
     <script>
+        // ============================================
+        // TOURNAMENT MODE
+        // ============================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const tournamentId = urlParams.get('tournament') ? parseInt(urlParams.get('tournament')) : null;
+
+        if (tournamentId) {
+            const banner = document.createElement('div');
+            banner.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(90deg, #ffd700, #ff8c00); color: #000; text-align: center; padding: 10px; font-weight: bold; z-index: 1000;';
+            banner.innerHTML = '&#127942; TOURNAMENT MODE <a href="tournaments.html" style="color: #000; margin-left: 15px;">View Standings</a>';
+            document.body.prepend(banner);
+            document.body.style.paddingTop = '40px';
+            fetch('tournament.php?action=scores&id=' + tournamentId).then(r => r.json()).then(data => {
+                if (data.success) banner.innerHTML = '&#127942; ' + data.tournament.name + ' - ' + data.tournament.timeRemaining + ' <a href="tournaments.html" style="color: #000; margin-left: 15px;">View</a>';
+            }).catch(() => {});
+        }
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -1948,6 +1965,12 @@
                     msgEl.textContent = data.isTopTen ? '🏆 #' + data.rank + ' - Top 10!' : '✓ Rank #' + data.rank;
                     btn.textContent = 'Done!';
                     localStorage.setItem('knifePlayerName', playerName);
+                    // Submit to tournament if active
+                    if (tournamentId) {
+                        fetch('tournament.php', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'submit', tournamentId, name: playerName, score: playerScore })
+                        }).then(r => r.json()).then(t => { if (t.success) msgEl.textContent += ' | T#' + t.rank; }).catch(() => {});
+                    }
                 } else { throw new Error(data.error); }
             } catch (error) {
                 msgEl.style.color = '#f00'; msgEl.textContent = 'Failed. Try again!';

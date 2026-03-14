@@ -1161,9 +1161,74 @@
         }
 
         // ============================================
+        // SECRET CODES
+        // ============================================
+        const SECRET_CODES = {
+            'rainbow': { keys: ['r','a','i','n','b','o','w'], action: () => {
+                document.body.style.animation = 'rainbow 2s linear infinite';
+                showCodeMessage('RAINBOW MODE ACTIVATED!');
+            }},
+            'matrix': { keys: ['m','a','t','r','i','x'], action: () => {
+                document.body.style.background = '#000';
+                showCodeMessage('MATRIX MODE: Follow the white rabbit...');
+            }},
+            'speed': { keys: ['s','p','e','e','d'], action: () => {
+                baseSpeed = Math.max(50, baseSpeed - 30);
+                showCodeMessage('SPEED BOOST! +30% faster');
+            }},
+            'giant': { keys: ['g','i','a','n','t'], action: () => {
+                CELL_SIZE = 30;
+                canvas.width = COLS * CELL_SIZE;
+                canvas.height = ROWS * CELL_SIZE;
+                showCodeMessage('GIANT MODE!');
+            }},
+            'lucky': { keys: ['l','u','c','k','y'], action: () => {
+                score += 1000;
+                saveData.coins += 100;
+                save();
+                updateHUD();
+                showCodeMessage('+1000 Score! +100 Coins!');
+            }},
+            'konami': { keys: ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'], action: () => {
+                score += 9999;
+                saveData.coins += 500;
+                save();
+                updateHUD();
+                showCodeMessage('KONAMI CODE! +9999 Score! +500 Coins!');
+            }}
+        };
+        let codeBuffer = [];
+        const style = document.createElement('style');
+        style.textContent = '@keyframes rainbow { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }';
+        document.head.appendChild(style);
+
+        function checkSecretCode(key) {
+            codeBuffer.push(key);
+            if (codeBuffer.length > 15) codeBuffer.shift();
+            for (const [name, code] of Object.entries(SECRET_CODES)) {
+                const bufferEnd = codeBuffer.slice(-code.keys.length);
+                if (JSON.stringify(bufferEnd) === JSON.stringify(code.keys)) {
+                    code.action();
+                    codeBuffer = [];
+                    break;
+                }
+            }
+        }
+
+        function showCodeMessage(msg) {
+            const div = document.createElement('div');
+            div.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 20px 40px; border-radius: 15px; font-size: 1.5rem; font-weight: bold; z-index: 9999; animation: popIn 0.5s ease-out;';
+            div.textContent = msg;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 2500);
+        }
+
+        // ============================================
         // INPUT
         // ============================================
         document.addEventListener('keydown', e => {
+            // Track for secret codes
+            checkSecretCode(e.key.length === 1 ? e.key.toLowerCase() : e.code);
             if (gameState === 'playing') {
                 switch (e.code) {
                     case 'ArrowUp':

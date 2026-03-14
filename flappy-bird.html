@@ -193,6 +193,23 @@
 
     <script>
         // ============================================
+        // TOURNAMENT MODE
+        // ============================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const tournamentId = urlParams.get('tournament') ? parseInt(urlParams.get('tournament')) : null;
+
+        if (tournamentId) {
+            const banner = document.createElement('div');
+            banner.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(90deg, #ffd700, #ff8c00); color: #000; text-align: center; padding: 10px; font-weight: bold; z-index: 1000;';
+            banner.innerHTML = '&#127942; TOURNAMENT MODE <a href="tournaments.html" style="color: #000; margin-left: 15px;">View Standings</a>';
+            document.body.prepend(banner);
+            document.body.style.paddingTop = '40px';
+            fetch('tournament.php?action=scores&id=' + tournamentId).then(r => r.json()).then(data => {
+                if (data.success) banner.innerHTML = '&#127942; ' + data.tournament.name + ' - ' + data.tournament.timeRemaining + ' <a href="tournaments.html" style="color: #000; margin-left: 15px;">View</a>';
+            }).catch(() => {});
+        }
+
+        // ============================================
         // AUDIO
         // ============================================
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -1411,9 +1428,33 @@
         idleLoop();
 
         // ============================================
+        // SECRET CODES
+        // ============================================
+        let codeBuffer = [];
+        const CODES = {
+            'fly': () => { gravity = 0.3; showCode('LOW GRAVITY MODE!'); },
+            'bigbird': () => { document.body.style.transform = 'scale(1.2)'; showCode('BIG BIRD MODE!'); },
+            'easy': () => { pipeGap = 200; showCode('EASY MODE: Wider gaps!'); },
+            'lucky': () => { score += 50; showCode('+50 POINTS!'); },
+            'neon': () => { document.body.style.filter = 'saturate(2) contrast(1.2)'; showCode('NEON MODE!'); }
+        };
+        function showCode(m) {
+            const d = document.createElement('div');
+            d.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;padding:20px 40px;border-radius:15px;font-size:1.5rem;font-weight:bold;z-index:9999;';
+            d.textContent = m; document.body.appendChild(d); setTimeout(() => d.remove(), 2500);
+        }
+        function checkCode(k) {
+            codeBuffer.push(k); if (codeBuffer.length > 10) codeBuffer.shift();
+            for (const [name, fn] of Object.entries(CODES)) {
+                if (codeBuffer.slice(-name.length).join('') === name) { fn(); codeBuffer = []; break; }
+            }
+        }
+
+        // ============================================
         // INPUT & UI
         // ============================================
         document.addEventListener('keydown', e => {
+            checkCode(e.key.toLowerCase());
             if (e.code === 'Space') { e.preventDefault(); flap(); }
             if (e.code === 'KeyP' || e.code === 'Escape') { if (gameRunning) gamePaused = !gamePaused; }
         });
@@ -1459,6 +1500,17 @@
                     }
                     btn.textContent = 'Done!';
                     localStorage.setItem('flappyPlayerName', playerName);
+
+                    // Submit to tournament if active
+                    if (tournamentId) {
+                        fetch('tournament.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'submit', tournamentId, name: playerName, score: playerScore })
+                        }).then(r => r.json()).then(t => {
+                            if (t.success) msgEl.textContent += ' | T#' + t.rank;
+                        }).catch(() => {});
+                    }
                 } else {
                     throw new Error(data.error || 'Failed');
                 }

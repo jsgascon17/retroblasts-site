@@ -38,6 +38,9 @@ $games = [
     'crossy-road' => ['name' => 'Crossy Road', 'icon' => '🐔'],
     'fruit-ninja' => ['name' => 'Fruit Ninja', 'icon' => '🍉'],
     'asteroids' => ['name' => 'Asteroids', 'icon' => '🪨'],
+    '2048' => ['name' => '2048', 'icon' => '🔢'],
+    'tetris' => ['name' => 'Tetris', 'icon' => '🧱'],
+    'minesweeper' => ['name' => 'Minesweeper', 'icon' => '💣'],
 ];
 
 function readData() {
