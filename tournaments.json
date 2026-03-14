@@ -9,9 +9,45 @@
             "startTime": "2026-03-14 16:19:01",
             "endTime": "2026-03-14 17:19:01",
             "duration": 3600,
+            "scores": [
+                {
+                    "name": "Thewizzardofoz",
+                    "score": 32,
+                    "date": "2026-03-14 17:18:53"
+                }
+            ],
+            "status": "active"
+        },
+        {
+            "id": 2,
+            "game": "knife-hit",
+            "gameName": "Knife Hit",
+            "gameIcon": "\ud83d\udd2a",
+            "name": "knife hit yay",
+            "startTime": "2026-03-14 16:52:55",
+            "endTime": "2026-03-14 17:07:55",
+            "duration": 900,
             "scores": [],
+            "status": "active"
+        },
+        {
+            "id": 3,
+            "game": "knife-hit",
+            "gameName": "Knife Hit",
+            "gameIcon": "\ud83d\udd2a",
+            "name": "knife hit",
+            "startTime": "2026-03-14 18:00:59",
+            "endTime": "2026-03-14 18:15:59",
+            "duration": 900,
+            "scores": [
+                {
+                    "name": "joey",
+                    "score": 42,
+                    "date": "2026-03-14 18:01:34"
+                }
+            ],
             "status": "active"
         }
     ],
-    "nextId": 2
+    "nextId": 4
 }

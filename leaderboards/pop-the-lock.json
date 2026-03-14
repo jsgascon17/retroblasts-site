@@ -1,9 +1,24 @@
 {
     "scores": [
         {
+            "name": "oehT",
+            "score": 15,
+            "date": "2026-03-14 17:32:29"
+        },
+        {
+            "name": "Thewizzardofoz",
+            "score": 10,
+            "date": "2026-03-14 17:29:52"
+        },
+        {
             "name": "joey",
             "score": 9,
             "date": "2026-03-14 16:00:50"
+        },
+        {
+            "name": "thefruitisinvis",
+            "score": 0,
+            "date": "2026-03-14 17:36:09"
         }
     ]
 }

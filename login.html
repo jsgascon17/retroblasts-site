@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .back-btn {
+            position: fixed; top: 20px; left: 20px;
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        
+        .login-container {
+            background: rgba(0,0,0,0.4);
+            border-radius: 25px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo h1 {
+            color: #fff;
+            font-size: 2.5rem;
+            text-shadow: 0 0 20px rgba(233,69,96,0.5);
+        }
+        .logo p {
+            color: #888;
+            margin-top: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            background: rgba(0,0,0,0.3);
+        }
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        .tab.active {
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            color: #fff;
+        }
+        .tab:hover:not(.active) {
+            color: #fff;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            color: #888;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .form-group input::placeholder {
+            color: #555;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(233,69,96,0.4);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .message.error {
+            background: rgba(255,0,0,0.2);
+            color: #ff6b6b;
+            display: block;
+        }
+        .message.success {
+            background: rgba(0,255,0,0.2);
+            color: #4CAF50;
+            display: block;
+        }
+        
+        .form-panel {
+            display: none;
+        }
+        .form-panel.active {
+            display: block;
+        }
+        
+        .avatar-select {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .avatar-option {
+            width: 50px;
+            height: 50px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(0,0,0,0.2);
+        }
+        .avatar-option:hover {
+            border-color: #e94560;
+            transform: scale(1.1);
+        }
+        .avatar-option.selected {
+            border-color: #e94560;
+            background: rgba(233,69,96,0.2);
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: #555;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+        }
+        .divider span {
+            padding: 0 15px;
+            font-size: 0.9rem;
+        }
+        
+        .guest-btn {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            color: #888;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .guest-btn:hover {
+            border-color: #888;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← Back</a>
+    
+    <div class="login-container">
+        <div class="logo">
+            <h1>🎮 Arcade</h1>
+            <p>Sign in to track your progress, add friends, and compete!</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('login')">Login</button>
+            <button class="tab" onclick="showTab('register')">Register</button>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <!-- Login Form -->
+        <div id="loginPanel" class="form-panel active">
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="loginUsername" placeholder="Enter your username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+        </div>
+        
+        <!-- Register Form -->
+        <div id="registerPanel" class="form-panel">
+            <form id="registerForm">
+                <div class="form-group">
+                    <label>Username (3-20 characters)</label>
+                    <input type="text" id="regUsername" placeholder="Choose a username" minlength="3" maxlength="20" required>
+                </div>
+                <div class="form-group">
+                    <label>Display Name</label>
+                    <input type="text" id="regDisplayName" placeholder="How others will see you" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label>Password (6+ characters)</label>
+                    <input type="password" id="regPassword" placeholder="Choose a password" minlength="6" required>
+                </div>
+                <div class="form-group">
+                    <label>Choose Avatar</label>
+                    <div class="avatar-select" id="avatarSelect">
+                        <div class="avatar-option selected" data-avatar="😎">😎</div>
+                        <div class="avatar-option" data-avatar="🎮">🎮</div>
+                        <div class="avatar-option" data-avatar="🚀">🚀</div>
+                        <div class="avatar-option" data-avatar="⭐">⭐</div>
+                        <div class="avatar-option" data-avatar="🔥">🔥</div>
+                        <div class="avatar-option" data-avatar="💎">💎</div>
+                        <div class="avatar-option" data-avatar="🎯">🎯</div>
+                        <div class="avatar-option" data-avatar="🏆">🏆</div>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Create Account</button>
+            </form>
+        </div>
+        
+        <div class="divider"><span>or</span></div>
+        <button class="guest-btn" onclick="continueAsGuest()">Continue as Guest</button>
+    </div>
+
+    <script>
+        let selectedAvatar = '😎';
+        
+        // Check if already logged in
+        fetch('api/auth.php?action=check', { credentials: 'include' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.loggedIn) {
+                    window.location.href = 'profile.html';
+                }
+            });
+        
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+            
+            if (tab === 'login') {
+                document.querySelector('.tab:first-child').classList.add('active');
+                document.getElementById('loginPanel').classList.add('active');
+            } else {
+                document.querySelector('.tab:last-child').classList.add('active');
+                document.getElementById('registerPanel').classList.add('active');
+            }
+            
+            hideMessage();
+        }
+        
+        function showMessage(text, isError = true) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + (isError ? 'error' : 'success');
+        }
+        
+        function hideMessage() {
+            document.getElementById('message').className = 'message';
+        }
+        
+        // Avatar selection
+        document.getElementById('avatarSelect').addEventListener('click', (e) => {
+            if (e.target.classList.contains('avatar-option')) {
+                document.querySelectorAll('.avatar-option').forEach(a => a.classList.remove('selected'));
+                e.target.classList.add('selected');
+                selectedAvatar = e.target.dataset.avatar;
+            }
+        });
+        
+        // Login form
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+            
+            try {
+                const response = await fetch('api/auth.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        action: 'login',
+                        username: document.getElementById('loginUsername').value,
+                        password: document.getElementById('loginPassword').value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('arcadeUser', JSON.stringify(data.user));
+                    showMessage('Welcome back! Redirecting...', false);
+                    setTimeout(() => {
+                        const redirect = new URLSearchParams(window.location.search).get('redirect');
+                        window.location.href = redirect || 'profile.html';
+                    }, 1000);
+                } else {
+                    showMessage(data.error || 'Login failed');
+                    btn.disabled = false;
+                    btn.textContent = 'Login';
+                }
+            } catch (err) {
+                showMessage('Connection error. Please try again.');
+                btn.disabled = false;
+                btn.textContent = 'Login';
+            }
+        });
+        
+        // Register form
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+            
+            try {
+                const response = await fetch('api/auth.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        action: 'register',
+                        username: document.getElementById('regUsername').value,
+                        password: document.getElementById('regPassword').value,
+                        displayName: document.getElementById('regDisplayName').value || undefined,
+                        avatar: selectedAvatar
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('arcadeUser', JSON.stringify(data.user));
+                    
+                    // Offer to import existing progress
+                    const existingStats = localStorage.getItem('arcadeStats');
+                    if (existingStats) {
+                        if (confirm('Import your existing arcade progress to your new account?')) {
+                            await fetch('api/auth.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                credentials: 'include',
+                                body: JSON.stringify({
+                                    action: 'import-progress',
+                                    stats: JSON.parse(existingStats)
+                                })
+                            });
+                        }
+                    }
+                    
+                    showMessage('Account created! Redirecting...', false);
+                    setTimeout(() => {
+                        window.location.href = 'profile.html';
+                    }, 1000);
+                } else {
+                    showMessage(data.error || 'Registration failed');
+                    btn.disabled = false;
+                    btn.textContent = 'Create Account';
+                }
+            } catch (err) {
+                showMessage('Connection error. Please try again.');
+                btn.disabled = false;
+                btn.textContent = 'Create Account';
+            }
+        });
+        
+        function continueAsGuest() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

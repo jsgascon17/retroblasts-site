@@ -26,6 +26,22 @@ $dataFile = __DIR__ . '/tournaments.json';
 
 // Game info
 $games = [
+    'asteroids' => ['name' => 'Asteroids', 'icon' => '🪨'],
+    'capybara-clicker' => ['name' => 'Capybara Clicker', 'icon' => '🦫'],
+    'cookie-clicker' => ['name' => 'Cookie Clicker', 'icon' => '🍪'],
+    'crossy-road' => ['name' => 'Crossy Road', 'icon' => '🐔'],
+    'doodle-jump' => ['name' => 'Doodle Jump', 'icon' => '🦘'],
+    'dropper' => ['name' => 'Dropper', 'icon' => '⬇️'],
+    'fishing' => ['name' => 'Fishing', 'icon' => '🐟'],
+    'fruit-ninja' => ['name' => 'Fruit Ninja', 'icon' => '🍉'],
+    'pacman' => ['name' => 'Pac-Man', 'icon' => '🟡'],
+    'platformer' => ['name' => 'Platformer', 'icon' => '🏃'],
+    'pop-the-lock' => ['name' => 'Pop the Lock', 'icon' => '🔓'],
+    'retro-bowl' => ['name' => 'Retro Bowl', 'icon' => '🏈'],
+    'tower-defense' => ['name' => 'Tower Defense', 'icon' => '🏰'],
+    'war-simulator' => ['name' => 'War Simulator', 'icon' => '⚔️'],
+    'whack-a-mole' => ['name' => 'Whack-a-Mole', 'icon' => '🐹'],
+    'zombie-shooter' => ['name' => 'Zombie Shooter', 'icon' => '🧟'],
     'flappy-bird' => ['name' => 'Flappy Bird', 'icon' => '🐤'],
     'snake' => ['name' => 'Snake', 'icon' => '🐍'],
     'space-invaders' => ['name' => 'Space Invaders', 'icon' => '👾'],
