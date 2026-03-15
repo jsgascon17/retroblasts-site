@@ -196,6 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'displayName' => $displayName ?: $username,
             'avatar' => '😎',
             'xp' => 0,
+            'coins' => 500,
             'friends' => [],
             'friendRequests' => ['incoming' => [], 'outgoing' => []],
             'achievements' => [],
@@ -225,6 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'displayName' => $data['users'][$username]['displayName'],
                 'avatar' => '😎',
                 'xp' => 0,
+            'coins' => 500,
                 'level' => 1,
                 'title' => 'Arcade Newbie'
             ]

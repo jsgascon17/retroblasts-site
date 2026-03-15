@@ -273,6 +273,7 @@
                         </div>
                         <div class="friend-actions">
                             <a href="chat.html?dm=${f.username}" class="action-btn secondary">💬 Chat</a>
+                            <button class="action-btn" style="background:#ffd700;color:#000;" onclick="showGiftModal('${f.username}', '${f.displayName}')">🎁 Gift</button>
                             <button class="action-btn danger" onclick="removeFriend('${f.username}')">Remove</button>
                         </div>
                     </div>
@@ -487,5 +488,25 @@
             if (currentUser) loadFriends();
         }, 30000);
     </script>
+    <!-- Gift Modal -->
+    <div class="modal" id="giftModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background:#1a1a2e; padding:30px; border-radius:20px; max-width:400px; width:90%;">
+            <h2 style="color:#ffd700; margin-bottom:20px;">🎁 Send Gift</h2>
+            <p style="margin-bottom:15px;">To: <strong id="giftRecipient"></strong></p>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; margin-bottom:5px; color:#aaa;">Amount (10 - 10,000)</label>
+                <input type="number" id="giftAmount" min="10" max="10000" value="100" style="width:100%; padding:10px; border-radius:8px; border:2px solid #ffd700; background:#000; color:#fff; font-size:1.2rem;">
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="display:block; margin-bottom:5px; color:#aaa;">Message (optional)</label>
+                <input type="text" id="giftMessage" maxlength="100" placeholder="Have some coins!" style="width:100%; padding:10px; border-radius:8px; border:2px solid #333; background:#000; color:#fff;">
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button onclick="sendGift()" style="flex:1; padding:12px; background:linear-gradient(135deg,#ffd700,#ff8c00); border:none; border-radius:8px; color:#000; font-weight:bold; cursor:pointer;">Send 🪙</button>
+                <button onclick="hideGiftModal()" style="flex:1; padding:12px; background:#333; border:none; border-radius:8px; color:#fff; cursor:pointer;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

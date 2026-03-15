@@ -1,0 +1,47 @@
+{
+    "users": {
+        "billybuffalo15": {
+            "id": "949c478974950d7a",
+            "username": "billybuffalo15",
+            "passwordHash": "$2y$10$pAM9Rb9uGfqC1l.WkCPX5.RXhZDZtaD.HeiDWW5w6Ebp9VxrxNJtu",
+            "displayName": "Joey",
+            "avatar": "\ud83d\ude0e",
+            "xp": 4831,
+            "friends": [],
+            "friendRequests": {
+                "incoming": [],
+                "outgoing": []
+            },
+            "achievements": [],
+            "secretGamesUnlocked": [],
+            "stats": {
+                "totalGamesPlayed": 122,
+                "totalTimePlayed": 216671,
+                "tournamentsEntered": 0,
+                "tournamentWins": 0,
+                "tournamentPodiums": 0,
+                "messagesSent": 1
+            },
+            "createdAt": "2026-03-15T14:12:12+00:00",
+            "lastActivity": "2026-03-15T21:57:45+00:00",
+            "lastLogin": "2026-03-15T21:50:53+00:00",
+            "coins": 17422,
+            "inventory": {
+                "name_colors": [
+                    "gold"
+                ],
+                "borders": [],
+                "avatar_effects": [],
+                "emotes": [],
+                "boosters": [],
+                "social": []
+            },
+            "equipped": {
+                "name_color": "gold",
+                "border": null,
+                "avatar_effect": null
+            },
+            "activeBoosts": []
+        }
+    }
+}

@@ -273,8 +273,7 @@
             pipeSpeed: { name: 'Slow Motion', desc: 'Pipes move slower', icon: '🐢', maxLevel: 5, baseCost: 40, effect: lvl => 1 - lvl * 0.06 },
             magnet: { name: 'Coin Magnet', desc: 'Attract coins nearby', icon: '🧲', maxLevel: 5, baseCost: 35, effect: lvl => 20 + lvl * 15 },
             doubleCoins: { name: 'Lucky Bird', desc: 'Chance for double coins', icon: '🍀', maxLevel: 5, baseCost: 50, effect: lvl => lvl * 0.1 },
-            shield: { name: 'Safety Net', desc: 'Start with shield', icon: '🛡️', maxLevel: 3, baseCost: 100, effect: lvl => lvl },
-            flapPower: { name: 'Strong Wings', desc: 'More powerful flaps', icon: '💪', maxLevel: 5, baseCost: 25, effect: lvl => 1 + lvl * 0.1 }
+            shield: { name: 'Safety Net', desc: 'Start with shield', icon: '🛡️', maxLevel: 3, baseCost: 100, effect: lvl => lvl }
         };
 
         // ============================================
@@ -320,7 +319,7 @@
             highScore: 0,
             ownedSkins: ['default'],
             equippedSkin: 'default',
-            upgrades: { hitbox: 0, pipeSpeed: 0, magnet: 0, doubleCoins: 0, shield: 0, flapPower: 0 },
+            upgrades: { hitbox: 0, pipeSpeed: 0, magnet: 0, doubleCoins: 0, shield: 0 },
             achievements: [],
             stats: {
                 gamesPlayed: 0,
@@ -344,6 +343,7 @@
                 saveData = { ...saveData, ...parsed };
                 saveData.stats = { ...saveData.stats, ...parsed.stats };
                 saveData.upgrades = { ...saveData.upgrades, ...parsed.upgrades };
+                delete saveData.upgrades.flapPower; // Removed upgrade
             }
             // Check daily reset
             const today = new Date().toDateString();
@@ -944,7 +944,7 @@
         }
 
         function getFlapPower() {
-            return BASE_FLAP_POWER * UPGRADES.flapPower.effect(saveData.upgrades.flapPower);
+            return BASE_FLAP_POWER;
         }
 
         function getMagnetRange() {

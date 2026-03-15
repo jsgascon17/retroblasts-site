@@ -194,6 +194,89 @@
 
     <script>
         // ============================================
+        // TOURNAMENT MODE - Auto-detect active tournaments
+        // ============================================
+        const GAME_ID = "crossy-road";
+        const urlParams = new URLSearchParams(window.location.search);
+        let tournamentId = urlParams.get("tournament") ? parseInt(urlParams.get("tournament")) : null;
+        let tournamentBanner = null;
+
+        function createTournamentBanner() {
+            if (tournamentBanner) return tournamentBanner;
+            tournamentBanner = document.createElement("div");
+            tournamentBanner.id = "tournamentBanner";
+            tournamentBanner.style.cssText = "position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(90deg, #ffd700, #ff8c00); color: #000; text-align: center; padding: 10px; font-weight: bold; z-index: 10000; display: flex; justify-content: center; align-items: center; gap: 15px;";
+            document.body.prepend(tournamentBanner);
+            document.body.style.paddingTop = "40px";
+            return tournamentBanner;
+        }
+
+        function showTournamentActive(tournament) {
+            const banner = createTournamentBanner();
+            banner.innerHTML = "&#127942; " + tournament.name + " - " + tournament.timeRemaining + " <a href=\"tournaments.html\" style=\"color: #000; margin-left: 15px;\">View Standings</a>";
+        }
+
+        function showTournamentJoinOffer(tournament) {
+            const banner = createTournamentBanner();
+            banner.innerHTML = "<span>&#127942; Active Tournament: <strong>" + tournament.name + "</strong> (" + tournament.timeRemaining + ")</span> <button onclick=\"joinTournament(" + tournament.id + ")\" style=\"background: #000; color: #ffd700; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;\">JOIN</button> <button onclick=\"dismissTournament()\" style=\"background: transparent; color: #333; border: 1px solid #333; padding: 5px 10px; border-radius: 5px; cursor: pointer;\">X</button>";
+        }
+
+        function joinTournament(id) {
+            tournamentId = id;
+            localStorage.setItem("joinedTournament_" + GAME_ID, id);
+            fetch("tournament.php?action=scores&id=" + id).then(function(r) { return r.json(); }).then(function(data) {
+                if (data.success) showTournamentActive(data.tournament);
+            });
+        }
+
+        function dismissTournament() {
+            if (tournamentBanner) { tournamentBanner.remove(); tournamentBanner = null; document.body.style.paddingTop = "0"; }
+            sessionStorage.setItem("dismissedTournament_" + GAME_ID, "true");
+        }
+
+        function submitToTournament(playerName, score) {
+            if (tournamentId) {
+                fetch("tournament.php", { method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "submit", tournamentId: tournamentId, name: playerName, score: score })
+                }).then(function(r) { return r.json(); }).then(function(t) { 
+                    if (t.success) console.log("Tournament rank: #" + t.rank);
+                }).catch(function() {});
+            }
+        }
+
+        (function initTournament() {
+            if (tournamentId) {
+                fetch("tournament.php?action=scores&id=" + tournamentId)
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.success && data.tournament.status === "active") showTournamentActive(data.tournament);
+                    }).catch(function() {});
+                return;
+            }
+            var joinedId = localStorage.getItem("joinedTournament_" + GAME_ID);
+            if (joinedId) {
+                fetch("tournament.php?action=scores&id=" + joinedId)
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.success && data.tournament.status === "active") {
+                            tournamentId = parseInt(joinedId);
+                            showTournamentActive(data.tournament);
+                        } else { localStorage.removeItem("joinedTournament_" + GAME_ID); }
+                    }).catch(function() {});
+                return;
+            }
+            if (sessionStorage.getItem("dismissedTournament_" + GAME_ID)) return;
+            fetch("tournament.php?action=active")
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success && data.tournaments) {
+                        var gameTournament = data.tournaments.find(function(t) { return t.game === GAME_ID; });
+                        if (gameTournament) { tournamentId = gameTournament.id; showTournamentJoinOffer(gameTournament); }
+                    }
+                }).catch(function() {});
+        })();
+
+        // ============================================
         // AUDIO
         // ============================================
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -1102,6 +1185,7 @@
                     msgEl.style.color = '#4caf50';
                     msgEl.textContent = data.isTopTen ? '🏆 #' + data.rank + ' - Top 10!' : '✓ Rank #' + data.rank;
                     btn.textContent = 'Done!';
+                    submitToTournament(playerName, playerScore);
                     localStorage.setItem('crossyPlayerName', playerName);
                 } else { throw new Error(data.error); }
             } catch (e) { msgEl.style.color = '#f00'; msgEl.textContent = 'Failed!'; btn.disabled = false; btn.textContent = 'Submit'; }

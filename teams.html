@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teams - Sandbox Arcade</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .header {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f59e0b;
+        }
+        .header h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.2rem;
+            color: #f59e0b;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .tab {
+            padding: 12px 30px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .tab:hover { background: rgba(255,255,255,0.2); }
+        .tab.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-color: #fff;
+            color: #000;
+        }
+        
+        .my-team {
+            background: rgba(245,158,11,0.1);
+            border: 2px solid #f59e0b;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .team-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .team-name {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #f59e0b;
+        }
+        .team-tag {
+            background: rgba(0,0,0,0.3);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+        .team-stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        .team-stat {
+            text-align: center;
+        }
+        .team-stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f59e0b;
+        }
+        .team-stat-label { color: #888; font-size: 0.85rem; }
+        
+        .members-list {
+            margin-top: 20px;
+        }
+        .members-list h3 {
+            margin-bottom: 15px;
+            color: #f59e0b;
+        }
+        .member-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .member-avatar { font-size: 2rem; }
+        .member-info { flex: 1; }
+        .member-name { font-weight: bold; font-size: 1.1rem; }
+        .member-role {
+            font-size: 0.8rem;
+            padding: 3px 10px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        .role-leader { background: #f59e0b; color: #000; }
+        .role-officer { background: #8b5cf6; color: #fff; }
+        .role-member { background: #3b82f6; color: #fff; }
+        .member-xp { color: #888; font-size: 0.9rem; }
+        .member-actions { display: flex; gap: 10px; }
+        .member-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .btn-promote { background: #8b5cf6; color: #fff; }
+        .btn-kick { background: #ef4444; color: #fff; }
+        
+        .team-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .team-action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .btn-leave { background: #ef4444; color: #fff; }
+        .btn-disband { background: #7f1d1d; color: #fff; }
+        .team-action-btn:hover { transform: scale(1.05); }
+        
+        .no-team {
+            text-align: center;
+            padding: 60px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+        }
+        .no-team h2 { margin-bottom: 15px; color: #f59e0b; }
+        .no-team p { color: #888; margin-bottom: 30px; }
+        .create-team-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .create-team-btn:hover { transform: scale(1.05); }
+        
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .team-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .team-card:hover {
+            border-color: #f59e0b;
+            transform: translateY(-5px);
+        }
+        .team-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .team-card-name { font-size: 1.3rem; font-weight: bold; color: #f59e0b; }
+        .team-card-members { color: #888; font-size: 0.9rem; }
+        .team-card-xp {
+            background: rgba(245,158,11,0.2);
+            padding: 5px 12px;
+            border-radius: 15px;
+            color: #f59e0b;
+            font-size: 0.85rem;
+        }
+        .team-card-leader { color: #888; font-size: 0.9rem; margin-top: 10px; }
+        .join-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .join-btn:hover { transform: scale(1.02); }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #f59e0b;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+        }
+        .modal h2 {
+            color: #f59e0b;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #888;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #f59e0b;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-create { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; }
+        .btn-cancel { background: rgba(255,255,255,0.1); color: #fff; }
+        
+        .login-prompt {
+            text-align: center;
+            padding: 60px;
+        }
+        .login-prompt h2 { margin-bottom: 20px; }
+        .login-prompt a {
+            display: inline-block;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 10px;
+            z-index: 2000;
+            animation: slideUp 0.3s ease;
+        }
+        .toast.success { background: #22c55e; color: #fff; }
+        .toast.error { background: #ef4444; color: #fff; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚔️ TEAMS</h1>
+        <div class="header-right">
+            <a href="index.html" class="back-btn">← Back to Arcade</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div id="loginPrompt" class="login-prompt" style="display: none;">
+            <h2>Login Required</h2>
+            <p style="margin-bottom: 20px; color: #aaa;">You need to be logged in to join teams.</p>
+            <a href="login.html">Login / Register</a>
+        </div>
+        
+        <div id="teamsContent" style="display: none;">
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('myteam')">My Team</div>
+                <div class="tab" onclick="showTab('browse')">Browse Teams</div>
+                <div class="tab" onclick="showTab('leaderboard')">Leaderboard</div>
+            </div>
+            
+            <div id="myteamTab">
+                <div id="myTeamSection"></div>
+            </div>
+            
+            <div id="browseTab" style="display: none;">
+                <div class="teams-grid" id="teamsGrid"></div>
+            </div>
+            
+            <div id="leaderboardTab" style="display: none;">
+                <div id="teamsLeaderboard"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create Team Modal -->
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <h2>⚔️ Create Team</h2>
+            <div class="form-group">
+                <label>Team Name</label>
+                <input type="text" id="teamNameInput" maxlength="20" placeholder="Enter team name...">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="modal-btn btn-create" onclick="createTeam()">Create</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentUser = null;
+        let myTeam = null;
+        
+        async function init() {
+            try {
+                const resp = await fetch('api/auth.php?action=check');
+                const data = await resp.json();
+                
+                if (!data.success || !data.user) {
+                    document.getElementById('loginPrompt').style.display = 'block';
+                    return;
+                }
+                
+                currentUser = data.user;
+                document.getElementById('teamsContent').style.display = 'block';
+                
+                await loadMyTeam();
+                await loadAllTeams();
+            } catch (e) {
+                showToast('Failed to load', 'error');
+            }
+        }
+        
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('myteamTab').style.display = tab === 'myteam' ? 'block' : 'none';
+            document.getElementById('browseTab').style.display = tab === 'browse' ? 'block' : 'none';
+            document.getElementById('leaderboardTab').style.display = tab === 'leaderboard' ? 'block' : 'none';
+            
+            if (tab === 'leaderboard') loadLeaderboard();
+        }
+        
+        async function loadMyTeam() {
+            try {
+                const resp = await fetch('api/teams.php?action=my-team');
+                const data = await resp.json();
+                
+                const section = document.getElementById('myTeamSection');
+                
+                if (!data.success || !data.team) {
+                    section.innerHTML = `
+                        <div class="no-team">
+                            <h2>You're not in a team</h2>
+                            <p>Join an existing team or create your own!</p>
+                            <button class="create-team-btn" onclick="openCreateModal()">⚔️ Create Team</button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                myTeam = data.team;
+                const isLeader = myTeam.leader === currentUser.username;
+                const isOfficer = myTeam.officers.includes(currentUser.username);
+                
+                let membersHtml = '';
+                for (const member of myTeam.members) {
+                    const role = member.username === myTeam.leader ? 'leader' : 
+                                myTeam.officers.includes(member.username) ? 'officer' : 'member';
+                    const roleLabel = role === 'leader' ? 'Leader' : role === 'officer' ? 'Officer' : 'Member';
+                    
+                    let actions = '';
+                    if (isLeader && member.username !== currentUser.username) {
+                        if (role === 'member') {
+                            actions = '<button class="member-btn btn-promote" onclick="promoteMember(\'' + member.username + '\')">Promote</button>';
+                        }
+                        actions += '<button class="member-btn btn-kick" onclick="kickMember(\'' + member.username + '\')">Kick</button>';
+                    }
+                    
+                    membersHtml += `
+                        <div class="member-card">
+                            <div class="member-avatar">😎</div>
+                            <div class="member-info">
+                                <div class="member-name">${member.username}</div>
+                                <span class="member-role role-${role}">${roleLabel}</span>
+                            </div>
+                            <div class="member-xp">Level ${member.level || 1}</div>
+                            <div class="member-actions">${actions}</div>
+                        </div>
+                    `;
+                }
+                
+                let actionsHtml = '';
+                if (isLeader) {
+                    actionsHtml = '<button class="team-action-btn btn-disband" onclick="disbandTeam()">Disband Team</button>';
+                } else {
+                    actionsHtml = '<button class="team-action-btn btn-leave" onclick="leaveTeam()">Leave Team</button>';
+                }
+                
+                section.innerHTML = `
+                    <div class="my-team">
+                        <div class="team-header">
+                            <div class="team-name">⚔️ ${myTeam.name}</div>
+                            <div class="team-tag">Created ${new Date(myTeam.createdAt).toLocaleDateString()}</div>
+                        </div>
+                        <div class="team-stats">
+                            <div class="team-stat">
+                                <div class="team-stat-value">${myTeam.members.length}</div>
+                                <div class="team-stat-label">Members</div>
+                            </div>
+                            <div class="team-stat">
+                                <div class="team-stat-value">${(myTeam.totalXp || 0).toLocaleString()}</div>
+                                <div class="team-stat-label">Total XP</div>
+                            </div>
+                        </div>
+                        <div class="members-list">
+                            <h3>Members</h3>
+                            ${membersHtml}
+                        </div>
+                        <div class="team-actions">${actionsHtml}</div>
+                    </div>
+                `;
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
+        async function loadAllTeams() {
+            try {
+                const resp = await fetch('api/teams.php?action=list');
+                const data = await resp.json();
+                
+                const grid = document.getElementById('teamsGrid');
+                
+                if (!data.success || !data.teams || data.teams.length === 0) {
+                    grid.innerHTML = '<p style="text-align: center; color: #888;">No teams yet. Be the first to create one!</p>';
+                    return;
+                }
+                
+                grid.innerHTML = '';
+                for (const team of data.teams) {
+                    const canJoin = !myTeam && team.members.length < 20;
+                    grid.innerHTML += `
+                        <div class="team-card">
+                            <div class="team-card-header">
+                                <div class="team-card-name">⚔️ ${team.name}</div>
+                                <div class="team-card-xp">${(team.totalXp || 0).toLocaleString()} XP</div>
+                            </div>
+                            <div class="team-card-members">👥 ${team.members.length}/20 members</div>
+                            <div class="team-card-leader">Leader: ${team.leader}</div>
+                            ${canJoin ? '<button class="join-btn" onclick="joinTeam(\'' + team.id + '\')">Join Team</button>' : ''}
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
+        async function loadLeaderboard() {
+            try {
+                const resp = await fetch('api/teams.php?action=leaderboard');
+                const data = await resp.json();
+                
+                const container = document.getElementById('teamsLeaderboard');
+                
+                if (!data.success || !data.teams || data.teams.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #888;">No teams yet.</p>';
+                    return;
+                }
+                
+                let html = '';
+                data.teams.forEach((team, index) => {
+                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
+                    html += `
+                        <div class="team-card" style="margin-bottom: 15px;">
+                            <div class="team-card-header">
+                                <div class="team-card-name">${medal} ${team.name}</div>
+                                <div class="team-card-xp">${(team.totalXp || 0).toLocaleString()} XP</div>
+                            </div>
+                            <div class="team-card-members">👥 ${team.members.length} members</div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
+        function openCreateModal() {
+            document.getElementById('createModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('createModal').classList.remove('active');
+        }
+        
+        async function createTeam() {
+            const name = document.getElementById('teamNameInput').value.trim();
+            if (!name || name.length < 3) {
+                showToast('Team name must be at least 3 characters', 'error');
+                return;
+            }
+            
+            try {
+                const resp = await fetch('api/teams.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'create', name })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    showToast('Team created!', 'success');
+                    closeModal();
+                    await loadMyTeam();
+                    await loadAllTeams();
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (e) {
+                showToast('Failed to create team', 'error');
+            }
+        }
+        
+        async function joinTeam(teamId) {
+            try {
+                const resp = await fetch('api/teams.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'join', teamId })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    showToast('Joined team!', 'success');
+                    await loadMyTeam();
+                    await loadAllTeams();
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (e) {
+                showToast('Failed to join', 'error');
+            }
+        }
+        
+        async function leaveTeam() {
+            if (!confirm('Are you sure you want to leave this team?')) return;
+            
+            try {
+                const resp = await fetch('api/teams.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'leave' })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    showToast('Left team', 'success');
+                    myTeam = null;
+                    await loadMyTeam();
+                    await loadAllTeams();
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (e) {
+                showToast('Failed', 'error');
+            }
+        }
+        
+        async function disbandTeam() {
+            if (!confirm('Are you sure you want to disband this team? This cannot be undone!')) return;
+            
+            try {
+                const resp = await fetch('api/teams.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'disband' })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    showToast('Team disbanded', 'success');
+                    myTeam = null;
+                    await loadMyTeam();
+                    await loadAllTeams();
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (e) {
+                showToast('Failed', 'error');
+            }
+        }
+        
+        async function promoteMember(username) {
+            try {
+                const resp = await fetch('api/teams.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'promote', username })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    showToast('Promoted to officer!', 'success');
+                    await loadMyTeam();
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (e) {
+                showToast('Failed', 'error');
+            }
+        }
+        
+        async function kickMember(username) {
+            if (!confirm('Kick ' + username + ' from the team?')) return;
+            
+            try {
+                const resp = await fetch('api/teams.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'kick', username })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    showToast('Member kicked', 'success');
+                    await loadMyTeam();
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (e) {
+                showToast('Failed', 'error');
+            }
+        }
+        
+        function showToast(message, type) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        init();
+    </script>
+</body>
+</html>

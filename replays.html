@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Replays - Sandbox Arcade</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .header {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #8b5cf6;
+        }
+        .header h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.2rem;
+            color: #8b5cf6;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .tab {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .tab:hover { background: rgba(255,255,255,0.2); }
+        .tab.active {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border-color: #fff;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-select {
+            padding: 10px 15px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+        }
+        .filter-select option { background: #1a1a2e; }
+        
+        .replay-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .replay-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .replay-card:hover {
+            border-color: #8b5cf6;
+            transform: translateX(5px);
+        }
+        
+        .replay-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .replay-avatar {
+            font-size: 2.5rem;
+        }
+        .replay-details h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .replay-details p {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        .replay-meta {
+            display: flex;
+            gap: 15px;
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        .replay-score {
+            text-align: right;
+        }
+        .replay-score .score {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .replay-score .label {
+            color: #888;
+            font-size: 0.8rem;
+        }
+        
+        .replay-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-watch {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: #fff;
+        }
+        .btn-watch:hover { transform: scale(1.05); }
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 2px solid #ef4444;
+        }
+        .btn-share {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #888;
+        }
+        .empty-state h2 { margin-bottom: 15px; color: #fff; }
+        
+        .login-prompt {
+            text-align: center;
+            padding: 60px;
+        }
+        .login-prompt a {
+            display: inline-block;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: #fff;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        /* Replay viewer modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        
+        .playback-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .playback-btn {
+            padding: 10px 25px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .speed-select {
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #8b5cf6;
+            border-radius: 8px;
+            color: #fff;
+        }
+        .speed-select option { background: #1a1a2e; }
+        
+        .replay-display {
+            background: #000;
+            border-radius: 10px;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #8b5cf6;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📹 REPLAYS</h1>
+        <a href="index.html" class="back-btn">← Back to Arcade</a>
+    </div>
+    
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="all">🌍 All Replays</div>
+            <div class="tab" data-tab="mine">📁 My Replays</div>
+        </div>
+        
+        <div class="filters">
+            <select class="filter-select" id="gameFilter">
+                <option value="">All Games</option>
+            </select>
+        </div>
+        
+        <div class="replay-list" id="replayList">
+            <div class="empty-state">
+                <h2>Loading replays...</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="replayModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Watching Replay</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="replay-display" id="replayDisplay">
+                <p>Replay playback coming soon!<br>Frame data is saved and ready.</p>
+            </div>
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="playback-controls">
+                <button class="playback-btn" id="playPauseBtn">▶ Play</button>
+                <select class="speed-select" id="speedSelect">
+                    <option value="0.5">0.5x</option>
+                    <option value="1" selected>1x</option>
+                    <option value="2">2x</option>
+                </select>
+                <span id="frameCounter">Frame: 0 / 0</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentTab = 'all';
+        let currentGame = '';
+        let isLoggedIn = false;
+        let currentUser = null;
+        
+        const GAMES = {
+            'snake': 'Snake', 'flappy-bird': 'Flappy Bird', 'tetris': 'Tetris',
+            '2048': '2048', 'pacman': 'Pac-Man', 'asteroids': 'Asteroids',
+            'space-invaders': 'Space Invaders', 'geometry-dash': 'Geometry Dash',
+            'knife-hit': 'Knife Hit', 'doodle-jump': 'Doodle Jump',
+            'crossy-road': 'Crossy Road', 'fruit-ninja': 'Fruit Ninja'
+        };
+        
+        async function init() {
+            // Check login
+            try {
+                const resp = await fetch('api/auth.php?action=check');
+                const data = await resp.json();
+                if (data.success && data.user) {
+                    isLoggedIn = true;
+                    currentUser = data.user.username;
+                }
+            } catch(e) {}
+            
+            // Populate game filter
+            const gameFilter = document.getElementById('gameFilter');
+            for (const [id, name] of Object.entries(GAMES)) {
+                const opt = document.createElement('option');
+                opt.value = id;
+                opt.textContent = name;
+                gameFilter.appendChild(opt);
+            }
+            
+            // Tab clicks
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.onclick = () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentTab = tab.dataset.tab;
+                    loadReplays();
+                };
+            });
+            
+            // Game filter
+            gameFilter.onchange = () => {
+                currentGame = gameFilter.value;
+                loadReplays();
+            };
+            
+            loadReplays();
+        }
+        
+        async function loadReplays() {
+            const list = document.getElementById('replayList');
+            list.innerHTML = '<div class="empty-state"><h2>Loading...</h2></div>';
+            
+            try {
+                let url = 'api/replays.php?action=' + (currentTab === 'mine' ? 'my' : 'list');
+                if (currentGame) url += '&game=' + currentGame;
+                
+                const resp = await fetch(url);
+                const data = await resp.json();
+                
+                if (!data.success) {
+                    list.innerHTML = '<div class="empty-state"><h2>Error loading replays</h2></div>';
+                    return;
+                }
+                
+                if (data.replays.length === 0) {
+                    list.innerHTML = '<div class="empty-state"><h2>No replays found</h2><p>Play some games and save your best runs!</p></div>';
+                    return;
+                }
+                
+                list.innerHTML = '';
+                for (const replay of data.replays) {
+                    const card = document.createElement('div');
+                    card.className = 'replay-card';
+                    
+                    const gameName = GAMES[replay.game] || replay.game;
+                    const date = new Date(replay.createdAt).toLocaleDateString();
+                    const duration = Math.floor(replay.duration / 60) + ':' + (replay.duration % 60).toString().padStart(2, '0');
+                    
+                    let actions = '<button class="btn btn-watch" onclick="watchReplay(\'' + replay.id + '\')">▶ Watch</button>';
+                    actions += '<button class="btn btn-share" onclick="shareReplay(\'' + replay.id + '\')">🔗 Share</button>';
+                    if (isLoggedIn && replay.player === currentUser) {
+                        actions += '<button class="btn btn-delete" onclick="deleteReplay(\'' + replay.id + '\')">🗑️</button>';
+                    }
+                    
+                    card.innerHTML = 
+                        '<div class="replay-info">' +
+                            '<div class="replay-avatar">' + (replay.avatar || '😎') + '</div>' +
+                            '<div class="replay-details">' +
+                                '<h3>' + gameName + '</h3>' +
+                                '<p>by ' + replay.playerName + '</p>' +
+                                '<div class="replay-meta">' +
+                                    '<span>📅 ' + date + '</span>' +
+                                    '<span>⏱️ ' + duration + '</span>' +
+                                    '<span>🎬 ' + replay.frameCount + ' frames</span>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="replay-score">' +
+                            '<div class="score">' + replay.score.toLocaleString() + '</div>' +
+                            '<div class="label">Score</div>' +
+                        '</div>' +
+                        '<div class="replay-actions">' + actions + '</div>';
+                    
+                    list.appendChild(card);
+                }
+            } catch(e) {
+                list.innerHTML = '<div class="empty-state"><h2>Failed to load replays</h2></div>';
+            }
+        }
+        
+        async function watchReplay(id) {
+            document.getElementById('replayModal').classList.add('active');
+            document.getElementById('modalTitle').textContent = 'Loading replay...';
+            
+            try {
+                const resp = await fetch('api/replays.php?action=get&id=' + id);
+                const data = await resp.json();
+                
+                if (data.success) {
+                    const replay = data.replay;
+                    const gameName = GAMES[replay.game] || replay.game;
+                    document.getElementById('modalTitle').textContent = gameName + ' - ' + replay.playerName;
+                    document.getElementById('frameCounter').textContent = 'Frame: 0 / ' + replay.frames.length;
+                    
+                    // TODO: Implement actual replay playback based on game type
+                    document.getElementById('replayDisplay').innerHTML = 
+                        '<div style="text-align: center; padding: 40px;">' +
+                        '<p style="font-size: 1.2rem; color: #fff;">🎬 Replay loaded!</p>' +
+                        '<p style="margin-top: 10px;">Score: ' + replay.score + '</p>' +
+                        '<p>' + replay.frames.length + ' frames recorded</p>' +
+                        '<p style="margin-top: 20px; color: #888;">Full playback visualization coming soon!</p>' +
+                        '</div>';
+                }
+            } catch(e) {
+                document.getElementById('modalTitle').textContent = 'Error loading replay';
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('replayModal').classList.remove('active');
+        }
+        
+        function shareReplay(id) {
+            const url = window.location.origin + '/replays.html?watch=' + id;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Replay link copied to clipboard!');
+            });
+        }
+        
+        async function deleteReplay(id) {
+            if (!confirm('Delete this replay?')) return;
+            
+            try {
+                const resp = await fetch('api/replays.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete', id })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    loadReplays();
+                } else {
+                    alert(data.error);
+                }
+            } catch(e) {
+                alert('Failed to delete');
+            }
+        }
+        
+        // Check for ?watch= parameter
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('watch')) {
+            setTimeout(() => watchReplay(params.get('watch')), 500);
+        }
+        
+        init();
+    </script>
+</body>
+</html>

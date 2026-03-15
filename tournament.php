@@ -139,6 +139,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         });
 
         echo json_encode(['success' => true, 'tournament' => $tournament]);
+    } elseif ($action === "join-private") {
+        // Join a private tournament via invite code
+        session_start();
+        if (!isset($_SESSION["user"])) {
+            echo json_encode(["success" => false, "error" => "Must be logged in"]);
+            exit();
+        }
+        
+        $inviteCode = $input["inviteCode"] ?? "";
+        if (empty($inviteCode)) {
+            echo json_encode(["success" => false, "error" => "Missing invite code"]);
+            exit();
+        }
+        
+        $data = readData();
+        $found = false;
+        foreach ($data["tournaments"] as &$t) {
+            if (isset($t["inviteCode"]) && $t["inviteCode"] === $inviteCode) {
+                if (!in_array($_SESSION["user"], $t["allowedPlayers"] ?? [])) {
+                    $t["allowedPlayers"][] = $_SESSION["user"];
+                }
+                $found = $t;
+                break;
+            }
+        }
+        
+        if (!$found) {
+            echo json_encode(["success" => false, "error" => "Invalid invite code"]);
+            exit();
+        }
+        
+        writeData($data);
+        echo json_encode(["success" => true, "tournament" => $found, "message" => "Joined private tournament!"]);
+
     } else {
         // Sort by status (active first) then by end time
         usort($data['tournaments'], function($a, $b) {
@@ -182,6 +216,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $tournament = &$data['tournaments'][$tournamentIndex];
 
         // Check if tournament is active
+
+        // Check if private tournament and user is allowed
+        if (isset($tournament["isPrivate"]) && $tournament["isPrivate"]) {
+            $currentUser = $_SESSION["user"] ?? strtolower($name);
+            $allowed = $tournament["allowedPlayers"] ?? [];
+            $creator = $tournament["createdBy"] ?? "";
+            if ($currentUser !== $creator && !in_array($currentUser, $allowed)) {
+                echo json_encode(["success" => false, "error" => "This is a private tournament"]);
+                exit();
+            }
+        }
+
+        //
         if (getTournamentStatus($tournament) !== 'active') {
             echo json_encode(['success' => false, 'error' => 'Tournament is not active']);
             exit();
@@ -204,14 +251,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     'score' => $score,
                     'date' => date('Y-m-d H:i:s')
                 ];
-            } else {
+            } elseif ($action === "join-private") {
+        // Join a private tournament via invite code
+        session_start();
+        if (!isset($_SESSION["user"])) {
+            echo json_encode(["success" => false, "error" => "Must be logged in"]);
+            exit();
+        }
+        
+        $inviteCode = $input["inviteCode"] ?? "";
+        if (empty($inviteCode)) {
+            echo json_encode(["success" => false, "error" => "Missing invite code"]);
+            exit();
+        }
+        
+        $data = readData();
+        $found = false;
+        foreach ($data["tournaments"] as &$t) {
+            if (isset($t["inviteCode"]) && $t["inviteCode"] === $inviteCode) {
+                if (!in_array($_SESSION["user"], $t["allowedPlayers"] ?? [])) {
+                    $t["allowedPlayers"][] = $_SESSION["user"];
+                }
+                $found = $t;
+                break;
+            }
+        }
+        
+        if (!$found) {
+            echo json_encode(["success" => false, "error" => "Invalid invite code"]);
+            exit();
+        }
+        
+        writeData($data);
+        echo json_encode(["success" => true, "tournament" => $found, "message" => "Joined private tournament!"]);
+
+    } else {
                 echo json_encode([
                     'success' => true,
                     'message' => 'Your best tournament score is still ' . $tournament['scores'][$existingIndex]['score']
                 ]);
                 exit();
             }
-        } else {
+        } elseif ($action === "join-private") {
+        // Join a private tournament via invite code
+        session_start();
+        if (!isset($_SESSION["user"])) {
+            echo json_encode(["success" => false, "error" => "Must be logged in"]);
+            exit();
+        }
+        
+        $inviteCode = $input["inviteCode"] ?? "";
+        if (empty($inviteCode)) {
+            echo json_encode(["success" => false, "error" => "Missing invite code"]);
+            exit();
+        }
+        
+        $data = readData();
+        $found = false;
+        foreach ($data["tournaments"] as &$t) {
+            if (isset($t["inviteCode"]) && $t["inviteCode"] === $inviteCode) {
+                if (!in_array($_SESSION["user"], $t["allowedPlayers"] ?? [])) {
+                    $t["allowedPlayers"][] = $_SESSION["user"];
+                }
+                $found = $t;
+                break;
+            }
+        }
+        
+        if (!$found) {
+            echo json_encode(["success" => false, "error" => "Invalid invite code"]);
+            exit();
+        }
+        
+        writeData($data);
+        echo json_encode(["success" => true, "tournament" => $found, "message" => "Joined private tournament!"]);
+
+    } else {
             $tournament['scores'][] = [
                 'name' => $name,
                 'score' => $score,
@@ -266,7 +381,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'endTime' => date('Y-m-d H:i:s', time() + $duration),
             'duration' => $duration,
             'scores' => [],
-            'status' => 'active'
+            'status' => 'active',
+            'isPrivate' => isset($input['isPrivate']) ? (bool)$input['isPrivate'] : false,
+            'inviteCode' => isset($input['isPrivate']) && $input['isPrivate'] ? bin2hex(random_bytes(4)) : null,
+            'allowedPlayers' => isset($input['allowedPlayers']) ? $input['allowedPlayers'] : [],
+            'createdBy' => $_SESSION['user'] ?? 'anonymous'
         ];
 
         $data['tournaments'][] = $tournament;
@@ -274,11 +393,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         echo json_encode(['success' => true, 'tournament' => $tournament]);
 
+    } elseif ($action === "join-private") {
+        // Join a private tournament via invite code
+        session_start();
+        if (!isset($_SESSION["user"])) {
+            echo json_encode(["success" => false, "error" => "Must be logged in"]);
+            exit();
+        }
+        
+        $inviteCode = $input["inviteCode"] ?? "";
+        if (empty($inviteCode)) {
+            echo json_encode(["success" => false, "error" => "Missing invite code"]);
+            exit();
+        }
+        
+        $data = readData();
+        $found = false;
+        foreach ($data["tournaments"] as &$t) {
+            if (isset($t["inviteCode"]) && $t["inviteCode"] === $inviteCode) {
+                if (!in_array($_SESSION["user"], $t["allowedPlayers"] ?? [])) {
+                    $t["allowedPlayers"][] = $_SESSION["user"];
+                }
+                $found = $t;
+                break;
+            }
+        }
+        
+        if (!$found) {
+            echo json_encode(["success" => false, "error" => "Invalid invite code"]);
+            exit();
+        }
+        
+        writeData($data);
+        echo json_encode(["success" => true, "tournament" => $found, "message" => "Joined private tournament!"]);
+
     } else {
         echo json_encode(['success' => false, 'error' => 'Invalid action']);
     }
 
-} else {
+} elseif ($action === "join-private") {
+        // Join a private tournament via invite code
+        session_start();
+        if (!isset($_SESSION["user"])) {
+            echo json_encode(["success" => false, "error" => "Must be logged in"]);
+            exit();
+        }
+        
+        $inviteCode = $input["inviteCode"] ?? "";
+        if (empty($inviteCode)) {
+            echo json_encode(["success" => false, "error" => "Missing invite code"]);
+            exit();
+        }
+        
+        $data = readData();
+        $found = false;
+        foreach ($data["tournaments"] as &$t) {
+            if (isset($t["inviteCode"]) && $t["inviteCode"] === $inviteCode) {
+                if (!in_array($_SESSION["user"], $t["allowedPlayers"] ?? [])) {
+                    $t["allowedPlayers"][] = $_SESSION["user"];
+                }
+                $found = $t;
+                break;
+            }
+        }
+        
+        if (!$found) {
+            echo json_encode(["success" => false, "error" => "Invalid invite code"]);
+            exit();
+        }
+        
+        writeData($data);
+        echo json_encode(["success" => true, "tournament" => $found, "message" => "Joined private tournament!"]);
+
+    } else {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
 }
