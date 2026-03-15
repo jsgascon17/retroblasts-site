@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Shop - Sandbox Arcade</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .header {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ffd700;
+        }
+        .header h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.2rem;
+            color: #ffd700;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .coins-display {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            color: #000;
+            font-size: 1.1rem;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .tab:hover { background: rgba(255,255,255,0.2); }
+        .tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #fff;
+        }
+        .tab.lootbox-tab {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        .tab.lootbox-tab.active {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+        
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .item-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .item-card:hover {
+            transform: translateY(-5px);
+            border-color: #ffd700;
+            box-shadow: 0 10px 30px rgba(255,215,0,0.2);
+        }
+        .item-card.owned {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+        .item-card.equipped {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.15);
+        }
+        
+        .item-preview {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 15px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .item-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .item-desc {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        .item-cost {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+        .item-cost span { color: #ffd700; font-weight: bold; }
+        
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-buy {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+        }
+        .btn-buy:hover { transform: scale(1.05); }
+        .btn-buy:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-equip {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: #000;
+        }
+        .btn-unequip {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: #fff;
+        }
+        .btn-activate {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: #fff;
+        }
+        
+        .owned-badge {
+            background: #4ade80;
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .equipped-badge {
+            background: #ffd700;
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .active-boosts {
+            background: rgba(139, 92, 246, 0.2);
+            border: 2px solid #8b5cf6;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .active-boosts h3 {
+            color: #8b5cf6;
+            margin-bottom: 15px;
+        }
+        .boost-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .boost-timer { color: #ffd700; font-weight: bold; }
+        
+        .inventory-count {
+            background: rgba(255,255,255,0.2);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+        
+        .login-prompt {
+            text-align: center;
+            padding: 60px;
+        }
+        .login-prompt h2 { margin-bottom: 20px; }
+        .login-prompt a {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        /* Name color previews */
+        .preview-gold { color: #ffd700; text-shadow: 0 0 5px rgba(255,215,0,0.5); }
+        .preview-rainbow { background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .preview-neon_green { color: #39ff14; text-shadow: 0 0 10px #39ff14; }
+        .preview-fire { background: linear-gradient(180deg, #ff0, #f00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .preview-ice { color: #00ffff; text-shadow: 0 0 10px #00ffff, 0 0 20px #0080ff; }
+        .preview-purple { color: #9b59b6; text-shadow: 0 0 8px rgba(155,89,182,0.6); }
+        
+        /* Avatar animations */
+        @keyframes sparkle { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.5) drop-shadow(0 0 10px #ffd700); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes glow { 0%, 100% { filter: drop-shadow(0 0 5px #fff); } 50% { filter: drop-shadow(0 0 20px #ffd700); } }
+        @keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        
+        .anim-sparkle { animation: sparkle 1.5s ease-in-out infinite; }
+        .anim-bounce { animation: bounce 1s ease-in-out infinite; }
+        .anim-glow { animation: glow 2s ease-in-out infinite; }
+        .anim-shake { animation: shake 0.5s ease-in-out infinite; }
+        .anim-pulse { animation: pulse 1s ease-in-out infinite; }
+        
+        /* Border previews */
+        .border-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 10px;
+            z-index: 1000;
+            animation: slideUp 0.3s ease;
+        }
+        .toast.success { background: #22c55e; }
+        .toast.error { background: #ef4444; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        
+        /* Loot Box Styles */
+        .lootbox-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .lootbox-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .lootbox-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 20px;
+            padding: 3px;
+            background: linear-gradient(145deg, var(--box-color1), var(--box-color2));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+        .lootbox-card.basic { --box-color1: #60a5fa; --box-color2: #3b82f6; }
+        .lootbox-card.premium { --box-color1: #a855f7; --box-color2: #7c3aed; }
+        .lootbox-card.legendary { --box-color1: #fbbf24; --box-color2: #f59e0b; }
+        
+        .lootbox-icon {
+            font-size: 5rem;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+        .lootbox-card.basic .lootbox-icon { animation: float 3s ease-in-out infinite; }
+        .lootbox-card.premium .lootbox-icon { animation: float 2.5s ease-in-out infinite, glow 2s ease-in-out infinite; }
+        .lootbox-card.legendary .lootbox-icon { animation: float 2s ease-in-out infinite, shake 0.5s ease-in-out infinite; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .lootbox-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .lootbox-card.basic .lootbox-name { color: #60a5fa; }
+        .lootbox-card.premium .lootbox-name { color: #a855f7; }
+        .lootbox-card.legendary .lootbox-name { color: #fbbf24; }
+        
+        .lootbox-desc {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        
+        .lootbox-drops {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .lootbox-drops h4 {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        .drop-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 0.9rem;
+        }
+        .drop-chance { color: #ffd700; }
+        
+        .lootbox-price {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+        .lootbox-price span { color: #ffd700; font-weight: bold; }
+        
+        .btn-open {
+            width: 100%;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .lootbox-card.basic .btn-open { background: linear-gradient(135deg, #60a5fa, #3b82f6); color: #fff; }
+        .lootbox-card.premium .btn-open { background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; }
+        .lootbox-card.legendary .btn-open { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
+        .btn-open:hover { transform: scale(1.05); }
+        .btn-open:disabled { background: #555; color: #888; transform: none; cursor: not-allowed; }
+        
+        /* Loot Box Opening Modal */
+        .lootbox-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .lootbox-modal.active { display: flex; }
+        
+        .lootbox-opening {
+            text-align: center;
+        }
+        
+        .opening-box {
+            font-size: 8rem;
+            animation: boxShake 0.5s ease-in-out infinite;
+        }
+        @keyframes boxShake {
+            0%, 100% { transform: rotate(-5deg) scale(1); }
+            50% { transform: rotate(5deg) scale(1.1); }
+        }
+        
+        .opening-text {
+            font-size: 1.5rem;
+            margin-top: 20px;
+            color: #ffd700;
+        }
+        
+        .lootbox-result {
+            display: none;
+            text-align: center;
+            animation: resultPop 0.5s ease;
+        }
+        @keyframes resultPop {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .result-icon {
+            font-size: 6rem;
+            margin-bottom: 20px;
+        }
+        .result-name {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .result-name.common { color: #94a3b8; }
+        .result-name.uncommon { color: #4ade80; }
+        .result-name.rare { color: #60a5fa; }
+        .result-name.epic { color: #a855f7; }
+        .result-name.legendary { color: #fbbf24; }
+        
+        .result-type {
+            color: #888;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .result-duplicate {
+            color: #f97316;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        
+        .btn-close-result {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-close-result:hover { transform: scale(1.05); }
+        
+        /* Recent drops */
+        .recent-drops {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        .recent-drops h3 {
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+        .drops-list {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        .drop-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 120px;
+            text-align: center;
+        }
+        .drop-card-icon { font-size: 2rem; margin-bottom: 8px; }
+        .drop-card-name { font-size: 0.85rem; color: #fff; }
+        .drop-card-time { font-size: 0.75rem; color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🛒 COIN SHOP</h1>
+        <div class="header-right">
+            <div class="coins-display">🪙 <span id="coinCount">0</span></div>
+            <a href="index.html" class="back-btn">← Back to Arcade</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div id="loginPrompt" class="login-prompt" style="display: none;">
+            <h2>Login Required</h2>
+            <p style="margin-bottom: 20px; color: #aaa;">You need to be logged in to access the shop.</p>
+            <a href="login.html">Login / Register</a>
+        </div>
+        
+        <div id="shopContent" style="display: none;">
+            <div id="activeBoostsSection" class="active-boosts" style="display: none;">
+                <h3>⚡ Active Boosts</h3>
+                <div id="activeBoostsList"></div>
+            </div>
+            
+            <div class="tabs" id="categoryTabs"></div>
+            
+            <!-- Loot Box Section -->
+            <div id="lootboxSection" style="display: none;">
+                <div class="lootbox-section">
+                    <div class="lootbox-card basic">
+                        <div class="lootbox-icon">📦</div>
+                        <div class="lootbox-name">Basic Box</div>
+                        <div class="lootbox-desc">A starter box with common rewards</div>
+                        <div class="lootbox-drops">
+                            <h4>Possible Drops:</h4>
+                            <div class="drop-item"><span>🪙 Coins (100-300)</span><span class="drop-chance">40%</span></div>
+                            <div class="drop-item"><span>💬 Basic Emote</span><span class="drop-chance">25%</span></div>
+                            <div class="drop-item"><span>🎨 Common Color</span><span class="drop-chance">20%</span></div>
+                            <div class="drop-item"><span>⚡ XP Boost</span><span class="drop-chance">15%</span></div>
+                        </div>
+                        <div class="lootbox-price">🪙 <span>500</span> coins</div>
+                        <button class="btn-open" onclick="openLootbox('basic')">Open Box</button>
+                    </div>
+                    
+                    <div class="lootbox-card premium">
+                        <div class="lootbox-icon">🎁</div>
+                        <div class="lootbox-name">Premium Box</div>
+                        <div class="lootbox-desc">Better odds for rare items</div>
+                        <div class="lootbox-drops">
+                            <h4>Possible Drops:</h4>
+                            <div class="drop-item"><span>🪙 Coins (300-800)</span><span class="drop-chance">30%</span></div>
+                            <div class="drop-item"><span>🎨 Rare Color</span><span class="drop-chance">25%</span></div>
+                            <div class="drop-item"><span>🖼️ Profile Border</span><span class="drop-chance">20%</span></div>
+                            <div class="drop-item"><span>✨ Avatar Effect</span><span class="drop-chance">15%</span></div>
+                            <div class="drop-item"><span>⚡ Coin Boost</span><span class="drop-chance">10%</span></div>
+                        </div>
+                        <div class="lootbox-price">🪙 <span>1,500</span> coins</div>
+                        <button class="btn-open" onclick="openLootbox('premium')">Open Box</button>
+                    </div>
+                    
+                    <div class="lootbox-card legendary">
+                        <div class="lootbox-icon">👑</div>
+                        <div class="lootbox-name">Legendary Box</div>
+                        <div class="lootbox-desc">Guaranteed rare+ with legendary chance!</div>
+                        <div class="lootbox-drops">
+                            <h4>Possible Drops:</h4>
+                            <div class="drop-item"><span>🪙 Coins (1000-3000)</span><span class="drop-chance">25%</span></div>
+                            <div class="drop-item"><span>🌈 Epic Color</span><span class="drop-chance">25%</span></div>
+                            <div class="drop-item"><span>💎 Diamond Border</span><span class="drop-chance">20%</span></div>
+                            <div class="drop-item"><span>✨ Rare Effect</span><span class="drop-chance">15%</span></div>
+                            <div class="drop-item"><span>🎫 All Emotes</span><span class="drop-chance">10%</span></div>
+                            <div class="drop-item"><span>🏆 Social Items</span><span class="drop-chance">5%</span></div>
+                        </div>
+                        <div class="lootbox-price">🪙 <span>5,000</span> coins</div>
+                        <button class="btn-open" onclick="openLootbox('legendary')">Open Box</button>
+                    </div>
+                </div>
+                
+                <div class="recent-drops" id="recentDrops" style="display: none;">
+                    <h3>🎉 Recent Drops</h3>
+                    <div class="drops-list" id="dropsList"></div>
+                </div>
+            </div>
+            
+            <div class="shop-grid" id="shopGrid"></div>
+        </div>
+    </div>
+    
+    <!-- Loot Box Opening Modal -->
+    <div class="lootbox-modal" id="lootboxModal">
+        <div class="lootbox-opening" id="openingAnimation">
+            <div class="opening-box">📦</div>
+            <div class="opening-text">Opening...</div>
+        </div>
+        <div class="lootbox-result" id="lootboxResult">
+            <div class="result-icon" id="resultIcon">🎉</div>
+            <div class="result-name" id="resultName">Rainbow Color</div>
+            <div class="result-type" id="resultType">Name Color</div>
+            <div class="result-duplicate" id="resultDuplicate" style="display: none;">Already owned! +500 coins refund</div>
+            <button class="btn-close-result" onclick="closeLootboxModal()">Awesome!</button>
+        </div>
+    </div>
+    
+    <script>
+        let shopData = null;
+        let userData = null;
+        let currentCategory = 'name_colors';
+        let recentDrops = [];
+        
+        async function init() {
+            try {
+                const authResp = await fetch('api/auth.php?action=check');
+                const authData = await authResp.json();
+                
+                if (!authData.success || !authData.user) {
+                    document.getElementById('loginPrompt').style.display = 'block';
+                    return;
+                }
+                
+                document.getElementById('shopContent').style.display = 'block';
+                
+                const shopResp = await fetch('api/shop.php?action=items');
+                shopData = await shopResp.json();
+                
+                const invResp = await fetch('api/shop.php?action=inventory');
+                userData = await invResp.json();
+                
+                updateCoinDisplay();
+                renderTabs();
+                renderShop();
+                updateActiveBoosts();
+            } catch (e) {
+                console.error('Failed to load shop:', e);
+                showToast('Failed to load shop', 'error');
+            }
+        }
+        
+        function updateCoinDisplay() {
+            document.getElementById('coinCount').textContent = (userData.coins || 0).toLocaleString();
+        }
+        
+        function renderTabs() {
+            const tabs = document.getElementById('categoryTabs');
+            tabs.innerHTML = '';
+            
+            // Add loot boxes tab first
+            const lootTab = document.createElement('div');
+            lootTab.className = 'tab lootbox-tab' + (currentCategory === 'lootboxes' ? ' active' : '');
+            lootTab.innerHTML = '🎁 Loot Boxes';
+            lootTab.onclick = () => {
+                currentCategory = 'lootboxes';
+                renderTabs();
+                renderShop();
+            };
+            tabs.appendChild(lootTab);
+            
+            for (const [key, cat] of Object.entries(shopData.shop)) {
+                const tab = document.createElement('div');
+                tab.className = 'tab' + (key === currentCategory ? ' active' : '');
+                tab.innerHTML = cat.icon + ' ' + cat.name;
+                
+                const owned = (userData.inventory[key] || []).length;
+                if (owned > 0) {
+                    tab.innerHTML += '<span class="inventory-count">' + owned + '</span>';
+                }
+                
+                tab.onclick = () => {
+                    currentCategory = key;
+                    renderTabs();
+                    renderShop();
+                };
+                tabs.appendChild(tab);
+            }
+        }
+        
+        function renderShop() {
+            const grid = document.getElementById('shopGrid');
+            const lootSection = document.getElementById('lootboxSection');
+            
+            if (currentCategory === 'lootboxes') {
+                grid.style.display = 'none';
+                lootSection.style.display = 'block';
+                updateLootboxButtons();
+                return;
+            }
+            
+            lootSection.style.display = 'none';
+            grid.style.display = 'grid';
+            grid.innerHTML = '';
+            
+            const category = shopData.shop[currentCategory];
+            if (!category) return;
+            
+            for (const item of category.items) {
+                const owned = (userData.inventory[currentCategory] || []).includes(item.id);
+                const equipKey = currentCategory === 'borders' ? 'border' : 
+                                currentCategory === 'avatar_effects' ? 'avatar_effect' :
+                                currentCategory.replace('s', '');
+                const equipped = userData.equipped[equipKey] === item.id;
+                
+                const card = document.createElement('div');
+                card.className = 'item-card' + (owned ? ' owned' : '') + (equipped ? ' equipped' : '');
+                
+                let preview = '';
+                if (currentCategory === 'name_colors') {
+                    preview = '<div class="item-preview preview-' + item.id + '">Player Name</div>';
+                } else if (currentCategory === 'borders') {
+                    preview = '<div class="item-preview"><div class="border-preview" style="' + item.css + '">😎</div></div>';
+                } else if (currentCategory === 'avatar_effects') {
+                    preview = '<div class="item-preview anim-' + item.animation + '">😎</div>';
+                } else if (currentCategory === 'emotes') {
+                    preview = '<div class="item-preview">' + item.emoji + '</div>';
+                } else if (currentCategory === 'boosters') {
+                    preview = '<div class="item-preview">⚡</div>';
+                } else if (currentCategory === 'social') {
+                    preview = '<div class="item-preview">🏆</div>';
+                }
+                
+                let badges = '';
+                if (equipped) badges += '<span class="equipped-badge">EQUIPPED</span> ';
+                else if (owned && currentCategory !== 'boosters') badges += '<span class="owned-badge">OWNED</span> ';
+                
+                let desc = item.desc || '';
+                if (currentCategory === 'boosters') {
+                    const count = (userData.inventory.boosters || []).filter(b => b === item.id).length;
+                    desc = 'You have: ' + count;
+                }
+                
+                let actions = '';
+                if (currentCategory === 'boosters') {
+                    const hasBoost = (userData.inventory.boosters || []).includes(item.id);
+                    const isActive = (userData.activeBoosts || []).some(b => b.type === item.id);
+                    actions = '<button class="btn btn-buy" onclick="purchaseItem(\'' + currentCategory + '\', \'' + item.id + '\')">Buy 🪙' + item.cost + '</button>';
+                    if (hasBoost && !isActive) {
+                        actions += '<button class="btn btn-activate" onclick="activateBoost(\'' + item.id + '\')">Use</button>';
+                    }
+                } else if (owned) {
+                    if (equipped) {
+                        actions = '<button class="btn btn-unequip" onclick="unequipItem(\'' + currentCategory + '\')">Unequip</button>';
+                    } else if (['name_colors', 'borders', 'avatar_effects'].includes(currentCategory)) {
+                        actions = '<button class="btn btn-equip" onclick="equipItem(\'' + currentCategory + '\', \'' + item.id + '\')">Equip</button>';
+                    }
+                } else {
+                    const canAfford = userData.coins >= item.cost;
+                    actions = '<button class="btn btn-buy" ' + (canAfford ? '' : 'disabled') + ' onclick="purchaseItem(\'' + currentCategory + '\', \'' + item.id + '\')">Buy 🪙' + item.cost + '</button>';
+                }
+                
+                card.innerHTML = preview + 
+                    '<div class="item-name">' + badges + item.name + '</div>' +
+                    '<div class="item-desc">' + desc + '</div>' +
+                    '<div class="item-actions">' + actions + '</div>';
+                
+                grid.appendChild(card);
+            }
+        }
+        
+        function updateLootboxButtons() {
+            const costs = { basic: 500, premium: 1500, legendary: 5000 };
+            document.querySelectorAll('.lootbox-card .btn-open').forEach(btn => {
+                const type = btn.onclick.toString().match(/openLootbox\('(\w+)'\)/)[1];
+                btn.disabled = userData.coins < costs[type];
+            });
+        }
+        
+        async function openLootbox(type) {
+            const costs = { basic: 500, premium: 1500, legendary: 5000 };
+            if (userData.coins < costs[type]) {
+                showToast('Not enough coins!', 'error');
+                return;
+            }
+            
+            // Show modal with opening animation
+            const modal = document.getElementById('lootboxModal');
+            const openingAnim = document.getElementById('openingAnimation');
+            const result = document.getElementById('lootboxResult');
+            
+            modal.classList.add('active');
+            openingAnim.style.display = 'block';
+            result.style.display = 'none';
+            
+            // Set box icon based on type
+            const icons = { basic: '📦', premium: '🎁', legendary: '👑' };
+            openingAnim.querySelector('.opening-box').textContent = icons[type];
+            
+            try {
+                const resp = await fetch('api/lootbox.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'open', boxType: type })
+                });
+                const data = await resp.json();
+                
+                // Wait for animation
+                await new Promise(r => setTimeout(r, 2000));
+                
+                if (data.success) {
+                    userData.coins = data.coins;
+                    if (data.inventory) userData.inventory = data.inventory;
+                    updateCoinDisplay();
+                    
+                    // Show result
+                    openingAnim.style.display = 'none';
+                    result.style.display = 'block';
+                    
+                    const drop = data.reward;
+                    document.getElementById('resultIcon').textContent = getDropIcon(drop);
+                    document.getElementById('resultName').textContent = drop.name;
+                    document.getElementById('resultName').className = 'result-name ' + (drop.rarity || 'common');
+                    document.getElementById('resultType').textContent = formatDropType(drop.type);
+                    
+                    const dupElem = document.getElementById('resultDuplicate');
+                    if (drop.duplicate) {
+                        dupElem.style.display = 'block';
+                        dupElem.textContent = 'Already owned! +' + drop.amount + ' coins refund';
+                    } else {
+                        dupElem.style.display = 'none';
+                    }
+                    
+                    // Add to recent drops
+                    recentDrops.unshift({ ...drop, time: Date.now() });
+                    if (recentDrops.length > 10) recentDrops.pop();
+                    renderRecentDrops();
+                } else {
+                    closeLootboxModal();
+                    showToast(data.error, 'error');
+                }
+            } catch (e) {
+                closeLootboxModal();
+                showToast('Failed to open loot box', 'error');
+            }
+        }
+        
+        function getDropIcon(drop) {
+            if (drop.type === 'coins') return '🪙';
+            if (drop.type === 'emote') return drop.emoji || '💬';
+            if (drop.type === 'name_color') return '🎨';
+            if (drop.type === 'border') return '🖼️';
+            if (drop.type === 'avatar_effect') return '✨';
+            if (drop.type === 'booster') return '⚡';
+            if (drop.type === 'social') return '🏆';
+            if (drop.type === 'emote_bundle') return '🎫';
+            return '🎁';
+        }
+        
+        function formatDropType(type) {
+            const types = {
+                coins: 'Coins',
+                emote: 'Chat Emote',
+                name_color: 'Name Color',
+                border: 'Profile Border',
+                avatar_effect: 'Avatar Effect',
+                booster: 'Booster',
+                social: 'Social Item',
+                emote_bundle: 'All Emotes'
+            };
+            return types[type] || type;
+        }
+        
+        function closeLootboxModal() {
+            document.getElementById('lootboxModal').classList.remove('active');
+            updateLootboxButtons();
+        }
+        
+        function renderRecentDrops() {
+            const section = document.getElementById('recentDrops');
+            const list = document.getElementById('dropsList');
+            
+            if (recentDrops.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            list.innerHTML = '';
+            
+            for (const drop of recentDrops) {
+                const card = document.createElement('div');
+                card.className = 'drop-card';
+                
+                const ago = Math.floor((Date.now() - drop.time) / 1000);
+                let timeStr = 'just now';
+                if (ago >= 60) timeStr = Math.floor(ago / 60) + 'm ago';
+                
+                card.innerHTML = '<div class="drop-card-icon">' + getDropIcon(drop) + '</div>' +
+                    '<div class="drop-card-name">' + drop.name + '</div>' +
+                    '<div class="drop-card-time">' + timeStr + '</div>';
+                list.appendChild(card);
+            }
+        }
+        
+        function updateActiveBoosts() {
+            const section = document.getElementById('activeBoostsSection');
+            const list = document.getElementById('activeBoostsList');
+            
+            if (!userData.activeBoosts || userData.activeBoosts.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            list.innerHTML = '';
+            
+            for (const boost of userData.activeBoosts) {
+                const expiresAt = new Date(boost.expiresAt);
+                const remaining = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+                const minutes = Math.floor(remaining / 60);
+                const seconds = remaining % 60;
+                
+                const div = document.createElement('div');
+                div.className = 'boost-item';
+                div.innerHTML = '<span>⚡ ' + boost.multiplier + 'x ' + boost.boostFor.toUpperCase() + '</span>' +
+                    '<span class="boost-timer">' + minutes + ':' + seconds.toString().padStart(2, '0') + ' remaining</span>';
+                list.appendChild(div);
+            }
+        }
+        
+        async function purchaseItem(category, itemId) {
+            try {
+                const resp = await fetch('api/shop.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'purchase', category, itemId })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    userData.coins = data.coins;
+                    userData.inventory = data.inventory;
+                    updateCoinDisplay();
+                    renderTabs();
+                    renderShop();
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (e) {
+                showToast('Purchase failed', 'error');
+            }
+        }
+        
+        async function equipItem(category, itemId) {
+            try {
+                const resp = await fetch('api/shop.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'equip', category, itemId })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    userData.equipped = data.equipped;
+                    renderShop();
+                    showToast('Item equipped!', 'success');
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (e) {
+                showToast('Failed to equip', 'error');
+            }
+        }
+        
+        async function unequipItem(category) {
+            try {
+                const resp = await fetch('api/shop.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'unequip', category })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    userData.equipped = data.equipped;
+                    renderShop();
+                    showToast('Item unequipped', 'success');
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (e) {
+                showToast('Failed to unequip', 'error');
+            }
+        }
+        
+        async function activateBoost(boostType) {
+            try {
+                const resp = await fetch('api/shop.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'activate-boost', boostType })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    userData.activeBoosts = data.activeBoosts;
+                    userData.inventory = data.inventory;
+                    renderShop();
+                    updateActiveBoosts();
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (e) {
+                showToast('Failed to activate', 'error');
+            }
+        }
+        
+        function showToast(message, type = 'info') {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        setInterval(updateActiveBoosts, 1000);
+        
+        init();
+    </script>
+</body>
+</html>
