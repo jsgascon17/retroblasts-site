@@ -586,6 +586,78 @@
             .play-cookie-btn { padding: 15px 40px; font-size: 1.2rem; }
             .games-grid { grid-template-columns: 1fr; }
         }
+
+        /* Online Friends Sidebar */
+        .friends-sidebar {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.8);
+            border-radius: 15px 0 0 15px;
+            border: 2px solid rgba(255,215,0,0.4);
+            border-right: none;
+            padding: 15px;
+            z-index: 100;
+            max-height: 60vh;
+            overflow-y: auto;
+            min-width: 200px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+        .friends-sidebar.collapsed {
+            min-width: 50px;
+            padding: 10px;
+        }
+        .friends-sidebar.collapsed .sidebar-content { display: none; }
+        .friends-sidebar.collapsed .sidebar-toggle { transform: rotate(180deg); }
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+        .online-count {
+            background: #22c55e;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+        .friend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            background: rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .friend-item:hover { background: rgba(255,255,255,0.1); }
+        .friend-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .friend-status.online { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+        .friend-status.playing { background: #8b5cf6; box-shadow: 0 0 8px #8b5cf6; }
+        .friend-info { flex: 1; }
+        .friend-name { font-weight: bold; font-size: 0.9rem; }
+        .friend-activity { font-size: 0.75rem; color: #888; }
+        .no-friends-sidebar { color: #888; font-size: 0.85rem; text-align: center; padding: 20px 0; }
+        @media (max-width: 768px) { .friends-sidebar { display: none; } }
     </style>
     <script src="themes.js"></script>
 </head>
@@ -615,7 +687,14 @@
                 <a href="stats.html" class="header-btn stats">&#127942; View Stats</a>
                 <a href="leaderboards.html" class="header-btn stats">&#127942; Leaderboards</a>
                 <a href="tournaments.html" class="header-btn stats">&#127942; Tournaments</a>
-                <a href="profile.html" class="header-btn stats">&#128100; Profile</a>
+                <a href="login.html" class="header-btn stats">🔐 Login</a>
+                <a href="friends.html" class="header-btn stats">👥 Friends</a>
+                <a href="teams.html" class="header-btn stats">⚔️ Teams</a>
+                <a href="chat.html" class="header-btn stats">💬 Chat</a>
+                <a href="shop.html" class="header-btn stats">🛒 Shop</a>
+                <a href="casino.html" class="header-btn stats">🎰 Casino</a>
+                <a href="replays.html" class="header-btn stats">📹 Replays</a>
+                <a href="profile.html" class="header-btn stats">👤 Profile</a>
                 <button class="header-btn settings" onclick="toggleSettings()">&#9881; Settings</button>
             </div>
         </header>
@@ -1258,6 +1337,78 @@
         loadStats();
     </script>
 </body>
+
+    <!-- Online Friends Sidebar -->
+    <div class="friends-sidebar" id="friendsSidebar">
+        <div class="sidebar-header">
+            <span>👥 Online <span class="online-count" id="onlineCount">0</span></span>
+            <button class="sidebar-toggle" onclick="toggleSidebar()">◀</button>
+        </div>
+        <div class="sidebar-content" id="sidebarContent">
+            <div id="onlineFriendsList" class="no-friends-sidebar">Loading...</div>
+        </div>
+    </div>
+    
+    <script>
+        // Friends Sidebar
+        function toggleSidebar() {
+            document.getElementById("friendsSidebar").classList.toggle("collapsed");
+        }
+        
+        async function loadOnlineFriends() {
+            try {
+                const resp = await fetch("api/auth.php?action=check");
+                const data = await resp.json();
+                
+                if (!data.success || !data.user) {
+                    document.getElementById("friendsSidebar").style.display = "none";
+                    return;
+                }
+                
+                const friendsResp = await fetch("api/friends.php?action=list");
+                const friendsData = await friendsResp.json();
+                
+                if (!friendsData.success) return;
+                
+                const onlineFriends = (friendsData.friends || []).filter(f => 
+                    f.status === "online" || f.status === "playing"
+                );
+                
+                document.getElementById("onlineCount").textContent = onlineFriends.length;
+                
+                const list = document.getElementById("onlineFriendsList");
+                if (onlineFriends.length === 0) {
+                    list.innerHTML = "<div class=\"no-friends-sidebar\">No friends online</div>";
+                    return;
+                }
+                
+                list.innerHTML = "";
+                list.className = "";
+                
+                onlineFriends.forEach(friend => {
+                    const div = document.createElement("div");
+                    div.className = "friend-item";
+                    div.onclick = () => window.location.href = "profile.html?user=" + friend.username;
+                    
+                    div.innerHTML = 
+                        "<div class=\"friend-status " + friend.status + "\"></div>" +
+                        "<div class=\"friend-info\">" +
+                            "<div class=\"friend-name\">" + friend.username + "</div>" +
+                            "<div class=\"friend-activity\">" + 
+                                (friend.currentGame ? "Playing " + friend.currentGame : "Online") + 
+                            "</div>" +
+                        "</div>";
+                    list.appendChild(div);
+                });
+            } catch (e) {
+                console.log("Failed to load friends");
+            }
+        }
+        
+        loadOnlineFriends();
+        setInterval(loadOnlineFriends, 30000);
+    </script>
+</body>
 </html>
 <style>
     .theme-selector {
@@ -1305,6 +1456,79 @@
         to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
 </style>
+
+        /* Online Friends Sidebar */
+        .friends-sidebar {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.8);
+            border-radius: 15px 0 0 15px;
+            border: 2px solid rgba(255,215,0,0.4);
+            border-right: none;
+            padding: 15px;
+            z-index: 100;
+            max-height: 60vh;
+            overflow-y: auto;
+            min-width: 200px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+        .friends-sidebar.collapsed {
+            min-width: 50px;
+            padding: 10px;
+        }
+        .friends-sidebar.collapsed .sidebar-content { display: none; }
+        .friends-sidebar.collapsed .sidebar-toggle { transform: rotate(180deg); }
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+        .online-count {
+            background: #22c55e;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+        .friend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            background: rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .friend-item:hover { background: rgba(255,255,255,0.1); }
+        .friend-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .friend-status.online { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+        .friend-status.playing { background: #8b5cf6; box-shadow: 0 0 8px #8b5cf6; }
+        .friend-info { flex: 1; }
+        .friend-name { font-weight: bold; font-size: 0.9rem; }
+        .friend-activity { font-size: 0.75rem; color: #888; }
+        .no-friends-sidebar { color: #888; font-size: 0.85rem; text-align: center; padding: 20px 0; }
+        @media (max-width: 768px) { .friends-sidebar { display: none; } }
+    </style>
 <script>
 function initThemeSelector() {
     const container = document.getElementById("themeSelector");
