@@ -160,6 +160,7 @@
         .rank.bronze { color: #cd7f32; }
 
         .player-name {
+            transition: all 0.3s;
             flex: 1;
             margin-left: 10px;
             color: #fff;
@@ -197,6 +198,7 @@
         }
 
         .single-leaderboard .player-name {
+            transition: all 0.3s;
             font-size: 1.1rem;
         }
 
@@ -262,6 +264,14 @@
         }
 
         @media (max-width: 768px) {
+
+        /* Name Color Styles */
+        .name-gold { color: #ffd700; text-shadow: 0 0 5px rgba(255,215,0,0.5); }
+        .name-rainbow { background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .name-neon_green { color: #39ff14; text-shadow: 0 0 10px #39ff14; }
+        .name-fire { background: linear-gradient(180deg, #ff0, #f00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .name-ice { color: #00ffff; text-shadow: 0 0 10px #00ffff, 0 0 20px #0080ff; }
+        .name-purple { color: #9b59b6; text-shadow: 0 0 8px rgba(155,89,182,0.6); }
             h1 { font-size: 1.8rem; }
             .leaderboards-grid { grid-template-columns: 1fr; }
             .game-tabs { gap: 8px; }
@@ -444,7 +454,7 @@
                 return `
                     <li class="score-item">
                         <span class="rank ${rankClass}">${rankDisplay}</span>
-                        <span class="player-name">${escapeHtml(score.name)}</span>
+                        <span class="player-name ${score.nameColor ? 'name-' + score.nameColor : ''}">${escapeHtml(score.name)}</span>
                         ${dateStr}
                         <span class="player-score">${formatNumber(score.score)}</span>
                     </li>

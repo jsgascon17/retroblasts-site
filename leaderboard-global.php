@@ -1,16 +1,9 @@
 <?php
 /**
  * Global Leaderboard API for Game Arcade
- *
- * GET: Returns top scores for a game
- *   ?game=snake           - Get top 10 for snake
- *   ?game=snake&limit=20  - Get top 20 for snake
- *   ?game=all             - Get top 5 from each game
- *
- * POST: Submit a new score
- *   { "game": "snake", "name": "Player", "score": 100 }
  */
 
+session_start();
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -21,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Valid games list
 $validGames = [
     'flappy-bird' => ['name' => 'Flappy Bird', 'icon' => '🐤', 'maxScore' => 1000],
     'snake' => ['name' => 'Snake', 'icon' => '🐍', 'maxScore' => 100000],
@@ -50,8 +42,8 @@ $validGames = [
 ];
 
 $dataDir = __DIR__ . '/leaderboards/';
+$usersFile = __DIR__ . '/data/users.json';
 
-// Create data directory if it doesn't exist
 if (!is_dir($dataDir)) {
     mkdir($dataDir, 0755, true);
 }
@@ -62,11 +54,8 @@ function getDataFile($game) {
 }
 
 function readData($file) {
-    if (!file_exists($file)) {
-        return ['scores' => []];
-    }
-    $content = file_get_contents($file);
-    return json_decode($content, true) ?: ['scores' => []];
+    if (!file_exists($file)) return ['scores' => []];
+    return json_decode(file_get_contents($file), true) ?: ['scores' => []];
 }
 
 function writeData($file, $data) {
@@ -79,19 +68,26 @@ function sanitize($input, $maxLength = 15) {
     return substr($clean, 0, $maxLength);
 }
 
+function getUserCosmetics($username) {
+    global $usersFile;
+    if (!file_exists($usersFile)) return null;
+    $users = json_decode(file_get_contents($usersFile), true);
+    if (isset($users['users'][$username]['equipped'])) {
+        return $users['users'][$username]['equipped'];
+    }
+    return null;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $game = isset($_GET['game']) ? strtolower(trim($_GET['game'])) : '';
     $limit = isset($_GET['limit']) ? min(intval($_GET['limit']), 50) : 10;
 
-    // Get all leaderboards summary
     if ($game === 'all' || $game === '') {
         $allScores = [];
         foreach ($validGames as $gameId => $gameInfo) {
             $data = readData(getDataFile($gameId));
             $scores = $data['scores'];
-            usort($scores, function($a, $b) {
-                return $b['score'] - $a['score'];
-            });
+            usort($scores, function($a, $b) { return $b['score'] - $a['score']; });
             $topScores = array_slice($scores, 0, 5);
             if (!empty($topScores)) {
                 $allScores[$gameId] = [
@@ -101,15 +97,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 ];
             }
         }
-        echo json_encode([
-            'success' => true,
-            'games' => $validGames,
-            'leaderboards' => $allScores
-        ]);
+        echo json_encode(['success' => true, 'games' => $validGames, 'leaderboards' => $allScores]);
         exit();
     }
 
-    // Get specific game leaderboard
     if (!isset($validGames[$game])) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Invalid game']);
@@ -118,11 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     $data = readData(getDataFile($game));
     $scores = $data['scores'];
-
-    usort($scores, function($a, $b) {
-        return $b['score'] - $a['score'];
-    });
-
+    usort($scores, function($a, $b) { return $b['score'] - $a['score']; });
     $topScores = array_slice($scores, 0, $limit);
 
     echo json_encode([
@@ -151,9 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         exit();
     }
 
-    if (empty($name)) {
-        $name = 'Anonymous';
-    }
+    if (empty($name)) $name = 'Anonymous';
 
     $maxScore = $validGames[$game]['maxScore'];
     if ($score < 0 || $score > $maxScore) {
@@ -162,10 +147,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         exit();
     }
 
+    // Get user cosmetics if logged in
+    $nameColor = null;
+    if (isset($_SESSION['user'])) {
+        $cosmetics = getUserCosmetics($_SESSION['user']);
+        if ($cosmetics && isset($cosmetics['name_color'])) {
+            $nameColor = $cosmetics['name_color'];
+        }
+    }
+
     $dataFile = getDataFile($game);
     $data = readData($dataFile);
 
-    // Check if player already has a score - replace if new score is higher
     $existingIndex = -1;
     $existingScore = 0;
     foreach ($data['scores'] as $index => $entry) {
@@ -177,23 +170,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 
     if ($existingIndex >= 0) {
-        // Player exists - only update if new score is higher
         if ($score > $existingScore) {
             $data['scores'][$existingIndex] = [
                 'name' => $name,
                 'score' => $score,
-                'date' => date('Y-m-d H:i:s')
+                'date' => date('Y-m-d H:i:s'),
+                'nameColor' => $nameColor
             ];
         } else {
-            // Score not higher, return existing rank
-            usort($data['scores'], function($a, $b) {
-                return $b['score'] - $a['score'];
-            });
+            // Update cosmetics even if score isn't higher
+            if ($nameColor) {
+                $data['scores'][$existingIndex]['nameColor'] = $nameColor;
+                writeData($dataFile, $data);
+            }
+            usort($data['scores'], function($a, $b) { return $b['score'] - $a['score']; });
             $rank = 1;
             foreach ($data['scores'] as $entry) {
-                if (strtolower($entry['name']) === strtolower($name)) {
-                    break;
-                }
+                if (strtolower($entry['name']) === strtolower($name)) break;
                 $rank++;
             }
             echo json_encode([
@@ -206,28 +199,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             exit();
         }
     } else {
-        // New player - add score
         $data['scores'][] = [
             'name' => $name,
             'score' => $score,
-            'date' => date('Y-m-d H:i:s')
+            'date' => date('Y-m-d H:i:s'),
+            'nameColor' => $nameColor
         ];
     }
 
-    // Sort and keep top 100
-    usort($data['scores'], function($a, $b) {
-        return $b['score'] - $a['score'];
-    });
+    usort($data['scores'], function($a, $b) { return $b['score'] - $a['score']; });
     $data['scores'] = array_slice($data['scores'], 0, 100);
-
     writeData($dataFile, $data);
 
-    // Find rank
     $rank = 1;
     foreach ($data['scores'] as $entry) {
-        if (strtolower($entry['name']) === strtolower($name)) {
-            break;
-        }
+        if (strtolower($entry['name']) === strtolower($name)) break;
         $rank++;
     }
 
@@ -247,4 +233,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
 }
-?>
