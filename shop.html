@@ -621,7 +621,7 @@
         
         async function init() {
             try {
-                const authResp = await fetch('api/auth.php?action=check');
+                const authResp = await fetch('api/auth.php?action=check', { credentials: 'include' });
                 const authData = await authResp.json();
                 
                 if (!authData.success || !authData.user) {
@@ -631,10 +631,10 @@
                 
                 document.getElementById('shopContent').style.display = 'block';
                 
-                const shopResp = await fetch('api/shop.php?action=items');
+                const shopResp = await fetch('api/shop.php?action=items', { credentials: 'include' });
                 shopData = await shopResp.json();
                 
-                const invResp = await fetch('api/shop.php?action=inventory');
+                const invResp = await fetch('api/shop.php?action=inventory', { credentials: 'include' });
                 userData = await invResp.json();
                 
                 updateCoinDisplay();
