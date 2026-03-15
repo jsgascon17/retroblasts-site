@@ -311,6 +311,7 @@
             overflow: hidden;
         }
         .lootbox-card::before {
+            pointer-events: none;
             content: '';
             position: absolute;
             top: 0;
@@ -551,7 +552,7 @@
                             <div class="drop-item"><span>⚡ XP Boost</span><span class="drop-chance">15%</span></div>
                         </div>
                         <div class="lootbox-price">🪙 <span>500</span> coins</div>
-                        <button class="btn-open" onclick="openLootbox('basic')">Open Box</button>
+                        <button class="btn-open" data-type="basic" onclick="openLootbox('basic')">Open Box</button>
                     </div>
                     
                     <div class="lootbox-card premium">
