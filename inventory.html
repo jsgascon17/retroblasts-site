@@ -113,6 +113,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
+            color: #fff;
         }
         .inventory-item button:hover { transform: scale(1.05); }
         .inventory-item button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
@@ -130,7 +131,6 @@
         .empty-state .icon { font-size: 3rem; margin-bottom: 15px; }
         .empty-state a { color: #ffd700; }
         
-        /* Active Boosts */
         .active-boosts {
             background: linear-gradient(135deg, rgba(74,222,128,0.1), rgba(34,197,94,0.05));
             border-color: rgba(74,222,128,0.3);
@@ -150,7 +150,6 @@
         .boost-active .name { font-weight: bold; color: #4ade80; }
         .boost-active .timer { color: #888; font-size: 0.9rem; }
         
-        /* Result Modal */
         .modal {
             display: none;
             position: fixed;
@@ -207,48 +206,43 @@
         </div>
         
         <div id="mainContent" style="display: none;">
-            <!-- Active Boosts -->
             <div class="inventory-section active-boosts" id="activeBoostsSection" style="display: none;">
                 <h2>⚡ Active Boosts</h2>
                 <div id="activeBoostsList"></div>
             </div>
             
-            <!-- Loot Boxes -->
+            <div class="inventory-section">
+                <h2>🔑 Keys</h2>
+                <div class="items-grid" id="keysGrid"></div>
+            </div>
+            
+            <div class="inventory-section">
+                <h2>🔒 Locked Crates</h2>
+                <div class="items-grid" id="cratesGrid"></div>
+            </div>
+
             <div class="inventory-section">
                 <h2>📦 Loot Boxes</h2>
-                <div class="items-grid" id="lootboxGrid">
-                    <div class="empty-state">
-                        <div class="icon">📦</div>
-                        <p>No loot boxes. <a href="shop.html">Buy some!</a></p>
-                    </div>
-                </div>
+                <div class="items-grid" id="lootboxGrid"></div>
             </div>
             
-            <!-- Boosters -->
             <div class="inventory-section">
                 <h2>🚀 Boosters</h2>
-                <div class="items-grid" id="boosterGrid">
-                    <div class="empty-state">
-                        <div class="icon">⚡</div>
-                        <p>No boosters yet.</p>
-                    </div>
-                </div>
+                <div class="items-grid" id="boosterGrid"></div>
             </div>
             
-            <!-- Consumables -->
             <div class="inventory-section">
                 <h2>🎟️ Consumables</h2>
-                <div class="items-grid" id="consumableGrid">
-                    <div class="empty-state">
-                        <div class="icon">🎟️</div>
-                        <p>No consumables yet.</p>
-                    </div>
-                </div>
+                <div class="items-grid" id="consumableGrid"></div>
+            </div>
+            
+            <div class="inventory-section">
+                <h2>🃏 Trading Cards</h2>
+                <div class="items-grid" id="cardsGrid"></div>
             </div>
         </div>
     </div>
     
-    <!-- Result Modal -->
     <div class="modal" id="resultModal">
         <div class="modal-content">
             <div class="icon" id="resultIcon">🎉</div>
@@ -284,9 +278,75 @@
         
         function updateDisplay() {
             document.getElementById("coinCount").textContent = (userData.coins || 0).toLocaleString();
+            renderKeys();
+            renderLockedCrates();
             renderLootboxes();
             renderBoosters();
+            renderConsumables();
+            renderTradingCards();
             renderActiveBoosts();
+        }
+        
+        function renderKeys() {
+            const grid = document.getElementById("keysGrid");
+            const keys = userData.inventory?.keys || {};
+            
+            const keyInfo = {
+                bronze_key: { icon: "🗝️", name: "Bronze Key", color: "#cd7f32" },
+                silver_key: { icon: "🔑", name: "Silver Key", color: "#c0c0c0" },
+                gold_key: { icon: "🔐", name: "Gold Key", color: "#ffd700" }
+            };
+            
+            let html = "";
+            
+            for (const [type, count] of Object.entries(keys)) {
+                if (count > 0 && keyInfo[type]) {
+                    html += '<div class="inventory-item" style="border-color: ' + keyInfo[type].color + '40;">' +
+                        '<div class="icon">' + keyInfo[type].icon + '</div>' +
+                        '<div class="count">x' + count + '</div>' +
+                        '<div class="name">' + keyInfo[type].name + '</div>' +
+                        '</div>';
+                }
+            }
+            
+            grid.innerHTML = html || '<div class="empty-state"><div class="icon">🔑</div><p>No keys. Win them from games!</p></div>';
+        }
+        
+        function renderLockedCrates() {
+            const grid = document.getElementById("cratesGrid");
+            const crates = userData.inventory?.lockedCrates || [];
+            
+            if (crates.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><div class="icon">🔒</div><p>No locked crates yet.</p></div>';
+                return;
+            }
+            
+            const crateInfo = {
+                bronze_crate: { icon: "📦", name: "Bronze Crate", key: "bronze_key", color: "#cd7f32" },
+                silver_crate: { icon: "🎁", name: "Silver Crate", key: "silver_key", color: "#c0c0c0" },
+                gold_crate: { icon: "👑", name: "Gold Crate", key: "gold_key", color: "#ffd700" }
+            };
+            
+            const counts = {};
+            crates.forEach(c => counts[c] = (counts[c] || 0) + 1);
+            
+            const keys = userData.inventory?.keys || {};
+            
+            let html = "";
+            for (const [type, count] of Object.entries(counts)) {
+                if (count > 0 && crateInfo[type]) {
+                    const info = crateInfo[type];
+                    const hasKey = (keys[info.key] || 0) > 0;
+                    html += '<div class="inventory-item" style="border-color: ' + info.color + '40;">' +
+                        '<div class="icon">' + info.icon + '</div>' +
+                        '<div class="count">x' + count + '</div>' +
+                        '<div class="name">' + info.name + '</div>' +
+                        '<button onclick="openCrate(\'' + type + '\')" style="background: linear-gradient(135deg, ' + info.color + ', ' + info.color + '99);" ' + (hasKey ? '' : 'disabled') + '>' +
+                        (hasKey ? '🔓 Unlock' : '🔒 Need Key') +
+                        '</button></div>';
+                }
+            }
+            grid.innerHTML = html || '<div class="empty-state"><div class="icon">🔒</div><p>No locked crates.</p></div>';
         }
         
         function renderLootboxes() {
@@ -294,7 +354,7 @@
             const boxes = userData.inventory?.lootboxes || [];
             
             if (boxes.length === 0) {
-                grid.innerHTML = "<div class=\"empty-state\"><div class=\"icon\">📦</div><p>No loot boxes. <a href=\"shop.html\">Buy some!</a></p></div>";
+                grid.innerHTML = '<div class="empty-state"><div class="icon">📦</div><p>No loot boxes. <a href="shop.html">Buy some!</a></p></div>';
                 return;
             }
             
@@ -310,17 +370,15 @@
             let html = "";
             for (const [type, count] of Object.entries(counts)) {
                 if (count > 0 && info[type]) {
-                    html += `
-                        <div class="inventory-item ${type}">
-                            <div class="icon">${info[type].icon}</div>
-                            <div class="count">x${count}</div>
-                            <div class="name">${info[type].name}</div>
-                            <button onclick="openBox()">Open</button>
-                        </div>
-                    `;
+                    html += '<div class="inventory-item ' + type + '">' +
+                        '<div class="icon">' + info[type].icon + '</div>' +
+                        '<div class="count">x' + count + '</div>' +
+                        '<div class="name">' + info[type].name + '</div>' +
+                        '<button onclick="openBox(\'' + type + '\')">Open</button>' +
+                        '</div>';
                 }
             }
-            grid.innerHTML = html || "<div class=\"empty-state\"><div class=\"icon\">📦</div><p>No loot boxes.</p></div>";
+            grid.innerHTML = html || '<div class="empty-state"><div class="icon">📦</div><p>No loot boxes.</p></div>';
         }
         
         function renderBoosters() {
@@ -328,7 +386,7 @@
             const boosters = userData.inventory?.boosters || [];
             
             if (boosters.length === 0) {
-                grid.innerHTML = "<div class=\"empty-state\"><div class=\"icon\">⚡</div><p>No boosters. Win them from loot boxes!</p></div>";
+                grid.innerHTML = '<div class="empty-state"><div class="icon">⚡</div><p>No boosters. Win them from loot boxes!</p></div>';
                 return;
             }
             
@@ -343,19 +401,89 @@
             let html = "";
             for (const [type, count] of Object.entries(counts)) {
                 if (count > 0 && info[type]) {
-                    html += `
-                        <div class="inventory-item booster">
-                            <div class="icon">${info[type].icon}</div>
-                            <div class="count">x${count}</div>
-                            <div class="name">${info[type].name}</div>
-                            <button onclick="activateBooster()">Activate</button>
-                        </div>
-                    `;
+                    html += '<div class="inventory-item booster">' +
+                        '<div class="icon">' + info[type].icon + '</div>' +
+                        '<div class="count">x' + count + '</div>' +
+                        '<div class="name">' + info[type].name + '</div>' +
+                        '<button onclick="activateBooster(\'' + type + '\')">Activate</button>' +
+                        '</div>';
                 }
             }
-            grid.innerHTML = html || "<div class=\"empty-state\"><div class=\"icon\">⚡</div><p>No boosters.</p></div>";
+            grid.innerHTML = html || '<div class="empty-state"><div class="icon">⚡</div><p>No boosters.</p></div>';
         }
         
+        function renderConsumables() {
+            const grid = document.getElementById("consumableGrid");
+            const consumables = userData.inventory?.consumables || {};
+            
+            const consumableInfo = {
+                reroll_token: { icon: "🔄", name: "Reroll Token" },
+                extra_life: { icon: "❤️", name: "Extra Life" },
+                score_2x: { icon: "✖️", name: "2x Score" },
+                luck_boost: { icon: "🍀", name: "Luck Boost" },
+                tournament_ticket: { icon: "🎫", name: "Tournament Ticket" },
+                gift_box: { icon: "🎁", name: "Gift Box" }
+            };
+            
+            let html = "";
+            
+            for (const [type, count] of Object.entries(consumables)) {
+                if (count > 0 && consumableInfo[type]) {
+                    html += '<div class="inventory-item">' +
+                        '<div class="icon">' + consumableInfo[type].icon + '</div>' +
+                        '<div class="count">x' + count + '</div>' +
+                        '<div class="name">' + consumableInfo[type].name + '</div>' +
+                        '</div>';
+                }
+            }
+            
+            grid.innerHTML = html || '<div class="empty-state"><div class="icon">🎟️</div><p>No consumables yet.</p></div>';
+        }
+        
+        
+        function renderTradingCards() {
+            const grid = document.getElementById("cardsGrid");
+            const cards = userData.inventory?.tradingCards || {};
+            
+            const cardInfo = {
+                cookie_bronze: { icon: "🍪", name: "Cookie Bronze", rarity: "common" },
+                cookie_silver: { icon: "🍪", name: "Cookie Silver", rarity: "uncommon" },
+                cookie_gold: { icon: "🍪", name: "Cookie Gold", rarity: "rare" },
+                snake_bronze: { icon: "🐍", name: "Snake Bronze", rarity: "common" },
+                snake_silver: { icon: "🐍", name: "Snake Silver", rarity: "uncommon" },
+                snake_gold: { icon: "🐍", name: "Snake Gold", rarity: "rare" },
+                arcade_bronze: { icon: "🕹️", name: "Arcade Bronze", rarity: "common" },
+                arcade_silver: { icon: "🕹️", name: "Arcade Silver", rarity: "uncommon" },
+                arcade_gold: { icon: "🕹️", name: "Arcade Gold", rarity: "rare" },
+                legendary_dragon: { icon: "🐉", name: "Dragon Card", rarity: "legendary" },
+                legendary_unicorn: { icon: "🦄", name: "Unicorn Card", rarity: "legendary" },
+                legendary_phoenix: { icon: "🔥", name: "Phoenix Card", rarity: "legendary" }
+            };
+            
+            const rarityColors = {
+                common: "#94a3b8",
+                uncommon: "#4ade80",
+                rare: "#60a5fa",
+                legendary: "#fbbf24"
+            };
+            
+            let html = "";
+            let hasCards = false;
+            
+            for (const [type, count] of Object.entries(cards)) {
+                if (count > 0 && cardInfo[type]) {
+                    hasCards = true;
+                    const info = cardInfo[type];
+                    html += "<div class="inventory-item" style="border-color: " + rarityColors[info.rarity] + ";">";
+                    html += "<div class="icon">" + info.icon + "</div>";
+                    html += "<div class="count">x" + count + "</div>";
+                    html += "<div class="name" style="color: " + rarityColors[info.rarity] + "">" + info.name + "</div>";
+                    html += "</div>";
+                }
+            }
+            
+            grid.innerHTML = html || "<div class="empty-state"><div class="icon">🃏</div><p>No trading cards yet. Win them from loot boxes!</p></div>";
+        }
         function renderActiveBoosts() {
             const section = document.getElementById("activeBoostsSection");
             const list = document.getElementById("activeBoostsList");
@@ -373,19 +501,17 @@
                 coins_2x: { icon: "🪙", name: "2x Coins Boost" }
             };
             
-            list.innerHTML = active.map(boost => {
+            let html = "";
+            active.forEach(boost => {
                 const remaining = Math.max(0, boost.expiresAt - Date.now());
                 const mins = Math.floor(remaining / 60000);
-                return `
-                    <div class="boost-active">
-                        <div class="icon">${info[boost.type]?.icon || "⚡"}</div>
-                        <div class="info">
-                            <div class="name">${info[boost.type]?.name || boost.type}</div>
-                            <div class="timer">${mins} minutes remaining</div>
-                        </div>
-                    </div>
-                `;
-            }).join("");
+                const boostInfo = info[boost.type] || { icon: "⚡", name: boost.type };
+                html += '<div class="boost-active">' +
+                    '<div class="icon">' + boostInfo.icon + '</div>' +
+                    '<div class="info"><div class="name">' + boostInfo.name + '</div>' +
+                    '<div class="timer">' + mins + ' minutes remaining</div></div></div>';
+            });
+            list.innerHTML = html;
         }
         
         async function openBox(type) {
@@ -408,6 +534,29 @@
                 }
             } catch (e) {
                 alert("Failed to open box");
+            }
+        }
+        
+        async function openCrate(crateType) {
+            try {
+                const resp = await fetch("api/lootbox.php", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "openCrate", crateType: crateType })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    userData.coins = data.coins;
+                    userData.inventory = data.inventory;
+                    updateDisplay();
+                    showResult(data.reward);
+                } else {
+                    alert(data.error);
+                }
+            } catch (e) {
+                alert("Failed to open crate");
             }
         }
         
