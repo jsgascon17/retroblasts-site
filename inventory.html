@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory - Sandbox Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .header h1 { font-size: 2rem; }
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        
+        .coins-display {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            color: #000;
+            font-size: 1.1rem;
+        }
+        
+        .login-prompt {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+        }
+        .login-prompt h2 { margin-bottom: 15px; }
+        .login-prompt p { color: #888; margin-bottom: 25px; }
+        .login-prompt .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+        
+        .inventory-section {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .inventory-section h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+        }
+        
+        .inventory-item {
+            background: rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px 15px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .inventory-item:hover {
+            border-color: #ffd700;
+            transform: translateY(-3px);
+        }
+        .inventory-item .icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .inventory-item .count {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        .inventory-item .name {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 12px;
+        }
+        .inventory-item button {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .inventory-item button:hover { transform: scale(1.05); }
+        .inventory-item button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        .inventory-item.basic button { background: linear-gradient(135deg, #60a5fa, #3b82f6); color: #fff; }
+        .inventory-item.premium button { background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; }
+        .inventory-item.legendary button { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
+        .inventory-item.booster button { background: linear-gradient(135deg, #4ade80, #22c55e); color: #000; }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 15px; }
+        .empty-state a { color: #ffd700; }
+        
+        /* Active Boosts */
+        .active-boosts {
+            background: linear-gradient(135deg, rgba(74,222,128,0.1), rgba(34,197,94,0.05));
+            border-color: rgba(74,222,128,0.3);
+        }
+        .active-boosts h2 { color: #4ade80; }
+        .boost-active {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .boost-active .icon { font-size: 2rem; }
+        .boost-active .info { flex: 1; }
+        .boost-active .name { font-weight: bold; color: #4ade80; }
+        .boost-active .timer { color: #888; font-size: 0.9rem; }
+        
+        /* Result Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            text-align: center;
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-content .icon { font-size: 5rem; margin-bottom: 20px; }
+        .modal-content .title { font-size: 1.5rem; font-weight: bold; color: #ffd700; margin-bottom: 10px; }
+        .modal-content .desc { color: #aaa; margin-bottom: 25px; }
+        .modal-content button {
+            padding: 12px 40px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        
+        .result-common { color: #94a3b8; }
+        .result-uncommon { color: #4ade80; }
+        .result-rare { color: #60a5fa; }
+        .result-epic { color: #a855f7; }
+        .result-legendary { color: #fbbf24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎒 Inventory</h1>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div class="coins-display">🪙 <span id="coinCount">0</span></div>
+                <a href="index.html" class="back-btn">← Back</a>
+            </div>
+        </div>
+        
+        <div id="loginPrompt" class="login-prompt" style="display: none;">
+            <h2>🔐 Login Required</h2>
+            <p>Sign in to view your inventory!</p>
+            <a href="login.html" class="btn">Login / Register</a>
+        </div>
+        
+        <div id="mainContent" style="display: none;">
+            <!-- Active Boosts -->
+            <div class="inventory-section active-boosts" id="activeBoostsSection" style="display: none;">
+                <h2>⚡ Active Boosts</h2>
+                <div id="activeBoostsList"></div>
+            </div>
+            
+            <!-- Loot Boxes -->
+            <div class="inventory-section">
+                <h2>📦 Loot Boxes</h2>
+                <div class="items-grid" id="lootboxGrid">
+                    <div class="empty-state">
+                        <div class="icon">📦</div>
+                        <p>No loot boxes. <a href="shop.html">Buy some!</a></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Boosters -->
+            <div class="inventory-section">
+                <h2>🚀 Boosters</h2>
+                <div class="items-grid" id="boosterGrid">
+                    <div class="empty-state">
+                        <div class="icon">⚡</div>
+                        <p>No boosters yet.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Consumables -->
+            <div class="inventory-section">
+                <h2>🎟️ Consumables</h2>
+                <div class="items-grid" id="consumableGrid">
+                    <div class="empty-state">
+                        <div class="icon">🎟️</div>
+                        <p>No consumables yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Result Modal -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <div class="icon" id="resultIcon">🎉</div>
+            <div class="title" id="resultTitle">You got:</div>
+            <div class="desc" id="resultDesc"></div>
+            <button onclick="closeModal()">Awesome!</button>
+        </div>
+    </div>
+    
+    <script>
+        let userData = null;
+        
+        async function init() {
+            try {
+                const authResp = await fetch("api/auth.php?action=check", { credentials: "include" });
+                const authData = await authResp.json();
+                
+                if (!authData.success || !authData.user) {
+                    document.getElementById("loginPrompt").style.display = "block";
+                    return;
+                }
+                
+                document.getElementById("mainContent").style.display = "block";
+                
+                const invResp = await fetch("api/shop.php?action=inventory", { credentials: "include" });
+                userData = await invResp.json();
+                
+                updateDisplay();
+            } catch (e) {
+                console.error("Failed to load:", e);
+            }
+        }
+        
+        function updateDisplay() {
+            document.getElementById("coinCount").textContent = (userData.coins || 0).toLocaleString();
+            renderLootboxes();
+            renderBoosters();
+            renderActiveBoosts();
+        }
+        
+        function renderLootboxes() {
+            const grid = document.getElementById("lootboxGrid");
+            const boxes = userData.inventory?.lootboxes || [];
+            
+            if (boxes.length === 0) {
+                grid.innerHTML = "<div class=\"empty-state\"><div class=\"icon\">📦</div><p>No loot boxes. <a href=\"shop.html\">Buy some!</a></p></div>";
+                return;
+            }
+            
+            const counts = {};
+            boxes.forEach(b => counts[b] = (counts[b] || 0) + 1);
+            
+            const info = {
+                basic: { icon: "📦", name: "Basic Box" },
+                premium: { icon: "🎁", name: "Premium Box" },
+                legendary: { icon: "👑", name: "Legendary Box" }
+            };
+            
+            let html = "";
+            for (const [type, count] of Object.entries(counts)) {
+                if (count > 0 && info[type]) {
+                    html += `
+                        <div class="inventory-item ${type}">
+                            <div class="icon">${info[type].icon}</div>
+                            <div class="count">x${count}</div>
+                            <div class="name">${info[type].name}</div>
+                            <button onclick="openBox()">Open</button>
+                        </div>
+                    `;
+                }
+            }
+            grid.innerHTML = html || "<div class=\"empty-state\"><div class=\"icon\">📦</div><p>No loot boxes.</p></div>";
+        }
+        
+        function renderBoosters() {
+            const grid = document.getElementById("boosterGrid");
+            const boosters = userData.inventory?.boosters || [];
+            
+            if (boosters.length === 0) {
+                grid.innerHTML = "<div class=\"empty-state\"><div class=\"icon\">⚡</div><p>No boosters. Win them from loot boxes!</p></div>";
+                return;
+            }
+            
+            const counts = {};
+            boosters.forEach(b => counts[b] = (counts[b] || 0) + 1);
+            
+            const info = {
+                xp_2x: { icon: "⚡", name: "2x XP (1hr)" },
+                coins_2x: { icon: "🪙", name: "2x Coins (1hr)" }
+            };
+            
+            let html = "";
+            for (const [type, count] of Object.entries(counts)) {
+                if (count > 0 && info[type]) {
+                    html += `
+                        <div class="inventory-item booster">
+                            <div class="icon">${info[type].icon}</div>
+                            <div class="count">x${count}</div>
+                            <div class="name">${info[type].name}</div>
+                            <button onclick="activateBooster()">Activate</button>
+                        </div>
+                    `;
+                }
+            }
+            grid.innerHTML = html || "<div class=\"empty-state\"><div class=\"icon\">⚡</div><p>No boosters.</p></div>";
+        }
+        
+        function renderActiveBoosts() {
+            const section = document.getElementById("activeBoostsSection");
+            const list = document.getElementById("activeBoostsList");
+            const active = userData.activeBoosts || [];
+            
+            if (active.length === 0) {
+                section.style.display = "none";
+                return;
+            }
+            
+            section.style.display = "block";
+            
+            const info = {
+                xp_2x: { icon: "⚡", name: "2x XP Boost" },
+                coins_2x: { icon: "🪙", name: "2x Coins Boost" }
+            };
+            
+            list.innerHTML = active.map(boost => {
+                const remaining = Math.max(0, boost.expiresAt - Date.now());
+                const mins = Math.floor(remaining / 60000);
+                return `
+                    <div class="boost-active">
+                        <div class="icon">${info[boost.type]?.icon || "⚡"}</div>
+                        <div class="info">
+                            <div class="name">${info[boost.type]?.name || boost.type}</div>
+                            <div class="timer">${mins} minutes remaining</div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+        
+        async function openBox(type) {
+            try {
+                const resp = await fetch("api/lootbox.php", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "openFromInventory", boxType: type })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    userData.coins = data.coins;
+                    userData.inventory = data.inventory;
+                    updateDisplay();
+                    showResult(data.reward);
+                } else {
+                    alert(data.error);
+                }
+            } catch (e) {
+                alert("Failed to open box");
+            }
+        }
+        
+        async function activateBooster(type) {
+            try {
+                const resp = await fetch("api/shop.php", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "activateBoost", boostType: type })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    userData.inventory = data.inventory;
+                    userData.activeBoosts = data.activeBoosts;
+                    updateDisplay();
+                    showResult({ name: "Boost Activated!", icon: "⚡", rarity: "uncommon" });
+                } else {
+                    alert(data.error);
+                }
+            } catch (e) {
+                alert("Failed to activate booster");
+            }
+        }
+        
+        function showResult(reward) {
+            const modal = document.getElementById("resultModal");
+            document.getElementById("resultIcon").textContent = reward.icon || "🎉";
+            document.getElementById("resultTitle").textContent = reward.name;
+            document.getElementById("resultTitle").className = "title result-" + (reward.rarity || "common");
+            document.getElementById("resultDesc").textContent = reward.duplicate ? "Duplicate! Coins refunded." : "";
+            modal.classList.add("active");
+        }
+        
+        function closeModal() {
+            document.getElementById("resultModal").classList.remove("active");
+        }
+        
+        init();
+    </script>
+</body>
+</html>
