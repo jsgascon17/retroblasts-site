@@ -357,6 +357,7 @@
                 <p id="leaderboardMsg" style="margin-top: 8px; font-size: 0.85rem; min-height: 1.2em;"></p>
             </div>
 
+            <button class="btn" id="saveReplayBtn" style="margin-bottom: 10px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);" onclick="saveReplay()">💾 Save Replay</button>
             <button class="btn" id="retryBtn">PLAY AGAIN</button>
         </div>
     </div>
@@ -671,6 +672,10 @@
         let obstacles = [];
         let score = 0;
         let gameState = 'start';
+        // Replay recording
+        let replayFrames = [];
+        let replayStartTime = 0;
+        let gameStartTime = 0;
         let gameMode = 'classic';
         let baseSpeed = 100;
         let gameSpeed = 100;
@@ -1152,6 +1157,7 @@
                 updatePowerups();
                 if (timestamp - lastMove > gameSpeed) {
                     moveSnake();
+                    recordFrame();
                     lastMove = timestamp;
                 }
             }
@@ -1260,6 +1266,7 @@
             } else if (gameState === 'paused') {
                 if (e.code === 'Space') {
                     gameState = 'playing';
+            startRecording();
                     document.getElementById('pauseScreen').classList.add('hidden');
                     lastMove = performance.now();
                     e.preventDefault();
@@ -1274,6 +1281,7 @@
             initAudio();
             initGame();
             gameState = 'playing';
+            startRecording();
             lastMove = performance.now();
             document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
             updateBestDisplay();
@@ -1505,6 +1513,56 @@
         updateBestDisplay();
         initGame();
         requestAnimationFrame(gameLoop);
+        // Replay functions
+        function recordFrame() {
+            if (gameState !== "playing") return;
+            replayFrames.push({
+                t: Date.now() - gameStartTime,
+                snake: JSON.parse(JSON.stringify(snake)),
+                food: { ...food },
+                score: score,
+                dir: direction
+            });
+        }
+
+        function startRecording() {
+            replayFrames = [];
+            gameStartTime = Date.now();
+        }
+
+        async function saveReplay() {
+            const btn = document.getElementById("saveReplayBtn");
+            btn.disabled = true;
+            btn.textContent = "Saving...";
+
+            try {
+                const duration = Math.floor((Date.now() - gameStartTime) / 1000);
+                const resp = await fetch("api/replays.php", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "save",
+                        game: "snake",
+                        score: score,
+                        duration: duration,
+                        frames: replayFrames
+                    })
+                });
+                const data = await resp.json();
+
+                if (data.success) {
+                    btn.textContent = "✓ Saved!";
+                    btn.style.background = "#22c55e";
+                } else {
+                    btn.textContent = "Error: " + (data.error || "Failed");
+                    btn.style.background = "#ef4444";
+                }
+            } catch (e) {
+                btn.textContent = "Error saving";
+                btn.style.background = "#ef4444";
+            }
+        }
     </script>
 </body>
 </html>
