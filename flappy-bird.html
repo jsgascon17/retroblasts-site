@@ -177,6 +177,7 @@
             <p id="leaderboardMsg" style="margin-top: 8px; font-size: 0.8rem; min-height: 1.2em;"></p>
         </div>
 
+        <button class="btn" id="saveReplayBtn" style="margin-bottom: 10px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);" onclick="saveReplay()">💾 Save Replay</button>
         <button class="btn" id="restartBtn">TRY AGAIN</button>
         <button class="btn btn-small btn-secondary" id="menuBtn">MENU</button>
     </div>
@@ -412,6 +413,8 @@
         let isDailyChallenge = false;
         let dailyChallenge = null;
         let score = 0, frameCount = 0, bossScoreTimer = 0;
+        // Replay recording
+        let replayFrames = [];
         let hasShield = false, shieldHits = 0;
         let sessionCoins = 0;
         let newAchievementsThisGame = [];
@@ -1358,6 +1361,8 @@
             scoreDisplay.textContent = score;
             document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
             gameRunning = true; gameStarted = true;
+            replayFrames = [];
+            gameStartTime = Date.now();
             gameLoop();
         }
 
@@ -1399,6 +1404,16 @@
                 groundX -= getPipeSpeed();
                 if (groundX <= -40) groundX = 0;
                 checkCollision();
+
+                // Record frame for replay
+                if (frameCount % 3 === 0) {
+                    replayFrames.push({
+                        t: Date.now() - gameStartTime,
+                        bird: { y: bird.y, velocity: bird.velocity, rotation: bird.rotation },
+                        pipes: pipes.map(p => ({ x: p.x, gapY: p.gapY })),
+                        score: score
+                    });
+                }
             }
 
             if (gamePaused) {
@@ -1576,6 +1591,40 @@
             soundEnabled = !soundEnabled;
             document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
         });
+        // Save replay function
+        async function saveReplay() {
+            const btn = document.getElementById("saveReplayBtn");
+            btn.disabled = true;
+            btn.textContent = "Saving...";
+
+            try {
+                const duration = Math.floor((Date.now() - gameStartTime) / 1000);
+                const resp = await fetch("api/replays.php", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "save",
+                        game: "flappy-bird",
+                        score: score,
+                        duration: duration,
+                        frames: replayFrames
+                    })
+                });
+                const data = await resp.json();
+
+                if (data.success) {
+                    btn.textContent = "✓ Saved!";
+                    btn.style.background = "#22c55e";
+                } else {
+                    btn.textContent = data.error || "Error";
+                    btn.style.background = "#ef4444";
+                }
+            } catch (e) {
+                btn.textContent = "Error saving";
+                btn.style.background = "#ef4444";
+            }
+        }
     </script>
 </body>
 </html>
