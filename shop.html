@@ -400,6 +400,20 @@
         .lootbox-card.legendary .btn-open { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
         .btn-open:hover { transform: scale(1.05); }
         .btn-open:disabled { background: #555; color: #888; transform: none; cursor: not-allowed; }
+        .lootbox-buttons { display: flex; gap: 10px; justify-content: center; }
+        .btn-bulk { opacity: 0.9; }
+        .btn-bulk:hover { opacity: 1; }
+        
+        /* Bulk Results Modal */
+        .bulk-results { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin: 20px 0; max-width: 600px; }
+        .bulk-result-item { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; text-align: center; }
+        .bulk-result-item .icon { font-size: 2rem; margin-bottom: 5px; }
+        .bulk-result-item .name { font-size: 0.75rem; color: #fff; }
+        .bulk-result-item.common { border: 2px solid #94a3b8; }
+        .bulk-result-item.uncommon { border: 2px solid #4ade80; }
+        .bulk-result-item.rare { border: 2px solid #60a5fa; }
+        .bulk-result-item.epic { border: 2px solid #a855f7; }
+        .bulk-result-item.legendary { border: 2px solid #fbbf24; }
         
         /* Loot Box Opening Modal */
         .lootbox-modal {
@@ -552,7 +566,7 @@
                             <div class="drop-item"><span>⚡ XP Boost</span><span class="drop-chance">15%</span></div>
                         </div>
                         <div class="lootbox-price">🪙 <span>500</span> coins</div>
-                        <button class="btn-open" data-type="basic" onclick="openLootbox('basic')">Open Box</button>
+                        <div class="lootbox-buttons"><button class="btn-open" onclick="openLootbox('basic')">Open 1</button><button class="btn-open btn-bulk" onclick="openLootboxBulk('basic', 10)">Open 10</button></div>
                     </div>
                     
                     <div class="lootbox-card premium">
@@ -568,7 +582,7 @@
                             <div class="drop-item"><span>⚡ Coin Boost</span><span class="drop-chance">10%</span></div>
                         </div>
                         <div class="lootbox-price">🪙 <span>1,500</span> coins</div>
-                        <button class="btn-open" onclick="openLootbox('premium')">Open Box</button>
+                        <div class="lootbox-buttons"><button class="btn-open" onclick="openLootbox('premium')">Open 1</button><button class="btn-open btn-bulk" onclick="openLootboxBulk('premium', 10)">Open 10</button></div>
                     </div>
                     
                     <div class="lootbox-card legendary">
@@ -585,7 +599,7 @@
                             <div class="drop-item"><span>🏆 Social Items</span><span class="drop-chance">5%</span></div>
                         </div>
                         <div class="lootbox-price">🪙 <span>5,000</span> coins</div>
-                        <button class="btn-open" onclick="openLootbox('legendary')">Open Box</button>
+                        <div class="lootbox-buttons"><button class="btn-open" onclick="openLootbox('legendary')">Open 1</button><button class="btn-open btn-bulk" onclick="openLootboxBulk('legendary', 10)">Open 10</button></div>
                     </div>
                 </div>
                 
@@ -870,6 +884,70 @@
             return types[type] || type;
         }
         
+        async function openLootboxBulk(type, count) {
+            const costs = { basic: 500, premium: 1500, legendary: 5000 };
+            const totalCost = costs[type] * count;
+            
+            if (userData.coins < totalCost) {
+                showToast("Not enough coins! Need " + totalCost.toLocaleString(), "error");
+                return;
+            }
+            
+            const modal = document.getElementById("lootboxModal");
+            const openingAnim = document.getElementById("openingAnimation");
+            const result = document.getElementById("lootboxResult");
+            
+            modal.classList.add("active");
+            openingAnim.style.display = "block";
+            result.style.display = "none";
+            
+            const icons = { basic: "📦", premium: "🎁", legendary: "👑" };
+            openingAnim.querySelector(".opening-box").textContent = icons[type];
+            openingAnim.querySelector(".opening-text").textContent = "Opening " + count + " boxes...";
+            
+            try {
+                const rewards = [];
+                for (let i = 0; i < count; i++) {
+                    const resp = await fetch("api/lootbox.php", {
+                        credentials: "include",
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ action: "open", boxType: type })
+                    });
+                    const data = await resp.json();
+                    if (data.success) {
+                        rewards.push(data.reward);
+                        userData.coins = data.coins;
+                    } else {
+                        break;
+                    }
+                }
+                
+                await new Promise(r => setTimeout(r, 1500));
+                
+                updateCoinDisplay();
+                openingAnim.style.display = "none";
+                result.style.display = "block";
+                
+                const bulkHtml = "<div class=\"bulk-results\">" + rewards.map(r => 
+                    "<div class=\"bulk-result-item " + (r.rarity || "common") + "\"><div class=\"icon\">" + getDropIcon(r) + "</div><div class=\"name\">" + r.name + "</div></div>"
+                ).join("") + "</div>";
+                
+                document.getElementById("resultIcon").textContent = "🎉";
+                document.getElementById("resultName").innerHTML = "Opened " + rewards.length + " boxes!" + bulkHtml;
+                document.getElementById("resultName").className = "result-name";
+                document.getElementById("resultType").textContent = "";
+                document.getElementById("resultDuplicate").style.display = "none";
+                
+                rewards.forEach(r => recentDrops.unshift({ ...r, time: Date.now() }));
+                if (recentDrops.length > 20) recentDrops.length = 20;
+                renderRecentDrops();
+            } catch (e) {
+                closeLootboxModal();
+                showToast("Error opening boxes", "error");
+            }
+        }
+
         function closeLootboxModal() {
             document.getElementById('lootboxModal').classList.remove('active');
             updateLootboxButtons();
