@@ -447,6 +447,19 @@
         .bundle-btn:hover { transform: scale(1.02); }
         .bundle-btn:disabled { background: #555; color: #888; cursor: not-allowed; transform: none; }
         
+        /* Inventory Section */
+        .inventory-section { background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .inventory-section h3 { color: #fbbf24; margin-bottom: 15px; }
+        .inventory-boxes { display: flex; gap: 15px; flex-wrap: wrap; }
+        .inventory-box { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 15px; text-align: center; min-width: 100px; }
+        .inventory-box .icon { font-size: 2rem; margin-bottom: 5px; }
+        .inventory-box .count { font-size: 1.2rem; font-weight: bold; color: #fff; }
+        .inventory-box .label { font-size: 0.8rem; color: #aaa; }
+        .inventory-box button { margin-top: 10px; padding: 5px 15px; background: linear-gradient(135deg, #60a5fa, #3b82f6); border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; }
+        .inventory-box.premium button { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+        .inventory-box.legendary button { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
+        .inventory-empty { color: #666; font-style: italic; }
+        
         /* Loot Box Opening Modal */
         .lootbox-modal {
             display: none;
@@ -600,6 +613,13 @@
             </div>
 
             <div id="lootboxSection" style="display: none;">
+                <!-- Your Inventory -->
+                <div class="inventory-section" id="inventorySection">
+                    <h3>📦 Your Loot Box Inventory</h3>
+                    <div class="inventory-boxes" id="inventoryBoxes">
+                        <span class="inventory-empty">No boxes in inventory. Buy bundles below!</span>
+                    </div>
+                </div>
                 <div class="lootbox-section">
                     <div class="lootbox-card basic">
                         <div class="lootbox-icon">📦</div>
@@ -828,6 +848,7 @@
                 grid.style.display = 'none';
                 lootSection.style.display = 'block';
                 updateLootboxButtons();
+                renderInventory();
                 return;
             }
             
@@ -1125,6 +1146,67 @@
             }
         }
 
+        function renderInventory() {
+            const container = document.getElementById("inventoryBoxes");
+            const boxes = userData.inventory?.lootboxes || [];
+            
+            if (boxes.length === 0) {
+                container.innerHTML = "<span class=\"inventory-empty\">No boxes in inventory. Buy bundles below!</span>";
+                return;
+            }
+            
+            const counts = { basic: 0, premium: 0, legendary: 0 };
+            boxes.forEach(b => counts[b] = (counts[b] || 0) + 1);
+            
+            const icons = { basic: "📦", premium: "🎁", legendary: "👑" };
+            let html = "";
+            
+            for (const [type, count] of Object.entries(counts)) {
+                if (count > 0) {
+                    html += "<div class=\"inventory-box " + type + "\"><div class=\"icon\">" + icons[type] + "</div><div class=\"count\">" + count + "</div><div class=\"label\">" + type + "</div><button onclick=\"openFromInventory(\"" + type + "\")\" >Open 1</button></div>";
+                }
+            }
+            container.innerHTML = html || "<span class=\"inventory-empty\">No boxes in inventory</span>";
+        }
+        
+        async function openFromInventory(boxType) {
+            try {
+                const resp = await fetch("api/lootbox.php", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "openFromInventory", boxType })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    userData.coins = data.coins;
+                    userData.inventory = data.inventory;
+                    updateCoinDisplay();
+                    renderInventory();
+                    
+                    const modal = document.getElementById("lootboxModal");
+                    const result = document.getElementById("lootboxResult");
+                    const openingAnim = document.getElementById("openingAnimation");
+                    
+                    modal.classList.add("active");
+                    openingAnim.style.display = "none";
+                    result.style.display = "block";
+                    
+                    const drop = data.reward;
+                    document.getElementById("resultIcon").textContent = getDropIcon(drop);
+                    document.getElementById("resultName").textContent = drop.name;
+                    document.getElementById("resultName").className = "result-name " + (drop.rarity || "common");
+                    document.getElementById("resultType").textContent = formatDropType(drop.type);
+                    document.getElementById("resultDuplicate").style.display = "none";
+                } else {
+                    showToast(data.error, "error");
+                }
+            } catch (e) {
+                showToast("Failed to open box", "error");
+            }
+        }
+
         async function buyBundle(boxType, count, price) {
             if (userData.coins < price) {
                 showToast("Not enough coins! Need " + price.toLocaleString(), "error");
@@ -1219,6 +1301,7 @@
         function closeLootboxModal() {
             document.getElementById('lootboxModal').classList.remove('active');
             updateLootboxButtons();
+                renderInventory();
         }
         
         function renderRecentDrops() {

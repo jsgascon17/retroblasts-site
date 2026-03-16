@@ -266,6 +266,88 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
+    if ($action === "openFromInventory") {
+        $boxType = $input["boxType"] ?? "basic";
+        
+        if (\!isset($user["inventory"]["lootboxes"]) || \!is_array($user["inventory"]["lootboxes"])) {
+            echo json_encode(["success" => false, "error" => "No boxes in inventory"]);
+            exit();
+        }
+        
+        $index = array_search($boxType, $user["inventory"]["lootboxes"]);
+        if ($index === false) {
+            echo json_encode(["success" => false, "error" => "No " . $boxType . " boxes in inventory"]);
+            exit();
+        }
+        
+        // Remove box from inventory
+        array_splice($user["inventory"]["lootboxes"], $index, 1);
+        
+        // Roll for reward (same as normal open)
+        $box = $LOOT_BOXES[$boxType];
+        $drop = rollDrop($box["drops"]);
+        $reward = [];
+        
+        if ($drop["type"] === "coins") {
+            $amount = mt_rand($drop["min"], $drop["max"]);
+            $user["coins"] += $amount;
+            $reward = [
+                "type" => "coins",
+                "amount" => $amount,
+                "name" => $amount . " Coins",
+                "icon" => "🪙",
+                "rarity" => $amount >= 1000 ? "rare" : ($amount >= 500 ? "uncommon" : "common")
+            ];
+        } else {
+            $itemId = $drop["pool"][array_rand($drop["pool"])];
+            $category = $drop["type"] === "emote" ? "emotes" : 
+                        ($drop["type"] === "name_color" ? "name_colors" : 
+                        ($drop["type"] === "booster" ? "boosters" :
+                        ($drop["type"] === "avatar_effect" ? "avatar_effects" : 
+                        $drop["type"] . "s")));
+            
+            if ($category \!== "boosters" && in_array($itemId, $user["inventory"][$category] ?? [])) {
+                $coinValue = $box["cost"] / 2;
+                $user["coins"] += $coinValue;
+                $reward = [
+                    "type" => "coins",
+                    "amount" => $coinValue,
+                    "name" => intval($coinValue) . " Coins (duplicate)",
+                    "icon" => "🪙",
+                    "rarity" => "common",
+                    "duplicate" => true
+                ];
+            } else {
+                if (\!isset($user["inventory"][$category])) $user["inventory"][$category] = [];
+                $user["inventory"][$category][] = $itemId;
+                
+                $rarity = "common";
+                if (in_array($itemId, ["rainbow", "diamond", "glow", "pulse"])) $rarity = "legendary";
+                else if (in_array($itemId, ["gold", "fire", "ice", "sparkle"])) $rarity = "rare";
+                else if (in_array($itemId, ["silver", "purple", "bounce"])) $rarity = "uncommon";
+                
+                $reward = [
+                    "type" => "item",
+                    "category" => $category,
+                    "itemId" => $itemId,
+                    "name" => $ITEM_NAMES[$category][$itemId] ?? $itemId,
+                    "icon" => $drop["type"] === "emote" ? "😀" : ($drop["type"] === "border" ? "🖼️" : ($drop["type"] === "avatar_effect" ? "✨" : "🎨")),
+                    "rarity" => $rarity
+                ];
+            }
+        }
+        
+        writeUsers($usersData);
+        
+        echo json_encode([
+            "success" => true,
+            "reward" => $reward,
+            "coins" => $user["coins"],
+            "inventory" => $user["inventory"]
+        ]);
+        exit();
+    }
+    
     if ($action === "buyBundle") {
         $boxType = $input["boxType"] ?? "basic";
         $count = intval($input["count"] ?? 1);
