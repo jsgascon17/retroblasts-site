@@ -23,9 +23,9 @@
                 "messagesSent": 1
             },
             "createdAt": "2026-03-15T14:12:12+00:00",
-            "lastActivity": "2026-03-16T14:10:32+00:00",
+            "lastActivity": "2026-03-16T14:16:06+00:00",
             "lastLogin": "2026-03-16T14:08:50+00:00",
-            "coins": 19085,
+            "coins": 18847,
             "inventory": {
                 "name_colors": [
                     "gold"
@@ -37,14 +37,18 @@
                     "nice"
                 ],
                 "boosters": [],
-                "social": []
+                "social": [],
+                "lootboxes": [
+                    "basic"
+                ]
             },
             "equipped": {
                 "name_color": "gold",
                 "border": null,
                 "avatar_effect": null
             },
-            "activeBoosts": []
+            "activeBoosts": [],
+            "lastDailySpin": 1773670569
         }
     }
 }

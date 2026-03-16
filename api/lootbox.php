@@ -266,6 +266,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
+    if ($action === "buyBundle") {
+        $boxType = $input["boxType"] ?? "basic";
+        $count = intval($input["count"] ?? 1);
+        $price = intval($input["price"] ?? 0);
+        
+        $validBundles = [
+            "basic_3" => 1250, "basic_10" => 3750,
+            "premium_3" => 3750, "legendary_3" => 12000
+        ];
+        
+        $bundleKey = $boxType . "_" . $count;
+        if (!isset($validBundles[$bundleKey]) || $validBundles[$bundleKey] !== $price) {
+            echo json_encode(["success" => false, "error" => "Invalid bundle"]);
+            exit();
+        }
+        
+        if ($user["coins"] < $price) {
+            echo json_encode(["success" => false, "error" => "Not enough coins"]);
+            exit();
+        }
+        
+        $user["coins"] -= $price;
+        
+        if (!isset($user["inventory"]["lootboxes"])) $user["inventory"]["lootboxes"] = [];
+        for ($i = 0; $i < $count; $i++) {
+            $user["inventory"]["lootboxes"][] = $boxType;
+        }
+        
+        writeUsers($usersData);
+        
+        echo json_encode([
+            "success" => true,
+            "coins" => $user["coins"],
+            "boxesAdded" => $count
+        ]);
+        exit();
+    }
+    
     echo json_encode(['success' => false, 'error' => 'Invalid action']);
     exit();
 }

@@ -430,6 +430,23 @@
         .spin-result.show { display: block; animation: resultPop 0.5s ease; }
         .spin-result .prize-name { font-size: 1.5rem; font-weight: bold; color: #fbbf24; }
         
+        /* Bundle Packs */
+        .bundles-section { margin-top: 30px; padding-top: 30px; border-top: 2px solid rgba(255,255,255,0.1); }
+        .bundles-section h3 { text-align: center; color: #fbbf24; margin-bottom: 20px; }
+        .bundles-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .bundle-card { background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.05)); border: 2px solid rgba(251,191,36,0.3); border-radius: 15px; padding: 20px; text-align: center; transition: all 0.3s; }
+        .bundle-card:hover { transform: translateY(-3px); border-color: #fbbf24; box-shadow: 0 10px 25px rgba(251,191,36,0.2); }
+        .bundle-icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .bundle-name { font-size: 1.1rem; font-weight: bold; color: #fff; margin-bottom: 5px; }
+        .bundle-desc { font-size: 0.85rem; color: #aaa; margin-bottom: 10px; }
+        .bundle-prices { margin-bottom: 15px; }
+        .bundle-original { text-decoration: line-through; color: #888; font-size: 0.9rem; }
+        .bundle-sale { color: #4ade80; font-size: 1.2rem; font-weight: bold; }
+        .bundle-save { background: #ef4444; color: #fff; padding: 3px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; margin-left: 5px; }
+        .bundle-btn { width: 100%; padding: 10px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .bundle-btn:hover { transform: scale(1.02); }
+        .bundle-btn:disabled { background: #555; color: #888; cursor: not-allowed; transform: none; }
+        
         /* Loot Box Opening Modal */
         .lootbox-modal {
             display: none;
@@ -633,6 +650,57 @@
                     </div>
                 </div>
                 
+                <!-- Bundle Packs -->
+                <div class="bundles-section">
+                    <h3>💰 Bundle Deals - Save More!</h3>
+                    <div class="bundles-grid">
+                        <div class="bundle-card">
+                            <div class="bundle-icon">📦📦📦</div>
+                            <div class="bundle-name">Basic 3-Pack</div>
+                            <div class="bundle-desc">3 Basic Boxes</div>
+                            <div class="bundle-prices">
+                                <span class="bundle-original">1,500</span>
+                                <span class="bundle-sale">🪙 1,250</span>
+                                <span class="bundle-save">SAVE 17%</span>
+                            </div>
+                            <button class="bundle-btn" onclick="buyBundle('basic', 3, 1250)">Buy Bundle</button>
+                        </div>
+                        <div class="bundle-card">
+                            <div class="bundle-icon">📦x10</div>
+                            <div class="bundle-name">Basic 10-Pack</div>
+                            <div class="bundle-desc">10 Basic Boxes</div>
+                            <div class="bundle-prices">
+                                <span class="bundle-original">5,000</span>
+                                <span class="bundle-sale">🪙 3,750</span>
+                                <span class="bundle-save">SAVE 25%</span>
+                            </div>
+                            <button class="bundle-btn" onclick="buyBundle('basic', 10, 3750)">Buy Bundle</button>
+                        </div>
+                        <div class="bundle-card">
+                            <div class="bundle-icon">🎁🎁🎁</div>
+                            <div class="bundle-name">Premium 3-Pack</div>
+                            <div class="bundle-desc">3 Premium Boxes</div>
+                            <div class="bundle-prices">
+                                <span class="bundle-original">4,500</span>
+                                <span class="bundle-sale">🪙 3,750</span>
+                                <span class="bundle-save">SAVE 17%</span>
+                            </div>
+                            <button class="bundle-btn" onclick="buyBundle('premium', 3, 3750)">Buy Bundle</button>
+                        </div>
+                        <div class="bundle-card">
+                            <div class="bundle-icon">👑👑👑</div>
+                            <div class="bundle-name">Legendary 3-Pack</div>
+                            <div class="bundle-desc">3 Legendary Boxes</div>
+                            <div class="bundle-prices">
+                                <span class="bundle-original">15,000</span>
+                                <span class="bundle-sale">🪙 12,000</span>
+                                <span class="bundle-save">SAVE 20%</span>
+                            </div>
+                            <button class="bundle-btn" onclick="buyBundle('legendary', 3, 12000)">Buy Bundle</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="recent-drops" id="recentDrops" style="display: none;">
                     <h3>🎉 Recent Drops</h3>
                     <div class="drops-list" id="dropsList"></div>
@@ -1054,6 +1122,33 @@
             } catch (e) {
                 showToast("Spin failed", "error");
                 isSpinning = false;
+            }
+        }
+
+        async function buyBundle(boxType, count, price) {
+            if (userData.coins < price) {
+                showToast("Not enough coins! Need " + price.toLocaleString(), "error");
+                return;
+            }
+            
+            try {
+                const resp = await fetch("api/lootbox.php", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "buyBundle", boxType, count, price })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    userData.coins = data.coins;
+                    updateCoinDisplay();
+                    showToast("Bought " + count + " " + boxType + " boxes!", "success");
+                } else {
+                    showToast(data.error, "error");
+                }
+            } catch (e) {
+                showToast("Purchase failed", "error");
             }
         }
 
