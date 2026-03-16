@@ -104,7 +104,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                         'title' => getTitle(calculateLevel($user['xp'])),
                         'achievements' => $user['achievements'] ?? [],
                         'friends' => $user['friends'] ?? [],
-                        'stats' => $user['stats'] ?? []
+                        'stats' => $user['stats'] ?? [],
+                        'coins' => $user['coins'] ?? 0
                     ]
                 ]);
                 exit();
@@ -134,6 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     'isOnline' => $isOnline,
                     'achievements' => $user['achievements'] ?? [],
                     'stats' => $user['stats'] ?? [],
+                        'coins' => $user['coins'] ?? 0,
                     'createdAt' => $user['createdAt'] ?? null
                 ]
             ]);
