@@ -611,7 +611,7 @@
         
         async function init() {
             try {
-                const resp = await fetch('api/auth.php?action=check');
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
                 const data = await resp.json();
                 
                 if (!data.success || !data.user) {
@@ -665,7 +665,7 @@
             coin.classList.add('spinning');
             
             try {
-                const resp = await fetch('api/casino.php', {
+                const resp = await fetch('api/casino.php', { credentials: 'include',
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'coinflip', bet, choice: coinflipChoice })
@@ -712,7 +712,7 @@
             }, 100);
             
             try {
-                const resp = await fetch('api/casino.php', {
+                const resp = await fetch('api/casino.php', { credentials: 'include',
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'slots', bet })
@@ -790,7 +790,7 @@
             display.style.animation = 'shake 0.1s linear infinite';
             
             try {
-                const resp = await fetch('api/casino.php', {
+                const resp = await fetch('api/casino.php', { credentials: 'include',
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'dice', bet, target: diceTarget, number })
@@ -829,7 +829,7 @@
             }
             
             try {
-                const resp = await fetch('api/casino.php', {
+                const resp = await fetch('api/casino.php', { credentials: 'include',
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'blackjack-start', bet })
@@ -881,7 +881,7 @@
         
         async function blackjackHit() {
             try {
-                const resp = await fetch('api/casino.php', {
+                const resp = await fetch('api/casino.php', { credentials: 'include',
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'blackjack-hit' })
@@ -907,7 +907,7 @@
         
         async function blackjackStand() {
             try {
-                const resp = await fetch('api/casino.php', {
+                const resp = await fetch('api/casino.php', { credentials: 'include',
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'blackjack-stand' })
