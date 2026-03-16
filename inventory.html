@@ -118,8 +118,8 @@
         .inventory-item button:hover { transform: scale(1.05); }
         .inventory-item button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         
-        .inventory-item.basic button { background: linear-gradient(135deg, #60a5fa, #3b82f6); color: #fff; }
-        .inventory-item.premium button { background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; }
+        .inventory-item.basic button { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
+        .inventory-item.premium button { background: linear-gradient(135deg, #a855f7, #7c3aed); }
         .inventory-item.legendary button { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
         .inventory-item.booster button { background: linear-gradient(135deg, #4ade80, #22c55e); color: #000; }
         
@@ -288,18 +288,19 @@
         }
         
         function renderKeys() {
-            const grid = document.getElementById("keysGrid");
-            const keys = userData.inventory?.keys || {};
+            var grid = document.getElementById("keysGrid");
+            var keys = userData.inventory && userData.inventory.keys ? userData.inventory.keys : {};
             
-            const keyInfo = {
+            var keyInfo = {
                 bronze_key: { icon: "🗝️", name: "Bronze Key", color: "#cd7f32" },
                 silver_key: { icon: "🔑", name: "Silver Key", color: "#c0c0c0" },
                 gold_key: { icon: "🔐", name: "Gold Key", color: "#ffd700" }
             };
             
-            let html = "";
+            var html = "";
             
-            for (const [type, count] of Object.entries(keys)) {
+            for (var type in keys) {
+                var count = keys[type];
                 if (count > 0 && keyInfo[type]) {
                     html += '<div class="inventory-item" style="border-color: ' + keyInfo[type].color + '40;">' +
                         '<div class="icon">' + keyInfo[type].icon + '</div>' +
@@ -309,39 +310,40 @@
                 }
             }
             
-            grid.innerHTML = html || '<div class="empty-state"><div class="icon">🔑</div><p>No keys. Win them from games!</p></div>';
+            grid.innerHTML = html || '<div class="empty-state"><div class="icon">🔑</div><p>No keys yet. Win them from loot boxes!</p></div>';
         }
         
         function renderLockedCrates() {
-            const grid = document.getElementById("cratesGrid");
-            const crates = userData.inventory?.lockedCrates || [];
+            var grid = document.getElementById("cratesGrid");
+            var crates = userData.inventory && userData.inventory.lockedCrates ? userData.inventory.lockedCrates : [];
             
             if (crates.length === 0) {
                 grid.innerHTML = '<div class="empty-state"><div class="icon">🔒</div><p>No locked crates yet.</p></div>';
                 return;
             }
             
-            const crateInfo = {
+            var crateInfo = {
                 bronze_crate: { icon: "📦", name: "Bronze Crate", key: "bronze_key", color: "#cd7f32" },
                 silver_crate: { icon: "🎁", name: "Silver Crate", key: "silver_key", color: "#c0c0c0" },
                 gold_crate: { icon: "👑", name: "Gold Crate", key: "gold_key", color: "#ffd700" }
             };
             
-            const counts = {};
-            crates.forEach(c => counts[c] = (counts[c] || 0) + 1);
+            var counts = {};
+            crates.forEach(function(c) { counts[c] = (counts[c] || 0) + 1; });
             
-            const keys = userData.inventory?.keys || {};
+            var keys = userData.inventory && userData.inventory.keys ? userData.inventory.keys : {};
             
-            let html = "";
-            for (const [type, count] of Object.entries(counts)) {
+            var html = "";
+            for (var type in counts) {
+                var count = counts[type];
                 if (count > 0 && crateInfo[type]) {
-                    const info = crateInfo[type];
-                    const hasKey = (keys[info.key] || 0) > 0;
+                    var info = crateInfo[type];
+                    var hasKey = (keys[info.key] || 0) > 0;
                     html += '<div class="inventory-item" style="border-color: ' + info.color + '40;">' +
                         '<div class="icon">' + info.icon + '</div>' +
                         '<div class="count">x' + count + '</div>' +
                         '<div class="name">' + info.name + '</div>' +
-                        '<button onclick="openCrate(\'' + type + '\')" style="background: linear-gradient(135deg, ' + info.color + ', ' + info.color + '99);" ' + (hasKey ? '' : 'disabled') + '>' +
+                        '<button onclick="openCrate(\'' + type + '\')" style="background: linear-gradient(135deg, ' + info.color + ', ' + info.color + '99); color: #fff;" ' + (hasKey ? '' : 'disabled') + '>' +
                         (hasKey ? '🔓 Unlock' : '🔒 Need Key') +
                         '</button></div>';
                 }
@@ -350,25 +352,26 @@
         }
         
         function renderLootboxes() {
-            const grid = document.getElementById("lootboxGrid");
-            const boxes = userData.inventory?.lootboxes || [];
+            var grid = document.getElementById("lootboxGrid");
+            var boxes = userData.inventory && userData.inventory.lootboxes ? userData.inventory.lootboxes : [];
             
             if (boxes.length === 0) {
                 grid.innerHTML = '<div class="empty-state"><div class="icon">📦</div><p>No loot boxes. <a href="shop.html">Buy some!</a></p></div>';
                 return;
             }
             
-            const counts = {};
-            boxes.forEach(b => counts[b] = (counts[b] || 0) + 1);
+            var counts = {};
+            boxes.forEach(function(b) { counts[b] = (counts[b] || 0) + 1; });
             
-            const info = {
+            var info = {
                 basic: { icon: "📦", name: "Basic Box" },
                 premium: { icon: "🎁", name: "Premium Box" },
                 legendary: { icon: "👑", name: "Legendary Box" }
             };
             
-            let html = "";
-            for (const [type, count] of Object.entries(counts)) {
+            var html = "";
+            for (var type in counts) {
+                var count = counts[type];
                 if (count > 0 && info[type]) {
                     html += '<div class="inventory-item ' + type + '">' +
                         '<div class="icon">' + info[type].icon + '</div>' +
@@ -382,24 +385,25 @@
         }
         
         function renderBoosters() {
-            const grid = document.getElementById("boosterGrid");
-            const boosters = userData.inventory?.boosters || [];
+            var grid = document.getElementById("boosterGrid");
+            var boosters = userData.inventory && userData.inventory.boosters ? userData.inventory.boosters : [];
             
             if (boosters.length === 0) {
                 grid.innerHTML = '<div class="empty-state"><div class="icon">⚡</div><p>No boosters. Win them from loot boxes!</p></div>';
                 return;
             }
             
-            const counts = {};
-            boosters.forEach(b => counts[b] = (counts[b] || 0) + 1);
+            var counts = {};
+            boosters.forEach(function(b) { counts[b] = (counts[b] || 0) + 1; });
             
-            const info = {
+            var info = {
                 xp_2x: { icon: "⚡", name: "2x XP (1hr)" },
                 coins_2x: { icon: "🪙", name: "2x Coins (1hr)" }
             };
             
-            let html = "";
-            for (const [type, count] of Object.entries(counts)) {
+            var html = "";
+            for (var type in counts) {
+                var count = counts[type];
                 if (count > 0 && info[type]) {
                     html += '<div class="inventory-item booster">' +
                         '<div class="icon">' + info[type].icon + '</div>' +
@@ -413,10 +417,10 @@
         }
         
         function renderConsumables() {
-            const grid = document.getElementById("consumableGrid");
-            const consumables = userData.inventory?.consumables || {};
+            var grid = document.getElementById("consumableGrid");
+            var consumables = userData.inventory && userData.inventory.consumables ? userData.inventory.consumables : {};
             
-            const consumableInfo = {
+            var consumableInfo = {
                 reroll_token: { icon: "🔄", name: "Reroll Token" },
                 extra_life: { icon: "❤️", name: "Extra Life" },
                 score_2x: { icon: "✖️", name: "2x Score" },
@@ -425,9 +429,10 @@
                 gift_box: { icon: "🎁", name: "Gift Box" }
             };
             
-            let html = "";
+            var html = "";
             
-            for (const [type, count] of Object.entries(consumables)) {
+            for (var type in consumables) {
+                var count = consumables[type];
                 if (count > 0 && consumableInfo[type]) {
                     html += '<div class="inventory-item">' +
                         '<div class="icon">' + consumableInfo[type].icon + '</div>' +
@@ -440,12 +445,11 @@
             grid.innerHTML = html || '<div class="empty-state"><div class="icon">🎟️</div><p>No consumables yet.</p></div>';
         }
         
-        
         function renderTradingCards() {
-            const grid = document.getElementById("cardsGrid");
-            const cards = userData.inventory?.tradingCards || {};
+            var grid = document.getElementById("cardsGrid");
+            var cards = userData.inventory && userData.inventory.tradingCards ? userData.inventory.tradingCards : {};
             
-            const cardInfo = {
+            var cardInfo = {
                 cookie_bronze: { icon: "🍪", name: "Cookie Bronze", rarity: "common" },
                 cookie_silver: { icon: "🍪", name: "Cookie Silver", rarity: "uncommon" },
                 cookie_gold: { icon: "🍪", name: "Cookie Gold", rarity: "rare" },
@@ -460,34 +464,35 @@
                 legendary_phoenix: { icon: "🔥", name: "Phoenix Card", rarity: "legendary" }
             };
             
-            const rarityColors = {
+            var rarityColors = {
                 common: "#94a3b8",
                 uncommon: "#4ade80",
                 rare: "#60a5fa",
                 legendary: "#fbbf24"
             };
             
-            let html = "";
-            let hasCards = false;
+            var html = "";
             
-            for (const [type, count] of Object.entries(cards)) {
+            for (var type in cards) {
+                var count = cards[type];
                 if (count > 0 && cardInfo[type]) {
-                    hasCards = true;
-                    const info = cardInfo[type];
-                    html += "<div class="inventory-item" style="border-color: " + rarityColors[info.rarity] + ";">";
-                    html += "<div class="icon">" + info.icon + "</div>";
-                    html += "<div class="count">x" + count + "</div>";
-                    html += "<div class="name" style="color: " + rarityColors[info.rarity] + "">" + info.name + "</div>";
-                    html += "</div>";
+                    var info = cardInfo[type];
+                    var color = rarityColors[info.rarity];
+                    html += '<div class="inventory-item" style="border-color: ' + color + ';">' +
+                        '<div class="icon">' + info.icon + '</div>' +
+                        '<div class="count">x' + count + '</div>' +
+                        '<div class="name" style="color: ' + color + ';">' + info.name + '</div>' +
+                        '</div>';
                 }
             }
             
-            grid.innerHTML = html || "<div class="empty-state"><div class="icon">🃏</div><p>No trading cards yet. Win them from loot boxes!</p></div>";
+            grid.innerHTML = html || '<div class="empty-state"><div class="icon">🃏</div><p>No trading cards yet. Win them from loot boxes!</p></div>';
         }
+        
         function renderActiveBoosts() {
-            const section = document.getElementById("activeBoostsSection");
-            const list = document.getElementById("activeBoostsList");
-            const active = userData.activeBoosts || [];
+            var section = document.getElementById("activeBoostsSection");
+            var list = document.getElementById("activeBoostsList");
+            var active = userData.activeBoosts || [];
             
             if (active.length === 0) {
                 section.style.display = "none";
@@ -496,16 +501,16 @@
             
             section.style.display = "block";
             
-            const info = {
+            var info = {
                 xp_2x: { icon: "⚡", name: "2x XP Boost" },
                 coins_2x: { icon: "🪙", name: "2x Coins Boost" }
             };
             
-            let html = "";
-            active.forEach(boost => {
-                const remaining = Math.max(0, boost.expiresAt - Date.now());
-                const mins = Math.floor(remaining / 60000);
-                const boostInfo = info[boost.type] || { icon: "⚡", name: boost.type };
+            var html = "";
+            active.forEach(function(boost) {
+                var remaining = Math.max(0, boost.expiresAt - Date.now());
+                var mins = Math.floor(remaining / 60000);
+                var boostInfo = info[boost.type] || { icon: "⚡", name: boost.type };
                 html += '<div class="boost-active">' +
                     '<div class="icon">' + boostInfo.icon + '</div>' +
                     '<div class="info"><div class="name">' + boostInfo.name + '</div>' +
@@ -516,13 +521,13 @@
         
         async function openBox(type) {
             try {
-                const resp = await fetch("api/lootbox.php", {
+                var resp = await fetch("api/lootbox.php", {
                     method: "POST",
                     credentials: "include",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ action: "openFromInventory", boxType: type })
                 });
-                const data = await resp.json();
+                var data = await resp.json();
                 
                 if (data.success) {
                     userData.coins = data.coins;
@@ -539,13 +544,13 @@
         
         async function openCrate(crateType) {
             try {
-                const resp = await fetch("api/lootbox.php", {
+                var resp = await fetch("api/lootbox.php", {
                     method: "POST",
                     credentials: "include",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ action: "openCrate", crateType: crateType })
                 });
-                const data = await resp.json();
+                var data = await resp.json();
                 
                 if (data.success) {
                     userData.coins = data.coins;
@@ -562,13 +567,13 @@
         
         async function activateBooster(type) {
             try {
-                const resp = await fetch("api/shop.php", {
+                var resp = await fetch("api/shop.php", {
                     method: "POST",
                     credentials: "include",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ action: "activateBoost", boostType: type })
                 });
-                const data = await resp.json();
+                var data = await resp.json();
                 
                 if (data.success) {
                     userData.inventory = data.inventory;
@@ -584,7 +589,7 @@
         }
         
         function showResult(reward) {
-            const modal = document.getElementById("resultModal");
+            var modal = document.getElementById("resultModal");
             document.getElementById("resultIcon").textContent = reward.icon || "🎉";
             document.getElementById("resultTitle").textContent = reward.name;
             document.getElementById("resultTitle").className = "title result-" + (reward.rarity || "common");
