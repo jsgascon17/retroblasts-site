@@ -23,16 +23,19 @@
                 "messagesSent": 1
             },
             "createdAt": "2026-03-15T14:12:12+00:00",
-            "lastActivity": "2026-03-15T21:57:45+00:00",
-            "lastLogin": "2026-03-15T21:50:53+00:00",
-            "coins": 17422,
+            "lastActivity": "2026-03-16T14:10:32+00:00",
+            "lastLogin": "2026-03-16T14:08:50+00:00",
+            "coins": 19085,
             "inventory": {
                 "name_colors": [
                     "gold"
                 ],
                 "borders": [],
                 "avatar_effects": [],
-                "emotes": [],
+                "emotes": [
+                    "rip",
+                    "nice"
+                ],
                 "boosters": [],
                 "social": []
             },

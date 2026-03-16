@@ -415,6 +415,21 @@
         .bulk-result-item.epic { border: 2px solid #a855f7; }
         .bulk-result-item.legendary { border: 2px solid #fbbf24; }
         
+        /* Daily Spin Wheel */
+        .daily-spin-section { background: linear-gradient(135deg, rgba(251,191,36,0.1), rgba(245,158,11,0.05)); border: 2px solid rgba(251,191,36,0.3); border-radius: 20px; padding: 30px; margin-bottom: 30px; text-align: center; }
+        .daily-spin-section h2 { color: #fbbf24; margin-bottom: 10px; }
+        .daily-spin-section .subtitle { color: #aaa; margin-bottom: 20px; }
+        .wheel-container { position: relative; width: 300px; height: 300px; margin: 0 auto 20px; }
+        .wheel { width: 100%; height: 100%; border-radius: 50%; position: relative; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); border: 4px solid #fbbf24; box-shadow: 0 0 30px rgba(251,191,36,0.3); }
+        .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 2rem; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        .spin-btn { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; border: none; padding: 15px 50px; border-radius: 30px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+        .spin-btn:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 5px 20px rgba(251,191,36,0.4); }
+        .spin-btn:disabled { background: #555; color: #888; cursor: not-allowed; }
+        .spin-timer { color: #fbbf24; font-size: 1.1rem; margin-top: 15px; }
+        .spin-result { margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 10px; display: none; }
+        .spin-result.show { display: block; animation: resultPop 0.5s ease; }
+        .spin-result .prize-name { font-size: 1.5rem; font-weight: bold; color: #fbbf24; }
+        
         /* Loot Box Opening Modal */
         .lootbox-modal {
             display: none;
@@ -552,6 +567,21 @@
             <div class="tabs" id="categoryTabs"></div>
             
             <!-- Loot Box Section -->
+            <!-- Daily Spin Section -->
+            <div id="dailySpinSection" class="daily-spin-section" style="display: none;">
+                <h2>🎡 Daily Spin</h2>
+                <p class="subtitle">Spin once per day for free prizes!</p>
+                <div class="wheel-container">
+                    <div class="wheel-pointer">▼</div>
+                    <canvas id="wheelCanvas" width="300" height="300"></canvas>
+                </div>
+                <button class="spin-btn" id="spinBtn" onclick="spinWheel()">🎰 SPIN!</button>
+                <div class="spin-timer" id="spinTimer"></div>
+                <div class="spin-result" id="spinResult">
+                    <div class="prize-name" id="prizeName"></div>
+                </div>
+            </div>
+
             <div id="lootboxSection" style="display: none;">
                 <div class="lootbox-section">
                     <div class="lootbox-card basic">
@@ -670,6 +700,17 @@
             const tabs = document.getElementById('categoryTabs');
             tabs.innerHTML = '';
             
+            // Add daily spin tab
+            const spinTab = document.createElement("div");
+            spinTab.className = "tab lootbox-tab" + (currentCategory === "dailyspin" ? " active" : "");
+            spinTab.innerHTML = "🎡 Daily Spin";
+            spinTab.onclick = () => {
+                currentCategory = "dailyspin";
+                renderTabs();
+                renderShop();
+            };
+            tabs.appendChild(spinTab);
+
             // Add loot boxes tab first
             const lootTab = document.createElement('div');
             lootTab.className = 'tab lootbox-tab' + (currentCategory === 'lootboxes' ? ' active' : '');
@@ -704,6 +745,17 @@
             const grid = document.getElementById('shopGrid');
             const lootSection = document.getElementById('lootboxSection');
             
+            const spinSection = document.getElementById("dailySpinSection");
+            
+            if (currentCategory === "dailyspin") {
+                grid.style.display = "none";
+                lootSection.style.display = "none";
+                spinSection.style.display = "block";
+                loadDailySpin();
+                return;
+            }
+            spinSection.style.display = "none";
+
             if (currentCategory === 'lootboxes') {
                 grid.style.display = 'none';
                 lootSection.style.display = 'block';
@@ -884,6 +936,127 @@
             return types[type] || type;
         }
         
+        // Daily Spin Wheel
+        let wheelPrizes = [];
+        let canSpin = false;
+        let isSpinning = false;
+        
+        async function loadDailySpin() {
+            try {
+                const resp = await fetch("api/daily-spin.php", { credentials: "include" });
+                const data = await resp.json();
+                if (data.success) {
+                    wheelPrizes = data.prizes;
+                    canSpin = data.canSpin;
+                    drawWheel();
+                    updateSpinButton(data.canSpin, data.nextSpinIn);
+                }
+            } catch (e) { console.error("Failed to load daily spin:", e); }
+        }
+        
+        function drawWheel() {
+            const canvas = document.getElementById("wheelCanvas");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            const cx = 150, cy = 150, r = 140;
+            const segments = wheelPrizes.length;
+            const arc = (2 * Math.PI) / segments;
+            
+            ctx.clearRect(0, 0, 300, 300);
+            
+            for (let i = 0; i < segments; i++) {
+                const angle = i * arc;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, r, angle, angle + arc);
+                ctx.fillStyle = wheelPrizes[i].color;
+                ctx.fill();
+                ctx.strokeStyle = "#333";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angle + arc / 2);
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 11px Arial";
+                ctx.textAlign = "right";
+                ctx.fillText(wheelPrizes[i].name, r - 10, 4);
+                ctx.restore();
+            }
+            
+            ctx.beginPath();
+            ctx.arc(cx, cy, 20, 0, 2 * Math.PI);
+            ctx.fillStyle = "#222";
+            ctx.fill();
+        }
+        
+        function updateSpinButton(canSpin, nextSpinIn) {
+            const btn = document.getElementById("spinBtn");
+            const timer = document.getElementById("spinTimer");
+            
+            if (canSpin) {
+                btn.disabled = false;
+                btn.textContent = "🎰 SPIN!";
+                timer.textContent = "";
+            } else {
+                btn.disabled = true;
+                btn.textContent = "Come back tomorrow!";
+                if (nextSpinIn) {
+                    const hours = Math.floor(nextSpinIn / 3600);
+                    const mins = Math.floor((nextSpinIn % 3600) / 60);
+                    timer.textContent = "Next spin in: " + hours + "h " + mins + "m";
+                }
+            }
+        }
+        
+        async function spinWheel() {
+            if (isSpinning || !canSpin) return;
+            isSpinning = true;
+            
+            const btn = document.getElementById("spinBtn");
+            btn.disabled = true;
+            btn.textContent = "Spinning...";
+            
+            try {
+                const resp = await fetch("api/daily-spin.php", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" }
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    const segments = wheelPrizes.length;
+                    const segmentAngle = 360 / segments;
+                    const targetAngle = 360 - (data.prizeIndex * segmentAngle + segmentAngle / 2);
+                    const spins = 5;
+                    const totalRotation = spins * 360 + targetAngle + 90;
+                    
+                    const canvas = document.getElementById("wheelCanvas");
+                    canvas.style.transition = "transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)";
+                    canvas.style.transform = "rotate(" + totalRotation + "deg)";
+                    
+                    setTimeout(() => {
+                        document.getElementById("spinResult").classList.add("show");
+                        document.getElementById("prizeName").textContent = "🎉 You won: " + data.prize.name + "!";
+                        if (data.newCoins) userData.coins = data.newCoins;
+                        updateCoinDisplay();
+                        canSpin = false;
+                        updateSpinButton(false, 86400);
+                        isSpinning = false;
+                    }, 4500);
+                } else {
+                    showToast(data.error, "error");
+                    isSpinning = false;
+                    updateSpinButton(false, data.nextSpinIn);
+                }
+            } catch (e) {
+                showToast("Spin failed", "error");
+                isSpinning = false;
+            }
+        }
+
         async function openLootboxBulk(type, count) {
             const costs = { basic: 500, premium: 1500, legendary: 5000 };
             const totalCost = costs[type] * count;
