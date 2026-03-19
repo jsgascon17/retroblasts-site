@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Spin - Sandbox Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        .container { max-width: 600px; margin: 0 auto; text-align: center; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        /* Wheel Container */
+        .wheel-container {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            margin: 30px auto;
+        }
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            box-shadow: 0 0 30px rgba(255,215,0,0.5), inset 0 0 50px rgba(0,0,0,0.3);
+            border: 8px solid #ffd700;
+        }
+        .wheel-segment {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            left: 50%;
+            top: 0;
+            transform-origin: 0% 100%;
+            clip-path: polygon(0 100%, 100% 0, 0 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .wheel-segment span {
+            position: absolute;
+            top: 25%;
+            left: 10%;
+            font-size: 0.65rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            transform: rotate(15deg);
+            max-width: 60px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        /* Pointer */
+        .pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 35px solid #ffd700;
+            z-index: 10;
+            filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5));
+        }
+
+        /* Center */
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border-radius: 50%;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Spin Button */
+        .spin-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: none;
+            padding: 18px 50px;
+            border-radius: 30px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(255,215,0,0.4);
+        }
+        .spin-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(255,215,0,0.6);
+        }
+        .spin-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Timer */
+        .timer {
+            background: rgba(0,0,0,0.4);
+            padding: 15px 30px;
+            border-radius: 15px;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        .timer-label { color: #888; font-size: 0.9rem; }
+        .timer-value { font-size: 1.5rem; color: #ffd700; font-weight: bold; }
+
+        /* Reroll */
+        .reroll-section {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        .reroll-btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .reroll-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Prize Popup */
+        .prize-popup {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .prize-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 4px solid #ffd700;
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            animation: popIn 0.5s ease;
+            max-width: 350px;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+            70% { transform: scale(1.1) rotate(3deg); }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        .prize-icon { font-size: 5rem; margin-bottom: 15px; }
+        .prize-title { color: #ffd700; font-size: 1.8rem; margin-bottom: 10px; }
+        .prize-name { font-size: 1.3rem; margin-bottom: 20px; }
+        .prize-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        /* Prizes List */
+        .prizes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 30px;
+            text-align: left;
+        }
+        .prize-item {
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .prize-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Login prompt */
+        .login-prompt {
+            background: rgba(0,0,0,0.4);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 30px 0;
+        }
+        .login-prompt h3 { color: #ffd700; margin-bottom: 15px; }
+        .login-prompt a {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            padding: 12px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            animation: confettiFall 3s linear forwards;
+        }
+        @keyframes confettiFall {
+            to { top: 110vh; transform: rotate(720deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Daily Spin</h1>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Games</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+            </div>
+        </div>
+
+        <p style="color: #aaa; margin-bottom: 20px;">Spin the wheel once per day for free prizes!</p>
+
+        <div id="loginPrompt" class="login-prompt" style="display: none;">
+            <h3>Log in to spin!</h3>
+            <p>Get free daily prizes including coins, lootboxes, and more!</p>
+            <a href="login.html">Log In</a>
+        </div>
+
+        <div id="gameContent">
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <div class="wheel" id="wheel"></div>
+                <div class="wheel-center">🎰</div>
+            </div>
+
+            <div id="timerSection" class="timer" style="display: none;">
+                <div class="timer-label">Next spin in</div>
+                <div class="timer-value" id="timerValue">--:--:--</div>
+            </div>
+
+            <button class="spin-btn" id="spinBtn" onclick="spin()">SPIN!</button>
+
+            <div class="reroll-section" id="rerollSection" style="display: none;">
+                <div>Don't like your prize? Use a reroll token!</div>
+                <div style="color: #ffd700; margin-top: 5px;">Reroll Tokens: <span id="rerollCount">0</span></div>
+                <button class="reroll-btn" id="rerollBtn" onclick="reroll()">Use Reroll</button>
+            </div>
+
+            <div class="prizes-grid" id="prizesGrid"></div>
+        </div>
+    </div>
+
+    <script>
+    let prizes = [];
+    let canSpin = false;
+    let isSpinning = false;
+    let nextSpinIn = null;
+    let rerollTokens = 0;
+    let lastPrizeIndex = null;
+
+    const prizeIcons = {
+        'coins': '🪙',
+        'lootbox': '📦',
+        'boost': '⚡',
+        'key': '🔑',
+        'consumable': '🎟️',
+        'nothing': '😢'
+    };
+
+    async function init() {
+        try {
+            const resp = await fetch('api/daily-spin.php', { credentials: 'include' });
+            const data = await resp.json();
+
+            if (!data.success) {
+                document.getElementById('loginPrompt').style.display = 'block';
+                document.getElementById('gameContent').style.display = 'none';
+                return;
+            }
+
+            prizes = data.prizes;
+            canSpin = data.canSpin;
+            nextSpinIn = data.nextSpinIn;
+            rerollTokens = data.rerollTokens;
+
+            createWheel();
+            renderPrizesList();
+            updateUI();
+
+            if (!canSpin && nextSpinIn) {
+                startTimer();
+            }
+        } catch (e) {
+            console.error('Failed to init:', e);
+        }
+    }
+
+    function createWheel() {
+        const wheel = document.getElementById('wheel');
+        const segmentAngle = 360 / prizes.length;
+        
+        wheel.innerHTML = prizes.map((prize, i) => {
+            const rotation = i * segmentAngle;
+            return `
+                <div class="wheel-segment" style="
+                    transform: rotate(${rotation}deg);
+                    background: ${prize.color};
+                ">
+                    <span>${prize.name}</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderPrizesList() {
+        document.getElementById('prizesGrid').innerHTML = prizes.map(p => `
+            <div class="prize-item">
+                <div class="prize-dot" style="background: ${p.color}"></div>
+                ${p.name}
+            </div>
+        `).join('');
+    }
+
+    function updateUI() {
+        const spinBtn = document.getElementById('spinBtn');
+        const timerSection = document.getElementById('timerSection');
+        const rerollSection = document.getElementById('rerollSection');
+
+        spinBtn.disabled = !canSpin || isSpinning;
+        spinBtn.textContent = isSpinning ? 'SPINNING...' : (canSpin ? 'SPIN!' : 'COME BACK TOMORROW');
+        
+        timerSection.style.display = canSpin ? 'none' : 'inline-block';
+        
+        document.getElementById('rerollCount').textContent = rerollTokens;
+        rerollSection.style.display = (lastPrizeIndex !== null && rerollTokens > 0) ? 'block' : 'none';
+        document.getElementById('rerollBtn').disabled = rerollTokens < 1;
+    }
+
+    function startTimer() {
+        let remaining = nextSpinIn;
+        
+        const update = () => {
+            if (remaining <= 0) {
+                canSpin = true;
+                updateUI();
+                return;
+            }
+
+            const hours = Math.floor(remaining / 3600);
+            const mins = Math.floor((remaining % 3600) / 60);
+            const secs = remaining % 60;
+            
+            document.getElementById('timerValue').textContent = 
+                `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            
+            remaining--;
+            setTimeout(update, 1000);
+        };
+        
+        update();
+    }
+
+    async function spin() {
+        if (!canSpin || isSpinning) return;
+        
+        isSpinning = true;
+        updateUI();
+
+        try {
+            const resp = await fetch('api/daily-spin.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'spin' })
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                await animateWheel(data.prizeIndex);
+                lastPrizeIndex = data.prizeIndex;
+                rerollTokens = data.rerollTokens;
+                showPrize(data.prize);
+                canSpin = false;
+                
+                // Start timer for next day
+                nextSpinIn = 24 * 60 * 60;
+                startTimer();
+            } else {
+                alert(data.error || 'Failed to spin');
+            }
+        } catch (e) {
+            alert('Error spinning wheel');
+        }
+
+        isSpinning = false;
+        updateUI();
+    }
+
+    async function reroll() {
+        if (rerollTokens < 1 || isSpinning) return;
+
+        isSpinning = true;
+        updateUI();
+
+        try {
+            const resp = await fetch('api/daily-spin.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'reroll' })
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                await animateWheel(data.prizeIndex);
+                lastPrizeIndex = data.prizeIndex;
+                rerollTokens = data.rerollTokens;
+                showPrize(data.prize);
+            } else {
+                alert(data.error || 'Failed to reroll');
+            }
+        } catch (e) {
+            alert('Error rerolling');
+        }
+
+        isSpinning = false;
+        updateUI();
+    }
+
+    function animateWheel(prizeIndex) {
+        return new Promise(resolve => {
+            const wheel = document.getElementById('wheel');
+            const segmentAngle = 360 / prizes.length;
+            
+            // Calculate winning position
+            const targetAngle = 360 - (prizeIndex * segmentAngle) - (segmentAngle / 2);
+            const spins = 5 + Math.random() * 3;
+            const totalRotation = (spins * 360) + targetAngle;
+            
+            wheel.style.transform = `rotate(${totalRotation}deg)`;
+            
+            setTimeout(resolve, 4000);
+        });
+    }
+
+    function showPrize(prize) {
+        createConfetti();
+        
+        const icon = prizeIcons[prize.type] || '🎁';
+        
+        const popup = document.createElement('div');
+        popup.className = 'prize-popup';
+        popup.innerHTML = `
+            <div class="prize-content">
+                <div class="prize-icon">${icon}</div>
+                <div class="prize-title">${prize.type === 'nothing' ? 'Better luck next time!' : 'You Won!'}</div>
+                <div class="prize-name">${prize.name}</div>
+                <button class="prize-btn" onclick="this.closest('.prize-popup').remove()">
+                    ${prize.type === 'nothing' ? 'Try Tomorrow' : 'Collect!'}
+                </button>
+            </div>
+        `;
+        document.body.appendChild(popup);
+    }
+
+    function createConfetti() {
+        const colors = ['#ffd700', '#ff6b6b', '#4ade80', '#60a5fa', '#f472b6', '#a855f7'];
+        
+        for (let i = 0; i < 50; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 4000);
+            }, i * 30);
+        }
+    }
+
+    init();
+    </script>
+</body>
+</html>

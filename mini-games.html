@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini-Games - Sandbox Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        .subtitle {
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Mini Game Cards */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .game-card {
+            background: rgba(0,0,0,0.4);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .game-card:hover {
+            border-color: #ffd700;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255,215,0,0.2);
+        }
+        .game-card .icon { font-size: 4rem; margin-bottom: 15px; }
+        .game-card .name { font-size: 1.3rem; font-weight: bold; margin-bottom: 8px; }
+        .game-card .desc { color: #888; font-size: 0.9rem; margin-bottom: 15px; }
+        .game-card .reward {
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+
+        /* Game Modal */
+        .game-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .game-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid #ffd700;
+            border-radius: 25px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        .game-content h2 { color: #ffd700; margin-bottom: 20px; }
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Reaction Time Game */
+        .reaction-box {
+            width: 100%;
+            height: 200px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.1s;
+            margin-bottom: 20px;
+        }
+        .reaction-box.waiting { background: #ef4444; }
+        .reaction-box.ready { background: #22c55e; }
+        .reaction-box.done { background: #3b82f6; }
+
+        /* Memory Game */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .memory-card {
+            aspect-ratio: 1;
+            background: #ffd700;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .memory-card.hidden { background: #334155; }
+        .memory-card.matched { background: #22c55e; }
+
+        /* Click Speed Game */
+        .click-area {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            margin-bottom: 20px;
+        }
+        .click-area:active { transform: scale(0.98); }
+
+        /* Color Match Game */
+        .color-display {
+            padding: 30px;
+            border-radius: 15px;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .color-btn {
+            padding: 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        /* Math Speed Game */
+        .math-problem {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+        .math-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .math-btn {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .math-btn:hover { border-color: #ffd700; }
+
+        /* Aim Trainer */
+        .aim-area {
+            width: 100%;
+            height: 300px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .target {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: #ef4444;
+            border-radius: 50%;
+            cursor: crosshair;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            animation: pulse 0.5s ease infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Score Display */
+        .score-display {
+            background: rgba(0,0,0,0.4);
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .score-display .label { color: #888; font-size: 0.9rem; }
+        .score-display .value { font-size: 2rem; color: #ffd700; font-weight: bold; }
+
+        /* Play Button */
+        .play-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .play-btn:hover { transform: scale(1.05); }
+
+        /* Result */
+        .result {
+            background: rgba(34, 197, 94, 0.2);
+            border: 2px solid #22c55e;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        .result h3 { color: #22c55e; margin-bottom: 10px; }
+        .result .coins { color: #ffd700; font-size: 1.3rem; }
+
+        /* Timer */
+        .timer {
+            font-size: 2rem;
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Mini-Games</h1>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Games</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+            </div>
+        </div>
+
+        <p class="subtitle">Quick games to earn bonus coins! Play each once per day.</p>
+
+        <div class="games-grid">
+            <div class="game-card" onclick="openGame('reaction')">
+                <div class="icon">⚡</div>
+                <div class="name">Reaction Time</div>
+                <div class="desc">Click as fast as you can when the screen turns green!</div>
+                <div class="reward">Up to 50 coins</div>
+            </div>
+
+            <div class="game-card" onclick="openGame('memory')">
+                <div class="icon">🧠</div>
+                <div class="name">Memory Match</div>
+                <div class="desc">Find all matching pairs before time runs out!</div>
+                <div class="reward">Up to 75 coins</div>
+            </div>
+
+            <div class="game-card" onclick="openGame('clicker')">
+                <div class="icon">👆</div>
+                <div class="name">Click Speed</div>
+                <div class="desc">How many clicks in 10 seconds?</div>
+                <div class="reward">Up to 50 coins</div>
+            </div>
+
+            <div class="game-card" onclick="openGame('color')">
+                <div class="icon">🎨</div>
+                <div class="name">Color Match</div>
+                <div class="desc">Match the color, not the word!</div>
+                <div class="reward">Up to 60 coins</div>
+            </div>
+
+            <div class="game-card" onclick="openGame('math')">
+                <div class="icon">🔢</div>
+                <div class="name">Math Speed</div>
+                <div class="desc">Solve equations as fast as you can!</div>
+                <div class="reward">Up to 80 coins</div>
+            </div>
+
+            <div class="game-card" onclick="openGame('aim')">
+                <div class="icon">🎯</div>
+                <div class="name">Aim Trainer</div>
+                <div class="desc">Click 20 targets as fast as possible!</div>
+                <div class="reward">Up to 70 coins</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let currentGame = null;
+    let gameState = {};
+
+    function openGame(type) {
+        currentGame = type;
+        
+        const modal = document.createElement('div');
+        modal.className = 'game-modal';
+        modal.id = 'gameModal';
+        
+        let content = '';
+        
+        switch(type) {
+            case 'reaction':
+                content = `
+                    <h2>⚡ Reaction Time</h2>
+                    <p style="color: #aaa; margin-bottom: 20px;">Click when the box turns GREEN!</p>
+                    <div class="reaction-box waiting" id="reactionBox" onclick="handleReaction()">
+                        Wait for green...
+                    </div>
+                    <button class="play-btn" onclick="startReaction()">Start</button>
+                    <div id="reactionResult"></div>
+                `;
+                break;
+                
+            case 'memory':
+                content = `
+                    <h2>🧠 Memory Match</h2>
+                    <div class="timer" id="memoryTimer">30</div>
+                    <div class="memory-grid" id="memoryGrid"></div>
+                    <button class="play-btn" onclick="startMemory()">Start</button>
+                    <div id="memoryResult"></div>
+                `;
+                break;
+                
+            case 'clicker':
+                content = `
+                    <h2>👆 Click Speed</h2>
+                    <div class="timer" id="clickTimer">10</div>
+                    <div class="click-area" id="clickArea" onclick="handleClick()">0</div>
+                    <button class="play-btn" onclick="startClicker()">Start</button>
+                    <div id="clickerResult"></div>
+                `;
+                break;
+                
+            case 'color':
+                content = `
+                    <h2>🎨 Color Match</h2>
+                    <p style="color: #aaa; margin-bottom: 15px;">Click the COLOR the word is displayed in!</p>
+                    <div class="score-display">
+                        <div class="label">Score</div>
+                        <div class="value" id="colorScore">0</div>
+                    </div>
+                    <div class="color-display" id="colorDisplay">READY</div>
+                    <div class="color-options" id="colorOptions"></div>
+                    <button class="play-btn" onclick="startColor()" id="colorStartBtn">Start</button>
+                    <div id="colorResult"></div>
+                `;
+                break;
+                
+            case 'math':
+                content = `
+                    <h2>🔢 Math Speed</h2>
+                    <div class="timer" id="mathTimer">30</div>
+                    <div class="score-display">
+                        <div class="label">Correct</div>
+                        <div class="value" id="mathScore">0</div>
+                    </div>
+                    <div class="math-problem" id="mathProblem">?</div>
+                    <div class="math-options" id="mathOptions"></div>
+                    <button class="play-btn" onclick="startMath()" id="mathStartBtn">Start</button>
+                    <div id="mathResult"></div>
+                `;
+                break;
+                
+            case 'aim':
+                content = `
+                    <h2>🎯 Aim Trainer</h2>
+                    <div class="score-display">
+                        <div class="label">Targets: <span id="aimCount">0</span>/20</div>
+                        <div class="value" id="aimTime">0.00s</div>
+                    </div>
+                    <div class="aim-area" id="aimArea"></div>
+                    <button class="play-btn" onclick="startAim()">Start</button>
+                    <div id="aimResult"></div>
+                `;
+                break;
+        }
+        
+        modal.innerHTML = `
+            <div class="game-content">
+                <button class="close-btn" onclick="closeGame()">×</button>
+                ${content}
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    }
+
+    function closeGame() {
+        const modal = document.getElementById('gameModal');
+        if (modal) modal.remove();
+        gameState = {};
+    }
+
+    // REACTION TIME
+    function startReaction() {
+        const box = document.getElementById('reactionBox');
+        box.className = 'reaction-box waiting';
+        box.textContent = 'Wait for green...';
+        gameState.reactionStarted = false;
+        
+        const delay = 2000 + Math.random() * 3000;
+        gameState.reactionTimeout = setTimeout(() => {
+            box.className = 'reaction-box ready';
+            box.textContent = 'CLICK NOW!';
+            gameState.reactionStart = Date.now();
+            gameState.reactionStarted = true;
+        }, delay);
+    }
+
+    function handleReaction() {
+        const box = document.getElementById('reactionBox');
+        
+        if (!gameState.reactionStarted) {
+            clearTimeout(gameState.reactionTimeout);
+            box.className = 'reaction-box done';
+            box.textContent = 'Too early! Try again.';
+            return;
+        }
+        
+        const time = Date.now() - gameState.reactionStart;
+        box.className = 'reaction-box done';
+        box.textContent = `${time}ms`;
+        
+        let coins = 0;
+        if (time < 200) coins = 50;
+        else if (time < 250) coins = 40;
+        else if (time < 300) coins = 30;
+        else if (time < 400) coins = 20;
+        else coins = 10;
+        
+        showResult('reactionResult', time < 200 ? 'Lightning Fast!' : 'Good reflexes!', coins);
+        awardCoins(coins);
+    }
+
+    // MEMORY MATCH
+    function startMemory() {
+        const emojis = ['🎮', '🎲', '🎯', '🏆', '⭐', '🔥', '💎', '🎪'];
+        const cards = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+        
+        const grid = document.getElementById('memoryGrid');
+        grid.innerHTML = cards.map((emoji, i) => 
+            `<div class="memory-card hidden" data-index="${i}" data-emoji="${emoji}" onclick="flipCard(this)">?</div>`
+        ).join('');
+        
+        gameState.memoryMatched = 0;
+        gameState.memoryFirst = null;
+        gameState.memoryLocked = false;
+        gameState.memoryTime = 30;
+        
+        gameState.memoryInterval = setInterval(() => {
+            gameState.memoryTime--;
+            document.getElementById('memoryTimer').textContent = gameState.memoryTime;
+            if (gameState.memoryTime <= 0) {
+                clearInterval(gameState.memoryInterval);
+                endMemory(false);
+            }
+        }, 1000);
+    }
+
+    function flipCard(card) {
+        if (gameState.memoryLocked || card.classList.contains('matched') || card === gameState.memoryFirst) return;
+        
+        card.classList.remove('hidden');
+        card.textContent = card.dataset.emoji;
+        
+        if (!gameState.memoryFirst) {
+            gameState.memoryFirst = card;
+        } else {
+            gameState.memoryLocked = true;
+            
+            if (gameState.memoryFirst.dataset.emoji === card.dataset.emoji) {
+                gameState.memoryFirst.classList.add('matched');
+                card.classList.add('matched');
+                gameState.memoryMatched++;
+                gameState.memoryFirst = null;
+                gameState.memoryLocked = false;
+                
+                if (gameState.memoryMatched === 8) {
+                    clearInterval(gameState.memoryInterval);
+                    endMemory(true);
+                }
+            } else {
+                setTimeout(() => {
+                    gameState.memoryFirst.classList.add('hidden');
+                    gameState.memoryFirst.textContent = '?';
+                    card.classList.add('hidden');
+                    card.textContent = '?';
+                    gameState.memoryFirst = null;
+                    gameState.memoryLocked = false;
+                }, 800);
+            }
+        }
+    }
+
+    function endMemory(won) {
+        let coins = won ? Math.max(25, 75 - (30 - gameState.memoryTime) * 2) : 10;
+        showResult('memoryResult', won ? `Completed in ${30 - gameState.memoryTime}s!` : 'Time\'s up!', coins);
+        awardCoins(coins);
+    }
+
+    // CLICK SPEED
+    function startClicker() {
+        gameState.clicks = 0;
+        gameState.clickTime = 10;
+        const area = document.getElementById('clickArea');
+        area.textContent = '0';
+        
+        gameState.clickInterval = setInterval(() => {
+            gameState.clickTime--;
+            document.getElementById('clickTimer').textContent = gameState.clickTime;
+            if (gameState.clickTime <= 0) {
+                clearInterval(gameState.clickInterval);
+                endClicker();
+            }
+        }, 1000);
+    }
+
+    function handleClick() {
+        if (gameState.clickTime > 0) {
+            gameState.clicks++;
+            document.getElementById('clickArea').textContent = gameState.clicks;
+        }
+    }
+
+    function endClicker() {
+        const cps = (gameState.clicks / 10).toFixed(1);
+        let coins = Math.min(50, Math.floor(gameState.clicks / 2));
+        showResult('clickerResult', `${cps} clicks/second!`, coins);
+        awardCoins(coins);
+    }
+
+    // COLOR MATCH
+    const colors = [
+        { name: 'RED', hex: '#ef4444' },
+        { name: 'BLUE', hex: '#3b82f6' },
+        { name: 'GREEN', hex: '#22c55e' },
+        { name: 'YELLOW', hex: '#fbbf24' }
+    ];
+
+    function startColor() {
+        gameState.colorScore = 0;
+        gameState.colorRounds = 0;
+        document.getElementById('colorStartBtn').style.display = 'none';
+        nextColorRound();
+    }
+
+    function nextColorRound() {
+        if (gameState.colorRounds >= 10) {
+            endColor();
+            return;
+        }
+        
+        const wordColor = colors[Math.floor(Math.random() * colors.length)];
+        const displayColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        const display = document.getElementById('colorDisplay');
+        display.textContent = wordColor.name;
+        display.style.background = displayColor.hex;
+        display.style.color = '#fff';
+        
+        gameState.correctColor = displayColor.name;
+        
+        const shuffled = [...colors].sort(() => Math.random() - 0.5);
+        document.getElementById('colorOptions').innerHTML = shuffled.map(c => 
+            `<button class="color-btn" style="background: ${c.hex}" onclick="checkColor('${c.name}')">${c.name}</button>`
+        ).join('');
+        
+        gameState.colorRounds++;
+    }
+
+    function checkColor(selected) {
+        if (selected === gameState.correctColor) {
+            gameState.colorScore++;
+            document.getElementById('colorScore').textContent = gameState.colorScore;
+        }
+        nextColorRound();
+    }
+
+    function endColor() {
+        let coins = gameState.colorScore * 6;
+        showResult('colorResult', `${gameState.colorScore}/10 correct!`, coins);
+        awardCoins(coins);
+        document.getElementById('colorOptions').innerHTML = '';
+        document.getElementById('colorDisplay').textContent = 'DONE';
+    }
+
+    // MATH SPEED
+    function startMath() {
+        gameState.mathScore = 0;
+        gameState.mathTime = 30;
+        document.getElementById('mathStartBtn').style.display = 'none';
+        
+        gameState.mathInterval = setInterval(() => {
+            gameState.mathTime--;
+            document.getElementById('mathTimer').textContent = gameState.mathTime;
+            if (gameState.mathTime <= 0) {
+                clearInterval(gameState.mathInterval);
+                endMath();
+            }
+        }, 1000);
+        
+        nextMathProblem();
+    }
+
+    function nextMathProblem() {
+        const ops = ['+', '-', '×'];
+        const op = ops[Math.floor(Math.random() * ops.length)];
+        let a, b, answer;
+        
+        if (op === '+') {
+            a = Math.floor(Math.random() * 50) + 1;
+            b = Math.floor(Math.random() * 50) + 1;
+            answer = a + b;
+        } else if (op === '-') {
+            a = Math.floor(Math.random() * 50) + 20;
+            b = Math.floor(Math.random() * 20) + 1;
+            answer = a - b;
+        } else {
+            a = Math.floor(Math.random() * 12) + 1;
+            b = Math.floor(Math.random() * 12) + 1;
+            answer = a * b;
+        }
+        
+        gameState.mathAnswer = answer;
+        document.getElementById('mathProblem').textContent = `${a} ${op} ${b}`;
+        
+        const wrongAnswers = [
+            answer + Math.floor(Math.random() * 10) + 1,
+            answer - Math.floor(Math.random() * 10) - 1,
+            answer + Math.floor(Math.random() * 5) * (Math.random() > 0.5 ? 1 : -1)
+        ].filter(n => n !== answer && n > 0);
+        
+        const options = [answer, ...wrongAnswers.slice(0, 3)].sort(() => Math.random() - 0.5);
+        document.getElementById('mathOptions').innerHTML = options.map(n => 
+            `<button class="math-btn" onclick="checkMath(${n})">${n}</button>`
+        ).join('');
+    }
+
+    function checkMath(selected) {
+        if (selected === gameState.mathAnswer) {
+            gameState.mathScore++;
+            document.getElementById('mathScore').textContent = gameState.mathScore;
+        }
+        nextMathProblem();
+    }
+
+    function endMath() {
+        let coins = Math.min(80, gameState.mathScore * 5);
+        showResult('mathResult', `${gameState.mathScore} correct!`, coins);
+        awardCoins(coins);
+        document.getElementById('mathOptions').innerHTML = '';
+        document.getElementById('mathProblem').textContent = 'Done!';
+    }
+
+    // AIM TRAINER
+    function startAim() {
+        gameState.aimHits = 0;
+        gameState.aimStart = Date.now();
+        document.getElementById('aimCount').textContent = '0';
+        spawnTarget();
+    }
+
+    function spawnTarget() {
+        const area = document.getElementById('aimArea');
+        area.innerHTML = '';
+        
+        if (gameState.aimHits >= 20) {
+            endAim();
+            return;
+        }
+        
+        const target = document.createElement('div');
+        target.className = 'target';
+        target.textContent = '🎯';
+        target.style.left = (Math.random() * (area.offsetWidth - 50)) + 'px';
+        target.style.top = (Math.random() * (area.offsetHeight - 50)) + 'px';
+        target.onclick = () => {
+            gameState.aimHits++;
+            document.getElementById('aimCount').textContent = gameState.aimHits;
+            const elapsed = ((Date.now() - gameState.aimStart) / 1000).toFixed(2);
+            document.getElementById('aimTime').textContent = elapsed + 's';
+            spawnTarget();
+        };
+        area.appendChild(target);
+    }
+
+    function endAim() {
+        const time = (Date.now() - gameState.aimStart) / 1000;
+        let coins = Math.max(20, Math.floor(70 - time));
+        showResult('aimResult', `${time.toFixed(2)} seconds!`, coins);
+        awardCoins(coins);
+    }
+
+    // HELPERS
+    function showResult(elementId, message, coins) {
+        document.getElementById(elementId).innerHTML = `
+            <div class="result">
+                <h3>${message}</h3>
+                <div class="coins">+${coins} coins!</div>
+            </div>
+        `;
+    }
+
+    async function awardCoins(coins) {
+        try {
+            await fetch('api/add-coins.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ coins, source: 'minigame' })
+            });
+        } catch (e) {
+            console.log('Could not save coins');
+        }
+    }
+    </script>
+</body>
+</html>

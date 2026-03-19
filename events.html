@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events - Sandbox Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        /* Current Event Banner */
+        .current-event {
+            background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,140,0,0.1));
+            border: 3px solid #ffd700;
+            border-radius: 25px;
+            padding: 35px;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .current-event::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        .current-event .content { position: relative; z-index: 1; }
+        .event-badge {
+            display: inline-block;
+            background: #ffd700;
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .event-icon { font-size: 5rem; margin-bottom: 15px; }
+        .event-name { font-size: 2.2rem; font-weight: bold; color: #ffd700; margin-bottom: 10px; }
+        .event-dates { color: #aaa; margin-bottom: 20px; }
+        
+        .bonuses {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin: 25px 0;
+        }
+        .bonus-item {
+            background: rgba(0,0,0,0.4);
+            padding: 20px 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .bonus-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4ade80;
+        }
+        .bonus-label { color: #888; font-size: 0.9rem; margin-top: 5px; }
+
+        .event-achievements {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .event-achievements h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+        .achievement-list {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .achievement-badge {
+            background: rgba(0,0,0,0.4);
+            padding: 15px 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .achievement-badge .icon { font-size: 1.8rem; }
+        .achievement-badge .info { text-align: left; }
+        .achievement-badge .name { font-weight: bold; }
+        .achievement-badge .desc { color: #888; font-size: 0.8rem; }
+        .achievement-badge .xp { color: #ffd700; font-size: 0.8rem; }
+
+        /* No Event */
+        .no-event {
+            background: rgba(0,0,0,0.4);
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .no-event .icon { font-size: 4rem; margin-bottom: 20px; opacity: 0.5; }
+        .no-event h2 { color: #888; margin-bottom: 10px; }
+
+        /* Upcoming Events */
+        .section-title {
+            font-size: 1.5rem;
+            color: #ffd700;
+            margin: 30px 0 20px;
+        }
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .event-card {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        .event-card:hover {
+            border-color: rgba(255,215,0,0.3);
+            transform: translateY(-3px);
+        }
+        .event-card.active {
+            border-color: #ffd700;
+            background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(0,0,0,0.4));
+        }
+        .event-card .card-icon { font-size: 3rem; margin-bottom: 15px; }
+        .event-card .card-name { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; }
+        .event-card .card-dates { color: #888; font-size: 0.85rem; margin-bottom: 15px; }
+        .event-card .card-bonuses {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .event-card .mini-bonus {
+            background: rgba(255,255,255,0.1);
+            padding: 5px 12px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+        .event-card .mini-bonus.xp { color: #a78bfa; }
+        .event-card .mini-bonus.coins { color: #ffd700; }
+        .event-card .active-badge {
+            background: #22c55e;
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        /* Calendar View */
+        .calendar-hint {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 30px;
+            text-align: center;
+            color: #888;
+        }
+        .calendar-hint h3 { color: #ffd700; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Seasonal Events</h1>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Games</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+            </div>
+        </div>
+
+        <div id="currentEventSection">
+            <!-- Populated by JS -->
+        </div>
+
+        <h2 class="section-title">All Events</h2>
+        <div class="events-grid" id="eventsGrid">
+            <!-- Populated by JS -->
+        </div>
+
+        <div class="calendar-hint">
+            <h3>Event Calendar</h3>
+            <p>Events run during specific times of the year. Check back during holidays for special bonuses!</p>
+        </div>
+    </div>
+
+    <script>
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+
+    async function init() {
+        await Promise.all([loadCurrentEvent(), loadAllEvents()]);
+    }
+
+    async function loadCurrentEvent() {
+        try {
+            const resp = await fetch('api/events.php?action=current');
+            const data = await resp.json();
+
+            const section = document.getElementById('currentEventSection');
+
+            if (data.success && data.hasEvent) {
+                const event = data.event;
+                const achieveResp = await fetch('api/events.php?action=achievements');
+                const achieveData = await achieveResp.json();
+
+                const endDate = `${monthNames[event.endMonth - 1]} ${event.endDay}`;
+
+                section.innerHTML = `
+                    <div class="current-event">
+                        <div class="content">
+                            <span class="event-badge">ACTIVE NOW</span>
+                            <div class="event-icon">${event.icon}</div>
+                            <div class="event-name">${event.name}</div>
+                            <div class="event-dates">Ends ${endDate}</div>
+                            
+                            <div class="bonuses">
+                                <div class="bonus-item">
+                                    <div class="bonus-value">${event.xpMultiplier}x</div>
+                                    <div class="bonus-label">XP Multiplier</div>
+                                </div>
+                                <div class="bonus-item">
+                                    <div class="bonus-value">${event.coinMultiplier}x</div>
+                                    <div class="bonus-label">Coin Multiplier</div>
+                                </div>
+                            </div>
+
+                            ${achieveData.achievements && achieveData.achievements.length > 0 ? `
+                                <div class="event-achievements">
+                                    <h3>Event Achievements</h3>
+                                    <div class="achievement-list">
+                                        ${achieveData.achievements.map(a => `
+                                            <div class="achievement-badge">
+                                                <div class="icon">${a.icon}</div>
+                                                <div class="info">
+                                                    <div class="name">${a.name}</div>
+                                                    <div class="desc">${a.desc}</div>
+                                                    <div class="xp">+${a.xp} XP</div>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            } else {
+                section.innerHTML = `
+                    <div class="no-event">
+                        <div class="icon">📅</div>
+                        <h2>No Active Event</h2>
+                        <p>Check back during holidays for special events with bonus XP and coins!</p>
+                    </div>
+                `;
+            }
+        } catch (e) {
+            console.error('Failed to load current event:', e);
+        }
+    }
+
+    async function loadAllEvents() {
+        try {
+            const resp = await fetch('api/events.php?action=all');
+            const data = await resp.json();
+
+            if (data.success && data.events) {
+                const currentResp = await fetch('api/events.php?action=current');
+                const currentData = await currentResp.json();
+                const activeId = currentData.hasEvent ? currentData.event.id : null;
+
+                const grid = document.getElementById('eventsGrid');
+                grid.innerHTML = data.events.map(event => {
+                    const isActive = event.id === activeId;
+                    const startDate = `${monthNames[event.startMonth - 1]} ${event.startDay}`;
+                    const endDate = `${monthNames[event.endMonth - 1]} ${event.endDay}`;
+
+                    return `
+                        <div class="event-card ${isActive ? 'active' : ''}">
+                            <div class="card-icon">${event.icon}</div>
+                            <div class="card-name">
+                                ${event.name}
+                                ${isActive ? '<span class="active-badge">ACTIVE</span>' : ''}
+                            </div>
+                            <div class="card-dates">${startDate} - ${endDate}</div>
+                            <div class="card-bonuses">
+                                <span class="mini-bonus xp">${event.xpMultiplier}x XP</span>
+                                <span class="mini-bonus coins">${event.coinMultiplier}x Coins</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        } catch (e) {
+            console.error('Failed to load events:', e);
+        }
+    }
+
+    init();
+    </script>
+</body>
+</html>

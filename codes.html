@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Codes - Sandbox Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        /* Code Input Section */
+        .code-section {
+            background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(0,0,0,0.4));
+            border: 3px solid #ffd700;
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .code-icon { font-size: 4rem; margin-bottom: 20px; }
+        .code-title { font-size: 1.5rem; color: #ffd700; margin-bottom: 10px; }
+        .code-desc { color: #aaa; margin-bottom: 25px; }
+
+        .code-form {
+            display: flex;
+            gap: 10px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .code-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            background: rgba(0,0,0,0.4);
+            color: #fff;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+        .code-input:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+        .code-input::placeholder {
+            text-transform: none;
+            letter-spacing: normal;
+        }
+        .redeem-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .redeem-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+        .redeem-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Result Message */
+        .result-message {
+            margin-top: 20px;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-weight: bold;
+            display: none;
+        }
+        .result-message.success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 2px solid #22c55e;
+            color: #22c55e;
+        }
+        .result-message.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            color: #ef4444;
+        }
+
+        /* Info Cards */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .info-card {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        .info-card h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-card p { color: #aaa; font-size: 0.9rem; line-height: 1.5; }
+        .info-card ul {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        .info-card li { margin-bottom: 5px; }
+
+        /* Redeemed History */
+        .history-section {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 25px;
+        }
+        .history-section h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+        .history-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .history-item {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+            color: #22c55e;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .empty-history {
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Login Prompt */
+        .login-prompt {
+            background: rgba(0,0,0,0.4);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+        }
+        .login-prompt h3 { color: #ffd700; margin-bottom: 15px; }
+        .login-prompt a {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            padding: 12px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        /* Reward Animation */
+        .reward-popup {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .reward-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 4px solid #22c55e;
+            border-radius: 25px;
+            padding: 50px;
+            text-align: center;
+            animation: popIn 0.5s ease;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .reward-content .icon { font-size: 5rem; margin-bottom: 20px; }
+        .reward-content h2 { color: #22c55e; margin-bottom: 10px; }
+        .reward-content .reward { font-size: 1.5rem; color: #ffd700; margin-bottom: 20px; }
+        .reward-content button {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Lucky Codes</h1>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Games</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+            </div>
+        </div>
+
+        <div id="loginPrompt" class="login-prompt" style="display: none;">
+            <h3>Log in to redeem codes!</h3>
+            <p>Enter special codes to get free coins, lootboxes, and more!</p>
+            <a href="login.html">Log In</a>
+        </div>
+
+        <div id="mainContent">
+            <div class="code-section">
+                <div class="code-icon">🎟️</div>
+                <div class="code-title">Enter a Code</div>
+                <div class="code-desc">Find codes on our social media, in game updates, and special events!</div>
+                
+                <form class="code-form" onsubmit="redeemCode(event)">
+                    <input type="text" class="code-input" id="codeInput" placeholder="ENTER CODE" maxlength="20" autocomplete="off">
+                    <button type="submit" class="redeem-btn" id="redeemBtn">Redeem</button>
+                </form>
+
+                <div class="result-message" id="resultMessage"></div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>🔍 Where to Find Codes</h3>
+                    <ul>
+                        <li>News announcements</li>
+                        <li>Special events</li>
+                        <li>Social media posts</li>
+                        <li>Game updates</li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <h3>🎁 Possible Rewards</h3>
+                    <ul>
+                        <li>Free coins</li>
+                        <li>Bonus XP</li>
+                        <li>Lootboxes</li>
+                        <li>Special keys</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="history-section">
+                <h3>Your Redeemed Codes</h3>
+                <div class="history-list" id="historyList">
+                    <span class="empty-history">No codes redeemed yet</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let isLoggedIn = false;
+
+    async function init() {
+        try {
+            const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+            const data = await resp.json();
+            isLoggedIn = data.success && data.loggedIn;
+
+            if (!isLoggedIn) {
+                document.getElementById('loginPrompt').style.display = 'block';
+                document.getElementById('mainContent').style.display = 'none';
+            } else {
+                loadHistory();
+            }
+        } catch (e) {
+            console.error('Failed to check login:', e);
+        }
+    }
+
+    async function loadHistory() {
+        try {
+            const resp = await fetch('api/codes.php?action=history', { credentials: 'include' });
+            const data = await resp.json();
+
+            if (data.success && data.redeemedCodes && data.redeemedCodes.length > 0) {
+                document.getElementById('historyList').innerHTML = data.redeemedCodes.map(code => 
+                    `<span class="history-item">${code}</span>`
+                ).join('');
+            }
+        } catch (e) {
+            console.error('Failed to load history:', e);
+        }
+    }
+
+    async function redeemCode(e) {
+        e.preventDefault();
+
+        const input = document.getElementById('codeInput');
+        const code = input.value.trim();
+        const resultMsg = document.getElementById('resultMessage');
+        const btn = document.getElementById('redeemBtn');
+
+        if (!code) {
+            showResult('Please enter a code', false);
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Checking...';
+
+        try {
+            const resp = await fetch('api/codes.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'redeem', code })
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                showRewardPopup(data.reward);
+                input.value = '';
+                loadHistory();
+            } else {
+                showResult(data.error || 'Failed to redeem code', false);
+            }
+        } catch (e) {
+            showResult('Error redeeming code', false);
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Redeem';
+    }
+
+    function showResult(message, isSuccess) {
+        const resultMsg = document.getElementById('resultMessage');
+        resultMsg.textContent = message;
+        resultMsg.className = 'result-message ' + (isSuccess ? 'success' : 'error');
+        resultMsg.style.display = 'block';
+
+        setTimeout(() => {
+            resultMsg.style.display = 'none';
+        }, 4000);
+    }
+
+    function showRewardPopup(reward) {
+        const popup = document.createElement('div');
+        popup.className = 'reward-popup';
+        popup.innerHTML = `
+            <div class="reward-content">
+                <div class="icon">🎉</div>
+                <h2>Code Redeemed!</h2>
+                <div class="reward">${reward}</div>
+                <button onclick="this.closest('.reward-popup').remove()">Awesome!</button>
+            </div>
+        `;
+        document.body.appendChild(popup);
+
+        // Create confetti
+        createConfetti();
+    }
+
+    function createConfetti() {
+        const colors = ['#ffd700', '#22c55e', '#60a5fa', '#f472b6', '#a855f7'];
+        for (let i = 0; i < 30; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.style.cssText = `
+                    position: fixed;
+                    width: 10px;
+                    height: 10px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    top: -10px;
+                    left: ${Math.random() * 100}vw;
+                    border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
+                    animation: confettiFall 3s linear forwards;
+                `;
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 3000);
+            }, i * 50);
+        }
+
+        // Add keyframes if not exists
+        if (!document.getElementById('confettiStyles')) {
+            const style = document.createElement('style');
+            style.id = 'confettiStyles';
+            style.textContent = `
+                @keyframes confettiFall {
+                    to { top: 110vh; transform: rotate(720deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    init();
+    </script>
+</body>
+</html>
