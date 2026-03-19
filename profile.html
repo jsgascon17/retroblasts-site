@@ -267,8 +267,9 @@
             { level: 100, title: 'Arcade God' }
         ];
 
-        let playerName = localStorage.getItem('arcadePlayerName') || 'Player';
-        let stats = JSON.parse(localStorage.getItem('arcadeStats')) || {
+        // Initialize with defaults - will be overwritten by server data if logged in
+        let playerName = 'Player';
+        let stats = {
             totalGamesPlayed: 0,
             totalTimePlayed: 0,
             totalCoinsEarned: 0,
@@ -276,8 +277,74 @@
             achievements: [],
             secretCodesFound: 0
         };
+        let serverXP = 0; // XP from server for accurate level calculation
+        let isLoggedIn = false;
+
+        // Load user data from server (priority) or localStorage (fallback for guests)
+        async function loadUserData() {
+            try {
+                const response = await fetch('api/auth.php?action=check', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.success && data.loggedIn && data.user) {
+                    isLoggedIn = true;
+                    const user = data.user;
+
+                    // Use server data
+                    playerName = user.displayName || user.username;
+                    serverXP = user.xp || 0;
+
+                    // Map server stats to our stats object
+                    stats = {
+                        totalGamesPlayed: user.stats?.totalGamesPlayed || 0,
+                        totalTimePlayed: user.stats?.totalTimePlayed || 0,
+                        totalCoinsEarned: user.coins || 0,
+                        games: user.stats?.games || {},
+                        achievements: user.achievements || [],
+                        secretCodesFound: user.stats?.secretCodesFound || 0
+                    };
+
+                    // Set avatar from server
+                    if (user.avatar) {
+                        document.getElementById('avatar').textContent = user.avatar;
+                        currentAvatar = user.avatar;
+                    }
+
+                    console.log('Loaded profile from server:', user.username, 'XP:', serverXP, 'Level:', calculateLevel());
+                } else {
+                    // Not logged in - use localStorage as fallback for guests
+                    playerName = localStorage.getItem('arcadePlayerName') || 'Guest';
+                    const savedStats = localStorage.getItem('arcadeStats');
+                    if (savedStats) {
+                        stats = JSON.parse(savedStats);
+                    }
+                    serverXP = 0;
+                    console.log('Not logged in - using localStorage');
+                }
+            } catch (err) {
+                console.error('Failed to load user data from server:', err);
+                // Fallback to localStorage
+                playerName = localStorage.getItem('arcadePlayerName') || 'Guest';
+                const savedStats = localStorage.getItem('arcadeStats');
+                if (savedStats) {
+                    stats = JSON.parse(savedStats);
+                }
+            }
+
+            // Now update the profile display
+            updateProfile();
+            loadCosmetics();
+            loadAvatar();
+            checkAdmin();
+        }
 
         function calculateLevel() {
+            // Use server XP if available (logged in users), otherwise calculate from stats
+            if (serverXP > 0) {
+                return Math.floor(Math.sqrt(serverXP / 10)) + 1;
+            }
             const xp = stats.totalGamesPlayed * 10 + Math.floor(stats.totalTimePlayed / 60) + Math.floor(stats.totalCoinsEarned / 100);
             return Math.floor(Math.sqrt(xp / 10)) + 1;
         }
@@ -286,7 +353,14 @@
             const level = calculateLevel();
             const currentLevelXP = Math.pow(level - 1, 2) * 10;
             const nextLevelXP = Math.pow(level, 2) * 10;
-            const xp = stats.totalGamesPlayed * 10 + Math.floor(stats.totalTimePlayed / 60) + Math.floor(stats.totalCoinsEarned / 100);
+
+            // Use server XP if available
+            let xp;
+            if (serverXP > 0) {
+                xp = serverXP;
+            } else {
+                xp = stats.totalGamesPlayed * 10 + Math.floor(stats.totalTimePlayed / 60) + Math.floor(stats.totalCoinsEarned / 100);
+            }
             return Math.min(100, Math.floor(((xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100));
         }
 
@@ -642,10 +716,8 @@
             }
         }
 
-        updateProfile();
-        loadCosmetics();
-        loadAvatar();
-        checkAdmin();
+        // Initialize: Load user data from server first, then update profile
+        loadUserData();
     </script>
 
     
