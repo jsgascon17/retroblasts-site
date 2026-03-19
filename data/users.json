@@ -39,9 +39,9 @@
                 "messagesSent": 9
             },
             "createdAt": "2026-03-15T14:12:12+00:00",
-            "lastActivity": "2026-03-19T13:47:22+00:00",
-            "lastLogin": "2026-03-19T13:38:56+00:00",
-            "coins": 1000059062,
+            "lastActivity": "2026-03-19T13:52:17+00:00",
+            "lastLogin": "2026-03-19T13:51:15+00:00",
+            "coins": 1000006460,
             "inventory": {
                 "name_colors": [
                     "gold",
@@ -101,7 +101,8 @@
                     "coins_2x"
                 ],
                 "social": [
-                    "tournament_banner"
+                    "tournament_banner",
+                    "spotlight"
                 ],
                 "lootboxes": [
                     "legendary",
@@ -305,25 +306,30 @@
                     "legendary",
                     "legendary"
                 ],
-                "lockedCrates": [],
+                "lockedCrates": [
+                    "gold_crate"
+                ],
                 "keys": {
-                    "bronze_key": 1,
-                    "silver_key": 1,
+                    "bronze_key": 3,
+                    "silver_key": 3,
                     "gold_key": 0
                 },
                 "consumables": {
                     "reroll_token": 0,
                     "tournament_ticket": 1,
-                    "luck_boost": 1
+                    "luck_boost": 1,
+                    "extra_life": 1
                 },
                 "tradingCards": {
-                    "arcade_bronze": 1,
-                    "snake_silver": 4,
+                    "arcade_bronze": 2,
+                    "snake_silver": 5,
                     "legendary_phoenix": 3,
                     "cookie_silver": 1,
                     "cookie_gold": 1,
-                    "snake_gold": 2,
-                    "arcade_gold": 1
+                    "snake_gold": 3,
+                    "arcade_gold": 1,
+                    "arcade_silver": 1,
+                    "snake_bronze": 1
                 },
                 "titles": [
                     "og",
