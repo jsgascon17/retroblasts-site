@@ -2,8 +2,17 @@
     "scores": [
         {
             "name": "Daniel",
-            "score": 1492,
-            "date": "2026-03-14 18:42:50"
+            "score": 2840,
+            "date": "2026-03-18 22:53:47",
+            "nameColor": null,
+            "title": null
+        },
+        {
+            "name": "jackwashere",
+            "score": 2216,
+            "date": "2026-03-18 22:45:29",
+            "nameColor": null,
+            "title": null
         },
         {
             "name": "joey",

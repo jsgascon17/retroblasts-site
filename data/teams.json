@@ -1,0 +1,17 @@
+{
+    "teams": [
+        {
+            "id": "59bd6ab44cc4be29",
+            "name": "BBPS",
+            "tag": "BBPS",
+            "description": "",
+            "color": "#ffd700",
+            "leader": "billybuffalo15",
+            "officers": [],
+            "members": [
+                "billybuffalo15"
+            ],
+            "createdAt": "2026-03-17T16:23:38+00:00"
+        }
+    ]
+}

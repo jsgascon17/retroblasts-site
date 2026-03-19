@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Rooms - Sandbox Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        .actions-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .create-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .create-btn:hover {
+            transform: scale(1.05);
+        }
+        .join-code-input {
+            display: flex;
+            gap: 10px;
+        }
+        .join-code-input input {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            padding: 12px 20px;
+            border-radius: 25px;
+            color: #fff;
+            font-size: 1rem;
+            width: 180px;
+            text-transform: uppercase;
+        }
+        .join-code-input input::placeholder { color: #888; }
+        .join-btn {
+            background: #22c55e;
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Rooms Section */
+        .rooms-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .rooms-section h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .room-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .room-card:hover {
+            border-color: #ffd700;
+            transform: translateY(-3px);
+        }
+        .room-card.private {
+            border-color: #a855f7;
+        }
+        .room-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .room-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .room-name .lock { color: #a855f7; }
+        .room-game {
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+        .room-info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        .room-info span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .room-players {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .player-avatar {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            border: 2px solid #1a1a2e;
+        }
+        .player-avatar.empty {
+            background: rgba(255,255,255,0.1);
+            border-style: dashed;
+        }
+        .player-avatar.host {
+            border-color: #ffd700;
+        }
+        .join-room-btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+        .join-room-btn:hover {
+            transform: scale(1.02);
+        }
+        .join-room-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        /* Create Room Modal */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #ffd700;
+            border-radius: 25px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .modal-header h2 { color: #ffd700; }
+        .close-modal {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            padding: 12px 15px;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+        }
+        .form-group select option {
+            background: #1a1a2e;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .toggle-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #444;
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            height: 20px; width: 20px;
+            left: 3px; bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            background: #22c55e;
+        }
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(24px);
+        }
+        .create-room-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: none;
+            padding: 15px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* Room View */
+        .room-view {
+            display: none;
+        }
+        .room-view.active { display: block; }
+        .room-banner {
+            background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,140,0,0.1));
+            border: 2px solid #ffd700;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .room-code {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffd700;
+            letter-spacing: 8px;
+            margin: 10px 0;
+        }
+        .room-code-label {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        .copy-code {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .players-list {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .players-list h3 {
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+        .player-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .player-row .player-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .player-row .player-avatar {
+            width: 45px;
+            height: 45px;
+            font-size: 1.2rem;
+        }
+        .player-row .host-badge {
+            background: #ffd700;
+            color: #000;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .player-row .ready-status {
+            color: #22c55e;
+            font-weight: bold;
+        }
+        .room-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .room-actions button {
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border: none;
+        }
+        .start-game-btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+        }
+        .ready-btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+        }
+        .leave-btn {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Game Rooms</h1>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Games</a>
+                <a href="friends.html" class="nav-link">Friends</a>
+                <a href="spectate.html" class="nav-link">Spectate</a>
+            </div>
+        </div>
+
+        <!-- Rooms List View -->
+        <div id="roomsList">
+            <div class="actions-bar">
+                <button class="create-btn" onclick="showCreateModal()">
+                    <span>+</span> Create Room
+                </button>
+                <div class="join-code-input">
+                    <input type="text" id="joinCode" placeholder="Enter code..." maxlength="6">
+                    <button class="join-btn" onclick="joinByCode()">Join</button>
+                </div>
+            </div>
+
+            <div class="rooms-section">
+                <h2>Public Rooms</h2>
+                <div class="rooms-grid" id="publicRooms">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <div class="rooms-section">
+                <h2>Friends' Rooms</h2>
+                <div class="rooms-grid" id="friendsRooms">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Room View -->
+        <div id="roomView" class="room-view">
+            <div class="room-banner">
+                <div class="room-code-label">Room Code</div>
+                <div class="room-code" id="currentRoomCode">ABCD12</div>
+                <button class="copy-code" onclick="copyRoomCode()">Copy Code</button>
+            </div>
+
+            <div class="players-list">
+                <h3>Players (<span id="playerCount">1</span>/<span id="maxPlayers">4</span>)</h3>
+                <div id="playersContainer">
+                    <!-- Players listed here -->
+                </div>
+            </div>
+
+            <div class="room-actions">
+                <button class="leave-btn" onclick="leaveRoom()">Leave Room</button>
+                <button class="ready-btn" id="readyBtn" onclick="toggleReady()">Ready Up</button>
+                <button class="start-game-btn" id="startBtn" onclick="startGame()" style="display:none;">Start Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Room Modal -->
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create Room</h2>
+                <button class="close-modal" onclick="hideCreateModal()">&times;</button>
+            </div>
+
+            <div class="form-group">
+                <label>Room Name</label>
+                <input type="text" id="roomName" placeholder="My Awesome Room" maxlength="30">
+            </div>
+
+            <div class="form-group">
+                <label>Game</label>
+                <select id="roomGame">
+                    <option value="snake">Snake</option>
+                    <option value="tetris">Tetris</option>
+                    <option value="2048">2048</option>
+                    <option value="flappy-bird">Flappy Bird</option>
+                    <option value="pacman">Pac-Man</option>
+                    <option value="asteroids">Asteroids</option>
+                    <option value="doodle-jump">Doodle Jump</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Max Players</label>
+                    <select id="maxPlayersSelect">
+                        <option value="2">2 Players</option>
+                        <option value="4" selected>4 Players</option>
+                        <option value="6">6 Players</option>
+                        <option value="8">8 Players</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Time Limit</label>
+                    <select id="timeLimit">
+                        <option value="0">No Limit</option>
+                        <option value="3">3 Minutes</option>
+                        <option value="5" selected>5 Minutes</option>
+                        <option value="10">10 Minutes</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="toggle-group">
+                    <span>Private Room</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="privateRoom">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-group">
+                    <span>Allow Spectators</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="allowSpectators" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <button class="create-room-btn" onclick="createRoom()">Create Room</button>
+        </div>
+    </div>
+
+    <script>
+    const Rooms = {
+        currentRoom: null,
+        isHost: false,
+        isReady: false,
+        pollInterval: null,
+
+        gameIcons: {
+            'snake': '🐍', 'tetris': '🧱', 'pacman': '👻',
+            'flappy-bird': '🐦', 'asteroids': '🚀', '2048': '🔢',
+            'doodle-jump': '⬆️', 'default': '🎮'
+        },
+
+        async init() {
+            await this.loadRooms();
+            setInterval(() => this.loadRooms(), 5000);
+        },
+
+        async loadRooms() {
+            try {
+                const resp = await fetch('api/rooms.php?action=list', { credentials: 'include' });
+                const data = await resp.json();
+
+                if (data.success) {
+                    this.renderRooms('publicRooms', data.public || []);
+                    this.renderRooms('friendsRooms', data.friends || []);
+                }
+            } catch (e) {
+                console.error('Failed to load rooms:', e);
+            }
+        },
+
+        renderRooms(containerId, rooms) {
+            const container = document.getElementById(containerId);
+
+            if (rooms.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🎮</div>
+                        <p>No rooms available</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = rooms.map(room => `
+                <div class="room-card ${room.private ? 'private' : ''}">
+                    <div class="room-header">
+                        <div class="room-name">
+                            ${room.private ? '<span class="lock">🔒</span>' : ''}
+                            ${room.name}
+                        </div>
+                        <div class="room-game">${this.formatGameName(room.game)}</div>
+                    </div>
+                    <div class="room-info">
+                        <span>👥 ${room.players.length}/${room.maxPlayers}</span>
+                        <span>⏱️ ${room.timeLimit ? room.timeLimit + ' min' : 'No limit'}</span>
+                    </div>
+                    <div class="room-players">
+                        ${room.players.map((p, i) => `
+                            <div class="player-avatar ${i === 0 ? 'host' : ''}">${p.avatar || '👤'}</div>
+                        `).join('')}
+                        ${Array(room.maxPlayers - room.players.length).fill(0).map(() => `
+                            <div class="player-avatar empty">+</div>
+                        `).join('')}
+                    </div>
+                    <button class="join-room-btn" onclick="Rooms.join('${room.code}')"
+                            ${room.players.length >= room.maxPlayers ? 'disabled' : ''}>
+                        ${room.players.length >= room.maxPlayers ? 'Full' : 'Join Room'}
+                    </button>
+                </div>
+            `).join('');
+        },
+
+        formatGameName(game) {
+            return game.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        },
+
+        async create() {
+            const roomData = {
+                action: 'create',
+                name: document.getElementById('roomName').value || 'Game Room',
+                game: document.getElementById('roomGame').value,
+                maxPlayers: parseInt(document.getElementById('maxPlayersSelect').value),
+                timeLimit: parseInt(document.getElementById('timeLimit').value),
+                private: document.getElementById('privateRoom').checked,
+                allowSpectators: document.getElementById('allowSpectators').checked
+            };
+
+            try {
+                const resp = await fetch('api/rooms.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(roomData)
+                });
+
+                const data = await resp.json();
+                if (data.success) {
+                    hideCreateModal();
+                    this.currentRoom = data.room;
+                    this.isHost = true;
+                    this.showRoomView();
+                } else {
+                    alert(data.error || 'Failed to create room');
+                }
+            } catch (e) {
+                alert('Failed to create room');
+            }
+        },
+
+        async join(code) {
+            try {
+                const resp = await fetch('api/rooms.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'join', code })
+                });
+
+                const data = await resp.json();
+                if (data.success) {
+                    this.currentRoom = data.room;
+                    this.isHost = false;
+                    this.showRoomView();
+                } else {
+                    alert(data.error || 'Failed to join room');
+                }
+            } catch (e) {
+                alert('Failed to join room');
+            }
+        },
+
+        showRoomView() {
+            document.getElementById('roomsList').style.display = 'none';
+            document.getElementById('roomView').classList.add('active');
+
+            document.getElementById('currentRoomCode').textContent = this.currentRoom.code;
+            document.getElementById('maxPlayers').textContent = this.currentRoom.maxPlayers;
+
+            if (this.isHost) {
+                document.getElementById('startBtn').style.display = 'inline-block';
+                document.getElementById('readyBtn').style.display = 'none';
+            }
+
+            this.updateRoomState();
+            this.pollInterval = setInterval(() => this.updateRoomState(), 2000);
+        },
+
+        async updateRoomState() {
+            if (!this.currentRoom) return;
+
+            try {
+                const resp = await fetch(`api/rooms.php?action=get&code=${this.currentRoom.code}`, {
+                    credentials: 'include'
+                });
+                const data = await resp.json();
+
+                if (data.success && data.room) {
+                    this.currentRoom = data.room;
+                    this.renderPlayers();
+
+                    // Check if game started
+                    if (data.room.status === 'playing') {
+                        window.location.href = `${data.room.game}.html?room=${data.room.code}`;
+                    }
+                } else {
+                    // Room closed
+                    this.leaveRoom();
+                    alert('Room was closed');
+                }
+            } catch (e) {
+                console.error('Failed to update room state:', e);
+            }
+        },
+
+        renderPlayers() {
+            const container = document.getElementById('playersContainer');
+            document.getElementById('playerCount').textContent = this.currentRoom.players.length;
+
+            container.innerHTML = this.currentRoom.players.map((player, i) => `
+                <div class="player-row">
+                    <div class="player-info">
+                        <div class="player-avatar ${i === 0 ? 'host' : ''}">${player.avatar || '👤'}</div>
+                        <div>
+                            <strong>${player.displayName || player.username}</strong>
+                            ${i === 0 ? '<span class="host-badge">HOST</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="ready-status">${player.ready ? '✓ Ready' : 'Not Ready'}</div>
+                </div>
+            `).join('');
+        },
+
+        async toggleReady() {
+            this.isReady = !this.isReady;
+
+            await fetch('api/rooms.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'ready', code: this.currentRoom.code, ready: this.isReady })
+            });
+
+            document.getElementById('readyBtn').textContent = this.isReady ? 'Not Ready' : 'Ready Up';
+            document.getElementById('readyBtn').style.background = this.isReady
+                ? 'linear-gradient(135deg, #ef4444, #dc2626)'
+                : 'linear-gradient(135deg, #3b82f6, #2563eb)';
+        },
+
+        async startGame() {
+            if (!this.isHost) return;
+
+            await fetch('api/rooms.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'start', code: this.currentRoom.code })
+            });
+        },
+
+        async leaveRoom() {
+            if (this.pollInterval) {
+                clearInterval(this.pollInterval);
+            }
+
+            if (this.currentRoom) {
+                await fetch('api/rooms.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'leave', code: this.currentRoom.code })
+                });
+            }
+
+            this.currentRoom = null;
+            this.isHost = false;
+            this.isReady = false;
+
+            document.getElementById('roomView').classList.remove('active');
+            document.getElementById('roomsList').style.display = 'block';
+
+            this.loadRooms();
+        }
+    };
+
+    function showCreateModal() {
+        document.getElementById('createModal').classList.add('show');
+    }
+
+    function hideCreateModal() {
+        document.getElementById('createModal').classList.remove('show');
+    }
+
+    function createRoom() {
+        Rooms.create();
+    }
+
+    function joinByCode() {
+        const code = document.getElementById('joinCode').value.toUpperCase();
+        if (code.length >= 4) {
+            Rooms.join(code);
+        }
+    }
+
+    function copyRoomCode() {
+        const code = document.getElementById('currentRoomCode').textContent;
+        navigator.clipboard.writeText(code);
+        alert('Code copied!');
+    }
+
+    function toggleReady() {
+        Rooms.toggleReady();
+    }
+
+    function startGame() {
+        Rooms.startGame();
+    }
+
+    function leaveRoom() {
+        Rooms.leaveRoom();
+    }
+
+    Rooms.init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Sandbox Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        .settings-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .settings-section h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .settings-section h2 span { font-size: 1.5rem; }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .setting-row:last-child { border-bottom: none; }
+
+        .setting-info h3 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        .setting-info p {
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 32px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #444;
+            border-radius: 32px;
+            transition: 0.3s;
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            height: 26px;
+            width: 26px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+        }
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(28px);
+        }
+
+        /* Select dropdown */
+        .setting-select {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            min-width: 150px;
+        }
+        .setting-select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        /* Range slider */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .volume-slider {
+            width: 150px;
+            height: 8px;
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            outline: none;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .volume-value {
+            min-width: 40px;
+            text-align: center;
+            color: #ffd700;
+        }
+
+        /* Color picker */
+        .color-options {
+            display: flex;
+            gap: 10px;
+        }
+        .color-option {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        .color-option.selected {
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        /* Buttons */
+        .save-btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            display: block;
+            margin: 30px auto 0;
+            transition: all 0.3s ease;
+        }
+        .save-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(34,197,94,0.4);
+        }
+
+        .danger-zone {
+            border: 2px solid #ef4444;
+        }
+        .danger-zone h2 { color: #ef4444; }
+
+        .danger-btn {
+            background: transparent;
+            color: #ef4444;
+            border: 2px solid #ef4444;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .danger-btn:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        /* Saved toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #22c55e;
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-weight: bold;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Login prompt */
+        .login-prompt {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .login-prompt h2 { color: #ffd700; margin-bottom: 20px; }
+        .login-prompt a {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Settings</h1>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Games</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <a href="daily-rewards.html" class="nav-link">Daily Rewards</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <!-- Settings sections -->
+            <div class="settings-section">
+                <h2><span>🔊</span> Sound & Music</h2>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Master Volume</h3>
+                        <p>Overall game volume</p>
+                    </div>
+                    <div class="volume-control">
+                        <input type="range" class="volume-slider" id="masterVolume" min="0" max="100" value="80">
+                        <span class="volume-value" id="masterVolumeValue">80%</span>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Sound Effects</h3>
+                        <p>Game sound effects</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="soundEffects" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Background Music</h3>
+                        <p>Menu and game music</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="backgroundMusic" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>UI Sounds</h3>
+                        <p>Button clicks and navigation</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="uiSounds" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2><span>🔔</span> Notifications</h2>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>High Score Alerts</h3>
+                        <p>Get notified when someone beats your score</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="highScoreAlerts" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Friend Requests</h3>
+                        <p>New friend request notifications</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="friendRequests" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Challenge Invites</h3>
+                        <p>When friends challenge you to a game</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="challengeInvites" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Chat Messages</h3>
+                        <p>New message notifications</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="chatMessages" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Daily Reward Reminder</h3>
+                        <p>Remind me to claim daily rewards</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dailyReminder" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2><span>🎨</span> Appearance</h2>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Theme</h3>
+                        <p>Choose your preferred color theme</p>
+                    </div>
+                    <select class="setting-select" id="theme">
+                        <option value="default">Default Blue</option>
+                        <option value="dark">Dark Mode</option>
+                        <option value="light">Light Mode</option>
+                        <option value="midnight">Midnight Purple</option>
+                        <option value="forest">Forest Green</option>
+                        <option value="sunset">Sunset Orange</option>
+                    </select>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Accent Color</h3>
+                        <p>Highlight color for buttons and UI</p>
+                    </div>
+                    <div class="color-options">
+                        <div class="color-option selected" style="background: #ffd700;" data-color="gold"></div>
+                        <div class="color-option" style="background: #22c55e;" data-color="green"></div>
+                        <div class="color-option" style="background: #3b82f6;" data-color="blue"></div>
+                        <div class="color-option" style="background: #e879f9;" data-color="pink"></div>
+                        <div class="color-option" style="background: #ef4444;" data-color="red"></div>
+                        <div class="color-option" style="background: #06b6d4;" data-color="cyan"></div>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Animations</h3>
+                        <p>Enable UI animations and effects</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="animations" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Show FPS Counter</h3>
+                        <p>Display frames per second in games</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showFPS">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2><span>🎮</span> Gameplay</h2>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Difficulty</h3>
+                        <p>Default game difficulty</p>
+                    </div>
+                    <select class="setting-select" id="difficulty">
+                        <option value="easy">Easy</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Auto-Save Progress</h3>
+                        <p>Automatically save game progress</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoSave" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Show Tutorial Tips</h3>
+                        <p>Display helpful tips in games</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="tutorialTips" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Confirm Before Exit</h3>
+                        <p>Ask before leaving a game in progress</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="confirmExit" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2><span>🔒</span> Privacy</h2>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Show Online Status</h3>
+                        <p>Let friends see when you're online</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showOnline" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Show Current Game</h3>
+                        <p>Display what game you're playing</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showCurrentGame" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Allow Spectators</h3>
+                        <p>Let friends watch you play</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="allowSpectators" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Profile Visibility</h3>
+                        <p>Who can see your profile</p>
+                    </div>
+                    <select class="setting-select" id="profileVisibility">
+                        <option value="everyone">Everyone</option>
+                        <option value="friends">Friends Only</option>
+                        <option value="private">Private</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="settings-section danger-zone">
+                <h2><span>⚠️</span> Danger Zone</h2>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Reset All Settings</h3>
+                        <p>Restore default settings</p>
+                    </div>
+                    <button class="danger-btn" onclick="resetSettings()">Reset</button>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Clear Game Data</h3>
+                        <p>Delete all saved game progress</p>
+                    </div>
+                    <button class="danger-btn" onclick="clearGameData()">Clear Data</button>
+                </div>
+            </div>
+
+            <button class="save-btn" onclick="saveSettings()">Save Settings</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Settings saved!</div>
+
+    <script>
+    const Settings = {
+        defaults: {
+            masterVolume: 80,
+            soundEffects: true,
+            backgroundMusic: true,
+            uiSounds: true,
+            highScoreAlerts: true,
+            friendRequests: true,
+            challengeInvites: true,
+            chatMessages: true,
+            dailyReminder: true,
+            theme: 'default',
+            accentColor: 'gold',
+            animations: true,
+            showFPS: false,
+            difficulty: 'normal',
+            autoSave: true,
+            tutorialTips: true,
+            confirmExit: true,
+            showOnline: true,
+            showCurrentGame: true,
+            allowSpectators: true,
+            profileVisibility: 'everyone'
+        },
+
+        load() {
+            const saved = localStorage.getItem('arcadeSettings');
+            const settings = saved ? JSON.parse(saved) : this.defaults;
+
+            // Apply settings to UI
+            document.getElementById('masterVolume').value = settings.masterVolume;
+            document.getElementById('masterVolumeValue').textContent = settings.masterVolume + '%';
+
+            document.getElementById('soundEffects').checked = settings.soundEffects;
+            document.getElementById('backgroundMusic').checked = settings.backgroundMusic;
+            document.getElementById('uiSounds').checked = settings.uiSounds;
+            document.getElementById('highScoreAlerts').checked = settings.highScoreAlerts;
+            document.getElementById('friendRequests').checked = settings.friendRequests;
+            document.getElementById('challengeInvites').checked = settings.challengeInvites;
+            document.getElementById('chatMessages').checked = settings.chatMessages;
+            document.getElementById('dailyReminder').checked = settings.dailyReminder;
+            document.getElementById('theme').value = settings.theme;
+            document.getElementById('animations').checked = settings.animations;
+            document.getElementById('showFPS').checked = settings.showFPS;
+            document.getElementById('difficulty').value = settings.difficulty;
+            document.getElementById('autoSave').checked = settings.autoSave;
+            document.getElementById('tutorialTips').checked = settings.tutorialTips;
+            document.getElementById('confirmExit').checked = settings.confirmExit;
+            document.getElementById('showOnline').checked = settings.showOnline;
+            document.getElementById('showCurrentGame').checked = settings.showCurrentGame;
+            document.getElementById('allowSpectators').checked = settings.allowSpectators;
+            document.getElementById('profileVisibility').value = settings.profileVisibility;
+
+            // Accent color
+            document.querySelectorAll('.color-option').forEach(el => {
+                el.classList.toggle('selected', el.dataset.color === settings.accentColor);
+            });
+
+            return settings;
+        },
+
+        save() {
+            const settings = {
+                masterVolume: parseInt(document.getElementById('masterVolume').value),
+                soundEffects: document.getElementById('soundEffects').checked,
+                backgroundMusic: document.getElementById('backgroundMusic').checked,
+                uiSounds: document.getElementById('uiSounds').checked,
+                highScoreAlerts: document.getElementById('highScoreAlerts').checked,
+                friendRequests: document.getElementById('friendRequests').checked,
+                challengeInvites: document.getElementById('challengeInvites').checked,
+                chatMessages: document.getElementById('chatMessages').checked,
+                dailyReminder: document.getElementById('dailyReminder').checked,
+                theme: document.getElementById('theme').value,
+                accentColor: document.querySelector('.color-option.selected')?.dataset.color || 'gold',
+                animations: document.getElementById('animations').checked,
+                showFPS: document.getElementById('showFPS').checked,
+                difficulty: document.getElementById('difficulty').value,
+                autoSave: document.getElementById('autoSave').checked,
+                tutorialTips: document.getElementById('tutorialTips').checked,
+                confirmExit: document.getElementById('confirmExit').checked,
+                showOnline: document.getElementById('showOnline').checked,
+                showCurrentGame: document.getElementById('showCurrentGame').checked,
+                allowSpectators: document.getElementById('allowSpectators').checked,
+                profileVisibility: document.getElementById('profileVisibility').value
+            };
+
+            localStorage.setItem('arcadeSettings', JSON.stringify(settings));
+            return settings;
+        }
+    };
+
+    // Volume slider
+    document.getElementById('masterVolume').addEventListener('input', function() {
+        document.getElementById('masterVolumeValue').textContent = this.value + '%';
+    });
+
+    // Color options
+    document.querySelectorAll('.color-option').forEach(el => {
+        el.addEventListener('click', function() {
+            document.querySelectorAll('.color-option').forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+        });
+    });
+
+    function saveSettings() {
+        Settings.save();
+        showToast('Settings saved!');
+    }
+
+    function resetSettings() {
+        if (confirm('Reset all settings to default?')) {
+            localStorage.removeItem('arcadeSettings');
+            Settings.load();
+            showToast('Settings reset to default');
+        }
+    }
+
+    function clearGameData() {
+        if (confirm('This will delete all your saved game progress. Are you sure?')) {
+            localStorage.removeItem('arcadeGameData');
+            showToast('Game data cleared');
+        }
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Load settings on page load
+    Settings.load();
+    </script>
+</body>
+</html>

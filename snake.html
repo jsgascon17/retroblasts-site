@@ -268,6 +268,11 @@
             to { opacity: 1; }
         }
     </style>
+    <script src="js/notifications.js"></script>
+<script src="js/duel.js"></script>
+<script src="js/victory.js"></script>
+<script src="js/wars.js"></script>
+<script src="js/activity.js"></script>
 </head>
 <body>
     <h1>SNAKE</h1>
@@ -535,7 +540,16 @@
             blood: { name: 'Blood', cost: 125, headColor: '#cc0000', bodyColor: '#660000', eyeColor: '#ff0000' },
             ocean: { name: 'Ocean', cost: 125, headColor: '#0066cc', bodyColor: '#003366', eyeColor: '#00ffff' },
             toxic: { name: 'Toxic', cost: 175, headColor: '#88ff00', bodyColor: '#448800', eyeColor: '#ff00ff' },
-            galaxy: { name: 'Galaxy', cost: 200, headColor: '#8800ff', bodyColor: '#4400aa', eyeColor: '#ffff00' }
+            galaxy: { name: 'Galaxy', cost: 200, headColor: '#8800ff', bodyColor: '#4400aa', eyeColor: '#ffff00' },
+            cyber: { name: 'Cyber', cost: 175, headColor: '#00ff88', bodyColor: '#004422', eyeColor: '#ff00ff' },
+            sunset: { name: 'Sunset', cost: 150, headColor: '#ff6b35', bodyColor: '#ff9f1c', eyeColor: '#000000' },
+            arctic: { name: 'Arctic', cost: 175, headColor: '#e0ffff', bodyColor: '#87ceeb', eyeColor: '#1e90ff' },
+            lava: { name: 'Lava', cost: 200, headColor: '#ff4500', bodyColor: '#8b0000', eyeColor: '#ffd700' },
+            phantom: { name: 'Phantom', cost: 225, headColor: '#9370db', bodyColor: '#4b0082', eyeColor: '#ffffff' },
+            emerald: { name: 'Emerald', cost: 175, headColor: '#50c878', bodyColor: '#2e8b57', eyeColor: '#000000' },
+            midnight: { name: 'Midnight', cost: 200, headColor: '#191970', bodyColor: '#000033', eyeColor: '#c0c0c0' },
+            cherry: { name: 'Cherry', cost: 150, headColor: '#de3163', bodyColor: '#9b111e', eyeColor: '#ffffff' },
+            electric: { name: 'Electric', cost: 250, headColor: '#ffff00', bodyColor: '#0000ff', eyeColor: '#ffffff' }
         };
 
         // ============================================
@@ -602,6 +616,7 @@
 
         function playSound(type) {
             if (!audioCtx) return;
+            if (localStorage.getItem('arcade_sound_enabled') === 'false') return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
@@ -866,7 +881,7 @@
 
             // Wall collision
             if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
-                if (!activePowerups.ghost) {
+                if (!activePowerups.ghost && !window.invincibleMode) {
                     gameOver();
                     return;
                 }
@@ -878,13 +893,13 @@
             }
 
             // Self collision (not in ghost mode)
-            if (!activePowerups.ghost && snake.some(s => s.x === head.x && s.y === head.y)) {
+            if (!activePowerups.ghost && !window.invincibleMode && snake.some(s => s.x === head.x && s.y === head.y)) {
                 gameOver();
                 return;
             }
 
             // Obstacle collision
-            if (!activePowerups.ghost && obstacles.some(o => o.x === head.x && o.y === head.y)) {
+            if (!activePowerups.ghost && !window.invincibleMode && obstacles.some(o => o.x === head.x && o.y === head.y)) {
                 gameOver();
                 return;
             }
@@ -895,6 +910,7 @@
             if (head.x === food.x && head.y === food.y) {
                 let points = 10;
                 if (activePowerups.double) points *= 2;
+                if (window.goldenMode) points *= 2;
                 score += points;
 
                 saveData.stats.foodEaten++;
@@ -964,6 +980,9 @@
             saveData.stats.totalScore += score;
 
             if (score > saveData.stats.highScore) {
+                // Trigger victory effects for new high score
+                if (typeof VictoryEffects !== 'undefined') VictoryEffects.newHighScore();
+                if (typeof ActivityFeed !== "undefined") ActivityFeed.logHighScore("snake", score);
                 saveData.stats.highScore = score;
             }
 
@@ -973,6 +992,26 @@
 
             // Track arcade stats
             trackGameEnd(score, coinsEarned, snake.length);
+
+            // Submit duel score if in a challenge
+            if (typeof DuelSystem !== "undefined" && DuelSystem.isInDuel()) {
+                DuelSystem.submitScore(score);
+            }
+            if (typeof WarSystem !== "undefined" && WarSystem.isInWar()) {
+                WarSystem.submitScore(score);
+            }
+
+            // Award coins on server (if logged in)
+            fetch('api/game-rewards.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'snake', score: score })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    document.getElementById('coinsEarned').textContent = data.coinsEarned;
+                }
+            }).catch(() => {});
 
             document.getElementById('finalScore').textContent = score;
             document.getElementById('finalLength').textContent = snake.length;
@@ -1201,6 +1240,27 @@
                 save();
                 updateHUD();
                 showCodeMessage('KONAMI CODE! +9999 Score! +500 Coins!');
+            }},
+            'feast': { keys: ['f','e','a','s','t'], action: () => {
+                for (let i = 0; i < 5; i++) spawnFood();
+                showCodeMessage('FEAST MODE! 5 extra food spawned!');
+            }},
+            'golden': { keys: ['g','o','l','d','e','n'], action: () => {
+                window.goldenMode = true;
+                setTimeout(() => { window.goldenMode = false; }, 30000);
+                showCodeMessage('GOLDEN MODE! 2x points for 30 seconds!');
+            }},
+            'invincible': { keys: ['i','n','v','i','n','c','i','b','l','e'], action: () => {
+                window.invincibleMode = true;
+                setTimeout(() => { window.invincibleMode = false; showCodeMessage('Invincibility ended!'); }, 15000);
+                showCodeMessage('INVINCIBLE! 15 seconds of no death!');
+            }},
+            'warp': { keys: ['w','a','r','p'], action: () => {
+                snake.length = Math.max(3, snake.length);
+                for (let i = snake.length; i < snake.length + 10; i++) {
+                    snake.push({...snake[snake.length - 1]});
+                }
+                showCodeMessage('WARP! Snake grew by 10!');
             }}
         };
         let codeBuffer = [];
@@ -1334,6 +1394,17 @@
                         msgEl.textContent = '🏆 #' + data.rank + ' - You made the top 10!';
                     } else {
                         msgEl.textContent = '✓ Submitted! Rank #' + data.rank;
+                    }
+                    
+                    // Show high score notification
+                    if (typeof showHighScoreNotification === 'function') {
+                        if (data.rank === 1) {
+                            showHighScoreNotification('top_score', playerScore, 1);
+                        } else if (data.isTopTen) {
+                            showHighScoreNotification('leaderboard', playerScore, data.rank);
+                        } else if (data.isPersonalBest) {
+                            showHighScoreNotification('personal_best', playerScore);
+                        }
                     }
                     btn.textContent = 'Submitted!';
                     localStorage.setItem('snakePlayerName', playerName);

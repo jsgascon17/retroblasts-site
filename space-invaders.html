@@ -141,6 +141,10 @@
         #invincibleBtn { width: auto; padding: 5px 15px; }
         #invincibleBtn.active { background: #0f0; color: #000; border-color: #0f0; }
     </style>
+<script src="js/duel.js"></script>
+<script src="js/victory.js"></script>
+<script src="js/wars.js"></script>
+<script src="js/activity.js"></script>
 </head>
 <body>
     <h1>SPACE INVADERS</h1>
@@ -401,6 +405,7 @@
         function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); }
 
         function playSound(type) {
+            if (localStorage.getItem('arcade_sound_enabled') === 'false') return;
             if (!soundEnabled || !audioCtx) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -591,6 +596,14 @@
             plasma: { name: 'Plasma', color: '#00ffff', accent: '#008888' },
             stealth: { name: 'Stealth', color: '#666', accent: '#333' },
             rainbow: { name: 'Rainbow', color: 'rainbow', accent: '#fff' },
+            frost: { name: 'Frost', color: '#87CEEB', accent: '#4682B4' },
+            toxic: { name: 'Toxic', color: '#32CD32', accent: '#228B22' },
+            magma: { name: 'Magma', color: '#FF4500', accent: '#8B0000' },
+            electric: { name: 'Electric', color: '#FFFF00', accent: '#FFD700' },
+            shadow: { name: 'Shadow', color: '#4B0082', accent: '#2E0854' },
+            cherry: { name: 'Cherry', color: '#DC143C', accent: '#8B0000' },
+            mint: { name: 'Mint', color: '#98FF98', accent: '#3CB371' },
+            sunset: { name: 'Sunset', color: '#FF6347', accent: '#FF4500' },
             // Owner exclusive skins
             owner_galaxy: { name: 'Galaxy', color: '#8B5CF6', accent: '#5B21B6' },
             owner_lightning: { name: 'Lightning', color: '#FBBF24', accent: '#D97706' },
@@ -1158,7 +1171,7 @@
             // Update stats
             saveData.coins += coinsThisGame;
             saveData.stats.totalCoins += coinsThisGame;
-            if (score > saveData.highScore) saveData.highScore = score;
+            if (score > saveData.highScore) { saveData.highScore = score; if (typeof VictoryEffects !== "undefined") VictoryEffects.newHighScore(); }
             saveData.stats.upgradesMaxed = Object.keys(UPGRADES).filter(k => saveData.upgrades[k] >= UPGRADES[k].maxLevel).length;
 
             // Check achievements
@@ -1167,6 +1180,14 @@
 
             // Track arcade stats
             trackGameEnd(score, coinsThisGame, aliensKilledThisGame, wave);
+
+            // Submit duel score if in a challenge
+            if (typeof DuelSystem !== "undefined" && DuelSystem.isInDuel()) {
+                DuelSystem.submitScore(score);
+            }
+            if (typeof WarSystem !== "undefined" && WarSystem.isInWar()) {
+                WarSystem.submitScore(score);
+            }
 
             // Display
             document.getElementById('gameOverTitle').textContent = won ? 'VICTORY!' : 'GAME OVER';
@@ -1186,6 +1207,14 @@
             document.getElementById('leaderboardMsg').textContent = '';
 
             gameOverScreen.classList.remove('hidden');
+
+            // Award coins on server (if logged in)
+            fetch('api/add-coins.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'space-invaders', coins: coinsThisGame })
+            }).then(r => r.json()).catch(() => {});
         }
 
         let aliensKilledThisGame = 0;

@@ -383,7 +383,7 @@
             <p id="mapDesc" style="color: #888; font-size: 0.85rem;">The original winding path</p>
 
             <button class="btn" id="playBtn" style="margin-top: 15px; font-size: 1.1rem; padding: 12px 40px;" onclick="startGame()" type="button">DEFEND EARTH</button>
-            <p style="color: #666; font-size: 0.75rem; margin-top: 10px;">Tip: Type "DOOM" during gameplay for a secret challenge!</p>
+            <p style="color: #666; font-size: 0.75rem; margin-top: 10px;">Tip: Type "DOOM" or "DEATH" during gameplay for secret challenges!</p>
         </div>
     </div>
 
@@ -555,6 +555,7 @@
                 goldEarned: 0,
                 bossesKilled: 0,
                 doomKilled: 0,
+                doomsdayKilled: 0,
                 highestWave: 0,
                 endlessHighScore: 0,
                 perfectWins: 0,
@@ -727,6 +728,7 @@
             { id: 'perfect', name: 'Perfect Defense', desc: 'Win with all 20 lives', icon: '*' },
             { id: 'boss_hunter', name: 'Boss Hunter', desc: 'Kill 10 bosses', icon: 'B' },
             { id: 'doom_slayer', name: 'Doom Slayer', desc: 'Defeat the DOOM boss', icon: 'D' },
+            { id: 'doomsday_survivor', name: 'Doomsday Survivor', desc: 'Defeat DOOMSDAY', icon: 'X' },
             { id: 'upgrader', name: 'Upgrader', desc: 'Upgrade 20 towers total', icon: '^' },
             { id: 'max_tower', name: 'Maxed Out', desc: 'Fully upgrade a tower to Lv3', icon: '3' },
             { id: 'endless_10', name: 'Endless Warrior', desc: 'Reach wave 10 in Endless', icon: 'E' },
@@ -747,12 +749,14 @@
             stealth: { name: 'Stealth', health: 60, speed: 1.5, reward: 30, color: '#4444ff', size: 0.5, stealth: true },
             splitter: { name: 'Splitter', health: 100, speed: 1.3, reward: 15, color: '#ff88ff', size: 0.6, splits: 2 },
             boss: { name: 'Boss', health: 1000, speed: 0.5, reward: 200, color: '#ff0000', size: 1.2, liveCost: 5 },
-            superboss: { name: 'DOOM', health: 50000, speed: 0.4, reward: 5000, color: '#8B00FF', size: 2.0, liveCost: 20, destroysTowers: true }
+            superboss: { name: 'DOOM', health: 50000, speed: 0.4, reward: 5000, color: '#8B00FF', size: 2.0, liveCost: 20, destroysTowers: true },
+            megaboss: { name: 'DOOMSDAY', health: 100000, speed: 0.35, reward: 10000, color: '#FF0000', size: 2.5, liveCost: 40, destroysTowers: true, destroyRadius: 1 }
         };
 
         // Secret code tracker
         let secretCode = '';
         const SECRET_WORD = 'DOOM';
+        const SECRET_WORD_MEGA = 'DEATH';
 
         // ============================================
         // MAP DEFINITIONS
@@ -904,6 +908,7 @@
             if (saveData.stats.bossesKilled >= 10) checkAchievement('boss_hunter');
             // Doom slayer
             if (saveData.stats.doomKilled >= 1) checkAchievement('doom_slayer');
+            if (saveData.stats.doomsdayKilled >= 1) checkAchievement('doomsday_survivor');
             // Upgrader
             if (saveData.stats.towersUpgraded >= 20) checkAchievement('upgrader');
             // Hero time
@@ -1303,7 +1308,7 @@
                 // Body
                 ctx.fillStyle = e.slowed ? '#88ccff' : enemy.color;
                 ctx.shadowColor = enemy.color;
-                ctx.shadowBlur = e.type === 'boss' || e.type === 'superboss' ? 20 : 8;
+                ctx.shadowBlur = e.type === 'boss' || e.type === 'superboss' || e.type === 'megaboss' ? 20 : 8;
                 ctx.beginPath();
                 ctx.arc(e.x, e.y, size, 0, Math.PI * 2);
                 ctx.fill();
@@ -1346,6 +1351,25 @@
                     ctx.fillText('DOOM', e.x, e.y - size - 18);
                     ctx.shadowBlur = 0;
                 }
+
+                if (e.type === 'megaboss') {
+                    ctx.fillStyle = 'rgba(255, 0, 0, ' + (0.4 + Math.sin(frame * 0.15) * 0.3) + ')';
+                    ctx.beginPath();
+                    ctx.arc(e.x, e.y, size * 2.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(255, 50, 0, ' + (0.6 + Math.sin(frame * 0.2) * 0.4) + ')';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.arc(e.x, e.y, TILE_W * 1.5, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.fillStyle = '#FF0000';
+                    ctx.font = 'bold 20px Courier New';
+                    ctx.shadowColor = '#FF0000';
+                    ctx.shadowBlur = 25;
+                    ctx.fillText('DOOMSDAY', e.x, e.y - size - 25);
+                    ctx.shadowBlur = 0;
+                }
+
 
                 if (e.type === 'regen') {
                     ctx.fillStyle = '#00ff88';
@@ -1686,9 +1710,10 @@
                     e.slowed -= gameSpeed;
                 }
 
-                // DOOM destroys towers
+                // DOOM/DOOMSDAY destroys towers
                 if (ENEMIES[e.type].destroysTowers) {
-                    const destroyRange = TILE_W * 1.5;
+                    const radiusMultiplier = ENEMIES[e.type].destroyRadius || 1;
+                    const destroyRange = TILE_W * 1.5 * radiusMultiplier;
                     towers = towers.filter(t => {
                         const dx = t.x - e.x;
                         const dy = t.y - e.y;
@@ -2029,6 +2054,10 @@
                 saveData.stats.doomKilled++;
                 checkAchievement('doom_slayer');
             }
+            if (e.type === 'megaboss') {
+                saveData.stats.doomsdayKilled++;
+                checkAchievement('doomsday_survivor');
+            }
 
             save();
             checkAllAchievements();
@@ -2236,6 +2265,18 @@
             document.getElementById('leaderboardMsg').textContent = '';
 
             document.getElementById('gameOverScreen').classList.remove('hidden');
+
+            // Award coins on server (if logged in)
+            fetch('api/game-rewards.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'tower-defense', score: wave * 100 })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    document.getElementById('coinsEarnedLoss').textContent = data.coinsEarned;
+                }
+            }).catch(() => {});
         }
 
         function startGame() {
@@ -2378,6 +2419,45 @@
             secretCode = '';
         }
 
+        function spawnMegaBoss() {
+            // Screen shake - more intense
+            canvas.style.transform = 'translateX(10px)';
+            setTimeout(() => canvas.style.transform = 'translateX(-10px)', 50);
+            setTimeout(() => canvas.style.transform = 'translateX(8px)', 100);
+            setTimeout(() => canvas.style.transform = 'translateX(-8px)', 150);
+            setTimeout(() => canvas.style.transform = 'translateX(5px)', 200);
+            setTimeout(() => canvas.style.transform = 'translateX(-5px)', 250);
+            setTimeout(() => canvas.style.transform = '', 300);
+
+            enemies.push({
+                type: 'megaboss',
+                x: PATH_PIXELS[0].x,
+                y: PATH_PIXELS[0].y,
+                health: ENEMIES.megaboss.health,
+                maxHealth: ENEMIES.megaboss.health,
+                speed: ENEMIES.megaboss.speed,
+                pathIndex: 0,
+                slowed: 0
+            });
+
+            const warning = document.createElement('div');
+            warning.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:4rem;color:#FF0000;text-shadow:0 0 50px #FF0000, 0 0 100px #FF4400;font-family:Courier New;font-weight:bold;z-index:1000;animation:pulse 0.3s infinite;';
+            warning.innerHTML = '☠️ DOOMSDAY ☠️';
+            document.body.appendChild(warning);
+            
+            // Flash screen red
+            const flash = document.createElement('div');
+            flash.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,0,0,0.5);z-index:999;';
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 200);
+            
+            setTimeout(() => warning.remove(), 3000);
+
+            playSound('gameOver');
+            playSound('gameOver');
+            secretCode = '';
+        }
+
         document.addEventListener('keydown', e => {
             if (e.code === 'Space' && gameState === 'playing') {
                 e.preventDefault();
@@ -2395,11 +2475,15 @@
             // Secret code
             if (gameState === 'playing' && e.key.length === 1) {
                 secretCode += e.key.toUpperCase();
-                if (secretCode.length > SECRET_WORD.length) {
-                    secretCode = secretCode.slice(-SECRET_WORD.length);
+                if (secretCode.length > SECRET_WORD_MEGA.length) {
+                    secretCode = secretCode.slice(-SECRET_WORD_MEGA.length);
                 }
-                if (secretCode === SECRET_WORD) {
+                if (secretCode.endsWith(SECRET_WORD_MEGA)) {
+                    spawnMegaBoss();
+                    secretCode = '';
+                } else if (secretCode.endsWith(SECRET_WORD)) {
                     spawnSuperBoss();
+                    secretCode = '';
                 }
             }
         });

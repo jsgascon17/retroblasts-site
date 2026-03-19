@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Rewards - Sandbox Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        /* Streak Banner */
+        .streak-banner {
+            background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,140,0,0.1));
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .streak-count {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+        .streak-label {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-top: 5px;
+        }
+        .streak-fire {
+            font-size: 3rem;
+            margin: 10px 0;
+        }
+        .next-reward-timer {
+            background: rgba(0,0,0,0.3);
+            display: inline-block;
+            padding: 10px 25px;
+            border-radius: 20px;
+            margin-top: 15px;
+            color: #aaa;
+        }
+        .next-reward-timer span { color: #ffd700; font-weight: bold; }
+
+        /* Weekly Rewards Grid */
+        .rewards-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .rewards-section h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+        @media (max-width: 768px) {
+            .rewards-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        @media (max-width: 500px) {
+            .rewards-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .reward-day {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 15px 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .reward-day.claimed {
+            background: rgba(34,197,94,0.2);
+            border-color: #22c55e;
+        }
+        .reward-day.claimed::after {
+            content: '\2713';
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            color: #22c55e;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .reward-day.available {
+            background: linear-gradient(135deg, rgba(255,215,0,0.3), rgba(255,140,0,0.2));
+            border-color: #ffd700;
+            animation: pulse 2s infinite;
+            cursor: pointer;
+        }
+        .reward-day.available:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255,215,0,0.4);
+        }
+        .reward-day.locked {
+            opacity: 0.5;
+        }
+        .reward-day.bonus {
+            border-color: #e879f9;
+            background: linear-gradient(135deg, rgba(232,121,249,0.2), rgba(168,85,247,0.1));
+        }
+        .reward-day.bonus.claimed {
+            background: rgba(168,85,247,0.3);
+            border-color: #a855f7;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(255,215,0,0.3); }
+            50% { box-shadow: 0 0 20px rgba(255,215,0,0.6); }
+        }
+
+        .day-number {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .reward-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        .reward-amount {
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .reward-type {
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+
+        /* Milestone Rewards */
+        .milestones-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .milestones-section h2 {
+            color: #e879f9;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .milestone-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+        }
+        .milestone-row.achieved {
+            background: rgba(168,85,247,0.2);
+            border: 2px solid #a855f7;
+        }
+        .milestone-days {
+            background: linear-gradient(135deg, #e879f9, #a855f7);
+            color: #fff;
+            font-weight: bold;
+            padding: 10px 15px;
+            border-radius: 10px;
+            min-width: 80px;
+            text-align: center;
+        }
+        .milestone-reward {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .milestone-reward-icon { font-size: 1.5rem; }
+        .milestone-status {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        /* Claim button */
+        .claim-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            display: block;
+            margin: 30px auto 0;
+            transition: all 0.3s ease;
+        }
+        .claim-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255,215,0,0.4);
+        }
+        .claim-btn:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Celebration overlay */
+        .celebration {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        .celebration.show { display: flex; }
+        .celebration-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid #ffd700;
+            border-radius: 25px;
+            padding: 40px 60px;
+            text-align: center;
+            animation: bounceIn 0.5s ease;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .celebration h2 {
+            color: #ffd700;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .celebration .reward-display {
+            font-size: 3rem;
+            margin: 20px 0;
+        }
+        .celebration .reward-text {
+            font-size: 1.5rem;
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+        .celebration .close-btn {
+            background: #ffd700;
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Login required */
+        .login-prompt {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .login-prompt h2 { color: #ffd700; margin-bottom: 20px; }
+        .login-prompt a {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Daily Rewards</h1>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Games</a>
+                <a href="battle-pass.html" class="nav-link">Battle Pass</a>
+                <a href="shop.html" class="nav-link">Shop</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <!-- Content loaded by JS -->
+        </div>
+    </div>
+
+    <!-- Celebration Overlay -->
+    <div class="celebration" id="celebration">
+        <div class="celebration-content">
+            <h2>Reward Claimed!</h2>
+            <div class="reward-display" id="celebrationIcon"></div>
+            <div class="reward-text" id="celebrationText"></div>
+            <button class="close-btn" onclick="closeCelebration()">Awesome!</button>
+        </div>
+    </div>
+
+    <script>
+    const DailyRewards = {
+        streak: 0,
+        lastClaim: null,
+        canClaim: false,
+        weekProgress: [],
+
+        // Rewards for each day of the week (cycles)
+        weeklyRewards: [
+            { day: 1, icon: '🪙', amount: 50, type: 'coins' },
+            { day: 2, icon: '🪙', amount: 75, type: 'coins' },
+            { day: 3, icon: '🎁', amount: 1, type: 'mystery box' },
+            { day: 4, icon: '🪙', amount: 100, type: 'coins' },
+            { day: 5, icon: '💎', amount: 5, type: 'gems' },
+            { day: 6, icon: '🪙', amount: 150, type: 'coins' },
+            { day: 7, icon: '🏆', amount: 1, type: 'premium crate', bonus: true }
+        ],
+
+        // Milestone rewards
+        milestones: [
+            { days: 7, icon: '🎨', reward: 'Exclusive Trail Effect', claimed: false },
+            { days: 14, icon: '👤', reward: 'Golden Avatar Frame', claimed: false },
+            { days: 30, icon: '🌟', reward: 'Legendary Skin', claimed: false },
+            { days: 60, icon: '💫', reward: 'Animated Profile Badge', claimed: false },
+            { days: 100, icon: '👑', reward: 'Crown of Dedication', claimed: false }
+        ],
+
+        async init() {
+            // Check login
+            try {
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await resp.json();
+                if (!data.loggedIn) {
+                    this.showLoginPrompt();
+                    return;
+                }
+                await this.loadProgress();
+                this.render();
+            } catch (e) {
+                this.showLoginPrompt();
+            }
+        },
+
+        showLoginPrompt() {
+            document.getElementById('content').innerHTML = `
+                <div class="login-prompt">
+                    <h2>Login Required</h2>
+                    <p>Sign in to claim your daily rewards and build your streak!</p>
+                    <a href="login.html">Login Now</a>
+                </div>
+            `;
+        },
+
+        async loadProgress() {
+            try {
+                const resp = await fetch('api/daily-rewards.php?action=status', { credentials: 'include' });
+                const data = await resp.json();
+                if (data.success) {
+                    this.streak = data.streak || 0;
+                    this.lastClaim = data.lastClaim;
+                    this.canClaim = data.canClaim;
+                    this.weekProgress = data.weekProgress || [];
+
+                    // Update milestones
+                    this.milestones.forEach(m => {
+                        m.claimed = this.streak >= m.days;
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to load progress:', e);
+            }
+        },
+
+        render() {
+            const dayOfWeek = (this.streak % 7) || 7;
+            const nextRewardIn = this.getNextRewardTime();
+
+            document.getElementById('content').innerHTML = `
+                <div class="streak-banner">
+                    <div class="streak-fire">${this.streak >= 7 ? '🔥🔥🔥' : this.streak >= 3 ? '🔥🔥' : '🔥'}</div>
+                    <div class="streak-count">${this.streak}</div>
+                    <div class="streak-label">Day Streak</div>
+                    ${!this.canClaim ? `
+                        <div class="next-reward-timer">
+                            Next reward in: <span id="countdown">${nextRewardIn}</span>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="rewards-section">
+                    <h2>Weekly Rewards</h2>
+                    <div class="rewards-grid">
+                        ${this.weeklyRewards.map((reward, i) => {
+                            const dayNum = i + 1;
+                            const weekNum = Math.floor(this.streak / 7);
+                            const currentDay = (this.streak % 7) || 7;
+
+                            let status = 'locked';
+                            if (this.weekProgress.includes(dayNum)) {
+                                status = 'claimed';
+                            } else if (dayNum === currentDay + 1 && this.canClaim) {
+                                status = 'available';
+                            } else if (dayNum <= currentDay) {
+                                status = 'claimed';
+                            }
+
+                            // First day of new week
+                            if (this.canClaim && currentDay === 7 && dayNum === 1) {
+                                status = 'available';
+                            }
+                            if (this.canClaim && this.streak === 0 && dayNum === 1) {
+                                status = 'available';
+                            }
+
+                            return `
+                                <div class="reward-day ${status} ${reward.bonus ? 'bonus' : ''}"
+                                     data-day="${dayNum}"
+                                     onclick="${status === 'available' ? 'DailyRewards.claim()' : ''}">
+                                    <div class="day-number">Day ${dayNum}</div>
+                                    <div class="reward-icon">${reward.icon}</div>
+                                    <div class="reward-amount">${reward.amount}</div>
+                                    <div class="reward-type">${reward.type}</div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    ${this.canClaim ? `
+                        <button class="claim-btn" onclick="DailyRewards.claim()">
+                            Claim Day ${((this.streak % 7) || 0) + 1} Reward!
+                        </button>
+                    ` : ''}
+                </div>
+
+                <div class="milestones-section">
+                    <h2>Streak Milestones</h2>
+                    ${this.milestones.map(m => `
+                        <div class="milestone-row ${this.streak >= m.days ? 'achieved' : ''}">
+                            <div class="milestone-days">${m.days} Days</div>
+                            <div class="milestone-reward">
+                                <span class="milestone-reward-icon">${m.icon}</span>
+                                <span>${m.reward}</span>
+                            </div>
+                            ${this.streak >= m.days ? '<span class="milestone-status">Unlocked!</span>' : `<span style="color:#888">${m.days - this.streak} days left</span>`}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            // Start countdown if needed
+            if (!this.canClaim) {
+                this.startCountdown();
+            }
+        },
+
+        getNextRewardTime() {
+            if (!this.lastClaim) return '00:00:00';
+
+            const lastClaim = new Date(this.lastClaim);
+            const nextClaim = new Date(lastClaim);
+            nextClaim.setDate(nextClaim.getDate() + 1);
+            nextClaim.setHours(0, 0, 0, 0);
+
+            const now = new Date();
+            const diff = nextClaim - now;
+
+            if (diff <= 0) return '00:00:00';
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+            return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        },
+
+        startCountdown() {
+            setInterval(() => {
+                const el = document.getElementById('countdown');
+                if (el) {
+                    const time = this.getNextRewardTime();
+                    el.textContent = time;
+                    if (time === '00:00:00') {
+                        location.reload();
+                    }
+                }
+            }, 1000);
+        },
+
+        async claim() {
+            if (!this.canClaim) return;
+
+            try {
+                const resp = await fetch('api/daily-rewards.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'claim' })
+                });
+
+                const data = await resp.json();
+                if (data.success) {
+                    // Show celebration
+                    const reward = data.reward;
+                    document.getElementById('celebrationIcon').textContent = reward.icon;
+                    document.getElementById('celebrationText').textContent = `+${reward.amount} ${reward.type}`;
+                    document.getElementById('celebration').classList.add('show');
+
+                    // Update state
+                    this.streak = data.newStreak;
+                    this.canClaim = false;
+                    this.lastClaim = new Date().toISOString();
+                }
+            } catch (e) {
+                console.error('Failed to claim:', e);
+            }
+        }
+    };
+
+    function closeCelebration() {
+        document.getElementById('celebration').classList.remove('show');
+        DailyRewards.render();
+    }
+
+    // Init on load
+    DailyRewards.init();
+    </script>
+</body>
+</html>

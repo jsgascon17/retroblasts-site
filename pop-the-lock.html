@@ -506,6 +506,18 @@
 
             // Track stats
             trackGameEnd();
+
+            // Award coins on server (if logged in)
+            fetch('api/game-rewards.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'pop-the-lock', score: score })
+            }).then(r => r.json()).then(data => {
+                if (data.success && data.coinsEarned > 0) {
+                    messageEl.textContent += ' +' + data.coinsEarned + ' coins';
+                }
+            }).catch(() => {});
         }
 
         function startGame() {

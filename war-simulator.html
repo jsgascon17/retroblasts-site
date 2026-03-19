@@ -282,6 +282,10 @@
         let lastShotTime = 0;
         const FIRE_RATE = 400;  // ms between shots
 
+        // Mouse/crosshair position
+        let mouseX = 0;
+        let mouseY = 0;
+
         // Ground scroll
         let groundOffset = 0;
 
@@ -590,12 +594,7 @@
         }
 
         function drawCrosshair() {
-            const W = canvas.width;
-            const H = canvas.height;
-            const centerX = W / 2;
-            const centerY = H / 2;
-
-            // Red crosshair like in the image
+            // Red crosshair at mouse position
             ctx.strokeStyle = '#FF4444';
             ctx.lineWidth = 3;
 
@@ -604,24 +603,24 @@
 
             // Horizontal lines
             ctx.beginPath();
-            ctx.moveTo(centerX - size - gap, centerY);
-            ctx.lineTo(centerX - gap, centerY);
-            ctx.moveTo(centerX + gap, centerY);
-            ctx.lineTo(centerX + size + gap, centerY);
+            ctx.moveTo(mouseX - size - gap, mouseY);
+            ctx.lineTo(mouseX - gap, mouseY);
+            ctx.moveTo(mouseX + gap, mouseY);
+            ctx.lineTo(mouseX + size + gap, mouseY);
             ctx.stroke();
 
             // Vertical lines
             ctx.beginPath();
-            ctx.moveTo(centerX, centerY - size - gap);
-            ctx.lineTo(centerX, centerY - gap);
-            ctx.moveTo(centerX, centerY + gap);
-            ctx.lineTo(centerX, centerY + size + gap);
+            ctx.moveTo(mouseX, mouseY - size - gap);
+            ctx.lineTo(mouseX, mouseY - gap);
+            ctx.moveTo(mouseX, mouseY + gap);
+            ctx.lineTo(mouseX, mouseY + size + gap);
             ctx.stroke();
 
             // Center dot
             ctx.fillStyle = '#FF4444';
             ctx.beginPath();
-            ctx.arc(centerX, centerY, 2, 0, Math.PI * 2);
+            ctx.arc(mouseX, mouseY, 2, 0, Math.PI * 2);
             ctx.fill();
         }
 
@@ -689,10 +688,17 @@
             gunRecoil = 1;
             muzzleFlash = 5;
 
-            // Create bullet going forward
+            // Calculate aim direction based on crosshair position
+            const W = canvas.width;
+            const H = canvas.height;
+            // Convert mouseX to game x coordinate (-1 to 1)
+            const targetX = ((mouseX - W/2) / (W/2)) * 0.8;
+            
+            // Create bullet aimed at crosshair
             bullets.push({
                 x: playerX,
                 z: 0,
+                targetX: targetX,
                 speed: 0.08
             });
 
@@ -776,6 +782,11 @@
             // Update bullets
             bullets = bullets.filter(b => {
                 b.z += b.speed;
+                // Move toward target X position
+                if (b.targetX !== undefined) {
+                    const dx = b.targetX - b.x;
+                    b.x += dx * 0.15;
+                }
 
                 // Check enemy hits
                 for (let i = enemies.length - 1; i >= 0; i--) {
@@ -821,6 +832,9 @@
         // ============================================
         function startGame() {
             gameRunning = true;
+            // Initialize crosshair to center
+            mouseX = canvas.width / 2;
+            mouseY = canvas.height / 2;
             distance = 0;
             kills = 0;
             health = 100;
@@ -907,6 +921,13 @@
 
         canvas.addEventListener('mouseup', () => mouseDown = false);
         canvas.addEventListener('mouseleave', () => mouseDown = false);
+        
+        // Track mouse position for crosshair
+        canvas.addEventListener('mousemove', e => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+        });
 
         // Touch support
         canvas.addEventListener('touchstart', e => {
@@ -917,6 +938,13 @@
         canvas.addEventListener('touchend', e => {
             e.preventDefault();
             mouseDown = false;
+        });
+        
+        canvas.addEventListener('touchmove', e => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.touches[0].clientX - rect.left;
+            mouseY = e.touches[0].clientY - rect.top;
         });
 
         // Button handlers

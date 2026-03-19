@@ -890,6 +890,19 @@
             document.getElementById('leaderboardMsg').textContent = '';
 
             gameOverScreen.classList.remove('hidden');
+
+            // Award coins on server (if logged in)
+            fetch('api/game-rewards.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'platformer', score: currentLevel * 100 })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    const coinsEl = document.getElementById('serverCoinsEarned');
+                    if (coinsEl) coinsEl.textContent = data.coinsEarned;
+                }
+            }).catch(() => {});
         }
 
         function startGame() {

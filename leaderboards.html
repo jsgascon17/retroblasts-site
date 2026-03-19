@@ -225,6 +225,10 @@
             margin-bottom: 15px;
         }
 
+        @keyframes rainbow-scroll {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -263,7 +267,6 @@
             color: #98FB98;
         }
 
-        @media (max-width: 768px) {
 
         /* Name Color Styles */
         .name-gold { color: #ffd700; text-shadow: 0 0 5px rgba(255,215,0,0.5); }
@@ -272,6 +275,15 @@
         .name-fire { background: linear-gradient(180deg, #ff0, #f00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .name-ice { color: #00ffff; text-shadow: 0 0 10px #00ffff, 0 0 20px #0080ff; }
         .name-purple { color: #9b59b6; text-shadow: 0 0 8px rgba(155,89,182,0.6); }
+        .name-neon_pink { color: #ff1493; text-shadow: 0 0 10px #ff1493; }
+        .name-cyan { color: #00bcd4; text-shadow: 0 0 8px rgba(0,188,212,0.6); }
+        .name-crimson { color: #dc143c; text-shadow: 0 0 8px rgba(220,20,60,0.6); }
+        .name-silver { color: #c0c0c0; text-shadow: 0 0 5px rgba(192,192,192,0.5); }
+        .name-lime { color: #00ff00; text-shadow: 0 0 8px rgba(0,255,0,0.5); }
+        .player-title-badge { font-size: 0.8em; color: #ffd700; margin-left: 5px; }
+        .name-animated_rainbow { background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff, #ff0000); background-size: 200% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: rainbow-scroll 2s linear infinite; }
+
+        @media (max-width: 768px) {
             h1 { font-size: 1.8rem; }
             .leaderboards-grid { grid-template-columns: 1fr; }
             .game-tabs { gap: 8px; }
@@ -454,7 +466,7 @@
                 return `
                     <li class="score-item">
                         <span class="rank ${rankClass}">${rankDisplay}</span>
-                        <span class="player-name ${score.nameColor ? 'name-' + score.nameColor : ''}">${escapeHtml(score.name)}</span>
+                        <span class="player-name ${score.nameColor ? 'name-' + score.nameColor : ''}">${escapeHtml(score.name)}</span>${score.title ? ' <span class="player-title-badge">' + getTitleDisplay(score.title) + '</span>' : ''}
                         ${dateStr}
                         <span class="player-score">${formatNumber(score.score)}</span>
                     </li>
@@ -473,6 +485,16 @@
         function formatDate(dateStr) {
             const date = new Date(dateStr);
             return date.toLocaleDateString();
+        }
+
+        function getTitleDisplay(titleId) {
+            const titles = {
+                "champion": "Champion 👑",
+                "legend": "Legend ⭐",
+                "whale": "Whale 🐋",
+                "og": "OG 🔥"
+            };
+            return titles[titleId] || titleId;
         }
 
         function escapeHtml(str) {

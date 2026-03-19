@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge a Friend - Sandbox Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        .tabs {
+            display: flex; gap: 10px; margin-bottom: 25px;
+        }
+        .tab {
+            padding: 12px 25px; background: rgba(255,255,255,0.1);
+            border: none; border-radius: 10px; color: #fff;
+            cursor: pointer; font-weight: bold; transition: all 0.2s;
+        }
+        .tab.active { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; }
+        .tab .badge {
+            background: #e94560; color: #fff; padding: 2px 8px;
+            border-radius: 10px; font-size: 0.75rem; margin-left: 5px;
+        }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .challenge-card {
+            background: rgba(0,0,0,0.4); border: 2px solid rgba(255,215,0,0.3);
+            border-radius: 15px; padding: 20px; margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .challenge-card:hover { border-color: #ffd700; }
+        .challenge-card.pending { border-color: #ffd700; }
+        .challenge-card.accepted { border-color: #22c55e; }
+        .challenge-card.declined { border-color: #ef4444; opacity: 0.6; }
+
+        .challenge-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px;
+        }
+        .challenge-players {
+            display: flex; align-items: center; gap: 20px;
+        }
+        .player {
+            text-align: center;
+        }
+        .player-avatar {
+            font-size: 2.5rem; margin-bottom: 5px;
+        }
+        .player-name { font-weight: bold; }
+        .vs {
+            font-size: 1.5rem; font-weight: bold; color: #ffd700;
+        }
+        .challenge-game {
+            background: rgba(255,215,0,0.2); padding: 10px 20px;
+            border-radius: 20px; font-weight: bold; color: #ffd700;
+        }
+        .challenge-status {
+            padding: 8px 15px; border-radius: 15px; font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .status-pending { background: #ffd700; color: #000; }
+        .status-accepted { background: #22c55e; color: #fff; }
+        .status-declined { background: #ef4444; color: #fff; }
+        .status-completed { background: #8b5cf6; color: #fff; }
+
+        .challenge-details {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .challenge-info { color: #888; font-size: 0.9rem; }
+        .challenge-actions { display: flex; gap: 10px; }
+        .btn {
+            padding: 10px 20px; border: none; border-radius: 10px;
+            cursor: pointer; font-weight: bold; transition: all 0.2s;
+        }
+        .btn:hover { transform: scale(1.05); }
+        .btn-accept { background: #22c55e; color: #fff; }
+        .btn-decline { background: #ef4444; color: #fff; }
+        .btn-play { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; }
+
+        /* Create Challenge Section */
+        .create-section {
+            background: rgba(0,0,0,0.4); border: 2px solid #ffd700;
+            border-radius: 20px; padding: 30px; margin-bottom: 30px;
+        }
+        .create-section h2 { color: #ffd700; margin-bottom: 20px; }
+
+        .form-row {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group { }
+        .form-group label {
+            display: block; margin-bottom: 8px; color: #888;
+        }
+        .form-group select, .form-group input {
+            width: 100%; padding: 12px 15px;
+            background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px; color: #fff; font-size: 1rem;
+        }
+        .form-group select:focus, .form-group input:focus {
+            outline: none; border-color: #ffd700;
+        }
+
+        .game-select {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px; margin-top: 10px;
+        }
+        .game-option {
+            background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 15px; text-align: center;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .game-option:hover { border-color: rgba(255,215,0,0.5); }
+        .game-option.selected { border-color: #ffd700; background: rgba(255,215,0,0.1); }
+        .game-option .icon { font-size: 2rem; margin-bottom: 5px; }
+        .game-option .name { font-size: 0.8rem; color: #888; }
+
+        .send-challenge-btn {
+            width: 100%; padding: 15px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border: none; border-radius: 15px;
+            color: #000; font-size: 1.2rem; font-weight: bold;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .send-challenge-btn:hover { transform: scale(1.02); box-shadow: 0 5px 25px rgba(255,215,0,0.4); }
+        .send-challenge-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: #666;
+        }
+        .empty-state .icon { font-size: 4rem; margin-bottom: 15px; }
+
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            padding: 15px 30px; border-radius: 10px; z-index: 2000;
+            animation: slideUp 0.3s ease;
+        }
+        .toast.success { background: #22c55e; color: #fff; }
+        .toast.error { background: #ef4444; color: #fff; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        /* Head to Head Record */
+        .h2h-section {
+            background: rgba(0,0,0,0.3); border-radius: 15px;
+            padding: 20px; margin-top: 20px;
+        }
+        .h2h-section h3 { color: #ffd700; margin-bottom: 15px; }
+        .h2h-record {
+            display: flex; gap: 15px; flex-wrap: wrap;
+        }
+        .h2h-card {
+            background: rgba(255,255,255,0.05); border-radius: 10px;
+            padding: 15px; text-align: center; min-width: 150px;
+        }
+        .h2h-opponent { font-weight: bold; margin-bottom: 10px; }
+        .h2h-stats { display: flex; justify-content: center; gap: 15px; }
+        .h2h-stat { text-align: center; }
+        .h2h-stat .value { font-size: 1.5rem; font-weight: bold; }
+        .h2h-stat.wins .value { color: #22c55e; }
+        .h2h-stat.losses .value { color: #ef4444; }
+
+        .login-prompt {
+            text-align: center; padding: 60px 20px;
+            background: rgba(0,0,0,0.3); border-radius: 20px;
+        }
+        .login-prompt h2 { margin-bottom: 15px; }
+        .login-prompt p { color: #888; margin-bottom: 25px; }
+        .login-prompt .btn-login {
+            display: inline-block; padding: 15px 40px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000; text-decoration: none; border-radius: 25px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚔️ Challenge a Friend</h1>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">🏠 Home</a>
+                <a href="friends.html" class="nav-link">👥 Friends</a>
+            </div>
+        </div>
+
+        <div id="loginPrompt" class="login-prompt" style="display: none;">
+            <h2>🔐 Login Required</h2>
+            <p>Sign in to challenge your friends!</p>
+            <a href="login.html?redirect=challenge.html" class="btn-login">Login / Register</a>
+        </div>
+
+        <div id="mainContent" style="display: none;">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('create')">New Challenge</button>
+                <button class="tab" onclick="showTab('incoming')">
+                    Incoming <span id="incomingCount" class="badge" style="display:none;">0</span>
+                </button>
+                <button class="tab" onclick="showTab('outgoing')">Sent</button>
+                <button class="tab" onclick="showTab('history')">History</button>
+            </div>
+
+            <!-- Create Challenge Panel -->
+            <div id="createPanel" class="panel active">
+                <div class="create-section">
+                    <h2>⚔️ Send a Challenge</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Challenge Who?</label>
+                            <select id="friendSelect">
+                                <option value="">Select a friend...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Wager (Optional)</label>
+                            <input type="number" id="wagerAmount" min="0" max="1000" value="0" placeholder="Coins to bet">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Choose a Game</label>
+                        <div class="game-select" id="gameSelect"></div>
+                    </div>
+
+                    <button class="send-challenge-btn" id="sendBtn" onclick="sendChallenge()" disabled>
+                        ⚔️ Send Challenge
+                    </button>
+                </div>
+
+                <div class="h2h-section">
+                    <h3>📊 Head-to-Head Records</h3>
+                    <div class="h2h-record" id="h2hRecords">
+                        <div class="empty-state" style="padding: 20px; width: 100%;">
+                            <p>Play challenges to build your head-to-head records!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Incoming Challenges Panel -->
+            <div id="incomingPanel" class="panel">
+                <div id="incomingList"></div>
+            </div>
+
+            <!-- Outgoing Challenges Panel -->
+            <div id="outgoingPanel" class="panel">
+                <div id="outgoingList"></div>
+            </div>
+
+            <!-- History Panel -->
+            <div id="historyPanel" class="panel">
+                <div id="historyList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let friends = [];
+        let selectedGame = null;
+        let challenges = [];
+        
+        const games = [
+            { id: 'snake', name: 'Snake', icon: '🐍' },
+            { id: 'flappy-bird', name: 'Flappy Bird', icon: '🐦' },
+            { id: 'space-invaders', name: 'Space Invaders', icon: '👾' },
+            { id: 'tetris', name: 'Tetris', icon: '🧱' },
+            { id: '2048', name: '2048', icon: '🔢' },
+            { id: 'pacman', name: 'Pac-Man', icon: '🟡' },
+            { id: 'asteroids', name: 'Asteroids', icon: '☄️' },
+            { id: 'whack-a-mole', name: 'Whack-a-Mole', icon: '🔨' },
+            { id: 'crossy-road', name: 'Crossy Road', icon: '🐔' },
+            { id: 'fruit-ninja', name: 'Fruit Ninja', icon: '🍉' },
+            { id: 'doodle-jump', name: 'Doodle Jump', icon: '🦘' },
+            { id: 'knife-hit', name: 'Knife Hit', icon: '🔪' }
+        ];
+
+        async function init() {
+            try {
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await resp.json();
+                
+                if (!data.loggedIn) {
+                    document.getElementById('loginPrompt').style.display = 'block';
+                    return;
+                }
+                
+                currentUser = data.user;
+                document.getElementById('mainContent').style.display = 'block';
+                
+                renderGameSelect();
+                await loadFriends();
+                await loadChallenges();
+                loadH2HRecords();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderGameSelect() {
+            const container = document.getElementById('gameSelect');
+            container.innerHTML = games.map(g => `
+                <div class="game-option" onclick="selectGame('${g.id}')" id="game-${g.id}">
+                    <div class="icon">${g.icon}</div>
+                    <div class="name">${g.name}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectGame(gameId) {
+            document.querySelectorAll('.game-option').forEach(el => el.classList.remove('selected'));
+            document.getElementById('game-' + gameId).classList.add('selected');
+            selectedGame = gameId;
+            updateSendButton();
+        }
+
+        function updateSendButton() {
+            const friendId = document.getElementById('friendSelect').value;
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = !friendId || !selectedGame;
+        }
+
+        async function loadFriends() {
+            try {
+                const resp = await fetch('api/friends.php?action=list', { credentials: 'include' });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    friends = data.friends;
+                    const select = document.getElementById('friendSelect');
+                    select.innerHTML = '<option value="">Select a friend...</option>' +
+                        friends.map(f => `<option value="${f.username}">${f.displayName} (${f.isOnline ? 'Online' : 'Offline'})</option>`).join('');
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadChallenges() {
+            try {
+                const resp = await fetch('api/challenges.php?action=list', { credentials: 'include' });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    challenges = data.challenges || [];
+                    renderChallenges();
+                }
+            } catch (e) {
+                console.error(e);
+                challenges = [];
+                renderChallenges();
+            }
+        }
+
+        function renderChallenges() {
+            const incoming = challenges.filter(c => c.to === currentUser.username && c.status === 'pending');
+            const outgoing = challenges.filter(c => c.from === currentUser.username && c.status === 'pending');
+            const history = challenges.filter(c => c.status !== 'pending');
+
+            // Update badge
+            const badge = document.getElementById('incomingCount');
+            if (incoming.length > 0) {
+                badge.textContent = incoming.length;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+
+            // Render incoming
+            document.getElementById('incomingList').innerHTML = incoming.length ? 
+                incoming.map(c => renderChallengeCard(c, 'incoming')).join('') :
+                '<div class="empty-state"><div class="icon">📭</div><p>No incoming challenges</p></div>';
+
+            // Render outgoing
+            document.getElementById('outgoingList').innerHTML = outgoing.length ?
+                outgoing.map(c => renderChallengeCard(c, 'outgoing')).join('') :
+                '<div class="empty-state"><div class="icon">📤</div><p>No pending challenges sent</p></div>';
+
+            // Render history
+            document.getElementById('historyList').innerHTML = history.length ?
+                history.map(c => renderChallengeCard(c, 'history')).join('') :
+                '<div class="empty-state"><div class="icon">📜</div><p>No challenge history yet</p></div>';
+        }
+
+        function renderChallengeCard(c, type) {
+            const game = games.find(g => g.id === c.game) || { name: c.game, icon: '🎮' };
+            const isIncoming = c.to === currentUser.username;
+            const opponent = isIncoming ? c.from : c.to;
+            const opponentDisplay = isIncoming ? c.fromDisplay : c.toDisplay;
+            
+            let statusClass = 'status-' + c.status;
+            let statusText = c.status.charAt(0).toUpperCase() + c.status.slice(1);
+            
+            let actions = '';
+            if (type === 'incoming') {
+                actions = `
+                    <button class="btn btn-accept" onclick="respondChallenge('${c.id}', 'accept')">✓ Accept</button>
+                    <button class="btn btn-decline" onclick="respondChallenge('${c.id}', 'decline')">✗ Decline</button>
+                `;
+            } else if (type === 'outgoing') {
+                actions = `<button class="btn btn-decline" onclick="cancelChallenge('${c.id}')">Cancel</button>`;
+            } else if (c.status === 'accepted') {
+                actions = `<a href="${c.game}.html?challenge=${c.id}" class="btn btn-play">▶ Play Now!</a>`;
+            }
+
+            return `
+                <div class="challenge-card ${c.status}">
+                    <div class="challenge-header">
+                        <div class="challenge-players">
+                            <div class="player">
+                                <div class="player-avatar">${isIncoming ? '😎' : '🎮'}</div>
+                                <div class="player-name">${isIncoming ? opponentDisplay : 'You'}</div>
+                            </div>
+                            <div class="vs">VS</div>
+                            <div class="player">
+                                <div class="player-avatar">${isIncoming ? '🎮' : '😎'}</div>
+                                <div class="player-name">${isIncoming ? 'You' : opponentDisplay}</div>
+                            </div>
+                        </div>
+                        <div class="challenge-game">${game.icon} ${game.name}</div>
+                    </div>
+                    <div class="challenge-details">
+                        <div class="challenge-info">
+                            ${c.wager > 0 ? '💰 ' + c.wager + ' coins wager • ' : ''}
+                            ${new Date(c.createdAt).toLocaleDateString()}
+                        </div>
+                        <div class="challenge-actions">
+                            <span class="challenge-status ${statusClass}">${statusText}</span>
+                            ${actions}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function sendChallenge() {
+            const friendId = document.getElementById('friendSelect').value;
+            const wager = parseInt(document.getElementById('wagerAmount').value) || 0;
+            
+            if (!friendId || !selectedGame) {
+                showToast('Select a friend and game', 'error');
+                return;
+            }
+
+            try {
+                const resp = await fetch('api/challenges.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'create',
+                        to: friendId,
+                        game: selectedGame,
+                        wager: wager
+                    })
+                });
+                const data = await resp.json();
+
+                if (data.success) {
+                    showToast('Challenge sent! ⚔️', 'success');
+                    document.getElementById('friendSelect').value = '';
+                    document.getElementById('wagerAmount').value = '0';
+                    document.querySelectorAll('.game-option').forEach(el => el.classList.remove('selected'));
+                    selectedGame = null;
+                    updateSendButton();
+                    loadChallenges();
+                } else {
+                    showToast(data.error || 'Failed to send', 'error');
+                }
+            } catch (e) {
+                showToast('Failed to send challenge', 'error');
+            }
+        }
+
+        async function respondChallenge(id, response) {
+            try {
+                const resp = await fetch('api/challenges.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: response, id: id })
+                });
+                const data = await resp.json();
+
+                if (data.success) {
+                    if (response === "accept" && data.challenge) {
+                    showToast("Challenge accepted! Starting game...", "success");
+                    setTimeout(() => {
+                        window.location.href = data.challenge.game + ".html?challenge=" + data.challenge.id;
+                    }, 1000);
+                } else {
+                    showToast("Challenge declined", "success");
+                }
+                    loadChallenges();
+                } else {
+                    showToast(data.error || 'Failed', 'error');
+                }
+            } catch (e) {
+                showToast('Failed', 'error');
+            }
+        }
+
+        async function cancelChallenge(id) {
+            if (!confirm('Cancel this challenge?')) return;
+            
+            try {
+                const resp = await fetch('api/challenges.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'cancel', id: id })
+                });
+                loadChallenges();
+            } catch (e) {}
+        }
+
+        function loadH2HRecords() {
+            // Load from localStorage for now
+            const records = JSON.parse(localStorage.getItem('h2h_records') || '{}');
+            const container = document.getElementById('h2hRecords');
+            
+            const entries = Object.entries(records);
+            if (entries.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="padding: 20px; width: 100%;"><p>Play challenges to build your records!</p></div>';
+                return;
+            }
+
+            container.innerHTML = entries.map(([opponent, stats]) => `
+                <div class="h2h-card">
+                    <div class="h2h-opponent">${opponent}</div>
+                    <div class="h2h-stats">
+                        <div class="h2h-stat wins">
+                            <div class="value">${stats.wins || 0}</div>
+                            <div>Wins</div>
+                        </div>
+                        <div class="h2h-stat losses">
+                            <div class="value">${stats.losses || 0}</div>
+                            <div>Losses</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            
+            const tabs = ['create', 'incoming', 'outgoing', 'history'];
+            const index = tabs.indexOf(tab);
+            document.querySelector(`.tab:nth-child(${index + 1})`).classList.add('active');
+            document.getElementById(tab + 'Panel').classList.add('active');
+        }
+
+        function showToast(msg, type) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        document.getElementById('friendSelect').addEventListener('change', updateSendButton);
+        
+        init();
+        
+        // Poll for new challenges
+        // Poll more frequently and check for accepted challenges
+        setInterval(async () => {
+            await loadChallenges();
+            // Check if any challenge was just accepted - redirect challenger to game
+            const activeResp = await fetch("api/challenges.php?action=active", { credentials: "include" });
+            const activeData = await activeResp.json();
+            if (activeData.success && activeData.challenge && activeData.challenge.status === "accepted") {
+                const c = activeData.challenge;
+                // Only redirect if we are the challenger (from) and havent played yet
+                if (c.from === currentUser.username && !c.scores[currentUser.username]) {
+                    showToast("Your challenge was accepted! Starting game...", "success");
+                    setTimeout(() => {
+                        window.location.href = c.game + ".html?challenge=" + c.id;
+                    }, 1500);
+                }
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

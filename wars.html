@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Wars - Sandbox Arcade</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .header {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ef4444;
+        }
+        .header h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.2rem;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        
+        .container { max-width: 1000px; margin: 0 auto; padding: 30px; }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 12px 25px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .tab:hover { background: rgba(255,255,255,0.2); }
+        .tab.active {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-color: #fff;
+            color: #fff;
+        }
+        
+        .section { display: none; }
+        .section.active { display: block; }
+        
+        /* Active War Banner */
+        .active-war {
+            background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(220,38,38,0.2));
+            border: 3px solid #ef4444;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .war-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.5rem;
+            color: #ef4444;
+            margin-bottom: 20px;
+        }
+        .war-teams {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        .war-team {
+            text-align: center;
+            flex: 1;
+            max-width: 200px;
+        }
+        .war-team-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .war-team-score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+        .war-vs {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 2rem;
+            color: #ef4444;
+        }
+        .war-timer {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 25px;
+            border-radius: 30px;
+            display: inline-block;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        .war-games {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .war-game {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            text-decoration: none;
+            color: #fff;
+            transition: transform 0.2s;
+        }
+        .war-game:hover { transform: scale(1.05); }
+        
+        /* Pending War */
+        .pending-war {
+            background: rgba(245,158,11,0.2);
+            border: 2px solid #f59e0b;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pending-war .info {
+            flex: 1;
+        }
+        .pending-war .challenger {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #f59e0b;
+        }
+        .pending-war .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-accept {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+        }
+        .btn-decline {
+            background: rgba(239,68,68,0.2);
+            border: 2px solid #ef4444;
+            color: #ef4444;
+        }
+        .btn:hover { transform: scale(1.05); }
+        
+        /* Challenge Form */
+        .challenge-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .challenge-section h3 {
+            color: #ef4444;
+            margin-bottom: 15px;
+        }
+        .team-list {
+            display: grid;
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .team-item {
+            background: rgba(255,255,255,0.05);
+            padding: 15px 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .team-item:hover {
+            border-color: #ef4444;
+            background: rgba(239,68,68,0.1);
+        }
+        .team-item .name {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .team-item .tag {
+            background: rgba(0,0,0,0.3);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+        .btn-challenge {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+            padding: 8px 20px;
+        }
+        
+        /* Contributions */
+        .contributions {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .contributions h4 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+        .contribution {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .contribution:last-child { border: none; }
+        .contribution .player { color: #888; }
+        .contribution .game { color: #22c55e; }
+        .contribution .score { color: #ffd700; font-weight: bold; }
+        
+        /* Leaderboard */
+        .leaderboard-item {
+            background: rgba(255,255,255,0.05);
+            padding: 15px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+        .leaderboard-item .rank {
+            font-size: 1.5rem;
+            font-weight: bold;
+            width: 40px;
+            color: #ffd700;
+        }
+        .leaderboard-item .rank:nth-child(1) { color: #ffd700; }
+        .leaderboard-item:nth-child(2) .rank { color: #c0c0c0; }
+        .leaderboard-item:nth-child(3) .rank { color: #cd7f32; }
+        .leaderboard-item .info { flex: 1; }
+        .leaderboard-item .name { font-weight: 600; font-size: 1.1rem; }
+        .leaderboard-item .stats { color: #888; font-size: 0.9rem; }
+        .leaderboard-item .wins {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        /* History */
+        .history-item {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .history-item .teams {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .history-item .team-score {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .history-item .winner { color: #22c55e; }
+        .history-item .loser { color: #888; }
+        .history-item .date { color: #666; font-size: 0.85rem; }
+        
+        .no-team-msg {
+            text-align: center;
+            padding: 50px;
+            color: #888;
+        }
+        .no-team-msg a { color: #f59e0b; }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            z-index: 10000;
+            animation: slideUp 0.3s ease;
+        }
+        .toast.success { background: #22c55e; color: #fff; }
+        .toast.error { background: #ef4444; color: #fff; }
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚔️ TEAM WARS</h1>
+        <a href="index.html" class="back-btn">← Back to Arcade</a>
+    </div>
+    
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="current">Current War</div>
+            <div class="tab" data-tab="challenge">Challenge</div>
+            <div class="tab" data-tab="leaderboard">Leaderboard</div>
+            <div class="tab" data-tab="history">History</div>
+        </div>
+        
+        <div id="currentSection" class="section active">
+            <div id="noTeamMsg" class="no-team-msg" style="display:none;">
+                You need to join a team to participate in wars!<br><br>
+                <a href="teams.html">Go to Teams</a>
+            </div>
+            
+            <div id="noWarMsg" class="no-team-msg" style="display:none;">
+                Your team is not currently in a war.<br><br>
+                Challenge another team to start one!
+            </div>
+            
+            <div id="pendingWars"></div>
+            
+            <div id="activeWar" class="active-war" style="display:none;">
+                <div class="war-title">⚔️ WAR IN PROGRESS ⚔️</div>
+                <div class="war-teams">
+                    <div class="war-team">
+                        <div class="war-team-name" id="team1Name">Team 1</div>
+                        <div class="war-team-score" id="team1Score">0</div>
+                    </div>
+                    <div class="war-vs">VS</div>
+                    <div class="war-team">
+                        <div class="war-team-name" id="team2Name">Team 2</div>
+                        <div class="war-team-score" id="team2Score">0</div>
+                    </div>
+                </div>
+                <div class="war-timer">⏱️ Time Left: <span id="warTimer">--:--:--</span></div>
+                <div style="margin-bottom: 15px;">Play these games to earn points for your team:</div>
+                <div class="war-games" id="warGames"></div>
+                
+                <div class="contributions" id="contributions">
+                    <h4>Recent Contributions</h4>
+                    <div id="contributionsList"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="challengeSection" class="section">
+            <div class="challenge-section">
+                <h3>Challenge a Team</h3>
+                <div id="teamList" class="team-list"></div>
+            </div>
+        </div>
+        
+        <div id="leaderboardSection" class="section">
+            <h3 style="color: #ffd700; margin-bottom: 20px;">🏆 War Champions</h3>
+            <div id="leaderboard"></div>
+        </div>
+        
+        <div id="historySection" class="section">
+            <h3 style="color: #888; margin-bottom: 20px;">📜 War History</h3>
+            <div id="history"></div>
+        </div>
+    </div>
+    
+    <script>
+        let currentUser = null;
+        let myTeam = null;
+        let currentWar = null;
+        let timerInterval = null;
+        
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab + 'Section').classList.add('active');
+                
+                if (tab.dataset.tab === 'leaderboard') loadLeaderboard();
+                if (tab.dataset.tab === 'history') loadHistory();
+                if (tab.dataset.tab === 'challenge') loadTeams();
+            });
+        });
+        
+        async function init() {
+            // Check if logged in
+            const authResp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+            const authData = await authResp.json();
+            if (!authData.loggedIn) {
+                window.location.href = 'login.html';
+                return;
+            }
+            currentUser = authData.user;
+            
+            // Get my team's war
+            await loadCurrentWar();
+        }
+        
+        async function loadCurrentWar() {
+            const resp = await fetch('api/wars.php?action=my', { credentials: 'include' });
+            const data = await resp.json();
+            
+            if (data.message === 'Not in a team') {
+                document.getElementById('noTeamMsg').style.display = 'block';
+                document.getElementById('activeWar').style.display = 'none';
+                document.getElementById('noWarMsg').style.display = 'none';
+                return;
+            }
+            
+            myTeam = { id: data.myTeamId };
+            currentWar = data.war;
+            
+            if (!currentWar) {
+                document.getElementById('noWarMsg').style.display = 'block';
+                document.getElementById('activeWar').style.display = 'none';
+                loadPendingWars();
+                return;
+            }
+            
+            if (currentWar.status === 'pending') {
+                document.getElementById('activeWar').style.display = 'none';
+                loadPendingWars();
+                return;
+            }
+            
+            // Show active war
+            document.getElementById('noWarMsg').style.display = 'none';
+            document.getElementById('activeWar').style.display = 'block';
+            
+            document.getElementById('team1Name').textContent = currentWar.team1Name;
+            document.getElementById('team2Name').textContent = currentWar.team2Name;
+            document.getElementById('team1Score').textContent = currentWar.scores[currentWar.team1].toLocaleString();
+            document.getElementById('team2Score').textContent = currentWar.scores[currentWar.team2].toLocaleString();
+            
+            // Highlight my team
+            if (currentWar.team1 === myTeam.id) {
+                document.getElementById('team1Name').style.color = '#22c55e';
+            } else {
+                document.getElementById('team2Name').style.color = '#22c55e';
+            }
+            
+            // War games
+            const gamesHtml = currentWar.games.map(game => {
+                const name = game.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                return `<a href="${game}.html?war=${currentWar.id}" class="war-game">🎮 ${name}</a>`;
+            }).join('');
+            document.getElementById('warGames').innerHTML = gamesHtml;
+            
+            // Timer
+            startTimer();
+            
+            // Contributions
+            loadContributions();
+        }
+        
+        async function loadPendingWars() {
+            const resp = await fetch('api/wars.php?action=my', { credentials: 'include' });
+            const data = await resp.json();
+            
+            if (data.war && data.war.status === 'pending' && data.war.team2 === myTeam.id) {
+                document.getElementById('pendingWars').innerHTML = `
+                    <div class="pending-war">
+                        <div class="info">
+                            <div class="challenger">⚔️ ${data.war.team1Name} has challenged your team!</div>
+                            <div style="color: #888;">24-hour war • All scores count</div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-accept" onclick="respondWar('${data.war.id}', 'accept')">Accept</button>
+                            <button class="btn btn-decline" onclick="respondWar('${data.war.id}', 'decline')">Decline</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        async function respondWar(warId, action) {
+            const resp = await fetch('api/wars.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: action, warId: warId })
+            });
+            const data = await resp.json();
+            
+            if (data.success) {
+                showToast(action === 'accept' ? 'War accepted! Game on!' : 'War declined', 'success');
+                loadCurrentWar();
+            } else {
+                showToast(data.error || 'Failed', 'error');
+            }
+        }
+        
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            const updateTimer = () => {
+                const endTime = new Date(currentWar.endsAt).getTime();
+                const now = Date.now();
+                const diff = endTime - now;
+                
+                if (diff <= 0) {
+                    document.getElementById('warTimer').textContent = 'WAR ENDED';
+                    clearInterval(timerInterval);
+                    loadCurrentWar(); // Refresh to get final results
+                    return;
+                }
+                
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                document.getElementById('warTimer').textContent = 
+                    `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            };
+            
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+        
+        function loadContributions() {
+            if (!currentWar || !currentWar.contributions) return;
+            
+            const recent = currentWar.contributions.slice(-10).reverse();
+            const html = recent.map(c => `
+                <div class="contribution">
+                    <span class="player">${c.user}</span>
+                    <span class="game">${c.game}</span>
+                    <span class="score">+${c.score.toLocaleString()}</span>
+                </div>
+            `).join('') || '<div style="color: #666;">No contributions yet. Play some games!</div>';
+            
+            document.getElementById('contributionsList').innerHTML = html;
+        }
+        
+        async function loadTeams() {
+            const resp = await fetch('api/teams.php?action=list', { credentials: 'include' });
+            const data = await resp.json();
+            
+            if (!data.success) return;
+            
+            const teams = data.teams.filter(t => t.id !== myTeam?.id);
+            const html = teams.map(team => `
+                <div class="team-item">
+                    <div class="name">
+                        <span style="color: ${team.color || '#f59e0b'}">${team.name}</span>
+                        <span class="tag">[${team.tag}]</span>
+                    </div>
+                    <button class="btn btn-challenge" onclick="challengeTeam('${team.id}')">⚔️ Challenge</button>
+                </div>
+            `).join('') || '<div style="color: #666;">No other teams available</div>';
+            
+            document.getElementById('teamList').innerHTML = html;
+        }
+        
+        async function challengeTeam(teamId) {
+            const resp = await fetch('api/wars.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'challenge', teamId: teamId })
+            });
+            const data = await resp.json();
+            
+            if (data.success) {
+                showToast('War challenge sent!', 'success');
+                document.querySelector('[data-tab="current"]').click();
+            } else {
+                showToast(data.error || 'Failed to challenge', 'error');
+            }
+        }
+        
+        async function loadLeaderboard() {
+            const resp = await fetch('api/wars.php?action=leaderboard', { credentials: 'include' });
+            const data = await resp.json();
+            
+            if (!data.success) return;
+            
+            const html = data.leaderboard.map((team, i) => `
+                <div class="leaderboard-item">
+                    <div class="rank">#${i + 1}</div>
+                    <div class="info">
+                        <div class="name" style="color: ${team.color}">${team.name}</div>
+                        <div class="stats">${team.wins}W - ${team.losses}L (${team.winRate}% win rate)</div>
+                    </div>
+                    <div class="wins">${team.wins} 🏆</div>
+                </div>
+            `).join('') || '<div style="color: #666;">No war history yet</div>';
+            
+            document.getElementById('leaderboard').innerHTML = html;
+        }
+        
+        async function loadHistory() {
+            const resp = await fetch('api/wars.php?action=history', { credentials: 'include' });
+            const data = await resp.json();
+            
+            if (!data.success) return;
+            
+            const html = data.history.map(war => {
+                const team1Won = war.winner === war.team1;
+                const team2Won = war.winner === war.team2;
+                const date = new Date(war.completedAt || war.createdAt).toLocaleDateString();
+                
+                return `
+                    <div class="history-item">
+                        <div class="teams">
+                            <span class="team-score ${team1Won ? 'winner' : 'loser'}">
+                                ${war.team1Name} (${war.scores[war.team1].toLocaleString()})
+                            </span>
+                            <span style="color: #666;">vs</span>
+                            <span class="team-score ${team2Won ? 'winner' : 'loser'}">
+                                ${war.team2Name} (${war.scores[war.team2].toLocaleString()})
+                            </span>
+                        </div>
+                        <div class="date">${date} • ${war.winner === 'tie' ? 'Tie!' : (team1Won ? war.team1Name : war.team2Name) + ' wins!'}</div>
+                    </div>
+                `;
+            }).join('') || '<div style="color: #666;">No war history yet</div>';
+            
+            document.getElementById('history').innerHTML = html;
+        }
+        
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // Refresh war data periodically
+        setInterval(() => {
+            if (currentWar && currentWar.status === 'active') {
+                loadCurrentWar();
+            }
+        }, 30000);
+        
+        init();
+    </script>
+</body>
+</html>

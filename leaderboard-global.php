@@ -19,7 +19,7 @@ $validGames = [
     'snake' => ['name' => 'Snake', 'icon' => '🐍', 'maxScore' => 100000],
     'space-invaders' => ['name' => 'Space Invaders', 'icon' => '👾', 'maxScore' => 1000000],
     'pac-man' => ['name' => 'Pac-Man', 'icon' => '🟡', 'maxScore' => 1000000],
-    'whack-a-mole' => ['name' => 'Whack-a-Mole', 'icon' => '🐹', 'maxScore' => 500],
+    'whack-a-mole' => ['name' => 'Whack-a-Mole', 'icon' => '🐹', 'maxScore' => 10000],
     'cookie-clicker' => ['name' => 'Cookie Clicker', 'icon' => '🍪', 'maxScore' => 999999999999],
     'zombie-shooter' => ['name' => 'Zombie Shooter', 'icon' => '🧟', 'maxScore' => 10000000],
     'geometry-dash' => ['name' => 'Geometry Dash', 'icon' => '🔷', 'maxScore' => 1000],
@@ -76,6 +76,119 @@ function getUserCosmetics($username) {
         return $users['users'][$username]['equipped'];
     }
     return null;
+}
+
+function logActivity($username, $type, $game = '', $details = '', $score = 0) {
+    $activitiesFile = __DIR__ . '/../data/activities.json';
+    $activities = file_exists($activitiesFile) ? json_decode(file_get_contents($activitiesFile), true) : [];
+    if (!$activities) $activities = [];
+    
+    array_unshift($activities, [
+        'id' => uniqid(),
+        'username' => $username,
+        'type' => $type,
+        'game' => $game,
+        'details' => $details,
+        'score' => $score,
+        'timestamp' => time()
+    ]);
+    
+    $activities = array_slice($activities, 0, 1000);
+function notifyPlayerBeaten($beatenUsername, $beaterDisplayName, $game, $gameName, $beaterScore, $beatenOldScore) {
+    $notificationsFile = __DIR__ . '/data/score-notifications.json';
+    $notifications = file_exists($notificationsFile) ? 
+        json_decode(file_get_contents($notificationsFile), true) : [];
+    if (!$notifications) $notifications = [];
+    
+    $notification = [
+        'id' => uniqid('sn_'),
+        'victim' => $beatenUsername,
+        'beater' => $beaterDisplayName,
+        'game' => $game,
+        'gameName' => $gameName,
+        'theirScore' => $beaterScore,
+        'yourOldScore' => $beatenOldScore,
+        'read' => false,
+        'createdAt' => date('c')
+    ];
+    
+    $notifications[] = $notification;
+    
+    // Keep only last 200 notifications
+    if (count($notifications) > 200) {
+        $notifications = array_slice($notifications, -200);
+    }
+    
+    file_put_contents($notificationsFile, json_encode($notifications, JSON_PRETTY_PRINT));
+}
+    file_put_contents($activitiesFile, json_encode($activities, JSON_PRETTY_PRINT));
+}
+
+function checkFriendScores($username, $game, $newScore, $gameName) {
+    global $usersFile, $dataDir;
+    if (!file_exists($usersFile)) return [];
+    
+    $users = json_decode(file_get_contents($usersFile), true);
+    if (!isset($users['users'][$username]['friends'])) return [];
+    
+    $friendsBeaten = [];
+    $leaderboardFile = $dataDir . $game . '.json';
+    $leaderboard = file_exists($leaderboardFile) ? 
+        json_decode(file_get_contents($leaderboardFile), true) : ['scores' => []];
+    
+    // Build lookup of scores by name
+    $scoresByName = [];
+    foreach ($leaderboard['scores'] as $entry) {
+        $scoresByName[strtolower($entry['name'])] = $entry['score'];
+    }
+    
+    // Check each friend
+    foreach ($users['users'][$username]['friends'] as $friendUsername) {
+        if (!isset($users['users'][$friendUsername])) continue;
+        
+        $friendDisplayName = $users['users'][$friendUsername]['displayName'] ?? $friendUsername;
+        $friendScore = $scoresByName[strtolower($friendDisplayName)] ?? 0;
+        
+        // If we beat their score, notify them that we beat them and notify us
+        if ($newScore > $friendScore && $friendScore > 0) {
+            $friendsBeaten[] = $friendDisplayName;
+            
+            // Create notification for current user
+            createFriendBeatNotification($username, $friendDisplayName, $gameName, $newScore, $friendScore);
+            // Also notify the friend that they were beaten
+            notifyPlayerBeaten($friendUsername, $users["users"][$username]["displayName"] ?? $username, $game, $gameName, $newScore, $friendScore);
+        }
+    }
+    
+    return $friendsBeaten;
+}
+
+function createFriendBeatNotification($username, $friendName, $gameName, $newScore, $oldScore) {
+    global $usersFile;
+    $users = json_decode(file_get_contents($usersFile), true);
+    
+    if (!isset($users['users'][$username]['notifications'])) {
+        $users['users'][$username]['notifications'] = [];
+    }
+    
+    $notification = [
+        'id' => uniqid(),
+        'type' => 'friend_score_beaten',
+        'message' => "You beat {$friendName}'s high score in {$gameName}! ({$newScore} vs {$oldScore})",
+        'data' => [
+            'friend' => $friendName,
+            'game' => $gameName,
+            'yourScore' => $newScore,
+            'theirScore' => $oldScore
+        ],
+        'read' => false,
+        'createdAt' => date('c')
+    ];
+    
+    array_unshift($users['users'][$username]['notifications'], $notification);
+    $users['users'][$username]['notifications'] = array_slice($users['users'][$username]['notifications'], 0, 50);
+    
+    file_put_contents($usersFile, json_encode($users, JSON_PRETTY_PRINT));
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -149,10 +262,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     // Get user cosmetics if logged in
     $nameColor = null;
+    $userTitle = null;
     if (isset($_SESSION['user'])) {
         $cosmetics = getUserCosmetics($_SESSION['user']);
-        if ($cosmetics && isset($cosmetics['name_color'])) {
-            $nameColor = $cosmetics['name_color'];
+        if ($cosmetics) {
+            if (isset($cosmetics['name_color'])) {
+                $nameColor = $cosmetics['name_color'];
+            }
+            if (isset($cosmetics['title'])) {
+                $userTitle = $cosmetics['title'];
+            }
         }
     }
 
@@ -175,12 +294,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'name' => $name,
                 'score' => $score,
                 'date' => date('Y-m-d H:i:s'),
-                'nameColor' => $nameColor
+                'nameColor' => $nameColor,
+                'title' => $userTitle
             ];
         } else {
             // Update cosmetics even if score isn't higher
-            if ($nameColor) {
-                $data['scores'][$existingIndex]['nameColor'] = $nameColor;
+            if ($nameColor || $userTitle) {
+                if ($nameColor) $data['scores'][$existingIndex]['nameColor'] = $nameColor;
+                if ($userTitle) $data['scores'][$existingIndex]['title'] = $userTitle;
                 writeData($dataFile, $data);
             }
             usort($data['scores'], function($a, $b) { return $b['score'] - $a['score']; });
@@ -203,13 +324,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'name' => $name,
             'score' => $score,
             'date' => date('Y-m-d H:i:s'),
-            'nameColor' => $nameColor
+            'nameColor' => $nameColor,
+            'title' => $userTitle
         ];
     }
 
     usort($data['scores'], function($a, $b) { return $b['score'] - $a['score']; });
     $data['scores'] = array_slice($data['scores'], 0, 100);
     writeData($dataFile, $data);
+
+    // Check friend high scores and notify
+    $friendsBeaten = [];
+    if (isset($_SESSION['user'])) {
+        $friendsBeaten = checkFriendScores($_SESSION['user'], $game, $score, $validGames[$game]['name']);
+    }
 
     $rank = 1;
     foreach ($data['scores'] as $entry) {
@@ -220,13 +348,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $wasUpdate = $existingIndex >= 0;
     $message = $wasUpdate ? "New personal best! Rank #$rank" : ($rank <= 10 ? 'You made the top 10!' : 'Score submitted!');
 
+    // Log high score activity
+    if (isset($_SESSION['user'])) {
+        logActivity($_SESSION['user'], 'high_score', $validGames[$game]['name'] ?? $game, '', $score);
+    }
+
     echo json_encode([
         'success' => true,
         'rank' => $rank,
         'totalPlayers' => count($data['scores']),
         'isTopTen' => $rank <= 10,
         'wasUpdate' => $wasUpdate,
-        'message' => $message
+        'isPersonalBest' => $wasUpdate,
+        'message' => $message,
+        'friendsBeaten' => $friendsBeaten
     ]);
 
 } else {

@@ -284,14 +284,18 @@
     <script>
         let selectedAvatar = '😎';
         
-        // Check if already logged in
-        fetch('api/auth.php?action=check', { credentials: 'include' })
-            .then(r => r.json())
-            .then(data => {
-                if (data.loggedIn) {
-                    window.location.href = 'profile.html';
-                }
-            });
+        
+        // Check if already logged in (skip if just logged out)
+        const justLoggedOut = new URLSearchParams(window.location.search).get("logout");
+        if (!justLoggedOut) {
+            fetch("api/auth.php?action=check", { credentials: "include" })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.loggedIn) {
+                        window.location.href = "profile.html";
+                    }
+                });
+        }
         
         function showTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));

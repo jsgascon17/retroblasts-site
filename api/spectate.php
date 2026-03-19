@@ -1,218 +1,216 @@
 <?php
-/**
- * Spectate Mode API
- * 
- * GET:
- *   ?action=list                    - List active games being played
- *   ?action=watch&player=X&game=Y   - Get live game state
- * 
- * POST:
- *   { "action": "broadcast", "game": "snake", "state": {...} }
- *   { "action": "stop" }
- */
-
-session_start();
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+session_start();
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
+$dataFile = __DIR__ . '/../data/live-games.json';
+
+function loadLiveGames() {
+    global $dataFile;
+    if (!file_exists($dataFile)) return [];
+    $data = json_decode(file_get_contents($dataFile), true);
+    return $data ?: [];
 }
 
-$spectateDir = __DIR__ . '/../data/spectate/';
-$usersFile = __DIR__ . '/../data/users.json';
-
-function readUsers() {
-    global $usersFile;
-    if (!file_exists($usersFile)) return ['users' => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ['users' => []];
+function saveLiveGames($data) {
+    global $dataFile;
+    file_put_contents($dataFile, json_encode($data, JSON_PRETTY_PRINT));
 }
 
-function getSpectateFile($username, $game) {
-    global $spectateDir;
-    return $spectateDir . $username . '_' . $game . '.json';
+function loadUsers() {
+    $userFile = __DIR__ . '/../data/users.json';
+    if (!file_exists($userFile)) return [];
+    $data = json_decode(file_get_contents($userFile), true);
+    return $data ?: [];
 }
 
-function cleanOldSpectates() {
-    global $spectateDir;
-    $now = time();
-    $files = glob($spectateDir . '*.json');
-    
-    foreach ($files as $file) {
-        // Remove files older than 30 seconds
-        if (filemtime($file) < $now - 30) {
-            @unlink($file);
+function loadFriends($username) {
+    $friendsFile = __DIR__ . '/../data/friends.json';
+    if (!file_exists($friendsFile)) return [];
+    $data = json_decode(file_get_contents($friendsFile), true);
+    return $data[$username] ?? [];
+}
+
+// Clean up stale games (older than 5 minutes without update)
+function cleanupStaleGames(&$games) {
+    $cutoff = time() - 300; // 5 minutes
+    foreach ($games as $username => $game) {
+        if (isset($game['lastUpdate']) && strtotime($game['lastUpdate']) < $cutoff) {
+            unset($games[$username]);
         }
     }
 }
 
-function getActiveGames() {
-    global $spectateDir;
-    $files = glob($spectateDir . '*.json');
-    $games = [];
-    $now = time();
-    
-    foreach ($files as $file) {
-        // Only show games updated in last 10 seconds
-        if (filemtime($file) < $now - 10) continue;
-        
-        $content = @file_get_contents($file);
-        if (!$content) continue;
-        
-        $data = json_decode($content, true);
-        if (!$data) continue;
-        
-        $games[] = [
-            'player' => $data['player'],
-            'playerName' => $data['playerName'],
-            'avatar' => $data['avatar'] ?? '😎',
-            'game' => $data['game'],
-            'score' => $data['state']['score'] ?? 0,
-            'gameState' => $data['state']['gameState'] ?? 'playing',
-            'spectators' => $data['spectators'] ?? 0,
-            'startedAt' => $data['startedAt'] ?? date('c')
-        ];
-    }
-    
-    // Sort by score descending
-    usort($games, function($a, $b) {
-        return $b['score'] - $a['score'];
-    });
-    
-    return $games;
-}
+$games = loadLiveGames();
+cleanupStaleGames($games);
 
-// Handle GET
+// Handle GET requests
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $action = $_GET['action'] ?? 'list';
-    
-    cleanOldSpectates();
-    
-    if ($action === 'list') {
-        $games = getActiveGames();
-        echo json_encode(['success' => true, 'games' => $games]);
-        exit();
+    $action = $_GET['action'] ?? '';
+
+    // Get live streams (friends only)
+    if ($action === 'live') {
+        if (!isset($_SESSION['user'])) {
+            echo json_encode(['success' => true, 'streams' => []]);
+            exit;
+        }
+
+        $username = $_SESSION['user'];
+        $friends = loadFriends($username);
+        $users = loadUsers();
+
+        $streams = [];
+        foreach ($games as $player => $game) {
+            // Only show friends
+            if (in_array($player, $friends) || $player === $username) {
+                $userInfo = $users['users'][$player] ?? [];
+                $streams[] = [
+                    'username' => $player,
+                    'displayName' => $userInfo['displayName'] ?? $player,
+                    'game' => $game['game'],
+                    'score' => $game['score'] ?? 0,
+                    'viewers' => count($game['viewers'] ?? []),
+                    'startedAt' => $game['startedAt']
+                ];
+            }
+        }
+
+        echo json_encode(['success' => true, 'streams' => $streams]);
+        exit;
     }
-    
+
+    // Watch a specific player
     if ($action === 'watch') {
-        $player = strtolower($_GET['player'] ?? '');
-        $game = $_GET['game'] ?? '';
-        
-        if (!$player || !$game) {
-            echo json_encode(['success' => false, 'error' => 'Missing player or game']);
-            exit();
+        $player = $_GET['player'] ?? '';
+
+        if (!isset($games[$player])) {
+            echo json_encode(['success' => false, 'error' => 'Player not streaming']);
+            exit;
         }
-        
-        $file = getSpectateFile($player, $game);
-        
-        if (!file_exists($file)) {
-            echo json_encode(['success' => false, 'error' => 'Game not found or ended']);
-            exit();
-        }
-        
-        // Check if still active (updated in last 10 seconds)
-        if (filemtime($file) < time() - 10) {
-            echo json_encode(['success' => false, 'error' => 'Game ended']);
-            exit();
-        }
-        
-        $data = json_decode(file_get_contents($file), true);
-        
-        // Increment spectator count
-        $data['spectators'] = ($data['spectators'] ?? 0) + 1;
-        // Don't write back, just track in memory
-        
+
+        $game = $games[$player];
+        $users = loadUsers();
+        $userInfo = $users['users'][$player] ?? [];
+
         echo json_encode([
             'success' => true,
-            'player' => $data['player'],
-            'playerName' => $data['playerName'],
-            'game' => $data['game'],
-            'state' => $data['state'],
-            'timestamp' => $data['timestamp']
+            'state' => [
+                'username' => $player,
+                'displayName' => $userInfo['displayName'] ?? $player,
+                'game' => $game['game'],
+                'score' => $game['score'] ?? 0,
+                'highScore' => $game['highScore'] ?? 0,
+                'level' => $game['level'] ?? 1,
+                'viewers' => count($game['viewers'] ?? []),
+                'isLive' => true,
+                'gameState' => $game['gameState'] ?? null
+            ]
         ]);
-        exit();
+        exit;
     }
-    
-    echo json_encode(['success' => false, 'error' => 'Invalid action']);
-    exit();
 }
 
-// Handle POST
+// Handle POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!isset($_SESSION['user'])) {
-        echo json_encode(['success' => false, 'error' => 'Not logged in']);
-        exit();
-    }
-    
-    $currentUser = $_SESSION['user'];
     $input = json_decode(file_get_contents('php://input'), true);
     $action = $input['action'] ?? '';
-    
-    $users = readUsers();
-    $user = $users['users'][$currentUser] ?? null;
-    
-    if (!$user) {
-        echo json_encode(['success' => false, 'error' => 'User not found']);
-        exit();
-    }
-    
-    if ($action === 'broadcast') {
-        $game = $input['game'] ?? '';
-        $state = $input['state'] ?? [];
-        
-        if (!$game) {
-            echo json_encode(['success' => false, 'error' => 'Missing game']);
-            exit();
+
+    // Start broadcasting (called by game)
+    if ($action === 'start') {
+        if (!isset($_SESSION['user'])) {
+            echo json_encode(['success' => false, 'error' => 'Not logged in']);
+            exit;
         }
-        
-        $file = getSpectateFile($currentUser, $game);
-        
-        // Read existing to preserve startedAt
-        $existing = file_exists($file) ? json_decode(file_get_contents($file), true) : null;
-        
-        $data = [
-            'player' => $currentUser,
-            'playerName' => $user['displayName'],
-            'avatar' => $user['avatar'] ?? '😎',
+
+        $username = $_SESSION['user'];
+        $game = $input['game'] ?? 'unknown';
+
+        $games[$username] = [
             'game' => $game,
-            'state' => $state,
-            'startedAt' => $existing['startedAt'] ?? date('c'),
-            'timestamp' => date('c'),
-            'spectators' => $existing['spectators'] ?? 0
+            'score' => 0,
+            'highScore' => $input['highScore'] ?? 0,
+            'level' => 1,
+            'startedAt' => date('c'),
+            'lastUpdate' => date('c'),
+            'viewers' => [],
+            'gameState' => null
         ];
-        
-        file_put_contents($file, json_encode($data));
-        
+
+        saveLiveGames($games);
         echo json_encode(['success' => true]);
-        exit();
+        exit;
     }
-    
+
+    // Update game state (called by game during play)
+    if ($action === 'update') {
+        if (!isset($_SESSION['user'])) {
+            echo json_encode(['success' => false, 'error' => 'Not logged in']);
+            exit;
+        }
+
+        $username = $_SESSION['user'];
+
+        if (!isset($games[$username])) {
+            echo json_encode(['success' => false, 'error' => 'Not broadcasting']);
+            exit;
+        }
+
+        $games[$username]['score'] = $input['score'] ?? $games[$username]['score'];
+        $games[$username]['level'] = $input['level'] ?? $games[$username]['level'];
+        $games[$username]['gameState'] = $input['gameState'] ?? null;
+        $games[$username]['lastUpdate'] = date('c');
+
+        saveLiveGames($games);
+        echo json_encode(['success' => true, 'viewers' => count($games[$username]['viewers'])]);
+        exit;
+    }
+
+    // Stop broadcasting
     if ($action === 'stop') {
-        $game = $input['game'] ?? '';
-        
-        if ($game) {
-            $file = getSpectateFile($currentUser, $game);
-            if (file_exists($file)) {
-                @unlink($file);
-            }
-        } else {
-            // Stop all games for this user
-            $files = glob($spectateDir . $currentUser . '_*.json');
-            foreach ($files as $file) {
-                @unlink($file);
+        if (!isset($_SESSION['user'])) {
+            echo json_encode(['success' => false, 'error' => 'Not logged in']);
+            exit;
+        }
+
+        $username = $_SESSION['user'];
+        unset($games[$username]);
+        saveLiveGames($games);
+
+        echo json_encode(['success' => true]);
+        exit;
+    }
+
+    // Join as viewer
+    if ($action === 'join') {
+        $player = $input['player'] ?? '';
+        $viewer = $_SESSION['user'] ?? 'anonymous_' . uniqid();
+
+        if (isset($games[$player])) {
+            if (!in_array($viewer, $games[$player]['viewers'])) {
+                $games[$player]['viewers'][] = $viewer;
+                saveLiveGames($games);
             }
         }
-        
+
         echo json_encode(['success' => true]);
-        exit();
+        exit;
     }
-    
-    echo json_encode(['success' => false, 'error' => 'Invalid action']);
-    exit();
+
+    // Leave as viewer
+    if ($action === 'leave') {
+        $player = $input['player'] ?? '';
+        $viewer = $_SESSION['user'] ?? '';
+
+        if (isset($games[$player]) && $viewer) {
+            $games[$player]['viewers'] = array_filter(
+                $games[$player]['viewers'],
+                fn($v) => $v !== $viewer
+            );
+            saveLiveGames($games);
+        }
+
+        echo json_encode(['success' => true]);
+        exit;
+    }
 }
 
-http_response_code(405);
-echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+echo json_encode(['success' => false, 'error' => 'Invalid request']);

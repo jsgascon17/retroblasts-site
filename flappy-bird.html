@@ -87,6 +87,11 @@
 
         .stats-display { color: #aaa; font-size: 0.8rem; margin: 10px 0; }
     </style>
+<script src="js/duel.js"></script>
+<script src="js/duel.js"></script>
+<script src="js/victory.js"></script>
+<script src="js/wars.js"></script>
+<script src="js/activity.js"></script>
 </head>
 <body>
     <h1>FLAPPY BIRD</h1>
@@ -220,6 +225,7 @@
         function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); }
 
         function playSound(type) {
+            if (localStorage.getItem('arcade_sound_enabled') === 'false') return;
             if (!soundEnabled || !audioCtx) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -263,7 +269,14 @@
             { id: 'robotbird', name: 'Cyber', emoji: '🤖', colors: { body: '#95A5A6', wing: '#7F8C8D', beak: '#2ECC71' }, price: 200 },
             { id: 'cloudbird', name: 'Cloud', emoji: '☁️', colors: { body: '#ECF0F1', wing: '#BDC3C7', beak: '#3498DB' }, price: 200, hasCloud: true },
             { id: 'firebird', name: 'Fire', emoji: '🔥', colors: { body: '#FF4500', wing: '#FF6347', beak: '#FFD700' }, price: 250 },
-            { id: 'rainbowbird', name: 'Rainbow', emoji: '🌈', colors: { body: 'rainbow', wing: 'rainbow', beak: '#FF4500' }, price: 500 }
+            { id: 'rainbowbird', name: 'Rainbow', emoji: '🌈', colors: { body: 'rainbow', wing: 'rainbow', beak: '#FF4500' }, price: 500 },
+            { id: 'icebird', name: 'Frost', emoji: '❄️', colors: { body: '#87CEEB', wing: '#00BFFF', beak: '#4169E1' }, price: 175 },
+            { id: 'lavabird', name: 'Magma', emoji: '🌋', colors: { body: '#FF4500', wing: '#8B0000', beak: '#FFD700' }, price: 225 },
+            { id: 'ghostbird', name: 'Ghost', emoji: '👻', colors: { body: '#E8E8E8', wing: '#C0C0C0', beak: '#808080' }, price: 200 },
+            { id: 'neonbird', name: 'Neon', emoji: '💜', colors: { body: '#FF00FF', wing: '#00FFFF', beak: '#FFFF00' }, price: 300 },
+            { id: 'zombiebird', name: 'Zombie', emoji: '🧟', colors: { body: '#556B2F', wing: '#6B8E23', beak: '#8B4513' }, price: 175 },
+            { id: 'candybird', name: 'Candy', emoji: '🍭', colors: { body: '#FF69B4', wing: '#00CED1', beak: '#FFD700' }, price: 200 },
+            { id: 'galaxybird', name: 'Galaxy', emoji: '🌌', colors: { body: '#4B0082', wing: '#8A2BE2', beak: '#FFD700' }, price: 350 }
         ];
 
         // ============================================
@@ -1197,6 +1210,7 @@
         }
 
         function handleCollision() {
+            if (window.ghostMode) return; // Ghost mode - pass through pipes
             if (hasShield) {
                 useShield();
                 bird.velocity = getFlapPower() * 0.5;
@@ -1226,6 +1240,8 @@
             sessionCoins += bossBonus;
 
             if (score > saveData.highScore) {
+                if (typeof VictoryEffects !== "undefined") VictoryEffects.newHighScore();
+                if (typeof ActivityFeed !== "undefined") ActivityFeed.logHighScore("flappy-bird", score);
                 saveData.highScore = score;
                 saveData.stats.highScore = score;
             }
@@ -1274,6 +1290,8 @@
             playSound('hit');
 
             if (score > saveData.highScore) {
+                if (typeof VictoryEffects !== "undefined") VictoryEffects.newHighScore();
+                if (typeof ActivityFeed !== "undefined") ActivityFeed.logHighScore("flappy-bird", score);
                 saveData.highScore = score;
                 saveData.stats.highScore = score;
             }
@@ -1298,6 +1316,22 @@
             saveSaveData();
             updateDisplays();
             trackGameEnd(score, sessionCoins);
+
+            // Submit duel score if in a challenge
+            if (typeof DuelSystem !== "undefined" && DuelSystem.isInDuel()) {
+                DuelSystem.submitScore(score);
+            }
+            if (typeof WarSystem !== "undefined" && WarSystem.isInWar()) {
+                WarSystem.submitScore(score);
+            }
+
+            // Award coins on server (if logged in)
+            fetch('api/add-coins.php', { credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'flappy-bird', coins: sessionCoins })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    document.getElementById('sessionCoins').textContent = data.coinsEarned;
+                }
+            }).catch(() => {});
 
             let medal = '';
             if (score >= 40) medal = '🏆';
@@ -1451,7 +1485,12 @@
             'bigbird': () => { document.body.style.transform = 'scale(1.2)'; showCode('BIG BIRD MODE!'); },
             'easy': () => { pipeGap = 200; showCode('EASY MODE: Wider gaps!'); },
             'lucky': () => { score += 50; showCode('+50 POINTS!'); },
-            'neon': () => { document.body.style.filter = 'saturate(2) contrast(1.2)'; showCode('NEON MODE!'); }
+            'neon': () => { document.body.style.filter = 'saturate(2) contrast(1.2)'; showCode('NEON MODE!'); },
+            'ghost': () => { window.ghostMode = true; setTimeout(() => { window.ghostMode = false; showCode('Ghost mode ended!'); }, 15000); showCode('GHOST MODE! Pass through pipes for 15s!'); },
+            'slow': () => { gameSpeed = 0.5; setTimeout(() => { gameSpeed = 1; showCode('Speed back to normal!'); }, 20000); showCode('SLOW MOTION! 20 seconds!'); },
+            'rainbow': () => { window.rainbowBird = true; showCode('RAINBOW BIRD!'); },
+            'turbo': () => { flapPower = -10; showCode('TURBO FLAP! Super jump!'); },
+            'coins': () => { saveData.coins = (saveData.coins || 0) + 100; save(); showCode('+100 COINS!'); }
         };
         function showCode(m) {
             const d = document.createElement('div');

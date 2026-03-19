@@ -289,6 +289,8 @@
         #invincibleBtn { width: 60px; }
         #invincibleBtn.active { background: #0f0; color: #000; border-color: #0f0; }
     </style>
+<script src="js/duel.js"></script>
+<script src="js/victory.js"></script>
 </head>
 <body>
     <a href="index.html" class="back-btn">← Back</a>
@@ -1183,6 +1185,11 @@
         function endGame() {
             gameState.gameOver = true;
 
+            // Submit duel score if in a challenge
+            if (typeof DuelSystem !== "undefined" && DuelSystem.isInDuel()) {
+                DuelSystem.submitScore(gameState.score);
+            }
+
             saveData.totalGames++;
             saveData.totalHeight += gameState.maxHeight;
             if (gameState.score > saveData.highScore) {
@@ -1202,6 +1209,14 @@
             document.getElementById('leaderboardMsg').textContent = '';
 
             document.getElementById('gameOverScreen').classList.remove('hidden');
+
+            // Award coins on server (if logged in)
+            fetch('api/add-coins.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'doodle-jump', coins: gameState.coinsThisGame })
+            }).then(r => r.json()).catch(() => {});
         }
 
         // Shop

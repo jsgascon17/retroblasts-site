@@ -275,9 +275,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
         
-        if (strlen($tag) < 2 || strlen($tag) > 5) {
-            echo json_encode(['success' => false, 'error' => 'Tag must be 2-5 characters']);
-            exit();
+        // Auto-generate tag from name if not provided
+        if (strlen($tag) < 2) {
+            // Remove non-alphanumeric, take first 4 chars uppercase
+            $tag = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', $name));
+            $tag = substr($tag, 0, 4);
+            if (strlen($tag) < 2) {
+                $tag = 'TEAM';
+            }
+        }
+        
+        if (strlen($tag) > 5) {
+            $tag = substr($tag, 0, 5);
         }
         
         // Check for duplicate name/tag

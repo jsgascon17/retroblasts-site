@@ -96,6 +96,10 @@
         .game-over h2 { color: #ff0000; }
         .final-score { font-size: 2.5rem; color: #ffff00; margin: 15px 0; }
     </style>
+<script src="js/duel.js"></script>
+<script src="js/victory.js"></script>
+<script src="js/wars.js"></script>
+<script src="js/activity.js"></script>
 </head>
 <body>
     <h1>PAC-MAN</h1>
@@ -469,7 +473,14 @@
             { id: 'green', name: 'Green', color: '#4caf50', emoji: '🟢', price: 100 },
             { id: 'purple', name: 'Purple', color: '#9c27b0', emoji: '🟣', price: 100 },
             { id: 'red', name: 'Red', color: '#f44336', emoji: '🔴', price: 125 },
-            { id: 'rainbow', name: 'Rainbow', color: 'rainbow', emoji: '🌈', price: 300 }
+            { id: 'rainbow', name: 'Rainbow', color: 'rainbow', emoji: '🌈', price: 300 },
+            { id: 'gold', name: 'Gold', color: '#ffd700', emoji: '✨', price: 200 },
+            { id: 'neon', name: 'Neon', color: '#00ff88', emoji: '💚', price: 150 },
+            { id: 'ice', name: 'Ice', color: '#87ceeb', emoji: '❄️', price: 175 },
+            { id: 'fire', name: 'Fire', color: '#ff4500', emoji: '🔥', price: 175 },
+            { id: 'cosmic', name: 'Cosmic', color: '#8a2be2', emoji: '🌌', price: 250 },
+            { id: 'chrome', name: 'Chrome', color: '#c0c0c0', emoji: '⚪', price: 200 },
+            { id: 'shadow', name: 'Shadow', color: '#2f2f2f', emoji: '🖤', price: 225 }
         ];
 
         // ============================================
@@ -1193,6 +1204,8 @@
             gameRunning = false;
 
             if (score > saveData.highScore) {
+                if (typeof VictoryEffects !== "undefined") VictoryEffects.newHighScore();
+                if (typeof ActivityFeed !== "undefined") ActivityFeed.logHighScore("pacman", score);
                 saveData.highScore = score;
                 saveData.stats.highScore = score;
             }
@@ -1209,6 +1222,14 @@
             saveSaveData();
             updateDisplays();
             trackGameEnd(score, sessionCoins, level - 1);
+
+            // Submit duel score if in a challenge
+            if (typeof DuelSystem !== "undefined" && DuelSystem.isInDuel()) {
+                DuelSystem.submitScore(score);
+            }
+            if (typeof WarSystem !== "undefined" && WarSystem.isInWar()) {
+                WarSystem.submitScore(score);
+            }
 
             document.getElementById('finalScore').textContent = score;
             document.getElementById('finalHighScore').textContent = saveData.highScore;
@@ -1229,6 +1250,14 @@
             document.getElementById('leaderboardMsg').textContent = '';
 
             gameOverScreen.classList.remove('hidden');
+
+            // Award coins on server (if logged in)
+            fetch('api/add-coins.php', { credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'pacman', coins: sessionCoins })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    document.getElementById('coinsEarned').textContent = data.coinsEarned;
+                }
+            }).catch(() => {});
         }
 
         function levelComplete() {

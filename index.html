@@ -658,8 +658,191 @@
         .friend-activity { font-size: 0.75rem; color: #888; }
         .no-friends-sidebar { color: #888; font-size: 0.85rem; text-align: center; padding: 20px 0; }
         @media (max-width: 768px) { .friends-sidebar { display: none; } }
+    
+        
+        /* Game Ratings */
+        .game-rating {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: #ffd700;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .rate-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(255,215,0,0.9);
+            color: #000;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .game-card:hover .rate-btn {
+            opacity: 1;
+        }
+        /* Rating Modal */
+        .rating-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 25px;
+            z-index: 10000;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+        .rating-modal.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .rating-modal h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+        .stars {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .star {
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+            filter: grayscale(1);
+        }
+        .star:hover, .star.active {
+            transform: scale(1.2);
+            filter: grayscale(0);
+        }
+        .rating-modal-close {
+            margin-top: 15px;
+            background: #666;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+        .rating-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+        .rating-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* News Popup */
+        .news-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .news-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .news-modal {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+            box-shadow: 0 0 50px rgba(255,215,0,0.3);
+        }
+        .news-overlay.active .news-modal {
+            transform: scale(1);
+        }
+        .news-header {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            padding: 20px;
+            border-radius: 17px 17px 0 0;
+            text-align: center;
+        }
+        .news-header h2 {
+            color: #000;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .news-date {
+            color: #333;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        .news-body {
+            padding: 25px;
+            color: #fff;
+            line-height: 1.8;
+        }
+        .news-body p {
+            margin: 10px 0;
+        }
+        .news-body strong {
+            color: #ffd700;
+        }
+        .news-footer {
+            padding: 15px 25px 25px;
+            text-align: center;
+        }
+        .news-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .news-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+
     </style>
     <script src="themes.js"></script>
+<script src="js/activity.js"></script>
 </head>
 <body>
     <!-- Floating Shamrocks -->
@@ -680,6 +863,12 @@
     <div class="gold-sparkle" style="left: 45%; top: 45%; animation-delay: 1.5s;"></div>
 
     <div class="container">
+        <!-- Weekly Rewards Banner -->
+        <div id="weeklyRewardsBanner" style="display: none; background: linear-gradient(90deg, #ffd700, #ff8c00); color: #000; text-align: center; padding: 12px 20px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);">
+            <span style="font-size: 1.2rem;">🏆 Weekly Leaderboard Prizes Available!</span>
+            <span style="margin-left: 10px;">Top 3 in each game win coins!</span>
+            <button onclick="distributeWeeklyRewards()" style="margin-left: 15px; padding: 5px 15px; background: #000; color: #ffd700; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Distribute Rewards</button>
+        </div>
         <header>
             <h1>&#9752; <span class="title-cookie">&#127850;</span> St. Paddy's Cookie Arcade! <span class="title-cookie">&#127850;</span> &#9752;</h1>
             <p class="subtitle">May the luck of the Irish bring you many cookies!</p>
@@ -688,10 +877,13 @@
                 <a href="inventory.html" class="header-btn stats">🎒 Inventory</a>
                 <a href="leaderboards.html" class="header-btn stats">&#127942; Leaderboards</a>
                 <a href="tournaments.html" class="header-btn stats">&#127942; Tournaments</a>
-                <a href="login.html" class="header-btn stats">🔐 Login</a>
+                <a href="login.html" class="header-btn stats" id="authBtn">🔐 Login</a>
                 <a href="friends.html" class="header-btn stats">👥 Friends</a>
-                <a href="teams.html" class="header-btn stats">⚔️ Teams</a>
+                <a href="challenge.html" class="header-btn stats">⚔️ Challenge</a>
+                <a href="teams.html" class="header-btn stats">👥 Teams</a>
+                <a href="wars.html" class="header-btn stats" style="background: linear-gradient(135deg, #ef4444, #dc2626); border-color: #ef4444;">⚔️ Wars</a>
                 <a href="chat.html" class="header-btn stats">💬 Chat</a>
+                <a href="battle-pass.html" class="header-btn stats">🎖️ Battle Pass</a>
                 <a href="shop.html" class="header-btn stats">🛒 Shop</a>
                 <a href="casino.html" class="header-btn stats">🎰 Casino</a>
                 <a href="replays.html" class="header-btn stats">📹 Replays</a>
@@ -1076,6 +1268,11 @@
             </a>
 
             <!-- War Simulator -->
+            <a href="mine-craft.html" class="game-card" data-game="mine-craft" data-tags="adventure,building">
+                <div class="game-icon">⛏️</div>
+                <div class="game-title">Mine and Craft</div>
+                <div class="game-desc">Mine blocks, gather resources, and build!</div>
+            </a>
             <a href="war-simulator.html" class="game-card" data-game="war-simulator" data-tags="strategy,action">
                 <div class="game-preview warsim-preview">
                     <span class="icon">&#128663;</span>
@@ -1297,6 +1494,34 @@
         function toggleSettings() {
             document.getElementById('settingsModal').classList.toggle('hidden');
         }
+        
+        // Sound toggle handling
+        function initSoundSettings() {
+            const soundToggle = document.getElementById('soundToggle');
+            const animToggle = document.getElementById('animToggle');
+            
+            // Load saved settings
+            const soundEnabled = localStorage.getItem('arcade_sound_enabled') !== 'false';
+            const animEnabled = localStorage.getItem('arcade_anim_enabled') !== 'false';
+            
+            soundToggle.checked = soundEnabled;
+            animToggle.checked = animEnabled;
+            
+            // Save settings on change
+            soundToggle.addEventListener('change', () => {
+                localStorage.setItem('arcade_sound_enabled', soundToggle.checked);
+            });
+            
+            animToggle.addEventListener('change', () => {
+                localStorage.setItem('arcade_anim_enabled', animToggle.checked);
+                if (!animToggle.checked) {
+                    document.querySelectorAll('.floating-shamrock').forEach(s => s.remove());
+                }
+            });
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initSoundSettings);
 
         function closeSettingsOutside(e) {
             if (e.target.id === 'settingsModal') {
@@ -1336,6 +1561,263 @@
         });
 
         loadStats();
+
+        // Check for pending weekly rewards
+        async function checkWeeklyRewards() {
+            try {
+                const resp = await fetch('api/weekly-rewards.php?action=check');
+                const data = await resp.json();
+                if (data.success && data.rewardsPending) {
+                    document.getElementById('weeklyRewardsBanner').style.display = 'block';
+                }
+            } catch (e) {}
+        }
+
+        async function distributeWeeklyRewards() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'Distributing...';
+            try {
+                const resp = await fetch('api/weekly-rewards.php?action=distribute', { method: 'POST' });
+                const data = await resp.json();
+                if (data.success) {
+                    const banner = document.getElementById('weeklyRewardsBanner');
+                    banner.innerHTML = '✅ Weekly rewards distributed! ' + data.totalCoinsAwarded + ' coins awarded to top players!';
+                    banner.style.background = 'linear-gradient(90deg, #22c55e, #16a34a)';
+                    banner.style.color = '#fff';
+                    setTimeout(() => { banner.style.display = 'none'; }, 5000);
+                } else {
+                    btn.textContent = data.error || 'Error';
+                }
+            } catch (e) {
+                btn.textContent = 'Error';
+            }
+        }
+
+        checkWeeklyRewards();
+    </script>
+
+    
+    <!-- Rating Modal -->
+    <div class="rating-backdrop" id="ratingBackdrop" onclick="closeRating()"></div>
+    <div class="rating-modal" id="ratingModal">
+        <h3>Rate <span id="ratingGameName">Game</span></h3>
+        <div class="stars" id="starsContainer">
+            <span class="star" data-rating="1">⭐</span>
+            <span class="star" data-rating="2">⭐</span>
+            <span class="star" data-rating="3">⭐</span>
+            <span class="star" data-rating="4">⭐</span>
+            <span class="star" data-rating="5">⭐</span>
+        </div>
+        <p id="ratingMessage" style="color: #98FB98; margin: 10px 0;"></p>
+        <button class="rating-modal-close" onclick="closeRating()">Close</button>
+    </div>
+
+    <script>
+    // Rating system
+    let currentRatingGame = null;
+    let gameRatings = {};
+    
+    async function loadAllRatings() {
+        try {
+            const resp = await fetch('api/ratings.php?action=all');
+            const data = await resp.json();
+            if (data.success) {
+                gameRatings = data.ratings;
+                updateRatingDisplays();
+            }
+        } catch (e) {}
+    }
+    
+    function updateRatingDisplays() {
+        document.querySelectorAll('.game-card').forEach(card => {
+            const game = card.dataset.game;
+            if (!game) return;
+            
+            // Remove existing rating display
+            const existing = card.querySelector('.game-rating');
+            if (existing) existing.remove();
+            
+            // Add rating if exists
+            if (gameRatings[game]) {
+                const ratingDiv = document.createElement('div');
+                ratingDiv.className = 'game-rating';
+                ratingDiv.innerHTML = '⭐ ' + gameRatings[game].average;
+                card.style.position = 'relative';
+                card.appendChild(ratingDiv);
+            }
+            
+            // Add rate button if not exists
+            if (!card.querySelector('.rate-btn')) {
+                const rateBtn = document.createElement('button');
+                rateBtn.className = 'rate-btn';
+                rateBtn.textContent = 'Rate';
+                rateBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openRating(game, card.querySelector('.game-title')?.textContent || game);
+                };
+                card.appendChild(rateBtn);
+            }
+        });
+    }
+    
+    function openRating(game, gameName) {
+        currentRatingGame = game;
+        document.getElementById('ratingGameName').textContent = gameName;
+        document.getElementById('ratingMessage').textContent = '';
+        document.getElementById('ratingBackdrop').classList.add('active');
+        document.getElementById('ratingModal').classList.add('active');
+        
+        // Reset stars
+        document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+        
+        // Load user's existing rating
+        fetch('api/ratings.php?action=get&game=' + game, { credentials: 'include' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.userRating) {
+                    highlightStars(data.userRating);
+                }
+            });
+    }
+    
+    function closeRating() {
+        document.getElementById('ratingBackdrop').classList.remove('active');
+        document.getElementById('ratingModal').classList.remove('active');
+        currentRatingGame = null;
+    }
+    
+    function highlightStars(rating) {
+        document.querySelectorAll('.star').forEach((star, i) => {
+            star.classList.toggle('active', i < rating);
+        });
+    }
+    
+    // Star click handlers
+    document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('mouseover', () => {
+            highlightStars(parseInt(star.dataset.rating));
+        });
+        
+        star.addEventListener('click', async () => {
+            const rating = parseInt(star.dataset.rating);
+            try {
+                const resp = await fetch('api/ratings.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        action: 'rate',
+                        game: currentRatingGame,
+                        rating: rating
+                    })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    document.getElementById('ratingMessage').textContent = 'Thanks for rating! ⭐';
+                    gameRatings[currentRatingGame] = { average: data.average, count: data.count };
+                    updateRatingDisplays();
+                } else {
+                    document.getElementById('ratingMessage').textContent = data.error || 'Error saving rating';
+                }
+            } catch (e) {
+                document.getElementById('ratingMessage').textContent = 'Error saving rating';
+            }
+        });
+    });
+    
+    document.getElementById('starsContainer').addEventListener('mouseleave', () => {
+        // Reset to saved rating on mouse leave if no click
+    });
+    
+    // Load ratings on page load
+    window.addEventListener('load', loadAllRatings);
+    </script>
+
+    <!-- News Popup -->
+    <div class="news-overlay" id="newsOverlay">
+        <div class="news-modal">
+            <div class="news-header">
+                <h2 id="newsTitle">📢 News</h2>
+                <div class="news-date" id="newsDate"></div>
+            </div>
+            <div class="news-body" id="newsBody"></div>
+            <div class="news-footer">
+                <button class="news-btn" onclick="closeNews()">Got it! 👍</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // News popup system
+    async function checkNews() {
+        try {
+            const resp = await fetch('data/news.json?' + Date.now());
+            const news = await resp.json();
+            
+            if (!news.enabled) return;
+            
+            // Check if user already saw this news
+            const seenNews = localStorage.getItem('seenNewsId');
+            if (seenNews === news.id) return;
+            
+            // Show the news
+            document.getElementById('newsTitle').textContent = news.title;
+            document.getElementById('newsDate').textContent = news.date;
+            
+            // Format content
+            const bodyHtml = news.content.map(line => {
+                if (line === '') return '<br>';
+                line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                return '<p>' + line + '</p>';
+            }).join('');
+            document.getElementById('newsBody').innerHTML = bodyHtml;
+            
+            // Show popup
+            document.getElementById('newsOverlay').classList.add('active');
+        } catch (e) {
+            console.log('No news to display');
+        }
+    }
+    
+    function closeNews() {
+        // Mark as seen
+        fetch('data/news.json?' + Date.now())
+            .then(r => r.json())
+            .then(news => {
+                localStorage.setItem('seenNewsId', news.id);
+            });
+        document.getElementById('newsOverlay').classList.remove('active');
+    }
+    
+    // Check news on page load
+    window.addEventListener('load', () => {
+        setTimeout(checkNews, 500); // Small delay for smoother UX
+    });
+    </script>
+
+    <!-- Auth Button Script -->
+    <script>
+    (async function() {
+        try {
+            const resp = await fetch("api/auth.php?action=check", { credentials: "include" });
+            const data = await resp.json();
+            const btn = document.getElementById("authBtn");
+            if (data.loggedIn) {
+                btn.textContent = "🚪 Sign Out";
+                btn.href = "#";
+                btn.onclick = async function(e) {
+                    e.preventDefault();
+                    await fetch("api/auth.php?action=logout", { credentials: "include" });
+                    localStorage.removeItem("arcadeUser");
+                    localStorage.removeItem("arcadePlayerName");
+                    localStorage.removeItem("arcadeStats");
+                    window.location.href = "login.html?logout=1";
+                };
+            }
+        } catch(e) { console.error(e); }
+    })();
     </script>
 </body>
 
@@ -1347,6 +1829,10 @@
         </div>
         <div class="sidebar-content" id="sidebarContent">
             <div id="onlineFriendsList" class="no-friends-sidebar">Loading...</div>
+            <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                <div style="color: #f59e0b; font-weight: 600; margin-bottom: 10px;">📰 Activity Feed</div>
+                <div id="activityFeed" style="max-height: 200px; overflow-y: auto;"></div>
+            </div>
         </div>
     </div>
     
@@ -1408,8 +1894,214 @@
         
         loadOnlineFriends();
         setInterval(loadOnlineFriends, 30000);
+        
+        // Load activity feed
+        if (typeof ActivityFeed !== "undefined") {
+            ActivityFeed.renderFeedWidget("activityFeed", 8);
+            setInterval(function() { ActivityFeed.renderFeedWidget("activityFeed", 8); }, 60000);
+        }
     </script>
-</body>
+
+    
+    <!-- Rating Modal -->
+    <div class="rating-backdrop" id="ratingBackdrop" onclick="closeRating()"></div>
+    <div class="rating-modal" id="ratingModal">
+        <h3>Rate <span id="ratingGameName">Game</span></h3>
+        <div class="stars" id="starsContainer">
+            <span class="star" data-rating="1">⭐</span>
+            <span class="star" data-rating="2">⭐</span>
+            <span class="star" data-rating="3">⭐</span>
+            <span class="star" data-rating="4">⭐</span>
+            <span class="star" data-rating="5">⭐</span>
+        </div>
+        <p id="ratingMessage" style="color: #98FB98; margin: 10px 0;"></p>
+        <button class="rating-modal-close" onclick="closeRating()">Close</button>
+    </div>
+
+    <script>
+    // Rating system
+    let currentRatingGame = null;
+    let gameRatings = {};
+    
+    async function loadAllRatings() {
+        try {
+            const resp = await fetch('api/ratings.php?action=all');
+            const data = await resp.json();
+            if (data.success) {
+                gameRatings = data.ratings;
+                updateRatingDisplays();
+            }
+        } catch (e) {}
+    }
+    
+    function updateRatingDisplays() {
+        document.querySelectorAll('.game-card').forEach(card => {
+            const game = card.dataset.game;
+            if (!game) return;
+            
+            // Remove existing rating display
+            const existing = card.querySelector('.game-rating');
+            if (existing) existing.remove();
+            
+            // Add rating if exists
+            if (gameRatings[game]) {
+                const ratingDiv = document.createElement('div');
+                ratingDiv.className = 'game-rating';
+                ratingDiv.innerHTML = '⭐ ' + gameRatings[game].average;
+                card.style.position = 'relative';
+                card.appendChild(ratingDiv);
+            }
+            
+            // Add rate button if not exists
+            if (!card.querySelector('.rate-btn')) {
+                const rateBtn = document.createElement('button');
+                rateBtn.className = 'rate-btn';
+                rateBtn.textContent = 'Rate';
+                rateBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openRating(game, card.querySelector('.game-title')?.textContent || game);
+                };
+                card.appendChild(rateBtn);
+            }
+        });
+    }
+    
+    function openRating(game, gameName) {
+        currentRatingGame = game;
+        document.getElementById('ratingGameName').textContent = gameName;
+        document.getElementById('ratingMessage').textContent = '';
+        document.getElementById('ratingBackdrop').classList.add('active');
+        document.getElementById('ratingModal').classList.add('active');
+        
+        // Reset stars
+        document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+        
+        // Load user's existing rating
+        fetch('api/ratings.php?action=get&game=' + game, { credentials: 'include' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.userRating) {
+                    highlightStars(data.userRating);
+                }
+            });
+    }
+    
+    function closeRating() {
+        document.getElementById('ratingBackdrop').classList.remove('active');
+        document.getElementById('ratingModal').classList.remove('active');
+        currentRatingGame = null;
+    }
+    
+    function highlightStars(rating) {
+        document.querySelectorAll('.star').forEach((star, i) => {
+            star.classList.toggle('active', i < rating);
+        });
+    }
+    
+    // Star click handlers
+    document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('mouseover', () => {
+            highlightStars(parseInt(star.dataset.rating));
+        });
+        
+        star.addEventListener('click', async () => {
+            const rating = parseInt(star.dataset.rating);
+            try {
+                const resp = await fetch('api/ratings.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        action: 'rate',
+                        game: currentRatingGame,
+                        rating: rating
+                    })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    document.getElementById('ratingMessage').textContent = 'Thanks for rating! ⭐';
+                    gameRatings[currentRatingGame] = { average: data.average, count: data.count };
+                    updateRatingDisplays();
+                } else {
+                    document.getElementById('ratingMessage').textContent = data.error || 'Error saving rating';
+                }
+            } catch (e) {
+                document.getElementById('ratingMessage').textContent = 'Error saving rating';
+            }
+        });
+    });
+    
+    document.getElementById('starsContainer').addEventListener('mouseleave', () => {
+        // Reset to saved rating on mouse leave if no click
+    });
+    
+    // Load ratings on page load
+    window.addEventListener('load', loadAllRatings);
+    </script>
+
+    <!-- News Popup -->
+    <div class="news-overlay" id="newsOverlay">
+        <div class="news-modal">
+            <div class="news-header">
+                <h2 id="newsTitle">📢 News</h2>
+                <div class="news-date" id="newsDate"></div>
+            </div>
+            <div class="news-body" id="newsBody"></div>
+            <div class="news-footer">
+                <button class="news-btn" onclick="closeNews()">Got it! 👍</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // News popup system
+    async function checkNews() {
+        try {
+            const resp = await fetch('data/news.json?' + Date.now());
+            const news = await resp.json();
+            
+            if (!news.enabled) return;
+            
+            // Check if user already saw this news
+            const seenNews = localStorage.getItem('seenNewsId');
+            if (seenNews === news.id) return;
+            
+            // Show the news
+            document.getElementById('newsTitle').textContent = news.title;
+            document.getElementById('newsDate').textContent = news.date;
+            
+            // Format content
+            const bodyHtml = news.content.map(line => {
+                if (line === '') return '<br>';
+                line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                return '<p>' + line + '</p>';
+            }).join('');
+            document.getElementById('newsBody').innerHTML = bodyHtml;
+            
+            // Show popup
+            document.getElementById('newsOverlay').classList.add('active');
+        } catch (e) {
+            console.log('No news to display');
+        }
+    }
+    
+    function closeNews() {
+        // Mark as seen
+        fetch('data/news.json?' + Date.now())
+            .then(r => r.json())
+            .then(news => {
+                localStorage.setItem('seenNewsId', news.id);
+            });
+        document.getElementById('newsOverlay').classList.remove('active');
+    }
+    
+    // Check news on page load
+    window.addEventListener('load', () => {
+        setTimeout(checkNews, 500); // Small delay for smoother UX
+    });
+    </script>
+
 </html>
 <style>
     .theme-selector {
@@ -1456,7 +2148,189 @@
         from { opacity: 0; transform: translateX(-50%) translateY(20px); }
         to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
-</style>
+
+        
+        /* Game Ratings */
+        .game-rating {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: #ffd700;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .rate-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(255,215,0,0.9);
+            color: #000;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .game-card:hover .rate-btn {
+            opacity: 1;
+        }
+        /* Rating Modal */
+        .rating-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 25px;
+            z-index: 10000;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+        .rating-modal.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .rating-modal h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+        .stars {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .star {
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+            filter: grayscale(1);
+        }
+        .star:hover, .star.active {
+            transform: scale(1.2);
+            filter: grayscale(0);
+        }
+        .rating-modal-close {
+            margin-top: 15px;
+            background: #666;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+        .rating-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+        .rating-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* News Popup */
+        .news-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .news-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .news-modal {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+            box-shadow: 0 0 50px rgba(255,215,0,0.3);
+        }
+        .news-overlay.active .news-modal {
+            transform: scale(1);
+        }
+        .news-header {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            padding: 20px;
+            border-radius: 17px 17px 0 0;
+            text-align: center;
+        }
+        .news-header h2 {
+            color: #000;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .news-date {
+            color: #333;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        .news-body {
+            padding: 25px;
+            color: #fff;
+            line-height: 1.8;
+        }
+        .news-body p {
+            margin: 10px 0;
+        }
+        .news-body strong {
+            color: #ffd700;
+        }
+        .news-footer {
+            padding: 15px 25px 25px;
+            text-align: center;
+        }
+        .news-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .news-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+
+    </style>
 
         /* Online Friends Sidebar */
         .friends-sidebar {
@@ -1529,6 +2403,188 @@
         .friend-activity { font-size: 0.75rem; color: #888; }
         .no-friends-sidebar { color: #888; font-size: 0.85rem; text-align: center; padding: 20px 0; }
         @media (max-width: 768px) { .friends-sidebar { display: none; } }
+    
+        
+        /* Game Ratings */
+        .game-rating {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: #ffd700;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .rate-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(255,215,0,0.9);
+            color: #000;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .game-card:hover .rate-btn {
+            opacity: 1;
+        }
+        /* Rating Modal */
+        .rating-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 25px;
+            z-index: 10000;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+        .rating-modal.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .rating-modal h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+        .stars {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .star {
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+            filter: grayscale(1);
+        }
+        .star:hover, .star.active {
+            transform: scale(1.2);
+            filter: grayscale(0);
+        }
+        .rating-modal-close {
+            margin-top: 15px;
+            background: #666;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+        .rating-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+        .rating-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* News Popup */
+        .news-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .news-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .news-modal {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+            box-shadow: 0 0 50px rgba(255,215,0,0.3);
+        }
+        .news-overlay.active .news-modal {
+            transform: scale(1);
+        }
+        .news-header {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            padding: 20px;
+            border-radius: 17px 17px 0 0;
+            text-align: center;
+        }
+        .news-header h2 {
+            color: #000;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .news-date {
+            color: #333;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        .news-body {
+            padding: 25px;
+            color: #fff;
+            line-height: 1.8;
+        }
+        .news-body p {
+            margin: 10px 0;
+        }
+        .news-body strong {
+            color: #ffd700;
+        }
+        .news-footer {
+            padding: 15px 25px 25px;
+            text-align: center;
+        }
+        .news-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .news-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+
     </style>
 <script>
 function initThemeSelector() {

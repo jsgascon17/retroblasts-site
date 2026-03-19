@@ -119,6 +119,16 @@
         }
         .message.sent .message-sender { display: none; }
         .message-text { line-height: 1.4; word-wrap: break-word; }
+        .emote {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin: 0 2px;
+        }
         .message-time {
             font-size: 0.7rem; color: rgba(255,255,255,0.5);
             margin-top: 4px; text-align: right;
@@ -377,7 +387,7 @@
                 msgEl.className = 'message ' + (isSent ? 'sent' : 'received');
                 msgEl.innerHTML = `
                     ${chatMode === 'global' && !isSent ? `<div class="message-sender">${msg.avatar || '😎'} ${escapeHtml(msg.fromName || msg.from)}</div>` : ''}
-                    <div class="message-text">${escapeHtml(msg.message)}</div>
+                    <div class="message-text">${processEmotes(msg.message)}</div>
                     <div class="message-time">${time}</div>
                 `;
                 container.appendChild(msgEl);
@@ -438,6 +448,34 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+        
+        // Emote definitions
+        const EMOTES = {
+            ':gg:': { emoji: '🎮', display: 'GG' },
+            ':nice:': { emoji: '👍', display: 'Nice!' },
+            ':rip:': { emoji: '💀', display: 'RIP' },
+            ':pog:': { emoji: '😲', display: 'POG' },
+            ':ez:': { emoji: '😎', display: 'EZ' },
+            ':sad:': { emoji: '😢', display: 'Sad' },
+            ':hype:': { emoji: '🔥', display: 'HYPE' },
+            ':love:': { emoji: '❤️', display: 'Love' },
+            ':laugh:': { emoji: '😂', display: 'LOL' },
+            ':think:': { emoji: '🤔', display: 'Hmm' },
+            ':wow:': { emoji: '😮', display: 'WOW' },
+            ':angry:': { emoji: '😡', display: 'Angry' },
+            ':clap:': { emoji: '👏', display: 'GG WP' },
+            ':skull:': { emoji: '💀', display: 'Dead' }
+        };
+        
+        function processEmotes(text) {
+            let result = escapeHtml(text);
+            for (const [code, data] of Object.entries(EMOTES)) {
+                const escaped = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(escaped, 'gi');
+                result = result.replace(regex, `<span class="emote">${data.emoji} ${data.display}</span>`);
+            }
+            return result;
         }
         
         // Enter to send

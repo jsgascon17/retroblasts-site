@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 $usersFile = __DIR__ . '/../data/users.json';
+$shopDataFile = __DIR__ . '/../data/shop-data.json';
 
 // Shop items definition
 $SHOP_ITEMS = [
@@ -37,7 +38,13 @@ $SHOP_ITEMS = [
             ['id' => 'neon_green', 'name' => 'Neon Green', 'cost' => 750, 'css' => 'color: #39ff14; text-shadow: 0 0 10px #39ff14'],
             ['id' => 'fire', 'name' => 'Fire', 'cost' => 1500, 'css' => 'background: linear-gradient(180deg, #ff0, #f00); -webkit-background-clip: text; -webkit-text-fill-color: transparent'],
             ['id' => 'ice', 'name' => 'Ice', 'cost' => 1500, 'css' => 'color: #00ffff; text-shadow: 0 0 10px #00ffff, 0 0 20px #0080ff'],
-            ['id' => 'purple', 'name' => 'Royal Purple', 'cost' => 750, 'css' => 'color: #9b59b6; text-shadow: 0 0 8px rgba(155,89,182,0.6)']
+            ['id' => 'purple', 'name' => 'Royal Purple', 'cost' => 750, 'css' => 'color: #9b59b6; text-shadow: 0 0 8px rgba(155,89,182,0.6)'],
+            ['id' => 'neon_pink', 'name' => 'Neon Pink', 'cost' => 750, 'css' => 'color: #ff1493; text-shadow: 0 0 10px #ff1493'],
+            ['id' => 'cyan', 'name' => 'Cyan', 'cost' => 500, 'css' => 'color: #00bcd4; text-shadow: 0 0 8px rgba(0,188,212,0.6)'],
+            ['id' => 'crimson', 'name' => 'Crimson', 'cost' => 750, 'css' => 'color: #dc143c; text-shadow: 0 0 8px rgba(220,20,60,0.6)'],
+            ['id' => 'silver', 'name' => 'Silver', 'cost' => 500, 'css' => 'color: #c0c0c0; text-shadow: 0 0 5px rgba(192,192,192,0.5)'],
+            ['id' => 'lime', 'name' => 'Lime', 'cost' => 500, 'css' => 'color: #00ff00; text-shadow: 0 0 8px rgba(0,255,0,0.5)'],
+            ['id' => 'animated_rainbow', 'name' => 'Animated Rainbow', 'cost' => 5000, 'css' => 'background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff, #ff0000); background-size: 200% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: rainbow-scroll 2s linear infinite']
         ]
     ],
     'borders' => [
@@ -48,7 +55,11 @@ $SHOP_ITEMS = [
             ['id' => 'silver', 'name' => 'Silver', 'cost' => 2000, 'css' => 'border: 3px solid #c0c0c0; box-shadow: 0 0 10px rgba(192,192,192,0.5)'],
             ['id' => 'gold', 'name' => 'Gold', 'cost' => 3500, 'css' => 'border: 3px solid #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.6)'],
             ['id' => 'diamond', 'name' => 'Diamond', 'cost' => 5000, 'css' => 'border: 3px solid #b9f2ff; box-shadow: 0 0 20px #b9f2ff, inset 0 0 10px rgba(185,242,255,0.3)'],
-            ['id' => 'rainbow', 'name' => 'Rainbow', 'cost' => 7500, 'css' => 'border: 3px solid transparent; background: linear-gradient(#1a1a2e, #1a1a2e) padding-box, linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #8f00ff) border-box; animation: rainbow-border 3s linear infinite']
+            ['id' => 'rainbow', 'name' => 'Rainbow', 'cost' => 7500, 'css' => 'border: 3px solid transparent; background: linear-gradient(#1a1a2e, #1a1a2e) padding-box, linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #8f00ff) border-box; animation: rainbow-border 3s linear infinite'],
+            ['id' => 'animated_fire', 'name' => 'Animated Fire', 'cost' => 8000, 'css' => 'border: 3px solid #ff4500; box-shadow: 0 0 15px #ff4500, 0 0 30px #ff6600; animation: fire-pulse 1s ease-in-out infinite'],
+            ['id' => 'animated_ice', 'name' => 'Animated Ice', 'cost' => 8000, 'css' => 'border: 3px solid #00bfff; box-shadow: 0 0 15px #00bfff, 0 0 30px #87ceeb; animation: ice-shimmer 2s ease-in-out infinite'],
+            ['id' => 'pixel', 'name' => 'Pixel Art', 'cost' => 4000, 'css' => 'border: 4px dashed #00ff00; box-shadow: 0 0 0 2px #000, 0 0 10px #00ff00'],
+            ['id' => 'neon_glow', 'name' => 'Neon Glow', 'cost' => 6000, 'css' => 'border: 2px solid #fff; box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff, 0 0 40px #ff00ff']
         ]
     ],
     'avatar_effects' => [
@@ -59,7 +70,51 @@ $SHOP_ITEMS = [
             ['id' => 'bounce', 'name' => 'Bounce', 'cost' => 2000, 'animation' => 'bounce'],
             ['id' => 'glow', 'name' => 'Glow', 'cost' => 2000, 'animation' => 'glow'],
             ['id' => 'shake', 'name' => 'Shake', 'cost' => 2000, 'animation' => 'shake'],
-            ['id' => 'pulse', 'name' => 'Pulse', 'cost' => 2000, 'animation' => 'pulse']
+            ['id' => 'pulse', 'name' => 'Pulse', 'cost' => 2000, 'animation' => 'pulse'],
+            ['id' => 'ghost', 'name' => 'Ghost', 'cost' => 3000, 'animation' => 'ghost'],
+            ['id' => 'fire_aura', 'name' => 'Fire Aura', 'cost' => 4000, 'animation' => 'fire-aura'],
+            ['id' => 'rainbow_trail', 'name' => 'Rainbow Trail', 'cost' => 4500, 'animation' => 'rainbow-trail'],
+            ['id' => 'glitch', 'name' => 'Glitch', 'cost' => 3500, 'animation' => 'glitch']
+        ]
+    ],
+    'avatar_rings' => [
+        'name' => 'Avatar Rings',
+        'icon' => '💍',
+        'items' => [
+            ['id' => 'gold', 'name' => 'Gold', 'cost' => 500],
+            ['id' => 'rainbow', 'name' => 'Rainbow', 'cost' => 2000],
+            ['id' => 'neon-pink', 'name' => 'Neon Pink', 'cost' => 750],
+            ['id' => 'neon-blue', 'name' => 'Neon Blue', 'cost' => 750],
+            ['id' => 'neon-green', 'name' => 'Neon Green', 'cost' => 750],
+            ['id' => 'fire', 'name' => 'Fire', 'cost' => 1500],
+            ['id' => 'ice', 'name' => 'Ice', 'cost' => 1500]
+        ]
+    ],
+    'titles' => [
+        'name' => 'Titles',
+        'icon' => '🏷️',
+        'items' => [
+            ['id' => 'champion', 'name' => 'Champion 👑', 'cost' => 5000, 'display' => 'Champion 👑'],
+            ['id' => 'legend', 'name' => 'Legend ⭐', 'cost' => 7500, 'display' => 'Legend ⭐'],
+            ['id' => 'whale', 'name' => 'Whale 🐋', 'cost' => 10000, 'display' => 'Whale 🐋'],
+            ['id' => 'og', 'name' => 'OG 🔥', 'cost' => 15000, 'display' => 'OG 🔥', 'limited' => 10]
+        ]
+    ],
+    'banners' => [
+        'name' => 'Profile Banners',
+        'icon' => '🖼️',
+        'items' => [
+            ['id' => 'sunset', 'name' => 'Sunset', 'cost' => 2000, 'gradient' => 'linear-gradient(135deg, #ff6b6b, #feca57, #ff9f43)'],
+            ['id' => 'ocean', 'name' => 'Ocean Wave', 'cost' => 2000, 'gradient' => 'linear-gradient(135deg, #667eea, #764ba2, #f953c6)'],
+            ['id' => 'forest', 'name' => 'Forest', 'cost' => 2000, 'gradient' => 'linear-gradient(135deg, #11998e, #38ef7d)'],
+            ['id' => 'galaxy', 'name' => 'Galaxy', 'cost' => 3500, 'gradient' => 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)'],
+            ['id' => 'fire', 'name' => 'Inferno', 'cost' => 3500, 'gradient' => 'linear-gradient(135deg, #f12711, #f5af19)'],
+            ['id' => 'neon', 'name' => 'Neon City', 'cost' => 4000, 'gradient' => 'linear-gradient(135deg, #00d2ff, #3a7bd5, #f953c6, #f5576c)'],
+            ['id' => 'rainbow', 'name' => 'Rainbow', 'cost' => 5000, 'gradient' => 'linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #8b00ff)'],
+            ['id' => 'gold', 'name' => 'Golden', 'cost' => 7500, 'gradient' => 'linear-gradient(135deg, #f7971e, #ffd200, #b38728)'],
+            ['id' => 'diamond', 'name' => 'Diamond', 'cost' => 10000, 'gradient' => 'linear-gradient(135deg, #00CED1, #7FFFD4, #E0FFFF, #00CED1)'],
+            ['id' => 'animated_fire', 'name' => 'Animated Fire', 'cost' => 8000, 'gradient' => 'linear-gradient(135deg, #f12711, #f5af19)', 'animated' => true],
+            ['id' => 'animated_water', 'name' => 'Animated Water', 'cost' => 8000, 'gradient' => 'linear-gradient(135deg, #667eea, #764ba2)', 'animated' => true]
         ]
     ],
     'emotes' => [
@@ -75,7 +130,11 @@ $SHOP_ITEMS = [
             ['id' => 'hype', 'name' => ':hype:', 'cost' => 300, 'emoji' => '🔥', 'display' => 'HYPE'],
             ['id' => 'love', 'name' => ':love:', 'cost' => 300, 'emoji' => '❤️', 'display' => 'Love'],
             ['id' => 'laugh', 'name' => ':laugh:', 'cost' => 300, 'emoji' => '😂', 'display' => 'LOL'],
-            ['id' => 'think', 'name' => ':think:', 'cost' => 300, 'emoji' => '🤔', 'display' => 'Hmm']
+            ['id' => 'think', 'name' => ':think:', 'cost' => 300, 'emoji' => '🤔', 'display' => 'Hmm'],
+            ['id' => 'wow', 'name' => ':wow:', 'cost' => 300, 'emoji' => '😮', 'display' => 'WOW'],
+            ['id' => 'angry', 'name' => ':angry:', 'cost' => 300, 'emoji' => '😡', 'display' => 'Angry'],
+            ['id' => 'clap', 'name' => ':clap:', 'cost' => 300, 'emoji' => '👏', 'display' => 'GG WP'],
+            ['id' => 'skull', 'name' => ':skull:', 'cost' => 300, 'emoji' => '💀', 'display' => 'Dead']
         ]
     ],
     'boosters' => [
@@ -107,6 +166,17 @@ function writeUsers($data) {
     file_put_contents($usersFile, json_encode($data, JSON_PRETTY_PRINT));
 }
 
+function readShopData() {
+    global $shopDataFile;
+    if (!file_exists($shopDataFile)) return ['limitedItems' => []];
+    return json_decode(file_get_contents($shopDataFile), true) ?: ['limitedItems' => []];
+}
+
+function writeShopData($data) {
+    global $shopDataFile;
+    file_put_contents($shopDataFile, json_encode($data, JSON_PRETTY_PRINT));
+}
+
 function ensureUserHasShopFields(&$user) {
     if (!isset($user['coins'])) $user['coins'] = 0;
     if (!isset($user['inventory'])) {
@@ -114,17 +184,40 @@ function ensureUserHasShopFields(&$user) {
             'name_colors' => [],
             'borders' => [],
             'avatar_effects' => [],
+            'avatar_rings' => [],
+            'titles' => [],
+            'banners' => [],
             'emotes' => [],
             'boosters' => [],
             'social' => []
         ];
     }
+    // Ensure titles category exists for existing users
+    if (!isset($user['inventory']['banners'])) {
+        $user['inventory']['banners'] = [];
+    }
+    if (!isset($user['inventory']['titles'])) {
+    if (!isset($user['inventory']['avatar_rings'])) {
+        $user['inventory']['avatar_rings'] = [];
+    }
+        $user['inventory']['titles'] = [];
+    }
     if (!isset($user['equipped'])) {
         $user['equipped'] = [
             'name_color' => null,
             'border' => null,
-            'avatar_effect' => null
+            'avatar_effect' => null,
+            'avatar_ring' => null,
+            'title' => null,
+            'banner' => null
         ];
+    }
+    // Ensure title equip slot exists
+    if (!isset($user['equipped']['title'])) {
+    if (!isset($user['equipped']['avatar_ring'])) {
+        $user['equipped']['avatar_ring'] = null;
+    }
+        $user['equipped']['title'] = null;
     }
     if (!isset($user['activeBoosts'])) $user['activeBoosts'] = [];
 }
@@ -146,15 +239,76 @@ function cleanExpiredBoosts(&$user) {
     $user['activeBoosts'] = array_values($user['activeBoosts']);
 }
 
+function getLimitedItemPurchaseCount($itemId) {
+    $shopData = readShopData();
+    return $shopData['limitedItems'][$itemId]['count'] ?? 0;
+}
+
+function incrementLimitedItemCount($itemId) {
+    $shopData = readShopData();
+    if (!isset($shopData['limitedItems'][$itemId])) {
+        $shopData['limitedItems'][$itemId] = ['count' => 0, 'buyers' => []];
+    }
+    $shopData['limitedItems'][$itemId]['count']++;
+    writeShopData($shopData);
+}
+
+function addLimitedItemBuyer($itemId, $username) {
+    $shopData = readShopData();
+    if (!isset($shopData['limitedItems'][$itemId])) {
+        $shopData['limitedItems'][$itemId] = ['count' => 0, 'buyers' => []];
+    }
+    $shopData['limitedItems'][$itemId]['buyers'][] = $username;
+    $shopData['limitedItems'][$itemId]['count'] = count($shopData['limitedItems'][$itemId]['buyers']);
+    writeShopData($shopData);
+}
+
 // Handle GET requests
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $action = $_GET['action'] ?? 'items';
     
     if ($action === 'items') {
-        echo json_encode(['success' => true, 'shop' => $SHOP_ITEMS]);
+        // Add limited item info to shop data
+        $shopData = readShopData();
+        $shopWithLimits = $SHOP_ITEMS;
+        
+        // Add purchase counts for limited items
+        foreach ($shopWithLimits as $catKey => &$category) {
+            foreach ($category['items'] as &$item) {
+                if (isset($item['limited'])) {
+                    $item['purchaseCount'] = $shopData['limitedItems'][$item['id']]['count'] ?? 0;
+                    $item['soldOut'] = $item['purchaseCount'] >= $item['limited'];
+                }
+            }
+        }
+        
+        echo json_encode(['success' => true, 'shop' => $shopWithLimits]);
         exit();
     }
     
+    if ($action === 'status') {
+        if (!isset($_SESSION['user'])) {
+            echo json_encode(['success' => false, 'error' => 'Not logged in']);
+            exit();
+        }
+        
+        $data = readUsers();
+        $username = $_SESSION['user'];
+        
+        if (!isset($data['users'][$username])) {
+            echo json_encode(['success' => false, 'error' => 'User not found']);
+            exit();
+        }
+        
+        $user = $data['users'][$username];
+        
+        echo json_encode([
+            'success' => true,
+            'equipped' => $user['equipped'] ?? []
+        ]);
+        exit();
+    }
+
     if ($action === 'inventory') {
         if (!isset($_SESSION['user'])) {
             echo json_encode(['success' => false, 'error' => 'Not logged in']);
@@ -226,6 +380,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
         
+        // Check if limited item is sold out
+        if (isset($item['limited'])) {
+            $purchaseCount = getLimitedItemPurchaseCount($itemId);
+            if ($purchaseCount >= $item['limited']) {
+                echo json_encode(['success' => false, 'error' => 'This limited item is sold out!']);
+                exit();
+            }
+        }
+        
         // Check coins
         if ($user['coins'] < $item['cost']) {
             echo json_encode(['success' => false, 'error' => 'Not enough coins']);
@@ -244,6 +407,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user['inventory'][$category] = [];
             }
             $user['inventory'][$category][] = $itemId;
+            
+            // Track limited item purchase
+            if (isset($item['limited'])) {
+                addLimitedItemBuyer($itemId, $username);
+            }
         }
         
         writeUsers($data);
@@ -265,6 +433,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $equipKey = str_replace('s', '', $category); // name_colors -> name_color
         if ($category === 'borders') $equipKey = 'border';
         if ($category === 'avatar_effects') $equipKey = 'avatar_effect';
+        if ($category === 'titles') $equipKey = 'title';
+        if ($category === 'banners') $equipKey = 'banner';
+        if ($category === 'avatar_rings') $equipKey = 'avatar_ring';
         
         // Check ownership
         if (!in_array($itemId, $user['inventory'][$category] ?? [])) {
@@ -288,6 +459,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $equipKey = str_replace('s', '', $category);
         if ($category === 'borders') $equipKey = 'border';
         if ($category === 'avatar_effects') $equipKey = 'avatar_effect';
+        if ($category === 'titles') $equipKey = 'title';
+        if ($category === 'banners') $equipKey = 'banner';
+        if ($category === 'avatar_rings') $equipKey = 'avatar_ring';
         
         $user['equipped'][$equipKey] = null;
         writeUsers($data);

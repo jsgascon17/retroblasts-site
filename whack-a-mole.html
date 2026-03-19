@@ -152,6 +152,8 @@
         .hammer-indicator { position: fixed; bottom: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 10px 15px; border-radius: 10px; display: flex; align-items: center; gap: 10px; }
         .hammer-indicator span { font-size: 1.5rem; }
     </style>
+<script src="js/duel.js"></script>
+<script src="js/victory.js"></script>
 </head>
 <body class="theme-classic">
     <h1>🔨 Whack-a-Mole</h1>
@@ -994,6 +996,11 @@
             saveSave();
             trackGameEnd(score, coinsThisGame, molesHit);
 
+            // Submit duel score if in a challenge
+            if (typeof DuelSystem !== "undefined" && DuelSystem.isInDuel()) {
+                DuelSystem.submitScore(score);
+            }
+
             // Display
             document.getElementById('gameOverTitle').textContent = gameMode === 'endless' ? 'Game Over!' : 'Time\'s Up!';
             document.getElementById('finalScore').textContent = score;
@@ -1018,6 +1025,14 @@
             document.getElementById('leaderboardMsg').textContent = '';
 
             gameOverScreen.classList.add('show');
+
+            // Award coins on server (if logged in)
+            fetch('api/add-coins.php', { credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'whack-a-mole', coins: coinsEarnedThisGame })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    document.getElementById('coinsEarned').textContent = data.coinsEarned;
+                }
+            }).catch(() => {});
 
             startBtn.disabled = false;
             startBtn.textContent = 'Start Game';

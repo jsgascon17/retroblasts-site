@@ -107,6 +107,8 @@
         .new-achievements { margin: 15px 0; }
         .new-achievement { color: #FFD700; font-size: 0.9rem; margin: 5px 0; }
     </style>
+<script src="js/duel.js"></script>
+<script src="js/victory.js"></script>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
@@ -1092,6 +1094,11 @@
             saveSaveData();
             trackGameEnd(score, sessionCoins, score);
 
+            // Submit duel score if in a challenge
+            if (typeof DuelSystem !== "undefined" && DuelSystem.isInDuel()) {
+                DuelSystem.submitScore(score);
+            }
+
             // Show game over screen
             document.getElementById('finalScore').textContent = score;
             document.getElementById('finalHighScore').textContent = saveData.highScores[gameMode];
@@ -1114,6 +1121,14 @@
             document.getElementById('leaderboardMsg').textContent = '';
 
             document.getElementById('gameOverScreen').classList.remove('hidden');
+
+            // Award coins on server (if logged in)
+            fetch('api/add-coins.php', { credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'fruit-ninja', coins: sessionCoins })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    document.getElementById('coinsEarned').textContent = data.coinsEarned;
+                }
+            }).catch(() => {});
         }
 
         function showMenu() {

@@ -47,7 +47,77 @@
                 }
             ],
             "status": "active"
+        },
+        {
+            "id": 4,
+            "game": "knife-hit",
+            "gameName": "Knife Hit",
+            "gameIcon": "\ud83d\udd2a",
+            "name": "knife yay",
+            "startTime": "2026-03-16 18:09:07",
+            "endTime": "2026-03-16 18:24:07",
+            "duration": 900,
+            "scores": [
+                {
+                    "name": "joey",
+                    "score": 84,
+                    "date": "2026-03-16 18:10:02"
+                },
+                {
+                    "name": "ballzyaycracker",
+                    "score": 36,
+                    "date": "2026-03-16 18:10:21"
+                }
+            ],
+            "status": "active",
+            "isPrivate": false,
+            "inviteCode": null,
+            "allowedPlayers": [],
+            "createdBy": "anonymous"
+        },
+        {
+            "id": 5,
+            "game": "geometry-dash",
+            "gameName": "Geometry Dash",
+            "gameIcon": "\ud83d\udd37",
+            "name": "Geometry Dash Tournament",
+            "startTime": "2026-03-17 17:01:33",
+            "endTime": "2026-03-18 17:01:33",
+            "duration": 86400,
+            "scores": [],
+            "status": "active",
+            "isPrivate": false,
+            "inviteCode": null,
+            "allowedPlayers": [],
+            "createdBy": "anonymous"
+        },
+        {
+            "id": 6,
+            "game": "flappy-bird",
+            "gameName": "Flappy Bird",
+            "gameIcon": "\ud83d\udc24",
+            "name": "flap",
+            "startTime": "2026-03-18 18:34:36",
+            "endTime": "2026-03-18 18:49:36",
+            "duration": 900,
+            "scores": [
+                {
+                    "name": "Joey",
+                    "score": 15,
+                    "date": "2026-03-18 18:35:13"
+                },
+                {
+                    "name": "crackyourbignut",
+                    "score": 7,
+                    "date": "2026-03-18 18:35:41"
+                }
+            ],
+            "status": "active",
+            "isPrivate": false,
+            "inviteCode": null,
+            "allowedPlayers": [],
+            "createdBy": "anonymous"
         }
     ],
-    "nextId": 4
+    "nextId": 7
 }

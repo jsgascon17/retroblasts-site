@@ -304,6 +304,10 @@
         .owner-toggle-btn { width: 60px !important; }
         .owner-toggle-btn.active { background: #4CAF50; color: #fff; border-color: #4CAF50; }
     </style>
+<script src="js/duel.js"></script>
+<script src="js/victory.js"></script>
+<script src="js/wars.js"></script>
+<script src="js/activity.js"></script>
 </head>
 <body>
     <a href="index.html" class="back-btn">← Back</a>
@@ -375,9 +379,14 @@
 
     <!-- Shop -->
     <div class="shop-overlay hidden" id="shopScreen">
-        <h1 style="color: #fff;">🔪 Knife Skins</h1>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button class="btn" id="skinsTabBtn" onclick="showShopTab('skins')" style="background: #ffd700;">🔪 Skins</button>
+            <button class="btn" id="powerupsTabBtn" onclick="showShopTab('powerups')">⚡ Powerups</button>
+        </div>
+        <h1 style="color: #fff;">🛒 Shop</h1>
         <p style="color: #888;">Coins: <span id="shopCoins">0</span></p>
         <div class="shop-grid" id="skinGrid"></div>
+        <div class="shop-grid hidden" id="powerupGrid"></div>
         <button class="btn" onclick="hideShop()">CLOSE</button>
     </div>
 
@@ -720,6 +729,14 @@
             { id: 'owner_diamond', name: 'Diamond', icon: '💎', color: '#60A5FA', price: 0, ownerOnly: true },
             { id: 'owner_phantom', name: 'Phantom', icon: '👻', color: '#A78BFA', price: 0, ownerOnly: true },
             { id: 'owner_dev', name: 'Developer', icon: '💻', color: '#10B981', price: 0, ownerOnly: true },
+            { id: 'ninja', name: 'Ninja Star', icon: '⭐', color: '#2d3436', price: 350 },
+            { id: 'cleaver', name: 'Cleaver', icon: '🪓', color: '#636e72', price: 400 },
+            { id: 'candy', name: 'Candy Cane', icon: '🍬', color: '#e84393', price: 300 },
+            { id: 'cosmic', name: 'Cosmic', icon: '🌟', color: '#6c5ce7', price: 450 },
+            { id: 'bamboo', name: 'Bamboo', icon: '🎋', color: '#00b894', price: 350 },
+            { id: 'crystal', name: 'Crystal', icon: '💠', color: '#74b9ff', price: 500 },
+            { id: 'rusty', name: 'Rusty', icon: '🗡️', color: '#b2bec3', price: 200 },
+            { id: 'neon_pink', name: 'Neon Pink', icon: '💖', color: '#fd79a8', price: 400 },
         ];
 
         // Log types (changes every 10 stages)
@@ -745,6 +762,15 @@
             { id: 'veteran', name: 'Veteran', icon: '🎖️', desc: 'Play 50 games', check: s => s.totalGames >= 50 },
             { id: 'perfectionist', name: 'Perfectionist', icon: '💎', desc: 'Complete a boss without missing', check: s => s.perfectBosses >= 1 },
         ];
+
+        // Purchasable Powerups
+        const GAME_POWERUPS = {
+            extraKnife: { name: "Extra Knife", icon: "🔪", desc: "+1 knife per stage", price: 200, effect: 1 },
+            slowSpin: { name: "Slow Spin", icon: "🐢", desc: "Log spins 20% slower", price: 150, effect: 0.2 },
+            bigHitbox: { name: "Big Knife", icon: "⬆️", desc: "Easier to hit apples", price: 175, effect: 1.3 },
+            coinBoost: { name: "Coin Boost", icon: "💰", desc: "+50% coins earned", price: 250, effect: 0.5 },
+            secondChance: { name: "Second Chance", icon: "❤️", desc: "One free miss", price: 300, effect: 1 }
+        };
 
         // Codes
         const CODES = {
@@ -1207,6 +1233,15 @@
         function hideStats() {
             document.getElementById('statsScreen').classList.add('hidden');
         }
+
+        // Purchasable Powerups
+        const GAME_POWERUPS = {
+            extraKnife: { name: "Extra Knife", icon: "🔪", desc: "+1 knife per stage", price: 200, effect: 1 },
+            slowSpin: { name: "Slow Spin", icon: "🐢", desc: "Log spins 20% slower", price: 150, effect: 0.2 },
+            bigHitbox: { name: "Big Knife", icon: "⬆️", desc: "Easier to hit apples", price: 175, effect: 1.3 },
+            coinBoost: { name: "Coin Boost", icon: "💰", desc: "+50% coins earned", price: 250, effect: 0.5 },
+            secondChance: { name: "Second Chance", icon: "❤️", desc: "One free miss", price: 300, effect: 1 }
+        };
 
         // Codes
         function showCodes() {
@@ -1935,7 +1970,8 @@
             gameState.gameOver = true;
 
             saveData.totalGames++;
-            if (gameState.score > saveData.highScore) saveData.highScore = gameState.score;
+            if (gameState.score > saveData.highScore) { saveData.highScore = gameState.score; if (typeof VictoryEffects !== "undefined") VictoryEffects.newHighScore();
+                if (typeof ActivityFeed !== "undefined") ActivityFeed.logHighScore("knife-hit", gameState.score); }
             if (gameState.stage > saveData.highStage) saveData.highStage = gameState.stage;
             saveSaveData();
 
@@ -1949,6 +1985,22 @@
             document.getElementById('leaderboardMsg').textContent = '';
 
             document.getElementById('gameOverScreen').classList.remove('hidden');
+
+            // Award coins on server (if logged in)
+            fetch('api/add-coins.php', { credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'knife-hit', coins: gameState.coinsThisGame })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    document.getElementById('coinsEarned').textContent = data.coinsEarned;
+                }
+            }).catch(() => {});
+
+            // Submit score to duel if in challenge mode
+            if (typeof DuelSystem !== "undefined" && DuelSystem.isInDuel()) {
+                DuelSystem.submitScore(gameState.score);
+            }
+            if (typeof WarSystem !== "undefined" && WarSystem.isInWar()) {
+                WarSystem.submitScore(gameState.score);
+            }
         }
 
         // Shop
@@ -1972,6 +2024,63 @@
                 `;
             }).join('');
             document.getElementById('shopScreen').classList.remove('hidden');
+        }
+
+        function showShopTab(tab) {
+            const skinsGrid = document.getElementById("skinGrid");
+            const powerupsGrid = document.getElementById("powerupGrid");
+            const skinsBtn = document.getElementById("skinsTabBtn");
+            const powerupsBtn = document.getElementById("powerupsTabBtn");
+            
+            if (tab === "skins") {
+                skinsGrid.classList.remove("hidden");
+                powerupsGrid.classList.add("hidden");
+                skinsBtn.style.background = "#ffd700";
+                powerupsBtn.style.background = "";
+            } else {
+                skinsGrid.classList.add("hidden");
+                powerupsGrid.classList.remove("hidden");
+                skinsBtn.style.background = "";
+                powerupsBtn.style.background = "#ffd700";
+                renderPowerups();
+            }
+        }
+        
+        function renderPowerups() {
+            const grid = document.getElementById("powerupGrid");
+            grid.innerHTML = Object.entries(GAME_POWERUPS).map(([id, p]) => {
+                const owned = saveData.ownedPowerups && saveData.ownedPowerups.includes(id);
+                return `
+                    <div class="skin-item ${owned ? "owned" : ""}" onclick="buyPowerup('${id}')">
+                        <div class="skin-icon">${p.icon}</div>
+                        <div style="font-size: 0.8rem; color: #fff;">${p.name}</div>
+                        <div style="font-size: 0.7rem; color: #888;">${p.desc}</div>
+                        ${!owned ? `<div class="skin-cost">${p.price} 🪙</div>` : "<div style="color: #22c55e;">Owned</div>"}
+                    </div>
+                `;
+            }).join("");
+        }
+        
+        function buyPowerup(id) {
+            const powerup = GAME_POWERUPS[id];
+            if (!saveData.ownedPowerups) saveData.ownedPowerups = [];
+            
+            if (saveData.ownedPowerups.includes(id)) {
+                showNotification("Already owned!");
+                return;
+            }
+            
+            if (saveData.coins >= powerup.price) {
+                saveData.coins -= powerup.price;
+                saveData.ownedPowerups.push(id);
+                saveSaveData();
+                updateUI();
+                showNotification("Bought " + powerup.name + "!");
+                renderPowerups();
+                document.getElementById("shopCoins").textContent = saveData.coins;
+            } else {
+                showNotification("Not enough coins!");
+            }
         }
 
         function hideShop() {
@@ -2049,6 +2158,8 @@
                         fetch('tournament.php', { method: 'POST', headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ action: 'submit', tournamentId, name: playerName, score: playerScore })
                         }).then(r => r.json()).then(t => { if (t.success) msgEl.textContent += ' | T#' + t.rank; }).catch(() => {});
+
+            // Submit score to duel if in challenge mode
                     }
                 } else { throw new Error(data.error); }
             } catch (error) {

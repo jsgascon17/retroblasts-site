@@ -48,6 +48,9 @@
         .leaderboard-form { margin: 20px 0; padding: 20px; background: rgba(50,205,50,0.1); border-radius: 15px; border: 2px solid #32CD32; }
         .leaderboard-form input { padding: 10px 15px; border-radius: 20px; border: 2px solid #32CD32; background: rgba(0,0,0,0.5); color: #fff; font-size: 1rem; width: 150px; margin-right: 10px; }
     </style>
+<script src="js/duel.js"></script>
+<script src="js/victory.js"></script>
+<script src="js/activity.js"></script>
 </head>
 <body>
     <h1>TETRIS</h1>
@@ -94,12 +97,14 @@
         <h2>Game Over!</h2>
         <p>Score: <span id="finalScore">0</span></p>
         <p>Level: <span id="finalLevel">1</span></p>
+        <p id="coinsEarnedDisplay" style="color: #ffd700; margin-top: 10px;">+<span id="coinsEarned">0</span> Coins</p>
         <div class="leaderboard-form">
             <p style="color: #32CD32; margin-bottom: 10px;">Submit to Leaderboard:</p>
             <input type="text" id="playerName" placeholder="Your name" maxlength="15">
             <button class="btn" id="submitScoreBtn">Submit</button>
             <p id="leaderboardMsg" style="margin-top: 10px; min-height: 1.2em;"></p>
         </div>
+        <button class="btn" id="saveReplayBtn" style="margin-bottom: 10px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);" onclick="saveReplay()">💾 Save Replay</button>
         <button class="btn" onclick="startGame()">Play Again</button>
     </div>
 
@@ -135,8 +140,15 @@
 
         let board = [];
         let score = 0, level = 1, lines = 0;
+        let replayFrames = [];
+        let gameStartTime = 0;
         let currentPiece, nextPiece;
         let gameRunning = false;
+
+            // Submit duel score if in a challenge
+            if (typeof DuelSystem !== "undefined" && DuelSystem.isInDuel()) {
+                DuelSystem.submitScore(score);
+            }
         let dropInterval, lastDrop = 0;
 
         function createBoard() {
@@ -326,6 +338,15 @@
 
             const speed = Math.max(100, 1000 - (level - 1) * 100);
             if (time - lastDrop > speed) {
+                // Record replay frame
+                replayFrames.push({
+                    t: Date.now() - gameStartTime,
+                    board: JSON.parse(JSON.stringify(board)),
+                    piece: currentPiece ? { shape: currentPiece.shape, color: currentPiece.color, x: currentPiece.x, y: currentPiece.y } : null,
+                    score: score,
+                    level: level,
+                    lines: lines
+                });
                 drop();
                 lastDrop = time;
             }
@@ -345,6 +366,8 @@
             nextPiece = newPiece();
             drawNext();
 
+            replayFrames = [];
+            gameStartTime = Date.now();
             gameRunning = true;
             lastDrop = performance.now();
             requestAnimationFrame(gameLoop);
@@ -352,9 +375,31 @@
 
         function gameOver() {
             gameRunning = false;
+
+            // Submit duel score if in a challenge
+            if (typeof DuelSystem !== "undefined" && DuelSystem.isInDuel()) {
+                DuelSystem.submitScore(score);
+            }
             document.getElementById('finalScore').textContent = score;
             document.getElementById('finalLevel').textContent = level;
             document.getElementById('gameOverOverlay').classList.remove('hidden');
+
+            // Award coins on server (if logged in)
+            fetch('api/game-rewards.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'tetris', score: score })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    document.getElementById('coinsEarned').textContent = data.coinsEarned;
+                    document.getElementById('coinsEarnedDisplay').style.display = 'block';
+                } else {
+                    document.getElementById('coinsEarnedDisplay').innerHTML = '<span style="color: #888;">Log in to earn coins!</span>';
+                }
+            }).catch(() => {
+                document.getElementById('coinsEarnedDisplay').style.display = 'none';
+            });
 
             const submitBtn = document.getElementById('submitScoreBtn');
             submitBtn.disabled = false;
@@ -364,8 +409,33 @@
             if (saved) document.getElementById('playerName').value = saved;
         }
 
+        // Secret codes
+        let codeBuffer = [];
+        const CODES = {
+            'ghost': () => { window.ghostMode = true; showCodeMsg('GHOST MODE! See piece placement!'); },
+            'slow': () => { dropInterval = 1500; showCodeMsg('SLOW MODE! Easy pace!'); },
+            'fast': () => { dropInterval = 200; showCodeMsg('TURBO MODE! Good luck!'); },
+            'lines': () => { linesCleared += 10; updateHUD(); showCodeMsg('+10 LINES!'); },
+            'lucky': () => { score += 5000; updateHUD(); showCodeMsg('+5000 POINTS!'); },
+            'coins': () => { const c = parseInt(localStorage.getItem('tetris_coins') || '0') + 100; localStorage.setItem('tetris_coins', c); showCodeMsg('+100 COINS!'); },
+            'rainbow': () => { window.rainbowMode = true; showCodeMsg('RAINBOW MODE!'); },
+            'easy': () => { window.easyPieces = true; showCodeMsg('EASY PIECES! No S/Z blocks!'); }
+        };
+        function showCodeMsg(m) {
+            const d = document.createElement('div');
+            d.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;padding:20px 40px;border-radius:15px;font-size:1.5rem;font-weight:bold;z-index:9999;';
+            d.textContent = m; document.body.appendChild(d); setTimeout(() => d.remove(), 2500);
+        }
+        function checkCode(k) {
+            codeBuffer.push(k); if (codeBuffer.length > 10) codeBuffer.shift();
+            for (const [name, fn] of Object.entries(CODES)) {
+                if (codeBuffer.slice(-name.length).join('') === name) { fn(); codeBuffer = []; break; }
+            }
+        }
+
         // Keyboard controls
         document.addEventListener('keydown', e => {
+            checkCode(e.key.toLowerCase());
             if (!gameRunning) return;
             switch(e.key) {
                 case 'ArrowLeft': e.preventDefault(); moveLeft(); break;
@@ -416,6 +486,38 @@
 
         draw();
         drawNext();
+
+        async function saveReplay() {
+            const btn = document.getElementById('saveReplayBtn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            try {
+                const duration = Math.floor((Date.now() - gameStartTime) / 1000);
+                const resp = await fetch('api/replays.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'save',
+                        game: 'tetris',
+                        score: score,
+                        duration: duration,
+                        frames: replayFrames
+                    })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    btn.textContent = '✓ Saved!';
+                    btn.style.background = '#22c55e';
+                } else {
+                    btn.textContent = 'Error: ' + (data.error || 'Failed');
+                    btn.style.background = '#ef4444';
+                }
+            } catch (e) {
+                btn.textContent = 'Error saving';
+                btn.style.background = '#ef4444';
+            }
+        }
     </script>
 </body>
 </html>

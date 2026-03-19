@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spectate - Sandbox Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        /* Live indicator */
+        .live-badge {
+            background: #ef4444;
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            animation: pulse-live 2s infinite;
+        }
+        .live-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            border-radius: 50%;
+        }
+        @keyframes pulse-live {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Streams grid */
+        .streams-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .streams-section h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .streams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .stream-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .stream-card:hover {
+            transform: translateY(-5px);
+            border-color: #ffd700;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .stream-preview {
+            position: relative;
+            height: 180px;
+            background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .stream-preview .game-icon {
+            font-size: 4rem;
+            opacity: 0.3;
+        }
+        .stream-preview .live-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        .stream-preview .viewer-count {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .stream-info {
+            padding: 15px;
+        }
+        .stream-info h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .stream-info h3 .online-dot {
+            width: 10px;
+            height: 10px;
+            background: #22c55e;
+            border-radius: 50%;
+        }
+        .stream-info .game-name {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        .stream-info .score {
+            color: #ffd700;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* Spectator view */
+        .spectator-view {
+            display: none;
+        }
+        .spectator-view.active {
+            display: block;
+        }
+        .spectator-header {
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .spectator-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .spectator-info .avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .spectator-info h2 { color: #ffd700; }
+        .spectator-stats {
+            display: flex;
+            gap: 30px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-item .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .stat-item .label {
+            color: #888;
+            font-size: 0.8rem;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .game-container {
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            min-height: 500px;
+        }
+        .game-frame {
+            width: 100%;
+            min-height: 500px;
+            background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .game-frame .loading {
+            font-size: 1.2rem;
+            color: #888;
+        }
+        .game-state-display {
+            background: rgba(0,0,0,0.8);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .game-state-display .game-icon {
+            font-size: 5rem;
+            margin-bottom: 15px;
+        }
+        .game-state-display .current-score {
+            font-size: 3rem;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .game-state-display .score-label {
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .chat-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.7);
+            border-radius: 10px;
+            padding: 10px;
+        }
+        .chat-message {
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+        .chat-message .username {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        .empty-state h3 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Spectate</h1>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Games</a>
+                <a href="friends.html" class="nav-link">Friends</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+            </div>
+        </div>
+
+        <!-- Streams List -->
+        <div id="streamsList" class="streams-list">
+            <div class="streams-section">
+                <h2>
+                    <span class="live-badge">LIVE</span>
+                    Friends Playing Now
+                </h2>
+                <div class="streams-grid" id="liveStreams">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Spectator View -->
+        <div id="spectatorView" class="spectator-view">
+            <div class="spectator-header">
+                <div class="spectator-info">
+                    <div class="avatar" id="playerAvatar">🎮</div>
+                    <div>
+                        <h2 id="playerName">Player</h2>
+                        <div id="gameName" style="color: #888;">Playing Snake</div>
+                    </div>
+                </div>
+                <div class="spectator-stats">
+                    <div class="stat-item">
+                        <div class="value" id="currentScore">0</div>
+                        <div class="label">Score</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value" id="highScore">0</div>
+                        <div class="label">High Score</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value" id="viewerCount">1</div>
+                        <div class="label">Watching</div>
+                    </div>
+                </div>
+                <button class="back-btn" onclick="stopSpectating()">← Back to List</button>
+            </div>
+
+            <div class="game-container">
+                <div class="game-frame" id="gameFrame">
+                    <div class="game-state-display">
+                        <div class="game-icon" id="gameIcon">🐍</div>
+                        <div class="current-score" id="liveScore">0</div>
+                        <div class="score-label">Current Score</div>
+                    </div>
+                </div>
+                <div class="chat-overlay" id="spectatorChat">
+                    <!-- Chat messages appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const Spectate = {
+        currentlyWatching: null,
+        pollInterval: null,
+
+        gameIcons: {
+            'snake': '🐍',
+            'tetris': '🧱',
+            'pacman': '👻',
+            'flappy-bird': '🐦',
+            'asteroids': '🚀',
+            'space-invaders': '👾',
+            '2048': '🔢',
+            'doodle-jump': '⬆️',
+            'fruit-ninja': '🍉',
+            'crossy-road': '🐔',
+            'default': '🎮'
+        },
+
+        async init() {
+            await this.loadLiveStreams();
+            // Refresh every 10 seconds
+            setInterval(() => this.loadLiveStreams(), 10000);
+        },
+
+        async loadLiveStreams() {
+            try {
+                const resp = await fetch('api/spectate.php?action=live', { credentials: 'include' });
+                const data = await resp.json();
+
+                if (data.success && data.streams) {
+                    this.renderStreams(data.streams);
+                }
+            } catch (e) {
+                console.error('Failed to load streams:', e);
+                this.renderStreams([]);
+            }
+        },
+
+        renderStreams(streams) {
+            const container = document.getElementById('liveStreams');
+
+            if (streams.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="icon">📺</div>
+                        <h3>No Friends Playing</h3>
+                        <p>When your friends are playing games, you can watch them here!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = streams.map(stream => `
+                <div class="stream-card" onclick="Spectate.watch('${stream.username}')">
+                    <div class="stream-preview">
+                        <span class="game-icon">${this.gameIcons[stream.game] || this.gameIcons.default}</span>
+                        <div class="live-indicator">
+                            <span class="live-badge">LIVE</span>
+                        </div>
+                        <div class="viewer-count">
+                            👁️ ${stream.viewers || 0}
+                        </div>
+                    </div>
+                    <div class="stream-info">
+                        <h3>
+                            <span class="online-dot"></span>
+                            ${stream.displayName || stream.username}
+                        </h3>
+                        <div class="game-name">Playing ${this.formatGameName(stream.game)}</div>
+                        <div class="score">Score: ${stream.score || 0}</div>
+                    </div>
+                </div>
+            `).join('');
+        },
+
+        formatGameName(game) {
+            return game.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        },
+
+        async watch(username) {
+            this.currentlyWatching = username;
+
+            // Show spectator view
+            document.getElementById('streamsList').style.display = 'none';
+            document.getElementById('spectatorView').classList.add('active');
+
+            // Start polling for game state
+            await this.updateSpectatorView();
+            this.pollInterval = setInterval(() => this.updateSpectatorView(), 1000);
+
+            // Notify server we're watching
+            fetch('api/spectate.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'join', player: username })
+            });
+        },
+
+        async updateSpectatorView() {
+            if (!this.currentlyWatching) return;
+
+            try {
+                const resp = await fetch(`api/spectate.php?action=watch&player=${this.currentlyWatching}`, {
+                    credentials: 'include'
+                });
+                const data = await resp.json();
+
+                if (data.success && data.state) {
+                    const state = data.state;
+
+                    document.getElementById('playerName').textContent = state.displayName || state.username;
+                    document.getElementById('gameName').textContent = `Playing ${this.formatGameName(state.game)}`;
+                    document.getElementById('gameIcon').textContent = this.gameIcons[state.game] || this.gameIcons.default;
+                    document.getElementById('currentScore').textContent = state.score || 0;
+                    document.getElementById('liveScore').textContent = state.score || 0;
+                    document.getElementById('highScore').textContent = state.highScore || 0;
+                    document.getElementById('viewerCount').textContent = state.viewers || 1;
+
+                    // Check if stream ended
+                    if (!state.isLive) {
+                        this.stopSpectating();
+                        alert('Stream has ended!');
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to update spectator view:', e);
+            }
+        },
+
+        stopSpectating() {
+            if (this.pollInterval) {
+                clearInterval(this.pollInterval);
+                this.pollInterval = null;
+            }
+
+            // Notify server we left
+            if (this.currentlyWatching) {
+                fetch('api/spectate.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'leave', player: this.currentlyWatching })
+                });
+            }
+
+            this.currentlyWatching = null;
+
+            document.getElementById('streamsList').style.display = 'block';
+            document.getElementById('spectatorView').classList.remove('active');
+
+            this.loadLiveStreams();
+        }
+    };
+
+    function stopSpectating() {
+        Spectate.stopSpectating();
+    }
+
+    Spectate.init();
+    </script>
+</body>
+</html>

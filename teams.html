@@ -419,7 +419,7 @@
         
         async function loadMyTeam() {
             try {
-                const resp = await fetch('api/teams.php?action=my-team');
+                const resp = await fetch('api/teams.php?action=my-team', { credentials: 'include' });
                 const data = await resp.json();
                 
                 const section = document.getElementById('myTeamSection');
@@ -503,7 +503,7 @@
         
         async function loadAllTeams() {
             try {
-                const resp = await fetch('api/teams.php?action=list');
+                const resp = await fetch('api/teams.php?action=list', { credentials: 'include' });
                 const data = await resp.json();
                 
                 const grid = document.getElementById('teamsGrid');
@@ -535,7 +535,7 @@
         
         async function loadLeaderboard() {
             try {
-                const resp = await fetch('api/teams.php?action=leaderboard');
+                const resp = await fetch('api/teams.php?action=leaderboard', { credentials: 'include' });
                 const data = await resp.json();
                 
                 const container = document.getElementById('teamsLeaderboard');
@@ -581,7 +581,7 @@
             }
             
             try {
-                const resp = await fetch('api/teams.php', {
+                const resp = await fetch('api/teams.php', { credentials: 'include',
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'create', name })
@@ -603,7 +603,7 @@
         
         async function joinTeam(teamId) {
             try {
-                const resp = await fetch('api/teams.php', {
+                const resp = await fetch('api/teams.php', { credentials: 'include',
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'join', teamId })
@@ -626,7 +626,7 @@
             if (!confirm('Are you sure you want to leave this team?')) return;
             
             try {
-                const resp = await fetch('api/teams.php', {
+                const resp = await fetch('api/teams.php', { credentials: 'include',
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'leave' })
@@ -650,7 +650,7 @@
             if (!confirm('Are you sure you want to disband this team? This cannot be undone!')) return;
             
             try {
-                const resp = await fetch('api/teams.php', {
+                const resp = await fetch('api/teams.php', { credentials: 'include',
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'disband' })
@@ -672,7 +672,7 @@
         
         async function promoteMember(username) {
             try {
-                const resp = await fetch('api/teams.php', {
+                const resp = await fetch('api/teams.php', { credentials: 'include',
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'promote', username })
@@ -694,7 +694,7 @@
             if (!confirm('Kick ' + username + ' from the team?')) return;
             
             try {
-                const resp = await fetch('api/teams.php', {
+                const resp = await fetch('api/teams.php', { credentials: 'include',
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'kick', username })

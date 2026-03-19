@@ -142,6 +142,8 @@
         }
         .back-link:hover { color: #000; }
     </style>
+<script src="js/duel.js"></script>
+<script src="js/victory.js"></script>
 </head>
 <body>
     <canvas id="gameCanvas" width="600" height="700"></canvas>
@@ -710,6 +712,11 @@
 
                 trackGameEnd(score, coinsThisRun);
 
+            // Submit duel score if in a challenge
+            if (typeof DuelSystem !== "undefined" && DuelSystem.isInDuel()) {
+                DuelSystem.submitScore(score);
+            }
+
                 document.getElementById('finalScore').textContent = score;
                 document.getElementById('finalHighScore').textContent = highScore;
                 document.getElementById('coinsEarned').textContent = coinsThisRun;
@@ -720,6 +727,14 @@
                 document.getElementById('leaderboardMsg').textContent = '';
 
                 document.getElementById('gameOverScreen').classList.remove('hidden');
+
+                // Award coins on server (if logged in)
+                fetch('api/add-coins.php', { credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'crossy-road', coins: coinsThisRun })
+                }).then(r => r.json()).then(data => {
+                    if (data.success) {
+                        document.getElementById('coinsEarned').textContent = data.coinsEarned;
+                    }
+                }).catch(() => {});
             }, 500);
         }
 

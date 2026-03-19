@@ -247,9 +247,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $recipient['inventory'][$category][] = $itemId;
         
         // Unequip if sender had it equipped
-        $equipKey = $category === 'borders' ? 'border' : 
-                    $category === 'avatar_effects' ? 'avatar_effect' :
-                    str_replace('s', '', $category);
+        $equipKey = ($category === 'borders') ? 'border' : (
+                    ($category === 'avatar_effects') ? 'avatar_effect' :
+                    str_replace('s', '', $category));
         if (isset($sender['equipped'][$equipKey]) && $sender['equipped'][$equipKey] === $itemId) {
             $sender['equipped'][$equipKey] = null;
         }
