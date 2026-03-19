@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Achievements - Sandbox Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        /* Summary Card */
+        .summary-card {
+            background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,140,0,0.1));
+            border: 2px solid #ffd700;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .summary-stat {
+            text-align: center;
+        }
+        .summary-stat .value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .summary-stat .label {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        .progress-ring {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+        .progress-ring svg {
+            transform: rotate(-90deg);
+        }
+        .progress-ring .bg {
+            fill: none;
+            stroke: rgba(255,255,255,0.1);
+            stroke-width: 8;
+        }
+        .progress-ring .progress {
+            fill: none;
+            stroke: #ffd700;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+        .progress-ring .text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        /* Category Filters */
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .filter-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .filter-btn.active {
+            background: rgba(255,215,0,0.2);
+            border-color: #ffd700;
+            color: #ffd700;
+        }
+        .filter-btn .count {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+
+        /* Achievement Grid */
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .achievement-card {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .achievement-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .achievement-card.unlocked {
+            border-color: #ffd700;
+            background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(0,0,0,0.4));
+        }
+        .achievement-card.locked {
+            opacity: 0.6;
+        }
+        .achievement-card.locked .icon {
+            filter: grayscale(100%);
+        }
+
+        .achievement-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 12px;
+        }
+        .achievement-card .icon {
+            font-size: 2.5rem;
+            min-width: 50px;
+            text-align: center;
+        }
+        .achievement-info {
+            flex: 1;
+        }
+        .achievement-card .name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 3px;
+        }
+        .achievement-card.unlocked .name {
+            color: #ffd700;
+        }
+        .achievement-card .desc {
+            color: #888;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .achievement-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .xp-reward {
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .achievement-card.unlocked .xp-reward {
+            background: #ffd700;
+            color: #000;
+        }
+        .category-tag {
+            color: #666;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .unlocked-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #22c55e;
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* Category Colors */
+        .category-milestone .category-tag { color: #60a5fa; }
+        .category-time .category-tag { color: #f472b6; }
+        .category-tournament .category-tag { color: #fbbf24; }
+        .category-social .category-tag { color: #34d399; }
+        .category-level .category-tag { color: #a78bfa; }
+        .category-secret .category-tag { color: #f87171; }
+
+        /* Check Button */
+        .check-btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border: none;
+            color: #fff;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .check-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(34,197,94,0.4);
+        }
+        .check-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+        .notification.success { background: #22c55e; color: #fff; }
+        .notification.error { background: #ef4444; color: #fff; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Achievement Unlock Popup */
+        .unlock-popup {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .unlock-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            animation: popIn 0.4s ease;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .unlock-content .unlock-icon {
+            font-size: 5rem;
+            margin-bottom: 15px;
+        }
+        .unlock-content h2 {
+            color: #ffd700;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .unlock-content p {
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+        .unlock-content .xp-earned {
+            background: #ffd700;
+            color: #000;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .unlock-content button {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #ffd700;
+            color: #ffd700;
+            padding: 10px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+        .empty-state .icon { font-size: 4rem; margin-bottom: 20px; opacity: 0.5; }
+
+        /* Login Prompt */
+        .login-prompt {
+            background: rgba(0,0,0,0.4);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-prompt h3 { color: #ffd700; margin-bottom: 15px; }
+        .login-prompt a {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            padding: 12px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Achievements</h1>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Games</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+            </div>
+        </div>
+
+        <div id="loginPrompt" class="login-prompt" style="display: none;">
+            <h3>Log in to track your achievements!</h3>
+            <p>Your progress will be saved and you can earn XP rewards.</p>
+            <a href="login.html">Log In</a>
+        </div>
+
+        <div class="summary-card" id="summaryCard">
+            <div class="progress-ring">
+                <svg width="100" height="100">
+                    <circle class="bg" cx="50" cy="50" r="42"/>
+                    <circle class="progress" cx="50" cy="50" r="42" 
+                        stroke-dasharray="264" stroke-dashoffset="264" id="progressCircle"/>
+                </svg>
+                <div class="text" id="progressText">0%</div>
+            </div>
+            <div class="summary-stat">
+                <div class="value" id="unlockedCount">0</div>
+                <div class="label">Unlocked</div>
+            </div>
+            <div class="summary-stat">
+                <div class="value" id="totalCount">0</div>
+                <div class="label">Total</div>
+            </div>
+            <div class="summary-stat">
+                <div class="value" id="totalXP">0</div>
+                <div class="label">XP Earned</div>
+            </div>
+            <button class="check-btn" onclick="checkAchievements()" id="checkBtn">
+                <span>Check Progress</span>
+            </button>
+        </div>
+
+        <div class="filters" id="filters">
+            <button class="filter-btn active" data-category="all">
+                All <span class="count" id="countAll">0</span>
+            </button>
+            <button class="filter-btn" data-category="milestone">
+                Milestone <span class="count" id="countMilestone">0</span>
+            </button>
+            <button class="filter-btn" data-category="time">
+                Time <span class="count" id="countTime">0</span>
+            </button>
+            <button class="filter-btn" data-category="tournament">
+                Tournament <span class="count" id="countTournament">0</span>
+            </button>
+            <button class="filter-btn" data-category="social">
+                Social <span class="count" id="countSocial">0</span>
+            </button>
+            <button class="filter-btn" data-category="level">
+                Level <span class="count" id="countLevel">0</span>
+            </button>
+            <button class="filter-btn" data-category="secret">
+                Secret <span class="count" id="countSecret">0</span>
+            </button>
+        </div>
+
+        <div class="achievements-grid" id="achievementsGrid">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <script>
+    let achievements = [];
+    let currentFilter = 'all';
+    let isLoggedIn = false;
+
+    async function init() {
+        // Check login status
+        try {
+            const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+            const data = await resp.json();
+            isLoggedIn = data.success && data.loggedIn;
+            
+            if (!isLoggedIn) {
+                document.getElementById('loginPrompt').style.display = 'block';
+                document.getElementById('checkBtn').style.display = 'none';
+            }
+        } catch (e) {}
+
+        await loadAchievements();
+        setupFilters();
+    }
+
+    async function loadAchievements() {
+        try {
+            const resp = await fetch('api/achievements.php?action=list', { credentials: 'include' });
+            const data = await resp.json();
+
+            if (data.success) {
+                achievements = data.achievements;
+                updateSummary();
+                updateCounts();
+                renderAchievements();
+            }
+        } catch (e) {
+            console.error('Failed to load achievements:', e);
+            showEmpty();
+        }
+    }
+
+    function updateSummary() {
+        const unlocked = achievements.filter(a => a.unlocked).length;
+        const total = achievements.length;
+        const percent = total > 0 ? Math.round((unlocked / total) * 100) : 0;
+        const xpEarned = achievements.filter(a => a.unlocked).reduce((sum, a) => sum + a.xp, 0);
+
+        document.getElementById('unlockedCount').textContent = unlocked;
+        document.getElementById('totalCount').textContent = total;
+        document.getElementById('totalXP').textContent = xpEarned;
+        document.getElementById('progressText').textContent = percent + '%';
+
+        // Animate progress circle
+        const circle = document.getElementById('progressCircle');
+        const circumference = 264;
+        const offset = circumference - (percent / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
+    }
+
+    function updateCounts() {
+        const categories = ['all', 'milestone', 'time', 'tournament', 'social', 'level', 'secret'];
+        
+        categories.forEach(cat => {
+            const filtered = cat === 'all' 
+                ? achievements 
+                : achievements.filter(a => a.category === cat);
+            const unlocked = filtered.filter(a => a.unlocked).length;
+            const countEl = document.getElementById('count' + cat.charAt(0).toUpperCase() + cat.slice(1));
+            if (countEl) {
+                countEl.textContent = `${unlocked}/${filtered.length}`;
+            }
+        });
+    }
+
+    function setupFilters() {
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.category;
+                renderAchievements();
+            });
+        });
+    }
+
+    function renderAchievements() {
+        const filtered = currentFilter === 'all' 
+            ? achievements 
+            : achievements.filter(a => a.category === currentFilter);
+
+        // Sort: unlocked first, then by category
+        filtered.sort((a, b) => {
+            if (a.unlocked !== b.unlocked) return b.unlocked - a.unlocked;
+            return 0;
+        });
+
+        const grid = document.getElementById('achievementsGrid');
+        
+        if (filtered.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1/-1;">
+                    <div class="icon">🏆</div>
+                    <h3>No achievements in this category</h3>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = filtered.map(ach => `
+            <div class="achievement-card ${ach.unlocked ? 'unlocked' : 'locked'} category-${ach.category}">
+                ${ach.unlocked ? '<div class="unlocked-badge">UNLOCKED</div>' : ''}
+                <div class="achievement-header">
+                    <div class="icon">${ach.icon}</div>
+                    <div class="achievement-info">
+                        <div class="name">${ach.name}</div>
+                        <div class="desc">${ach.category === 'secret' && !ach.unlocked ? '???' : ach.desc}</div>
+                    </div>
+                </div>
+                <div class="achievement-footer">
+                    <span class="category-tag">${ach.category}</span>
+                    <span class="xp-reward">+${ach.xp} XP</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function checkAchievements() {
+        if (!isLoggedIn) {
+            showNotification('Please log in first!', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('checkBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span>Checking...</span>';
+
+        try {
+            const resp = await fetch('api/achievements.php?action=check', { credentials: 'include' });
+            const data = await resp.json();
+
+            if (data.success) {
+                if (data.newlyUnlocked && data.newlyUnlocked.length > 0) {
+                    // Show unlock popup for each new achievement
+                    for (const ach of data.newlyUnlocked) {
+                        await showUnlockPopup(ach);
+                    }
+                    // Reload achievements
+                    await loadAchievements();
+                    showNotification(`Unlocked ${data.newlyUnlocked.length} achievement(s)! +${data.totalXPEarned} XP`, 'success');
+                } else {
+                    showNotification('No new achievements to unlock', 'success');
+                }
+            }
+        } catch (e) {
+            showNotification('Failed to check achievements', 'error');
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = '<span>Check Progress</span>';
+    }
+
+    function showUnlockPopup(achievement) {
+        return new Promise(resolve => {
+            const popup = document.createElement('div');
+            popup.className = 'unlock-popup';
+            popup.innerHTML = `
+                <div class="unlock-content">
+                    <div class="unlock-icon">${achievement.icon}</div>
+                    <h2>Achievement Unlocked!</h2>
+                    <h3 style="color: #fff; margin-bottom: 10px;">${achievement.name}</h3>
+                    <p>${achievement.desc}</p>
+                    <div class="xp-earned">+${achievement.xp} XP</div>
+                    <br>
+                    <button onclick="this.closest('.unlock-popup').remove()">Awesome!</button>
+                </div>
+            `;
+            document.body.appendChild(popup);
+
+            popup.addEventListener('click', (e) => {
+                if (e.target === popup) {
+                    popup.remove();
+                    resolve();
+                }
+            });
+
+            popup.querySelector('button').addEventListener('click', () => {
+                resolve();
+            });
+
+            // Auto-close after 5 seconds
+            setTimeout(() => {
+                if (popup.parentNode) {
+                    popup.remove();
+                    resolve();
+                }
+            }, 5000);
+        });
+    }
+
+    function showNotification(message, type) {
+        const notif = document.createElement('div');
+        notif.className = `notification ${type}`;
+        notif.textContent = message;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 3000);
+    }
+
+    function showEmpty() {
+        document.getElementById('achievementsGrid').innerHTML = `
+            <div class="empty-state" style="grid-column: 1/-1;">
+                <div class="icon">🏆</div>
+                <h3>Failed to load achievements</h3>
+                <p>Please try again later.</p>
+            </div>
+        `;
+    }
+
+    init();
+    </script>
+</body>
+</html>
