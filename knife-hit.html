@@ -1234,15 +1234,6 @@
             document.getElementById('statsScreen').classList.add('hidden');
         }
 
-        // Purchasable Powerups
-        const GAME_POWERUPS = {
-            extraKnife: { name: "Extra Knife", icon: "🔪", desc: "+1 knife per stage", price: 200, effect: 1 },
-            slowSpin: { name: "Slow Spin", icon: "🐢", desc: "Log spins 20% slower", price: 150, effect: 0.2 },
-            bigHitbox: { name: "Big Knife", icon: "⬆️", desc: "Easier to hit apples", price: 175, effect: 1.3 },
-            coinBoost: { name: "Coin Boost", icon: "💰", desc: "+50% coins earned", price: 250, effect: 0.5 },
-            secondChance: { name: "Second Chance", icon: "❤️", desc: "One free miss", price: 300, effect: 1 }
-        };
-
         // Codes
         function showCodes() {
             document.getElementById('codeInput').value = '';
@@ -2055,7 +2046,7 @@
                         <div class="skin-icon">${p.icon}</div>
                         <div style="font-size: 0.8rem; color: #fff;">${p.name}</div>
                         <div style="font-size: 0.7rem; color: #888;">${p.desc}</div>
-                        ${!owned ? `<div class="skin-cost">${p.price} 🪙</div>` : "<div style="color: #22c55e;">Owned</div>"}
+                        ${!owned ? `<div class="skin-cost">${p.price} 🪙</div>` : '<div style="color: #22c55e;">Owned</div>'}
                     </div>
                 `;
             }).join("");
