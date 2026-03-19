@@ -190,6 +190,20 @@
             color: #888;
         }
         .calendar-hint h3 { color: #ffd700; margin-bottom: 10px; }
+    
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            .header { flex-direction: column; text-align: center; }
+            .header h1 { font-size: 1.5rem; }
+            .current-event { padding: 20px; }
+            .event-icon { font-size: 3.5rem; }
+            .event-name { font-size: 1.6rem; }
+            .bonuses { gap: 15px; }
+            .bonus-item { padding: 15px 20px; }
+            .bonus-value { font-size: 1.5rem; }
+            .achievement-list { flex-direction: column; }
+            .events-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>

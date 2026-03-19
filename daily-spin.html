@@ -257,6 +257,16 @@
         @keyframes confettiFall {
             to { top: 110vh; transform: rotate(720deg); }
         }
+    
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            .header { flex-direction: column; text-align: center; }
+            .header h1 { font-size: 1.5rem; }
+            .wheel-container { width: 280px; height: 280px; }
+            .wheel-segment span { font-size: 0.55rem; max-width: 50px; }
+            .spin-btn { padding: 15px 35px; font-size: 1.1rem; }
+            .prizes-grid { grid-template-columns: repeat(2, 1fr); }
+        }
     </style>
 </head>
 <body>

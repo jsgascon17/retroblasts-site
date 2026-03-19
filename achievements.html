@@ -356,6 +356,19 @@
             font-weight: bold;
             margin-top: 15px;
         }
+    
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            .header { flex-direction: column; text-align: center; }
+            .header h1 { font-size: 1.5rem; }
+            .summary-card { flex-direction: column; padding: 20px; }
+            .summary-stat .value { font-size: 2rem; }
+            .filters { justify-content: center; }
+            .filter-btn { padding: 8px 12px; font-size: 0.8rem; }
+            .achievements-grid { grid-template-columns: 1fr; }
+            .achievement-card { padding: 15px; }
+            .achievement-card .icon { font-size: 2rem; }
+        }
     </style>
 </head>
 <body>

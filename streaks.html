@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Streak - Sandbox Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 700px; margin: 0 auto; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        /* Streak Display */
+        .streak-card {
+            background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,140,0,0.1));
+            border: 3px solid #ffd700;
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .streak-icon { font-size: 5rem; margin-bottom: 20px; }
+        .streak-count {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+        .streak-label { color: #aaa; font-size: 1.2rem; margin-bottom: 25px; }
+        .best-streak { color: #888; font-size: 0.95rem; margin-top: 15px; }
+        .best-streak span { color: #ffd700; }
+
+        /* Check-in Button */
+        .checkin-btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+            border: none;
+            padding: 18px 50px;
+            border-radius: 30px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 25px rgba(34,197,94,0.4);
+        }
+        .checkin-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 8px 35px rgba(34,197,94,0.5);
+        }
+        .checkin-btn:disabled {
+            background: linear-gradient(135deg, #666, #555);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .checkin-btn.checked {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        /* Next Milestone */
+        .milestone-section {
+            background: rgba(0,0,0,0.4);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .milestone-section h3 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .progress-bar-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            height: 30px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #ffd700, #ff8c00);
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            font-weight: bold;
+            color: #000;
+            font-size: 0.85rem;
+        }
+        .milestone-info {
+            display: flex;
+            justify-content: space-between;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        .milestone-reward {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        /* Milestones Grid */
+        .milestones-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .milestone-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        .milestone-card.achieved {
+            border-color: #22c55e;
+            background: rgba(34,197,94,0.1);
+        }
+        .milestone-card.current {
+            border-color: #ffd700;
+            background: rgba(255,215,0,0.1);
+        }
+        .milestone-card .days {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .milestone-card.achieved .days { color: #22c55e; }
+        .milestone-card .name {
+            color: #fff;
+            font-weight: bold;
+            margin: 10px 0 5px;
+        }
+        .milestone-card .reward {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        .milestone-card .checkmark {
+            color: #22c55e;
+            font-size: 1.5rem;
+        }
+
+        /* Calendar */
+        .calendar-section {
+            background: rgba(0,0,0,0.4);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 25px;
+        }
+        .calendar-section h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        .day-label {
+            text-align: center;
+            color: #666;
+            font-size: 0.75rem;
+            padding-bottom: 5px;
+        }
+        .day-box {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .day-box.completed { background: #22c55e; }
+        .day-box.today { border: 2px solid #ffd700; }
+        .day-box.missed { background: rgba(239,68,68,0.3); }
+
+        /* Reward Popup */
+        .reward-popup {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .reward-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 4px solid #ffd700;
+            border-radius: 25px;
+            padding: 50px;
+            text-align: center;
+            animation: popIn 0.5s ease;
+            max-width: 400px;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .reward-content .icon { font-size: 5rem; margin-bottom: 20px; }
+        .reward-content h2 { color: #ffd700; margin-bottom: 10px; }
+        .reward-content .rewards { margin: 20px 0; font-size: 1.3rem; }
+        .reward-content .rewards div { margin: 10px 0; }
+        .reward-content button {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        /* Login Prompt */
+        .login-prompt {
+            background: rgba(0,0,0,0.4);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+        }
+        .login-prompt h3 { color: #ffd700; margin-bottom: 15px; }
+        .login-prompt a {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            padding: 12px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            .header { flex-direction: column; text-align: center; }
+            .header h1 { font-size: 1.5rem; }
+            .streak-card { padding: 25px; }
+            .streak-icon { font-size: 3.5rem; }
+            .streak-count { font-size: 3rem; }
+            .checkin-btn { padding: 15px 35px; font-size: 1.1rem; }
+            .milestones-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Daily Streak</h1>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Games</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+            </div>
+        </div>
+
+        <div id="loginPrompt" class="login-prompt" style="display: none;">
+            <h3>Log in to track your streak!</h3>
+            <p>Keep your streak alive and earn bonus rewards!</p>
+            <a href="login.html">Log In</a>
+        </div>
+
+        <div id="mainContent">
+            <div class="streak-card">
+                <div class="streak-icon">🔥</div>
+                <div class="streak-count" id="streakCount">0</div>
+                <div class="streak-label">Day Streak</div>
+                <button class="checkin-btn" id="checkinBtn" onclick="checkIn()">Check In Today!</button>
+                <div class="best-streak">Best streak: <span id="bestStreak">0</span> days</div>
+            </div>
+
+            <div class="milestone-section" id="nextMilestoneSection">
+                <h3>Next Milestone</h3>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                </div>
+                <div class="milestone-info">
+                    <span id="progressText">0 / 3 days</span>
+                    <span class="milestone-reward" id="nextReward">+100 coins</span>
+                </div>
+            </div>
+
+            <div class="calendar-section">
+                <h3>This Week</h3>
+                <div class="week-grid" id="weekGrid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <h3 style="color: #ffd700; margin: 25px 0 15px;">Milestones</h3>
+            <div class="milestones-grid" id="milestonesGrid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const MILESTONES = [
+        { days: 3, name: '3 Day Streak', coins: 100 },
+        { days: 7, name: 'Week Warrior', coins: 300, xp: 100 },
+        { days: 14, name: 'Two Week Champion', coins: 750, xp: 250 },
+        { days: 30, name: 'Monthly Master', coins: 2000, xp: 500 },
+        { days: 60, name: 'Legendary Dedication', coins: 5000, xp: 1000 },
+        { days: 100, name: 'Century Club', coins: 10000, xp: 2000 }
+    ];
+
+    let currentStreak = 0;
+    let isLoggedIn = false;
+
+    async function init() {
+        try {
+            const authResp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+            const authData = await authResp.json();
+            isLoggedIn = authData.success && authData.loggedIn;
+
+            if (!isLoggedIn) {
+                document.getElementById('loginPrompt').style.display = 'block';
+                document.getElementById('mainContent').style.display = 'none';
+                return;
+            }
+
+            await loadStreak();
+            renderWeekCalendar();
+            renderMilestones();
+        } catch (e) {
+            console.error('Init error:', e);
+        }
+    }
+
+    async function loadStreak() {
+        try {
+            const resp = await fetch('api/streaks.php?action=get', { credentials: 'include' });
+            const data = await resp.json();
+
+            if (data.success) {
+                currentStreak = data.streak.current;
+                document.getElementById('streakCount').textContent = currentStreak;
+                document.getElementById('bestStreak').textContent = data.streak.best;
+
+                const btn = document.getElementById('checkinBtn');
+                if (data.streak.checkedInToday) {
+                    btn.textContent = '✓ Checked In!';
+                    btn.disabled = true;
+                    btn.classList.add('checked');
+                }
+
+                updateProgress(data.nextMilestone);
+            }
+        } catch (e) {
+            console.error('Load streak error:', e);
+        }
+    }
+
+    function updateProgress(nextMilestone) {
+        const section = document.getElementById('nextMilestoneSection');
+        if (!nextMilestone) {
+            section.innerHTML = '<h3>🎉 All Milestones Achieved!</h3><p style="color: #aaa; text-align: center;">You\'ve reached the max streak rewards!</p>';
+            return;
+        }
+
+        const progress = (currentStreak / nextMilestone.days) * 100;
+        document.getElementById('progressBar').style.width = Math.min(100, progress) + '%';
+        document.getElementById('progressText').textContent = `${currentStreak} / ${nextMilestone.days} days`;
+
+        let rewardText = `+${nextMilestone.reward.coins} coins`;
+        if (nextMilestone.reward.xp) rewardText += ` +${nextMilestone.reward.xp} XP`;
+        document.getElementById('nextReward').textContent = rewardText;
+    }
+
+    async function checkIn() {
+        const btn = document.getElementById('checkinBtn');
+        btn.disabled = true;
+        btn.textContent = 'Checking in...';
+
+        try {
+            const resp = await fetch('api/streaks.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'checkin' })
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                if (data.alreadyCheckedIn) {
+                    btn.textContent = '✓ Checked In!';
+                    btn.classList.add('checked');
+                    return;
+                }
+
+                currentStreak = data.streak.current;
+                document.getElementById('streakCount').textContent = currentStreak;
+                document.getElementById('bestStreak').textContent = data.streak.best;
+                btn.textContent = '✓ Checked In!';
+                btn.classList.add('checked');
+
+                updateProgress(data.nextMilestone);
+                renderWeekCalendar();
+                renderMilestones();
+
+                if (data.earnedMilestone) {
+                    showMilestoneReward(data.earnedMilestone);
+                }
+            }
+        } catch (e) {
+            btn.textContent = 'Error - Try Again';
+            btn.disabled = false;
+        }
+    }
+
+    function showMilestoneReward(milestone) {
+        const popup = document.createElement('div');
+        popup.className = 'reward-popup';
+        
+        let rewardsHtml = '';
+        if (milestone.coins) rewardsHtml += `<div>🪙 +${milestone.coins} Coins</div>`;
+        if (milestone.xp) rewardsHtml += `<div>⭐ +${milestone.xp} XP</div>`;
+
+        popup.innerHTML = `
+            <div class="reward-content">
+                <div class="icon">🏆</div>
+                <h2>Milestone Reached!</h2>
+                <h3 style="color: #fff;">${milestone.name}</h3>
+                <div class="rewards">${rewardsHtml}</div>
+                <button onclick="this.closest('.reward-popup').remove()">Awesome!</button>
+            </div>
+        `;
+        document.body.appendChild(popup);
+    }
+
+    function renderWeekCalendar() {
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const today = new Date();
+        const grid = document.getElementById('weekGrid');
+        
+        // Day labels
+        let html = days.map(d => `<div class="day-label">${d}</div>`).join('');
+        
+        // Calculate week start (Sunday)
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - today.getDay());
+        
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(weekStart);
+            date.setDate(weekStart.getDate() + i);
+            const isToday = date.toDateString() === today.toDateString();
+            const isPast = date < today && !isToday;
+            const dayNum = date.getDate();
+            
+            // Simplified: show fire for days in current streak
+            const daysAgo = Math.floor((today - date) / (1000 * 60 * 60 * 24));
+            const inStreak = daysAgo >= 0 && daysAgo < currentStreak;
+            
+            let classes = 'day-box';
+            if (isToday) classes += ' today';
+            if (inStreak) classes += ' completed';
+            
+            html += `<div class="${classes}">${inStreak ? '🔥' : dayNum}</div>`;
+        }
+        
+        grid.innerHTML = html;
+    }
+
+    function renderMilestones() {
+        const grid = document.getElementById('milestonesGrid');
+        grid.innerHTML = MILESTONES.map(m => {
+            const achieved = currentStreak >= m.days;
+            const isCurrent = !achieved && (MILESTONES.findIndex(x => x.days > currentStreak) === MILESTONES.indexOf(m));
+            
+            let rewardText = `${m.coins} coins`;
+            if (m.xp) rewardText += `, ${m.xp} XP`;
+            
+            return `
+                <div class="milestone-card ${achieved ? 'achieved' : ''} ${isCurrent ? 'current' : ''}">
+                    ${achieved ? '<div class="checkmark">✓</div>' : ''}
+                    <div class="days">${m.days}</div>
+                    <div class="name">${m.name}</div>
+                    <div class="reward">${rewardText}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    init();
+    </script>
+</body>
+</html>

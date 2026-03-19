@@ -221,6 +221,65 @@
             transform: scale(1.05);
             box-shadow: 0 5px 20px rgba(255,215,0,0.4);
         }
+        /* Mobile Navigation */
+        @media (max-width: 768px) {
+            .nav-container {
+                gap: 8px;
+            }
+            .nav-trigger {
+                padding: 10px 14px;
+                font-size: 0.9rem;
+            }
+            .nav-dropdown {
+                position: fixed;
+                top: auto;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                transform: translateY(100%);
+                border-radius: 20px 20px 0 0;
+                min-width: 100%;
+                padding: 20px;
+                margin-top: 0;
+            }
+            .nav-group.active .nav-dropdown {
+                transform: translateY(0);
+                opacity: 1;
+                visibility: visible;
+            }
+            .nav-dropdown a {
+                padding: 15px;
+                font-size: 1.1rem;
+            }
+            .nav-direct {
+                padding: 10px 14px;
+                font-size: 0.9rem;
+            }
+            .mobile-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+                display: none;
+            }
+            .mobile-overlay.active {
+                display: block;
+            }
+        }
+        @media (max-width: 480px) {
+            .nav-trigger {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+                gap: 5px;
+            }
+            .nav-trigger .arrow {
+                display: none;
+            }
+        }
+
         .nav-direct.auth {
             background: rgba(0,0,0,0.3);
             border-color: #98FB98;
@@ -970,6 +1029,7 @@
         <header>
             <h1>&#9752; <span class="title-cookie">&#127850;</span> St. Paddy's Cookie Arcade! <span class="title-cookie">&#127850;</span> &#9752;</h1>
             <p class="subtitle">May the luck of the Irish bring you many cookies!</p>
+            <div class="mobile-overlay" id="mobileOverlay" onclick="closeAllDropdowns()"></div>
             <div class="nav-container">
                 <!-- Play Dropdown -->
                 <div class="nav-group">
@@ -1000,6 +1060,7 @@
                 <div class="nav-group">
                     <div class="nav-trigger">🎁 Rewards <span class="arrow">▼</span></div>
                     <div class="nav-dropdown">
+                        <a href="streaks.html"><span class="icon">🔥</span> Streaks</a>
                         <a href="daily-rewards.html"><span class="icon">🎁</span> Daily Rewards</a>
                         <a href="daily-spin.html"><span class="icon">🎡</span> Daily Spin</a>
                         <a href="codes.html"><span class="icon">🎟️</span> Lucky Codes</a>
@@ -2771,4 +2832,31 @@ function showThemeToast(msg) {
 }
 
 document.addEventListener("DOMContentLoaded", initThemeSelector);
+</script>
+<script>
+// Mobile dropdown toggle
+document.querySelectorAll('.nav-trigger').forEach(trigger => {
+    trigger.addEventListener('click', function(e) {
+        if (window.innerWidth <= 768) {
+            e.preventDefault();
+            const group = this.closest('.nav-group');
+            const wasActive = group.classList.contains('active');
+            closeAllDropdowns();
+            if (!wasActive) {
+                group.classList.add('active');
+                document.getElementById('mobileOverlay').classList.add('active');
+            }
+        }
+    });
+});
+
+function closeAllDropdowns() {
+    document.querySelectorAll('.nav-group').forEach(g => g.classList.remove('active'));
+    const overlay = document.getElementById('mobileOverlay');
+    if (overlay) overlay.classList.remove('active');
+}
+
+window.addEventListener('resize', function() {
+    if (window.innerWidth > 768) closeAllDropdowns();
+});
 </script>

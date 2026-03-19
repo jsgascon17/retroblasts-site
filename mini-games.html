@@ -271,6 +271,20 @@
             color: #ffd700;
             margin-bottom: 15px;
         }
+    
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            .header { flex-direction: column; text-align: center; }
+            .header h1 { font-size: 1.5rem; }
+            .games-grid { grid-template-columns: 1fr; }
+            .game-card { padding: 20px; }
+            .game-card .icon { font-size: 3rem; }
+            .game-content { padding: 20px; width: 95%; }
+            .memory-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+            .memory-card { font-size: 1.3rem; }
+            .reaction-box, .click-area, .aim-area { height: 180px; }
+            .math-problem { font-size: 2rem; }
+        }
     </style>
 </head>
 <body>
