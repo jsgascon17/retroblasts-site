@@ -273,6 +273,7 @@
 <script src="js/victory.js"></script>
 <script src="js/wars.js"></script>
 <script src="js/activity.js"></script>
+<script src="js/pets.js"></script>
 </head>
 <body>
     <h1>SNAKE</h1>
@@ -963,10 +964,13 @@
         }
 
         function calculateCoins() {
+            // Apply pet bonus if available
+            const applyPetBonus = typeof PetSystem !== "undefined" && PetSystem.loaded;
             let coins = 0;
             coins += Math.floor(score / 10);
             coins += Math.floor(snake.length / 5);
-            if (gameMode !== 'classic') coins = Math.floor(coins * 1.5);
+            if (gameMode !== "classic") coins = Math.floor(coins * 1.5);
+            if (applyPetBonus) coins = PetSystem.applyBonus(coins);
             return coins;
         }
 
@@ -987,6 +991,11 @@
             }
 
             saveData.stats.totalLength += snake.length;
+
+            // Add XP to pet
+            if (typeof PetSystem !== "undefined" && PetSystem.loaded) {
+                PetSystem.addPetXP(Math.max(5, Math.floor(score / 5)));
+            }
             save();
             checkAllAchievements();
 

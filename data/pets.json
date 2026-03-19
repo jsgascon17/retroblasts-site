@@ -1,0 +1,74 @@
+{
+    "billybuffalo15": {
+        "owned": [
+            "alien",
+            "puppy",
+            "kitten",
+            "bunny",
+            "hamster",
+            "fox",
+            "owl",
+            "penguin",
+            "panda",
+            "tiger",
+            "unicorn",
+            "dragon",
+            "phoenix"
+        ],
+        "active": "alien",
+        "petLevels": {
+            "alien": {
+                "level": 1,
+                "xp": 0
+            },
+            "puppy": {
+                "level": 1,
+                "xp": 0
+            },
+            "kitten": {
+                "level": 1,
+                "xp": 0
+            },
+            "bunny": {
+                "level": 1,
+                "xp": 0
+            },
+            "hamster": {
+                "level": 1,
+                "xp": 0
+            },
+            "fox": {
+                "level": 1,
+                "xp": 0
+            },
+            "owl": {
+                "level": 1,
+                "xp": 0
+            },
+            "penguin": {
+                "level": 1,
+                "xp": 0
+            },
+            "panda": {
+                "level": 1,
+                "xp": 0
+            },
+            "tiger": {
+                "level": 1,
+                "xp": 0
+            },
+            "unicorn": {
+                "level": 1,
+                "xp": 0
+            },
+            "dragon": {
+                "level": 1,
+                "xp": 0
+            },
+            "phoenix": {
+                "level": 1,
+                "xp": 0
+            }
+        }
+    }
+}
