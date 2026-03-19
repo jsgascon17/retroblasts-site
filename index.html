@@ -129,6 +129,104 @@
             transform: scale(1.1);
             box-shadow: 0 5px 25px rgba(255,215,0,0.5);
         }
+        /* Navigation Dropdowns */
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .nav-group {
+            position: relative;
+        }
+        .nav-trigger {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #ffd700, #ffb300);
+            color: #0d4f21;
+            border-radius: 25px;
+            font-weight: bold;
+            text-decoration: none;
+            border: 3px solid #ffd700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .nav-trigger:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255,215,0,0.4);
+        }
+        .nav-trigger .arrow {
+            font-size: 0.7rem;
+            transition: transform 0.3s;
+        }
+        .nav-group:hover .arrow {
+            transform: rotate(180deg);
+        }
+        .nav-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(13, 79, 33, 0.98);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 10px;
+            min-width: 180px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 1000;
+            margin-top: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .nav-group:hover .nav-dropdown {
+            opacity: 1;
+            visibility: visible;
+        }
+        .nav-dropdown a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .nav-dropdown a:hover {
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+        }
+        .nav-dropdown .icon {
+            width: 24px;
+            text-align: center;
+        }
+        .nav-direct {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #ffd700, #ffb300);
+            color: #0d4f21;
+            border-radius: 25px;
+            font-weight: bold;
+            text-decoration: none;
+            border: 3px solid #ffd700;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .nav-direct:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255,215,0,0.4);
+        }
+        .nav-direct.auth {
+            background: rgba(0,0,0,0.3);
+            border-color: #98FB98;
+            color: #fff;
+        }
+
 
         /* Main Cookie Clicker Feature */
         .cookie-hero {
@@ -872,37 +970,72 @@
         <header>
             <h1>&#9752; <span class="title-cookie">&#127850;</span> St. Paddy's Cookie Arcade! <span class="title-cookie">&#127850;</span> &#9752;</h1>
             <p class="subtitle">May the luck of the Irish bring you many cookies!</p>
-            <div class="header-buttons">
-                <a href="stats.html" class="header-btn stats">🏆 View Stats</a>
-                <a href="inventory.html" class="header-btn stats">🎒 Inventory</a>
-                <a href="leaderboards.html" class="header-btn stats">&#127942; Leaderboards</a>
-                <a href="tournaments.html" class="header-btn stats">&#127942; Tournaments</a>
-                <a href="login.html" class="header-btn stats" id="authBtn">🔐 Login</a>
-                <a href="friends.html" class="header-btn stats">👥 Friends</a>
-                <a href="challenge.html" class="header-btn stats">⚔️ Challenge</a>
-                <a href="teams.html" class="header-btn stats">👥 Teams</a>
-                <a href="wars.html" class="header-btn stats" style="background: linear-gradient(135deg, #ef4444, #dc2626); border-color: #ef4444;">⚔️ Wars</a>
-                <a href="chat.html" class="header-btn stats">💬 Chat</a>
-                <a href="battle-pass.html" class="header-btn stats">🎖️ Battle Pass</a>
-                <a href="shop.html" class="header-btn stats">🛒 Shop</a>
-                <a href="casino.html" class="header-btn stats">🎰 Casino</a>
-                <a href="replays.html" class="header-btn stats">📹 Replays</a>
-                <a href="profile.html" class="header-btn stats">👤 Profile</a>
-                <a href="daily-rewards.html" class="header-btn stats" style="background: linear-gradient(135deg, #ffd700, #ff8c00); border-color: #ffd700;">🎁 Daily Rewards</a>
-                <a href="settings.html" class="header-btn settings">⚙️ Settings</a>
-                <a href="spectate.html" class="header-btn stats" style="background: linear-gradient(135deg, #ef4444, #b91c1c); border-color: #ef4444;">📺 Spectate</a>
-                <a href="rooms.html" class="header-btn stats" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); border-color: #8b5cf6;">🚪 Game Rooms</a>
-                <a href="pets.html" class="header-btn stats" style="background: linear-gradient(135deg, #f472b6, #ec4899); border-color: #ec4899;">🐾 Pets</a>
-                <a href="achievements.html" class="header-btn stats" style="background: linear-gradient(135deg, #f59e0b, #d97706); border-color: #d97706;">🏆 Achievements</a>
-                <a href="daily-spin.html" class="header-btn stats" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border-color: #7c3aed;">🎰 Daily Spin</a>
-                <a href="events.html" class="header-btn stats" style="background: linear-gradient(135deg, #22c55e, #16a34a); border-color: #16a34a;">🎉 Events</a>
-                <a href="codes.html" class="header-btn stats" style="background: linear-gradient(135deg, #06b6d4, #0891b2); border-color: #0891b2;">🎟️ Codes</a>
-                <a href="mini-games.html" class="header-btn stats" style="background: linear-gradient(135deg, #ef4444, #dc2626); border-color: #dc2626;">🎮 Mini-Games</a>
-                <a href="ranks.html" class="header-btn stats" style="background: linear-gradient(135deg, #fbbf24, #d97706); border-color: #d97706;">🏅 Ranks</a>
-                <a href="news.html" class="header-btn stats" style="background: linear-gradient(135deg, #60a5fa, #3b82f6); border-color: #3b82f6;">📰 News</a>
-                <button class="header-btn settings" onclick="toggleSettings()">&#9881; Settings</button>
+            <div class="nav-container">
+                <!-- Play Dropdown -->
+                <div class="nav-group">
+                    <div class="nav-trigger">🎮 Play <span class="arrow">▼</span></div>
+                    <div class="nav-dropdown">
+                        <a href="mini-games.html"><span class="icon">🕹️</span> Mini-Games</a>
+                        <a href="casino.html"><span class="icon">🎰</span> Casino</a>
+                        <a href="rooms.html"><span class="icon">🚪</span> Game Rooms</a>
+                        <a href="spectate.html"><span class="icon">📺</span> Spectate</a>
+                        <a href="replays.html"><span class="icon">📹</span> Replays</a>
+                    </div>
+                </div>
+
+                <!-- Compete Dropdown -->
+                <div class="nav-group">
+                    <div class="nav-trigger">🏆 Compete <span class="arrow">▼</span></div>
+                    <div class="nav-dropdown">
+                        <a href="leaderboards.html"><span class="icon">📊</span> Leaderboards</a>
+                        <a href="tournaments.html"><span class="icon">🏆</span> Tournaments</a>
+                        <a href="challenge.html"><span class="icon">⚔️</span> Challenge</a>
+                        <a href="ranks.html"><span class="icon">🏅</span> Ranks</a>
+                        <a href="achievements.html"><span class="icon">🏆</span> Achievements</a>
+                        <a href="stats.html"><span class="icon">📈</span> View Stats</a>
+                    </div>
+                </div>
+
+                <!-- Rewards Dropdown -->
+                <div class="nav-group">
+                    <div class="nav-trigger">🎁 Rewards <span class="arrow">▼</span></div>
+                    <div class="nav-dropdown">
+                        <a href="daily-rewards.html"><span class="icon">🎁</span> Daily Rewards</a>
+                        <a href="daily-spin.html"><span class="icon">🎡</span> Daily Spin</a>
+                        <a href="codes.html"><span class="icon">🎟️</span> Lucky Codes</a>
+                        <a href="battle-pass.html"><span class="icon">🎖️</span> Battle Pass</a>
+                        <a href="events.html"><span class="icon">🎉</span> Events</a>
+                    </div>
+                </div>
+
+                <!-- Social Dropdown -->
+                <div class="nav-group">
+                    <div class="nav-trigger">👥 Social <span class="arrow">▼</span></div>
+                    <div class="nav-dropdown">
+                        <a href="friends.html"><span class="icon">👥</span> Friends</a>
+                        <a href="teams.html"><span class="icon">🤝</span> Teams</a>
+                        <a href="chat.html"><span class="icon">💬</span> Chat</a>
+                        <a href="wars.html"><span class="icon">⚔️</span> Wars</a>
+                        <a href="news.html"><span class="icon">📰</span> News</a>
+                    </div>
+                </div>
+
+                <!-- Stuff Dropdown -->
+                <div class="nav-group">
+                    <div class="nav-trigger">🎒 Stuff <span class="arrow">▼</span></div>
+                    <div class="nav-dropdown">
+                        <a href="inventory.html"><span class="icon">🎒</span> Inventory</a>
+                        <a href="shop.html"><span class="icon">🛒</span> Shop</a>
+                        <a href="pets.html"><span class="icon">🐾</span> Pets</a>
+                        <a href="profile.html"><span class="icon">👤</span> Profile</a>
+                        <a href="settings.html"><span class="icon">⚙️</span> Settings</a>
+                    </div>
+                </div>
+
+                <!-- Direct Login/Logout Button -->
+                <a href="login.html" class="nav-direct auth" id="authBtn">🔐 Login</a>
             </div>
-        </header>
+            </header>
 
         <!-- Cookie Clicker Hero -->
         <div class="cookie-hero">
