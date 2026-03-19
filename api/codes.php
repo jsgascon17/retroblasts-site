@@ -18,13 +18,34 @@ $codesFile = $dataDir . '/codes.json';
 
 // Active codes - Add new codes here!
 $CODES = [
+    // Welcome & General
     'WELCOME2024' => ['reward' => 'coins', 'amount' => 500, 'maxUses' => null, 'expires' => null, 'desc' => '500 Coins'],
     'ARCADE100' => ['reward' => 'coins', 'amount' => 100, 'maxUses' => null, 'expires' => null, 'desc' => '100 Coins'],
+    'FREESTUFF' => ['reward' => 'coins', 'amount' => 150, 'maxUses' => null, 'expires' => null, 'desc' => '150 Coins'],
+    // St. Patricks Theme
     'LUCKYDAY' => ['reward' => 'coins', 'amount' => 250, 'maxUses' => 100, 'expires' => null, 'desc' => '250 Coins'],
+    'POTOFGOLD' => ['reward' => 'coins', 'amount' => 777, 'maxUses' => null, 'expires' => null, 'desc' => '777 Coins'],
+    'SHAMROCK' => ['reward' => 'xp', 'amount' => 300, 'maxUses' => null, 'expires' => null, 'desc' => '300 XP'],
+    'LUCKY7' => ['reward' => 'coins', 'amount' => 777, 'maxUses' => 77, 'expires' => null, 'desc' => '777 Coins'],
+    'RAINBOW' => ['reward' => 'lootbox', 'boxType' => 'premium', 'maxUses' => null, 'expires' => null, 'desc' => 'Premium Lootbox'],
+    // Lootboxes and Keys
     'SECRETBOX' => ['reward' => 'lootbox', 'boxType' => 'premium', 'maxUses' => 50, 'expires' => null, 'desc' => 'Premium Lootbox'],
-    'XPBOOST' => ['reward' => 'xp', 'amount' => 200, 'maxUses' => null, 'expires' => null, 'desc' => '200 XP'],
+    'FREEBOX' => ['reward' => 'lootbox', 'boxType' => 'basic', 'maxUses' => null, 'expires' => null, 'desc' => 'Basic Lootbox'],
     'GOLDENKEY' => ['reward' => 'key', 'keyType' => 'gold_key', 'maxUses' => 25, 'expires' => null, 'desc' => 'Gold Key'],
-    'SPRING2024' => ['reward' => 'coins', 'amount' => 1000, 'maxUses' => null, 'expires' => '2024-06-01', 'desc' => '1000 Coins'],
+    'BRONZE4U' => ['reward' => 'key', 'keyType' => 'bronze_key', 'maxUses' => null, 'expires' => null, 'desc' => 'Bronze Key'],
+    // XP Codes
+    'XPBOOST' => ['reward' => 'xp', 'amount' => 200, 'maxUses' => null, 'expires' => null, 'desc' => '200 XP'],
+    'LEVELUP' => ['reward' => 'xp', 'amount' => 500, 'maxUses' => null, 'expires' => null, 'desc' => '500 XP'],
+    'XPTIME' => ['reward' => 'xp', 'amount' => 100, 'maxUses' => null, 'expires' => null, 'desc' => '100 XP'],
+    // Big Rewards Limited
+    'JACKPOT' => ['reward' => 'coins', 'amount' => 2500, 'maxUses' => 20, 'expires' => null, 'desc' => '2500 Coins'],
+    'MEGAPRIZE' => ['reward' => 'coins', 'amount' => 5000, 'maxUses' => 10, 'expires' => null, 'desc' => '5000 Coins'],
+    'VIPACCESS' => ['reward' => 'coins', 'amount' => 1000, 'maxUses' => 50, 'expires' => null, 'desc' => '1000 Coins'],
+    // Fun Codes
+    'GGEZ' => ['reward' => 'coins', 'amount' => 69, 'maxUses' => null, 'expires' => null, 'desc' => '69 Coins'],
+    'COOKIE' => ['reward' => 'coins', 'amount' => 200, 'maxUses' => null, 'expires' => null, 'desc' => '200 Coins'],
+    'GAMER' => ['reward' => 'xp', 'amount' => 250, 'maxUses' => null, 'expires' => null, 'desc' => '250 XP'],
+    'LETSGOO' => ['reward' => 'coins', 'amount' => 333, 'maxUses' => null, 'expires' => null, 'desc' => '333 Coins'],
 ];
 
 function readUsers() {
