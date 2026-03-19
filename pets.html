@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pets - Sandbox Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .coins-display {
+            background: rgba(255,215,0,0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        /* Active Pet Display */
+        .active-pet-section {
+            background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,140,0,0.1));
+            border: 2px solid rgba(255,215,0,0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .active-pet-section h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+        .active-pet {
+            display: inline-block;
+        }
+        .active-pet .pet-icon {
+            font-size: 6rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        .active-pet .pet-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 15px 0 5px;
+        }
+        .active-pet .pet-level {
+            color: #ffd700;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .pet-xp-bar {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            height: 20px;
+            max-width: 300px;
+            margin: 0 auto 10px;
+            overflow: hidden;
+        }
+        .pet-xp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ff8c00);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        .pet-xp-text {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .pet-bonuses {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .bonus-item {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+        .bonus-item .value {
+            color: #4ade80;
+            font-weight: bold;
+        }
+
+        .no-active-pet {
+            color: #888;
+            font-size: 1.2rem;
+            padding: 40px;
+        }
+
+        /* Pet Collection */
+        .section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .section h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .pet-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .pet-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255,215,0,0.5);
+        }
+        .pet-card.owned {
+            border-color: #4ade80;
+        }
+        .pet-card.active {
+            border-color: #ffd700;
+            background: rgba(255,215,0,0.1);
+            box-shadow: 0 0 20px rgba(255,215,0,0.2);
+        }
+        .pet-card.locked {
+            opacity: 0.6;
+        }
+        .pet-card .icon {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+        }
+        .pet-card .name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .pet-card .rarity {
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        .pet-card .rarity.common { background: #6b7280; }
+        .pet-card .rarity.uncommon { background: #22c55e; }
+        .pet-card .rarity.rare { background: #3b82f6; }
+        .pet-card .rarity.epic { background: #a855f7; }
+        .pet-card .rarity.legendary { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+
+        .pet-card .bonus {
+            color: #4ade80;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+        .pet-card .level {
+            color: #888;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+        .pet-card .price {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .pet-card .status {
+            margin-top: 10px;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .pet-card .status.equip {
+            background: #3b82f6;
+            cursor: pointer;
+        }
+        .pet-card .status.equipped {
+            background: #ffd700;
+            color: #000;
+        }
+        .pet-card .status.buy {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            cursor: pointer;
+        }
+        .pet-card .status.buy:hover {
+            transform: scale(1.05);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            border: 2px solid rgba(255,215,0,0.3);
+        }
+        .modal-content .pet-icon { font-size: 5rem; margin-bottom: 15px; }
+        .modal-content h3 { font-size: 1.5rem; margin-bottom: 10px; }
+        .modal-content p { color: #888; margin-bottom: 20px; }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .modal-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .modal-btn.confirm {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+        }
+        .modal-btn.cancel {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        /* Login prompt */
+        .login-prompt {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+        }
+        .login-prompt h2 { margin-bottom: 15px; }
+        .login-prompt a {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+        .notification.success { background: #22c55e; color: #fff; }
+        .notification.error { background: #ef4444; color: #fff; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Pets</h1>
+            <div class="coins-display" id="coinsDisplay">0 Coins</div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Games</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <a href="shop.html" class="nav-link">Shop</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <!-- Purchase Modal -->
+    <div class="modal" id="purchaseModal">
+        <div class="modal-content">
+            <div class="pet-icon" id="modalIcon"></div>
+            <h3 id="modalTitle"></h3>
+            <p id="modalDesc"></p>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+                <button class="modal-btn confirm" id="modalConfirm">Buy</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const PETS = [
+        { id: 'puppy', name: 'Puppy', icon: '🐕', rarity: 'common', price: 500, bonus: 'coin', bonusAmount: 5, desc: 'A loyal companion that finds extra coins!' },
+        { id: 'kitten', name: 'Kitten', icon: '🐱', rarity: 'common', price: 500, bonus: 'xp', bonusAmount: 5, desc: 'A curious kitty that helps you learn faster!' },
+        { id: 'bunny', name: 'Bunny', icon: '🐰', rarity: 'common', price: 750, bonus: 'coin', bonusAmount: 7, desc: 'A lucky rabbit that brings fortune!' },
+        { id: 'hamster', name: 'Hamster', icon: '🐹', rarity: 'uncommon', price: 1000, bonus: 'xp', bonusAmount: 8, desc: 'An energetic hamster that never stops!' },
+        { id: 'fox', name: 'Fox', icon: '🦊', rarity: 'uncommon', price: 1500, bonus: 'coin', bonusAmount: 10, desc: 'A clever fox with a nose for treasure!' },
+        { id: 'owl', name: 'Owl', icon: '🦉', rarity: 'uncommon', price: 1500, bonus: 'xp', bonusAmount: 10, desc: 'A wise owl that grants wisdom!' },
+        { id: 'penguin', name: 'Penguin', icon: '🐧', rarity: 'rare', price: 3000, bonus: 'coin', bonusAmount: 15, desc: 'A cool penguin from the Arctic!' },
+        { id: 'panda', name: 'Panda', icon: '🐼', rarity: 'rare', price: 3500, bonus: 'xp', bonusAmount: 15, desc: 'A rare panda that brings balance!' },
+        { id: 'tiger', name: 'Tiger', icon: '🐯', rarity: 'rare', price: 4000, bonus: 'coin', bonusAmount: 18, desc: 'A fierce tiger with golden stripes!' },
+        { id: 'unicorn', name: 'Unicorn', icon: '🦄', rarity: 'epic', price: 7500, bonus: 'both', bonusAmount: 12, desc: 'A magical unicorn with rainbow powers!' },
+        { id: 'dragon', name: 'Dragon', icon: '🐉', rarity: 'epic', price: 10000, bonus: 'coin', bonusAmount: 25, desc: 'A mighty dragon that hoards treasure!' },
+        { id: 'phoenix', name: 'Phoenix', icon: '🔥', rarity: 'legendary', price: 25000, bonus: 'both', bonusAmount: 20, desc: 'A legendary bird of fire and rebirth!' },
+        { id: 'alien', name: 'Alien', icon: '👽', rarity: 'legendary', price: 30000, bonus: 'xp', bonusAmount: 35, desc: 'An otherworldly being with cosmic knowledge!' },
+    ];
+
+    let userData = null;
+    let petData = { owned: [], active: null, petLevels: {} };
+
+    function formatNumber(num) {
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+        return num.toLocaleString();
+    }
+
+    function getPetLevel(petId) {
+        return petData.petLevels[petId] || { level: 1, xp: 0 };
+    }
+
+    function getXPForLevel(level) {
+        return level * 100;
+    }
+
+    function getBonusWithLevel(pet, level) {
+        // Bonus increases by 2% per level
+        const baseBonus = pet.bonusAmount;
+        const levelMultiplier = 1 + ((level - 1) * 0.02);
+        return Math.round(baseBonus * levelMultiplier);
+    }
+
+    async function init() {
+        try {
+            const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+            const data = await resp.json();
+
+            if (!data.success || !data.loggedIn) {
+                showLoginPrompt();
+                return;
+            }
+
+            userData = data.user;
+            document.getElementById('coinsDisplay').textContent = formatNumber(userData.coins || 0) + ' Coins';
+
+            // Load pet data
+            await loadPetData();
+            render();
+        } catch (e) {
+            console.error('Failed to load:', e);
+            showLoginPrompt();
+        }
+    }
+
+    async function loadPetData() {
+        try {
+            const resp = await fetch('api/pets.php?action=get', { credentials: 'include' });
+            const data = await resp.json();
+            if (data.success) {
+                petData = data.pets || { owned: [], active: null, petLevels: {} };
+            }
+        } catch (e) {
+            console.log('No pet data yet');
+        }
+    }
+
+    function render() {
+        const activePet = petData.active ? PETS.find(p => p.id === petData.active) : null;
+        const activePetLevel = activePet ? getPetLevel(activePet.id) : null;
+
+        let html = '';
+
+        // Active Pet Section
+        html += `<div class="active-pet-section">
+            <h2>Active Pet</h2>`;
+
+        if (activePet && activePetLevel) {
+            const bonus = getBonusWithLevel(activePet, activePetLevel.level);
+            const xpNeeded = getXPForLevel(activePetLevel.level);
+            const xpPercent = Math.min(100, Math.floor((activePetLevel.xp / xpNeeded) * 100));
+
+            html += `
+                <div class="active-pet">
+                    <div class="pet-icon">${activePet.icon}</div>
+                    <div class="pet-name">${activePet.name}</div>
+                    <div class="pet-level">Level ${activePetLevel.level}</div>
+                    <div class="pet-xp-bar">
+                        <div class="pet-xp-fill" style="width: ${xpPercent}%"></div>
+                    </div>
+                    <div class="pet-xp-text">${activePetLevel.xp} / ${xpNeeded} XP</div>
+                    <div class="pet-bonuses">
+                        ${activePet.bonus === 'coin' || activePet.bonus === 'both' ? `<div class="bonus-item"><span class="value">+${bonus}%</span> Coins</div>` : ''}
+                        ${activePet.bonus === 'xp' || activePet.bonus === 'both' ? `<div class="bonus-item"><span class="value">+${bonus}%</span> XP</div>` : ''}
+                    </div>
+                </div>`;
+        } else {
+            html += `<div class="no-active-pet">No pet equipped! Buy and equip a pet below.</div>`;
+        }
+
+        html += `</div>`;
+
+        // My Pets Section
+        const ownedPets = PETS.filter(p => petData.owned.includes(p.id));
+        if (ownedPets.length > 0) {
+            html += `<div class="section">
+                <h2>My Pets (${ownedPets.length})</h2>
+                <div class="pets-grid">`;
+
+            ownedPets.forEach(pet => {
+                const level = getPetLevel(pet.id);
+                const isActive = petData.active === pet.id;
+                const bonus = getBonusWithLevel(pet, level.level);
+
+                html += `
+                    <div class="pet-card owned ${isActive ? 'active' : ''}" onclick="${isActive ? '' : `equipPet('${pet.id}')`}">
+                        <div class="icon">${pet.icon}</div>
+                        <div class="name">${pet.name}</div>
+                        <span class="rarity ${pet.rarity}">${pet.rarity}</span>
+                        <div class="bonus">+${bonus}% ${pet.bonus === 'both' ? 'Coins & XP' : pet.bonus === 'coin' ? 'Coins' : 'XP'}</div>
+                        <div class="level">Level ${level.level}</div>
+                        <div class="status ${isActive ? 'equipped' : 'equip'}">${isActive ? 'Equipped' : 'Equip'}</div>
+                    </div>`;
+            });
+
+            html += `</div></div>`;
+        }
+
+        // Pet Shop Section
+        const unownedPets = PETS.filter(p => !petData.owned.includes(p.id));
+        html += `<div class="section">
+            <h2>Pet Shop</h2>
+            <div class="pets-grid">`;
+
+        unownedPets.forEach(pet => {
+            const canAfford = (userData.coins || 0) >= pet.price;
+
+            html += `
+                <div class="pet-card ${canAfford ? '' : 'locked'}" onclick="${canAfford ? `showPurchaseModal('${pet.id}')` : ''}">
+                    <div class="icon">${pet.icon}</div>
+                    <div class="name">${pet.name}</div>
+                    <span class="rarity ${pet.rarity}">${pet.rarity}</span>
+                    <div class="bonus">+${pet.bonusAmount}% ${pet.bonus === 'both' ? 'Coins & XP' : pet.bonus === 'coin' ? 'Coins' : 'XP'}</div>
+                    <div class="price">${formatNumber(pet.price)} Coins</div>
+                    <div class="status buy">${canAfford ? 'Buy' : 'Not enough coins'}</div>
+                </div>`;
+        });
+
+        html += `</div></div>`;
+
+        document.getElementById('content').innerHTML = html;
+    }
+
+    function showPurchaseModal(petId) {
+        const pet = PETS.find(p => p.id === petId);
+        if (!pet) return;
+
+        document.getElementById('modalIcon').textContent = pet.icon;
+        document.getElementById('modalTitle').textContent = `Buy ${pet.name}?`;
+        document.getElementById('modalDesc').textContent = `${pet.desc}\n\nCost: ${formatNumber(pet.price)} coins`;
+        document.getElementById('modalConfirm').onclick = () => buyPet(petId);
+        document.getElementById('purchaseModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('purchaseModal').classList.remove('active');
+    }
+
+    async function buyPet(petId) {
+        closeModal();
+        try {
+            const resp = await fetch('api/pets.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'buy', petId })
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                showNotification('Pet purchased!', 'success');
+                userData.coins = data.newBalance;
+                petData = data.pets;
+                document.getElementById('coinsDisplay').textContent = formatNumber(userData.coins) + ' Coins';
+                render();
+            } else {
+                showNotification(data.error || 'Failed to buy pet', 'error');
+            }
+        } catch (e) {
+            showNotification('Error buying pet', 'error');
+        }
+    }
+
+    async function equipPet(petId) {
+        try {
+            const resp = await fetch('api/pets.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'equip', petId })
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                showNotification('Pet equipped!', 'success');
+                petData = data.pets;
+                render();
+            } else {
+                showNotification(data.error || 'Failed to equip pet', 'error');
+            }
+        } catch (e) {
+            showNotification('Error equipping pet', 'error');
+        }
+    }
+
+    function showNotification(message, type) {
+        const notif = document.createElement('div');
+        notif.className = `notification ${type}`;
+        notif.textContent = message;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 3000);
+    }
+
+    function showLoginPrompt() {
+        document.getElementById('content').innerHTML = `
+            <div class="login-prompt">
+                <h2>Log in to get pets!</h2>
+                <p>Collect adorable pets that give you bonus coins and XP!</p>
+                <a href="login.html">Log In</a>
+            </div>`;
+    }
+
+    init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Ranks - Sandbox Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        /* Current Rank Display */
+        .current-rank {
+            background: rgba(0,0,0,0.4);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            border: 3px solid transparent;
+        }
+        .current-rank.bronze { border-color: #cd7f32; }
+        .current-rank.silver { border-color: #c0c0c0; }
+        .current-rank.gold { border-color: #ffd700; }
+        .current-rank.platinum { border-color: #e5e4e2; }
+        .current-rank.diamond { border-color: #b9f2ff; }
+        .current-rank.champion { border-color: #ff6b6b; }
+        .current-rank.legend { border-color: #9b59b6; }
+
+        .rank-icon { font-size: 5rem; margin-bottom: 15px; }
+        .rank-name { font-size: 2rem; font-weight: bold; margin-bottom: 10px; }
+        .rank-xp { color: #888; font-size: 1.1rem; margin-bottom: 20px; }
+
+        .progress-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            height: 25px;
+            overflow: hidden;
+            margin: 20px auto;
+            max-width: 400px;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .progress-bar.bronze { background: linear-gradient(90deg, #cd7f32, #b87333); }
+        .progress-bar.silver { background: linear-gradient(90deg, #c0c0c0, #a8a8a8); }
+        .progress-bar.gold { background: linear-gradient(90deg, #ffd700, #ffb700); }
+        .progress-bar.platinum { background: linear-gradient(90deg, #e5e4e2, #c9c9c9); }
+        .progress-bar.diamond { background: linear-gradient(90deg, #b9f2ff, #7dd3fc); }
+        .progress-bar.champion { background: linear-gradient(90deg, #ff6b6b, #ee5a5a); }
+        .progress-bar.legend { background: linear-gradient(90deg, #9b59b6, #8e44ad); }
+
+        .next-rank { color: #888; font-size: 0.9rem; }
+
+        /* All Ranks Grid */
+        .ranks-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .ranks-section h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .ranks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .rank-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .rank-card:hover {
+            transform: translateY(-3px);
+            background: rgba(255,255,255,0.1);
+        }
+        .rank-card.current {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.3);
+        }
+        .rank-card.achieved { opacity: 1; }
+        .rank-card.locked { opacity: 0.5; }
+        .rank-card.locked::after {
+            content: '🔒';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .rank-card .icon { font-size: 3rem; margin-bottom: 10px; }
+        .rank-card .name { font-size: 1.3rem; font-weight: bold; margin-bottom: 5px; }
+        .rank-card .xp-range { color: #888; font-size: 0.85rem; }
+        .rank-card .perks { color: #4ade80; font-size: 0.8rem; margin-top: 10px; }
+
+        .rank-card.bronze .icon { color: #cd7f32; }
+        .rank-card.silver .icon { color: #c0c0c0; }
+        .rank-card.gold .icon { color: #ffd700; }
+        .rank-card.platinum .icon { color: #e5e4e2; }
+        .rank-card.diamond .icon { color: #b9f2ff; }
+        .rank-card.champion .icon { color: #ff6b6b; }
+        .rank-card.legend .icon { color: #9b59b6; }
+
+        /* Stats */
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            text-align: center;
+            background: rgba(255,255,255,0.05);
+            padding: 15px 25px;
+            border-radius: 10px;
+        }
+        .stat-item .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .stat-item .label {
+            color: #888;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        /* Login prompt */
+        .login-prompt {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .login-prompt h2 { margin-bottom: 15px; }
+        .login-prompt a {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Player Ranks</h1>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Games</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <a href="leaderboards.html" class="nav-link">Leaderboards</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <script>
+    const RANKS = [
+        { id: 'bronze', name: 'Bronze', icon: '🥉', minXP: 0, maxXP: 999, color: '#cd7f32', perks: 'Starting rank' },
+        { id: 'silver', name: 'Silver', icon: '🥈', minXP: 1000, maxXP: 4999, color: '#c0c0c0', perks: '+5% coin bonus' },
+        { id: 'gold', name: 'Gold', icon: '🥇', minXP: 5000, maxXP: 14999, color: '#ffd700', perks: '+10% coin bonus' },
+        { id: 'platinum', name: 'Platinum', icon: '💎', minXP: 15000, maxXP: 34999, color: '#e5e4e2', perks: '+15% coin bonus, profile badge' },
+        { id: 'diamond', name: 'Diamond', icon: '💠', minXP: 35000, maxXP: 74999, color: '#b9f2ff', perks: '+20% coin bonus, exclusive emotes' },
+        { id: 'champion', name: 'Champion', icon: '🏆', minXP: 75000, maxXP: 149999, color: '#ff6b6b', perks: '+25% coin bonus, champion title' },
+        { id: 'legend', name: 'Legend', icon: '👑', minXP: 150000, maxXP: Infinity, color: '#9b59b6', perks: '+30% coin bonus, legend crown, all perks' }
+    ];
+
+    function getRank(xp) {
+        for (let i = RANKS.length - 1; i >= 0; i--) {
+            if (xp >= RANKS[i].minXP) return RANKS[i];
+        }
+        return RANKS[0];
+    }
+
+    function getNextRank(xp) {
+        const currentRank = getRank(xp);
+        const currentIndex = RANKS.findIndex(r => r.id === currentRank.id);
+        if (currentIndex < RANKS.length - 1) {
+            return RANKS[currentIndex + 1];
+        }
+        return null;
+    }
+
+    function formatNumber(num) {
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+        return num.toString();
+    }
+
+    async function init() {
+        try {
+            const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+            const data = await resp.json();
+
+            if (!data.success || !data.loggedIn) {
+                showLoginPrompt();
+                return;
+            }
+
+            const user = data.user;
+            const xp = user.xp || 0;
+            const currentRank = getRank(xp);
+            const nextRank = getNextRank(xp);
+
+            let progressPercent = 100;
+            let xpToNext = 0;
+            if (nextRank) {
+                const xpInRank = xp - currentRank.minXP;
+                const xpNeeded = nextRank.minXP - currentRank.minXP;
+                progressPercent = Math.min(100, Math.floor((xpInRank / xpNeeded) * 100));
+                xpToNext = nextRank.minXP - xp;
+            }
+
+            document.getElementById('content').innerHTML = `
+                <div class="current-rank ${currentRank.id}">
+                    <div class="rank-icon">${currentRank.icon}</div>
+                    <div class="rank-name" style="color: ${currentRank.color}">${currentRank.name}</div>
+                    <div class="rank-xp">${formatNumber(xp)} XP</div>
+
+                    <div class="progress-container">
+                        <div class="progress-bar ${currentRank.id}" style="width: ${progressPercent}%">
+                            ${progressPercent}%
+                        </div>
+                    </div>
+
+                    ${nextRank ? `
+                        <div class="next-rank">
+                            ${formatNumber(xpToNext)} XP to ${nextRank.name} ${nextRank.icon}
+                        </div>
+                    ` : `
+                        <div class="next-rank" style="color: #ffd700;">
+                            Maximum rank achieved!
+                        </div>
+                    `}
+
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <div class="value">${user.stats?.totalGamesPlayed || 0}</div>
+                            <div class="label">Games Played</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="value">${Math.floor((user.stats?.totalTimePlayed || 0) / 60)}m</div>
+                            <div class="label">Time Played</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="value">${formatNumber(user.coins || 0)}</div>
+                            <div class="label">Total Coins</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ranks-section">
+                    <h2>All Ranks</h2>
+                    <div class="ranks-grid">
+                        ${RANKS.map(rank => {
+                            const achieved = xp >= rank.minXP;
+                            const isCurrent = currentRank.id === rank.id;
+                            return `
+                                <div class="rank-card ${rank.id} ${achieved ? 'achieved' : 'locked'} ${isCurrent ? 'current' : ''}">
+                                    <div class="icon">${rank.icon}</div>
+                                    <div class="name" style="color: ${rank.color}">${rank.name}</div>
+                                    <div class="xp-range">
+                                        ${rank.maxXP === Infinity ? `${formatNumber(rank.minXP)}+ XP` : `${formatNumber(rank.minXP)} - ${formatNumber(rank.maxXP)} XP`}
+                                    </div>
+                                    <div class="perks">${rank.perks}</div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        } catch (e) {
+            console.error('Failed to load rank data:', e);
+            showLoginPrompt();
+        }
+    }
+
+    function showLoginPrompt() {
+        document.getElementById('content').innerHTML = `
+            <div class="login-prompt">
+                <h2>Log in to see your rank!</h2>
+                <p>Track your progress and earn rewards as you rank up.</p>
+                <a href="login.html">Log In</a>
+            </div>
+            <div class="ranks-section">
+                <h2>All Ranks</h2>
+                <div class="ranks-grid">
+                    ${RANKS.map(rank => `
+                        <div class="rank-card ${rank.id} locked">
+                            <div class="icon">${rank.icon}</div>
+                            <div class="name" style="color: ${rank.color}">${rank.name}</div>
+                            <div class="xp-range">
+                                ${rank.maxXP === Infinity ? `${formatNumber(rank.minXP)}+ XP` : `${formatNumber(rank.minXP)} - ${formatNumber(rank.maxXP)} XP`}
+                            </div>
+                            <div class="perks">${rank.perks}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    init();
+    </script>
+</body>
+</html>
