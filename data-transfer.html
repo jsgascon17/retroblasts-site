@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Transfer - RetroBlasts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        .card {
+            background: rgba(0,0,0,0.4);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        .card h2 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card p { color: #aaa; margin-bottom: 20px; line-height: 1.6; }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn.success { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .btn.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        .file-input {
+            display: none;
+        }
+        .file-label {
+            background: rgba(255,255,255,0.1);
+            border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin-bottom: 20px;
+        }
+        .file-label:hover {
+            border-color: #ffd700;
+            background: rgba(255,215,0,0.1);
+        }
+        .file-label .icon { font-size: 3rem; margin-bottom: 10px; }
+        .file-label .text { color: #aaa; }
+        .file-label.has-file { border-color: #22c55e; background: rgba(34, 197, 94, 0.1); }
+        .file-label.has-file .text { color: #22c55e; }
+
+        .data-preview {
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .data-item:last-child { border-bottom: none; }
+        .data-key { color: #a78bfa; }
+        .data-size { color: #888; font-size: 0.8rem; }
+
+        .message {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+        .message.success { background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #22c55e; }
+        .message.error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; }
+        .message.show { display: block; }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .stat {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-value { font-size: 1.8rem; font-weight: bold; color: #ffd700; }
+        .stat-label { color: #888; font-size: 0.85rem; margin-top: 5px; }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid #f59e0b;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #fbbf24;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.5rem; }
+            .card { padding: 20px; }
+            .btn { width: 100%; justify-content: center; }
+            .stats { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Data Transfer</h1>
+            <a href="index.html" class="nav-link">← Back to Games</a>
+        </div>
+
+        <!-- Export Section -->
+        <div class="card">
+            <h2>📤 Export Game Saves</h2>
+            <p>Download all your game progress, settings, and local data as a backup file. Use this before switching devices or domains.</p>
+            
+            <div class="stats" id="exportStats">
+                <div class="stat">
+                    <div class="stat-value" id="itemCount">-</div>
+                    <div class="stat-label">Saved Items</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="dataSize">-</div>
+                    <div class="stat-label">Total Size</div>
+                </div>
+            </div>
+
+            <div class="data-preview" id="exportPreview"></div>
+
+            <button class="btn success" onclick="exportData()" id="exportBtn">
+                <span>📥</span> Download Backup
+            </button>
+        </div>
+
+        <!-- Import Section -->
+        <div class="card">
+            <h2>📥 Import Game Saves</h2>
+            <p>Restore your game progress from a backup file. This will merge with any existing data.</p>
+
+            <div class="warning-box">
+                ⚠️ Importing will overwrite any conflicting saves. Make sure to export your current data first if needed!
+            </div>
+
+            <label class="file-label" id="fileLabel">
+                <div class="icon">📁</div>
+                <div class="text" id="fileText">Click or drag to select backup file</div>
+                <input type="file" class="file-input" id="fileInput" accept=".json">
+            </label>
+
+            <div class="data-preview" id="importPreview" style="display: none;"></div>
+
+            <button class="btn warning" onclick="importData()" id="importBtn" disabled>
+                <span>📤</span> Restore Backup
+            </button>
+
+            <div class="message" id="importMessage"></div>
+        </div>
+    </div>
+
+    <script>
+    let importFileData = null;
+
+    // Format bytes to human readable
+    function formatBytes(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    // Get all localStorage data
+    function getLocalStorageData() {
+        const data = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            data[key] = localStorage.getItem(key);
+        }
+        return data;
+    }
+
+    // Calculate size of data
+    function calculateSize(data) {
+        return new Blob([JSON.stringify(data)]).size;
+    }
+
+    // Load export preview
+    function loadExportPreview() {
+        const data = getLocalStorageData();
+        const keys = Object.keys(data);
+        
+        document.getElementById('itemCount').textContent = keys.length;
+        document.getElementById('dataSize').textContent = formatBytes(calculateSize(data));
+
+        const preview = document.getElementById('exportPreview');
+        if (keys.length === 0) {
+            preview.innerHTML = '<div style="color: #888; text-align: center;">No saved data found</div>';
+            document.getElementById('exportBtn').disabled = true;
+        } else {
+            preview.innerHTML = keys.map(key => {
+                const size = new Blob([data[key]]).size;
+                return `<div class="data-item">
+                    <span class="data-key">${key}</span>
+                    <span class="data-size">${formatBytes(size)}</span>
+                </div>`;
+            }).join('');
+        }
+    }
+
+    // Export data
+    function exportData() {
+        const data = {
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            domain: window.location.hostname,
+            data: getLocalStorageData()
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `retroblasts-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // File input handling
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                importFileData = JSON.parse(e.target.result);
+                
+                // Validate
+                if (!importFileData.data || typeof importFileData.data !== 'object') {
+                    throw new Error('Invalid backup file format');
+                }
+
+                const keys = Object.keys(importFileData.data);
+                document.getElementById('fileLabel').classList.add('has-file');
+                document.getElementById('fileText').textContent = `${file.name} (${keys.length} items)`;
+                document.getElementById('importBtn').disabled = false;
+
+                // Show preview
+                const preview = document.getElementById('importPreview');
+                preview.style.display = 'block';
+                preview.innerHTML = `
+                    <div style="margin-bottom: 10px; color: #888;">
+                        Exported from: ${importFileData.domain || 'Unknown'}<br>
+                        Date: ${importFileData.exportedAt ? new Date(importFileData.exportedAt).toLocaleString() : 'Unknown'}
+                    </div>
+                    ${keys.map(key => {
+                        const size = new Blob([importFileData.data[key]]).size;
+                        return `<div class="data-item">
+                            <span class="data-key">${key}</span>
+                            <span class="data-size">${formatBytes(size)}</span>
+                        </div>`;
+                    }).join('')}
+                `;
+
+            } catch (err) {
+                showMessage('importMessage', 'Invalid backup file: ' + err.message, true);
+                document.getElementById('importBtn').disabled = true;
+                importFileData = null;
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    // Import data
+    function importData() {
+        if (!importFileData || !importFileData.data) return;
+
+        try {
+            let imported = 0;
+            for (const [key, value] of Object.entries(importFileData.data)) {
+                localStorage.setItem(key, value);
+                imported++;
+            }
+
+            showMessage('importMessage', `Successfully restored ${imported} items! Refresh the page to see changes.`, false);
+            document.getElementById('importBtn').disabled = true;
+            
+            // Refresh preview
+            loadExportPreview();
+
+        } catch (err) {
+            showMessage('importMessage', 'Import failed: ' + err.message, true);
+        }
+    }
+
+    // Show message
+    function showMessage(id, text, isError) {
+        const el = document.getElementById(id);
+        el.textContent = text;
+        el.className = 'message show ' + (isError ? 'error' : 'success');
+    }
+
+    // Drag and drop
+    const fileLabel = document.getElementById('fileLabel');
+    fileLabel.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileLabel.style.borderColor = '#ffd700';
+    });
+    fileLabel.addEventListener('dragleave', () => {
+        fileLabel.style.borderColor = '';
+    });
+    fileLabel.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileLabel.style.borderColor = '';
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            document.getElementById('fileInput').files = e.dataTransfer.files;
+            document.getElementById('fileInput').dispatchEvent(new Event('change'));
+        }
+    });
+
+    // Init
+    loadExportPreview();
+    </script>
+</body>
+</html>
