@@ -931,7 +931,7 @@
                 for (let i = 0; i < waveNum / 3; i++) waves.push('heavy');
                 if (waveNum >= 10) waves.push('regen');
                 if (waveNum >= 15) waves.push('stealth');
-                waves.push('boss');
+                const bossCount = Math.floor(waveNum / 5); for (let i = 0; i < bossCount; i++) waves.push('boss');
             } else if (waveNum <= 3) {
                 for (let i = 0; i < 5 + waveNum * 2; i++) waves.push('scout');
             } else if (waveNum <= 5) {
@@ -969,7 +969,7 @@
                 for (let i = 0; i < 4 * scale; i++) waves.push('stealth');
                 // Extra boss every 5 waves in endless
                 if (gameMode === 'endless' && waveNum % 5 === 0) {
-                    for (let i = 0; i < Math.floor(waveNum / 10); i++) waves.push('boss');
+                    // Boss scaling now handled in main boss wave logic
                 }
             }
 
