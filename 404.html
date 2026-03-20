@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | RetroBlasts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+        }
+        .glitch {
+            font-size: 8rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 
+                0 0 10px #ffd700,
+                0 0 20px #ffd700,
+                0 0 40px #ff8c00;
+            animation: glitch 1s infinite;
+            position: relative;
+        }
+        @keyframes glitch {
+            0%, 90%, 100% { transform: translate(0); }
+            92% { transform: translate(-5px, 2px); }
+            94% { transform: translate(5px, -2px); }
+            96% { transform: translate(-3px, -1px); }
+            98% { transform: translate(3px, 1px); }
+        }
+        .ghost {
+            font-size: 6rem;
+            animation: float 2s ease-in-out infinite;
+            margin: 20px 0;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        p {
+            color: #aaa;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        .btn.secondary {
+            background: rgba(255,255,255,0.1);
+        }
+        .btn.secondary:hover {
+            background: rgba(255,255,255,0.2);
+            box-shadow: none;
+        }
+        .links {
+            margin-top: 20px;
+        }
+        .pixel-art {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 30px 0;
+        }
+        .pixel {
+            width: 12px;
+            height: 12px;
+            background: #667eea;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+        .pixel:nth-child(2) { animation-delay: 0.2s; background: #764ba2; }
+        .pixel:nth-child(3) { animation-delay: 0.4s; background: #ffd700; }
+        .pixel:nth-child(4) { animation-delay: 0.6s; background: #764ba2; }
+        .pixel:nth-child(5) { animation-delay: 0.8s; background: #667eea; }
+        @keyframes blink {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.8); }
+        }
+        
+        @media (max-width: 600px) {
+            .glitch { font-size: 5rem; }
+            .ghost { font-size: 4rem; }
+            h2 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="glitch">404</div>
+        <div class="ghost">👻</div>
+        <h2>Game Over... Page Not Found!</h2>
+        <p>Looks like this level doesn't exist. The page you're looking for has either been moved, deleted, or never existed in the first place.</p>
+        
+        <div class="pixel-art">
+            <div class="pixel"></div>
+            <div class="pixel"></div>
+            <div class="pixel"></div>
+            <div class="pixel"></div>
+            <div class="pixel"></div>
+        </div>
+        
+        <div class="links">
+            <a href="/" class="btn">🎮 Back to Games</a>
+            <a href="/leaderboards.html" class="btn secondary">🏆 Leaderboards</a>
+        </div>
+    </div>
+</body>
+</html>
