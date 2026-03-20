@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>St. Patrick's Day Cookie Arcade!</title>
+    <meta name="description" content="RetroBlasts - Play classic retro browser games like Snake, Pac-Man, Flappy Bird, Space Invaders and more. Free to play, no downloads required!">
+    <meta property="og:title" content="RetroBlasts - Retro Browser Games">
+    <meta property="og:description" content="Play classic retro games like Snake, Pac-Man, Flappy Bird and more. Free to play!">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com">
+    <title>RetroBlasts - Retro Browser Games</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +18,7 @@
 
         body {
             font-family: 'Comic Sans MS', 'Chalkboard', -apple-system, sans-serif;
-            background: linear-gradient(135deg, #0d4f21 0%, #116b35 50%, #1a8f4a 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             color: #fff;
             min-height: 100vh;
             padding: 40px 20px;
@@ -21,17 +26,17 @@
             position: relative;
         }
 
-        /* Floating Shamrocks */
-        .shamrock {
+        /* Floating Stars */
+        .floating-star {
             position: fixed;
             font-size: 2rem;
             opacity: 0.3;
             pointer-events: none;
             z-index: 0;
-            animation: floatShamrock 15s ease-in-out infinite;
+            animation: floatStar 15s ease-in-out infinite;
         }
 
-        @keyframes floatShamrock {
+        @keyframes floatStar {
             0%, 100% { transform: translateY(0) rotate(0deg); }
             25% { transform: translateY(-30px) rotate(10deg); }
             50% { transform: translateY(-10px) rotate(-5deg); }
@@ -171,7 +176,7 @@
             top: 100%;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(13, 79, 33, 0.98);
+            background: rgba(26, 26, 46, 0.98);
             border: 2px solid #ffd700;
             border-radius: 15px;
             padding: 10px;
@@ -329,7 +334,7 @@
 
         .featured-badge {
             display: inline-block;
-            background: linear-gradient(135deg, #228B22, #32CD32);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: #fff;
             padding: 8px 25px;
             border-radius: 20px;
@@ -377,7 +382,7 @@
 
         .play-cookie-btn {
             display: inline-block;
-            background: linear-gradient(135deg, #228B22, #32CD32);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: #fff;
             padding: 20px 60px;
             border-radius: 50px;
@@ -394,7 +399,7 @@
             box-shadow: 0 10px 40px rgba(255,215,0,0.6);
         }
 
-        /* St. Patrick's Stats Banner */
+        /* Stats Banner */
         .stpatricks-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -501,8 +506,8 @@
             font-weight: bold;
         }
 
-        /* Game preview backgrounds - Irish themed */
-        .whack-preview { background: linear-gradient(135deg, #228B22, #32CD32); }
+        /* Game preview backgrounds - Retro themed */
+        .whack-preview { background: linear-gradient(135deg, #667eea, #764ba2); }
         .space-preview { background: linear-gradient(135deg, #0d4f21, #116b35); }
         .platformer-preview { background: linear-gradient(to bottom, #87CEEB, #228B22); }
         .flappy-preview { background: linear-gradient(to bottom, #87CEEB, #32CD32); }
@@ -613,7 +618,7 @@
             display: inline-block;
             margin-top: 15px;
             padding: 10px 25px;
-            background: linear-gradient(135deg, #228B22, #32CD32);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: #fff;
             border-radius: 25px;
             font-weight: bold;
@@ -637,7 +642,7 @@
             color: #98FB98;
         }
 
-        footer .shamrock-divider {
+        footer .floating-star-divider {
             font-size: 2rem;
             margin-bottom: 15px;
         }
@@ -720,7 +725,7 @@
             display: block;
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #228B22, #32CD32);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: #fff;
             border: 2px solid #ffd700;
             border-radius: 10px;
@@ -1002,15 +1007,15 @@
 <script src="js/activity.js"></script>
 </head>
 <body>
-    <!-- Floating Shamrocks -->
-    <div class="shamrock" style="left: 5%; top: 20%; animation-delay: 0s;">&#9752;</div>
-    <div class="shamrock" style="left: 15%; top: 60%; animation-delay: 2s;">&#9752;</div>
-    <div class="shamrock" style="left: 25%; top: 35%; animation-delay: 4s;">&#9752;</div>
-    <div class="shamrock" style="left: 70%; top: 15%; animation-delay: 1s;">&#9752;</div>
-    <div class="shamrock" style="left: 80%; top: 50%; animation-delay: 3s;">&#9752;</div>
-    <div class="shamrock" style="left: 90%; top: 75%; animation-delay: 5s;">&#9752;</div>
-    <div class="shamrock" style="left: 50%; top: 80%; animation-delay: 2.5s;">&#9752;</div>
-    <div class="shamrock" style="left: 35%; top: 10%; animation-delay: 1.5s;">&#9752;</div>
+    <!-- Floating Stars -->
+    <div class="floating-star" style="left: 5%; top: 20%; animation-delay: 0s;">⭐</div>
+    <div class="floating-star" style="left: 15%; top: 60%; animation-delay: 2s;">⭐</div>
+    <div class="floating-star" style="left: 25%; top: 35%; animation-delay: 4s;">⭐</div>
+    <div class="floating-star" style="left: 70%; top: 15%; animation-delay: 1s;">⭐</div>
+    <div class="floating-star" style="left: 80%; top: 50%; animation-delay: 3s;">⭐</div>
+    <div class="floating-star" style="left: 90%; top: 75%; animation-delay: 5s;">⭐</div>
+    <div class="floating-star" style="left: 50%; top: 80%; animation-delay: 2.5s;">⭐</div>
+    <div class="floating-star" style="left: 35%; top: 10%; animation-delay: 1.5s;">⭐</div>
 
     <!-- Gold Sparkles -->
     <div class="gold-sparkle" style="left: 10%; top: 30%; animation-delay: 0s;"></div>
@@ -1027,8 +1032,8 @@
             <button onclick="distributeWeeklyRewards()" style="margin-left: 15px; padding: 5px 15px; background: #000; color: #ffd700; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Distribute Rewards</button>
         </div>
         <header>
-            <h1>&#9752; <span class="title-cookie">&#127850;</span> St. Paddy's Cookie Arcade! <span class="title-cookie">&#127850;</span> &#9752;</h1>
-            <p class="subtitle">May the luck of the Irish bring you many cookies!</p>
+            <h1>🎮 RetroBlasts 🕹️</h1>
+            <p class="subtitle">Classic retro games right in your browser!</p>
             <div class="mobile-overlay" id="mobileOverlay" onclick="closeAllDropdowns()"></div>
             <div class="nav-container">
                 <!-- Play Dropdown -->
@@ -1101,11 +1106,11 @@
         <!-- Cookie Clicker Hero -->
         <div class="cookie-hero">
             <div class="cookie-hero-content">
-                <span class="featured-badge">&#9752; St. Patrick's Special &#9752;</span>
+                <span class="featured-badge">⭐ Featured Game ⭐</span>
                 <span class="giant-cookie" id="demoCookie" onclick="clickCookie()">&#127850;</span>
                 <h2>Cookie Clicker Mania!</h2>
                 <p>Click your way to cookie glory! Unlock shamrock upgrades and golden pot-of-gold bonuses!</p>
-                <a href="cookie-clicker.html" class="play-cookie-btn">&#9752; Play Cookie Clicker! &#9752;</a>
+                <a href="cookie-clicker.html" class="play-cookie-btn">⭐ Play Cookie Clicker! ⭐</a>
             </div>
         </div>
 
@@ -1127,17 +1132,17 @@
                 <div class="label">Time Played</div>
             </div>
             <div class="stat-card">
-                <div class="icon">&#9752;</div>
+                <div class="icon">⭐</div>
                 <div class="value" id="luckyClicks">0</div>
-                <div class="label">Lucky Clicks</div>
+                <div class="label">Total Clicks</div>
             </div>
         </div>
 
         <!-- Games Section -->
         <div class="section-header">
-            <span style="font-size: 2rem;">&#9752;</span>
-            <h2 class="section-title">More Lucky Games</h2>
-            <span style="font-size: 2rem;">&#9752;</span>
+            <span style="font-size: 2rem;">⭐</span>
+            <h2 class="section-title">More Games</h2>
+            <span style="font-size: 2rem;">⭐</span>
         </div>
 
         <div class="games-grid" id="gamesGrid">
@@ -1148,7 +1153,7 @@
                     <span class="icon">&#127850;</span>
                 </div>
                 <div class="game-info">
-                    <h2 class="game-title">&#9752; Cookie Clicker &#9752;</h2>
+                    <h2 class="game-title">⭐ Cookie Clicker ⭐</h2>
                     <p class="game-description">
                         St. Patrick's special edition! Click cookies, unlock shamrock upgrades, and find the pot of gold!
                     </p>
@@ -1617,8 +1622,8 @@
         </div>
 
         <footer>
-            <div class="shamrock-divider">&#9752; &#127850; &#9752;</div>
-            <p>Happy St. Patrick's Day! &#9752;</p>
+            <div class="shamrock-divider">⭐ &#127850; ⭐</div>
+            <p>Happy St. Patrick's Day! ⭐</p>
             <p style="margin-top: 10px; font-size: 0.9rem;">
                 <a href="https://sandbox.dev.freshbuild.co">sandbox.dev.freshbuild.co</a>
             </p>
@@ -1666,7 +1671,7 @@
 
             // Create floating +1
             const plus = document.createElement('div');
-            plus.textContent = '+1 &#9752;';
+            plus.textContent = '+1 ⭐';
             plus.style.cssText = `
                 position: fixed;
                 left: ${event.clientX}px;
@@ -1761,7 +1766,7 @@
 
         // Animation toggle
         document.getElementById('animToggle')?.addEventListener('change', function() {
-            document.querySelectorAll('.shamrock, .gold-sparkle').forEach(el => {
+            document.querySelectorAll('.floating-star, .gold-sparkle').forEach(el => {
                 el.style.display = this.checked ? 'block' : 'none';
             });
         });
