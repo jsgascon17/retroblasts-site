@@ -1215,7 +1215,7 @@
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ game: 'space-invaders', coins: coinsThisGame })
+                body: JSON.stringify({ game: 'space-invaders', coins: coinsThisGame, score: score })
             }).then(r => r.json()).catch(() => {});
         }
 

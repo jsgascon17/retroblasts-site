@@ -1328,7 +1328,7 @@
             }
 
             // Award coins on server (if logged in)
-            fetch('api/add-coins.php', { credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'flappy-bird', coins: sessionCoins })
+            fetch('api/add-coins.php', { credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'flappy-bird', coins: sessionCoins, score: score })
             }).then(r => r.json()).then(data => {
                 if (data.success) {
                     document.getElementById('sessionCoins').textContent = data.coinsEarned;

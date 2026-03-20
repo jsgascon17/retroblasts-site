@@ -731,7 +731,7 @@
                 document.getElementById('gameOverScreen').classList.remove('hidden');
 
                 // Award coins on server (if logged in)
-                fetch('api/add-coins.php', { credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'crossy-road', coins: coinsThisRun })
+                fetch('api/add-coins.php', { credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'crossy-road', coins: coinsThisRun, score: score })
                 }).then(r => r.json()).then(data => {
                     if (data.success) {
                         document.getElementById('coinsEarned').textContent = data.coinsEarned;

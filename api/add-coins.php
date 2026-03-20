@@ -48,11 +48,16 @@ if (!isset($data["users"][$username])) {
 $data["users"][$username]["coins"] = ($data["users"][$username]["coins"] ?? 0) + $coins;
 $newTotal = $data["users"][$username]["coins"];
 
-// Calculate and add XP based on coins earned
-// XP formula: 1 XP per 2 coins, minimum 5 XP if any coins earned
+// Calculate XP based on score (1 XP per 100 points, minimum 5 XP)
 $xpEarned = 0;
-if ($coins > 0) {
+if ($score > 0) {
+    $xpEarned = max(5, floor($score / 100));
+} else if ($coins > 0) {
+    // Fallback to coins if no score provided
     $xpEarned = max(5, floor($coins / 2));
+}
+
+if ($xpEarned > 0) {
     $data["users"][$username]["xp"] = ($data["users"][$username]["xp"] ?? 0) + $xpEarned;
 }
 
