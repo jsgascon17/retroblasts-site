@@ -28,6 +28,7 @@ if (!isset($_SESSION["user"])) {
 $input = json_decode(file_get_contents("php://input"), true);
 $coins = intval($input["coins"] ?? 0);
 $game = $input["game"] ?? "unknown";
+$score = intval($input["score"] ?? 0);
 
 // Validate coins (cap at 2000 per request to prevent exploits)
 if ($coins < 0 || $coins > 2000) {
@@ -43,13 +44,27 @@ if (!isset($data["users"][$username])) {
     exit;
 }
 
+// Add coins
 $data["users"][$username]["coins"] = ($data["users"][$username]["coins"] ?? 0) + $coins;
 $newTotal = $data["users"][$username]["coins"];
+
+// Calculate and add XP based on coins earned
+// XP formula: 1 XP per 2 coins, minimum 5 XP if any coins earned
+$xpEarned = 0;
+if ($coins > 0) {
+    $xpEarned = max(5, floor($coins / 2));
+    $data["users"][$username]["xp"] = ($data["users"][$username]["xp"] ?? 0) + $xpEarned;
+}
+
+$newXP = $data["users"][$username]["xp"] ?? 0;
 
 writeUsers($data);
 
 echo json_encode([
     "success" => true,
     "coinsAdded" => $coins,
-    "newTotal" => $newTotal
+    "coinsEarned" => $coins,
+    "newTotal" => $newTotal,
+    "xpEarned" => $xpEarned,
+    "newXP" => $newXP
 ]);
