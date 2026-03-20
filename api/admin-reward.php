@@ -36,6 +36,15 @@ if (count($scores) === 0) {
 $usersFile = __DIR__ . '/../data/users.json';
 $usersData = json_decode(file_get_contents($usersFile), true);
 
+// Build lookup by display name (case insensitive)
+$displayNameToUsername = [];
+foreach ($usersData['users'] as $username => $userData) {
+    $displayName = strtolower($userData['displayName'] ?? '');
+    $displayNameToUsername[$displayName] = $username;
+    // Also add username itself
+    $displayNameToUsername[strtolower($username)] = $username;
+}
+
 $messages = [];
 
 // Reward top 3
@@ -43,8 +52,11 @@ for ($i = 0; $i < min(3, count($scores)); $i++) {
     $playerName = strtolower($scores[$i]['name']);
     $rewardAmount = $rewards[$i];
     
-    if (isset($usersData['users'][$playerName])) {
-        $usersData['users'][$playerName]['coins'] = ($usersData['users'][$playerName]['coins'] ?? 0) + $rewardAmount;
+    // Try to find by display name or username
+    $actualUsername = $displayNameToUsername[$playerName] ?? null;
+    
+    if ($actualUsername && isset($usersData['users'][$actualUsername])) {
+        $usersData['users'][$actualUsername]['coins'] = ($usersData['users'][$actualUsername]['coins'] ?? 0) + $rewardAmount;
         $messages[] = "#" . ($i + 1) . " " . $scores[$i]['name'] . ": +" . $rewardAmount . " coins";
     } else {
         $messages[] = "#" . ($i + 1) . " " . $scores[$i]['name'] . ": Not a registered user";
