@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="RetroBlasts - Play classic retro browser games like Snake, Pac-Man, Flappy Bird, Space Invaders and more. Free to play, no downloads required!">
     <meta property="og:title" content="RetroBlasts - Retro Browser Games">
@@ -447,6 +450,40 @@
             font-size: 2rem;
             color: #ffd700;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .game-search {
+            flex: 1;
+            min-width: 200px;
+            max-width: 400px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            background: rgba(0,0,0,0.4);
+            color: #fff;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .game-search:focus {
+            border-color: #ffd700;
+            background: rgba(0,0,0,0.6);
+        }
+        .game-search::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        .search-count {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        .game-card.hidden {
+            display: none;
         }
 
         .games-grid {
@@ -1143,6 +1180,10 @@
         <div class="section-header">
             <span style="font-size: 2rem;">⭐</span>
             <h2 class="section-title">More Games</h2>
+            <div class="search-container">
+                <input type="text" id="gameSearch" class="game-search" placeholder="🔍 Search games..." autocomplete="off">
+                <span class="search-count" id="searchCount"></span>
+            </div>
             <span style="font-size: 2rem;">⭐</span>
         </div>
 
@@ -2866,3 +2907,41 @@ window.addEventListener('resize', function() {
     if (window.innerWidth > 768) closeAllDropdowns();
 });
 </script>
+    <script>
+    // Game Search Functionality
+    const searchInput = document.getElementById("gameSearch");
+    const searchCount = document.getElementById("searchCount");
+    const gameCards = document.querySelectorAll(".game-card");
+    const totalGames = gameCards.length;
+    
+    function updateSearch() {
+        const query = searchInput.value.toLowerCase().trim();
+        let visible = 0;
+        
+        gameCards.forEach(card => {
+            const gameName = card.getAttribute("data-game") || "";
+            const tags = card.getAttribute("data-tags") || "";
+            const title = card.querySelector(".game-title")?.textContent.toLowerCase() || "";
+            
+            const matches = gameName.includes(query) || 
+                           tags.includes(query) || 
+                           title.includes(query);
+            
+            if (matches || query === "") {
+                card.classList.remove("hidden");
+                visible++;
+            } else {
+                card.classList.add("hidden");
+            }
+        });
+        
+        if (query) {
+            searchCount.textContent = visible + " of " + totalGames + " games";
+        } else {
+            searchCount.textContent = totalGames + " games";
+        }
+    }
+    
+    searchInput.addEventListener("input", updateSearch);
+    updateSearch();
+    </script>
