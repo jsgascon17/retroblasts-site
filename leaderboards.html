@@ -303,6 +303,7 @@
 
         <div style="text-align: center;">
             <button class="refresh-btn" onclick="loadLeaderboards()">🔄 Refresh</button>
+            <button class="refresh-btn" id="rewardBtn" onclick="rewardTopPlayers()" style="display:none; background: linear-gradient(135deg, #ffd700, #ff8c00); margin-left: 10px;">🏆 Reward Top 3</button>
         </div>
 
         <div class="game-tabs" id="gameTabs">
@@ -506,6 +507,52 @@
 
         // Load on page load
         loadLeaderboards();
+    // Admin reward function
+    async function checkAdmin() {
+        try {
+            const resp = await fetch("api/auth.php?action=check", { credentials: "include" });
+            const data = await resp.json();
+            if (data.loggedIn && data.user.username === "billybuffalo15") {
+                document.getElementById("rewardBtn").style.display = "inline-block";
+            }
+        } catch(e) {}
+    }
+    checkAdmin();
+
+    async function rewardTopPlayers() {
+        const activeTab = document.querySelector(".game-tab.active");
+        const game = activeTab ? activeTab.dataset.game : "all";
+        
+        if (game === "all") {
+            alert("Please select a specific game first!");
+            return;
+        }
+
+        const btn = document.getElementById("rewardBtn");
+        btn.disabled = true;
+        btn.textContent = "Sending...";
+
+        try {
+            const resp = await fetch("api/admin-reward.php", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ game: game, rewards: [500, 250, 100] })
+            });
+            const data = await resp.json();
+            
+            if (data.success) {
+                alert("Rewards sent!\n" + data.message);
+            } else {
+                alert("Error: " + data.error);
+            }
+        } catch(e) {
+            alert("Failed to send rewards");
+        }
+        
+        btn.disabled = false;
+        btn.textContent = "🏆 Reward Top 3";
+    }
     </script>
 </body>
 </html>
