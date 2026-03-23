@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basketball - RetroBlasts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            padding: 10px;
+        }
+        .game-container {
+            background: rgba(0,0,0,0.5);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        canvas {
+            display: block;
+            border-radius: 10px;
+            cursor: crosshair;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .header h1 { color: #ffd700; font-size: 1.5rem; }
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 1rem;
+        }
+        .stats span { color: #aaa; }
+        .stats strong { color: #ffd700; }
+        .streak { color: #ff6b6b !important; }
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .overlay.hidden { display: none; }
+        .modal {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            border: 2px solid #ffd700;
+            max-width: 90%;
+        }
+        .modal h2 { color: #ffd700; font-size: 2rem; margin-bottom: 20px; }
+        .modal p { color: #aaa; margin-bottom: 15px; font-size: 1.1rem; }
+        .modal .score { font-size: 3rem; color: #fff; margin: 20px 0; }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: scale(1.05); }
+        .instructions {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>🏀 Basketball</h1>
+            <div class="stats">
+                <div><span>Score:</span> <strong id="score">0</strong></div>
+                <div><span>Streak:</span> <strong id="streak" class="streak">0</strong></div>
+                <div><span>Best:</span> <strong id="best">0</strong></div>
+            </div>
+            <a href="index.html" class="back-btn">← Back</a>
+        </div>
+        <canvas id="game" width="500" height="500"></canvas>
+        <p class="instructions">Click and drag to aim • Release to shoot!</p>
+    </div>
+
+    <div class="overlay" id="startScreen">
+        <div class="modal">
+            <h2>🏀 Basketball</h2>
+            <p>Click and drag to aim your shot!</p>
+            <p>Release to throw the ball at the hoop!</p>
+            <p>Build streaks for bonus points!</p>
+            <button class="btn" id="startBtn">START</button>
+        </div>
+    </div>
+
+    <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    let score = 0;
+    let streak = 0;
+    let best = parseInt(localStorage.getItem('basketballBest')) || 0;
+    let totalShots = 0;
+    
+    // Ball
+    let ball = { x: W/2, y: H - 80, vx: 0, vy: 0, radius: 20, active: false };
+    
+    // Hoop (moves randomly)
+    let hoop = { x: W/2, y: 120, width: 80, rimHeight: 10 };
+    
+    // Aiming
+    let aiming = false;
+    let aimStart = { x: 0, y: 0 };
+    let aimEnd = { x: 0, y: 0 };
+    
+    // Game state
+    let canShoot = true;
+    let message = '';
+    let messageTimer = 0;
+
+    document.getElementById('best').textContent = best;
+
+    function resetBall() {
+        ball.x = W/2;
+        ball.y = H - 80;
+        ball.vx = 0;
+        ball.vy = 0;
+        ball.active = false;
+        canShoot = true;
+        
+        // Move hoop to random position
+        hoop.x = 80 + Math.random() * (W - 160);
+    }
+
+    function shoot(power, angle) {
+        if (!canShoot) return;
+        
+        ball.vx = Math.cos(angle) * power * 0.15;
+        ball.vy = Math.sin(angle) * power * 0.15;
+        ball.active = true;
+        canShoot = false;
+        totalShots++;
+    }
+
+    function showMessage(text) {
+        message = text;
+        messageTimer = 60;
+    }
+
+    function update() {
+        if (messageTimer > 0) messageTimer--;
+        
+        if (ball.active) {
+            // Gravity
+            ball.vy += 0.3;
+            
+            // Move
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+            
+            // Bounce off walls
+            if (ball.x < ball.radius || ball.x > W - ball.radius) {
+                ball.vx *= -0.7;
+                ball.x = Math.max(ball.radius, Math.min(W - ball.radius, ball.x));
+            }
+            
+            // Check if ball goes through hoop
+            const hoopLeft = hoop.x - hoop.width/2;
+            const hoopRight = hoop.x + hoop.width/2;
+            const hoopY = hoop.y;
+            
+            // Ball passing through hoop zone (going downward)
+            if (ball.vy > 0 && 
+                ball.y > hoopY - 10 && ball.y < hoopY + 20 &&
+                ball.x > hoopLeft + 10 && ball.x < hoopRight - 10) {
+                
+                if (!ball.scored) {
+                    ball.scored = true;
+                    streak++;
+                    const points = streak >= 3 ? 3 : streak >= 2 ? 2 : 1;
+                    score += points;
+                    
+                    document.getElementById('score').textContent = score;
+                    document.getElementById('streak').textContent = streak;
+                    
+                    if (streak >= 3) showMessage('🔥 ON FIRE! +3');
+                    else if (streak >= 2) showMessage('Nice! +2');
+                    else showMessage('Score! +1');
+                    
+                    if (score > best) {
+                        best = score;
+                        localStorage.setItem('basketballBest', best);
+                        document.getElementById('best').textContent = best;
+                    }
+                }
+            }
+            
+            // Rim collision
+            const rimLeft = { x: hoopLeft, y: hoopY };
+            const rimRight = { x: hoopRight, y: hoopY };
+            
+            [rimLeft, rimRight].forEach(rim => {
+                const dx = ball.x - rim.x;
+                const dy = ball.y - rim.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < ball.radius + 5) {
+                    const angle = Math.atan2(dy, dx);
+                    ball.x = rim.x + Math.cos(angle) * (ball.radius + 6);
+                    ball.y = rim.y + Math.sin(angle) * (ball.radius + 6);
+                    
+                    const dot = ball.vx * Math.cos(angle) + ball.vy * Math.sin(angle);
+                    ball.vx -= 1.5 * dot * Math.cos(angle);
+                    ball.vy -= 1.5 * dot * Math.sin(angle);
+                    ball.vx *= 0.7;
+                    ball.vy *= 0.7;
+                }
+            });
+            
+            // Ball out of bounds or stopped
+            if (ball.y > H + 50) {
+                if (!ball.scored) {
+                    streak = 0;
+                    document.getElementById('streak').textContent = streak;
+                    showMessage('Miss!');
+                }
+                
+                // Save score periodically
+                if (totalShots % 5 === 0 && score > 0) {
+                    fetch('api/add-coins.php', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ game: 'basketball', coins: score, score: score * 100 })
+                    }).catch(() => {});
+                }
+                
+                ball.scored = false;
+                resetBall();
+            }
+        }
+    }
+
+    function draw() {
+        // Court background
+        ctx.fillStyle = '#cd853f';
+        ctx.fillRect(0, 0, W, H);
+        
+        // Court lines
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(W/2, H, 150, Math.PI, 0);
+        ctx.stroke();
+        
+        // Backboard
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(hoop.x - 50, hoop.y - 60, 100, 60);
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(hoop.x - 50, hoop.y - 60, 100, 60);
+        
+        // Backboard square
+        ctx.strokeStyle = '#e74c3c';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(hoop.x - 25, hoop.y - 45, 50, 35);
+        
+        // Hoop
+        ctx.strokeStyle = '#e74c3c';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(hoop.x - hoop.width/2, hoop.y);
+        ctx.lineTo(hoop.x + hoop.width/2, hoop.y);
+        ctx.stroke();
+        
+        // Net (simple)
+        ctx.strokeStyle = '#ddd';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 5; i++) {
+            ctx.beginPath();
+            ctx.moveTo(hoop.x - hoop.width/2 + i * 20, hoop.y);
+            ctx.lineTo(hoop.x - hoop.width/2 + 10 + i * 15, hoop.y + 40);
+            ctx.stroke();
+        }
+        
+        // Aim line
+        if (aiming && canShoot) {
+            ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(ball.x, ball.y);
+            ctx.lineTo(ball.x + (aimStart.x - aimEnd.x), ball.y + (aimStart.y - aimEnd.y));
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Power indicator
+            const power = Math.sqrt(Math.pow(aimStart.x - aimEnd.x, 2) + Math.pow(aimStart.y - aimEnd.y, 2));
+            ctx.fillStyle = power > 150 ? '#e74c3c' : power > 80 ? '#f39c12' : '#2ecc71';
+            ctx.fillRect(20, H - 30, Math.min(power, 200), 15);
+            ctx.strokeStyle = '#fff';
+            ctx.strokeRect(20, H - 30, 200, 15);
+        }
+        
+        // Ball
+        ctx.fillStyle = '#e67e22';
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Ball lines
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(ball.x - ball.radius, ball.y);
+        ctx.lineTo(ball.x + ball.radius, ball.y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius * 0.6, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Message
+        if (messageTimer > 0) {
+            ctx.fillStyle = message.includes('FIRE') ? '#ff6b6b' : message.includes('Score') || message.includes('Nice') ? '#2ecc71' : '#e74c3c';
+            ctx.font = 'bold 32px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(message, W/2, H/2);
+        }
+    }
+
+    function gameLoop() {
+        update();
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+
+    // Controls
+    canvas.addEventListener('mousedown', e => {
+        if (!canShoot) return;
+        const rect = canvas.getBoundingClientRect();
+        aimStart.x = e.clientX - rect.left;
+        aimStart.y = e.clientY - rect.top;
+        aimEnd.x = aimStart.x;
+        aimEnd.y = aimStart.y;
+        aiming = true;
+    });
+
+    canvas.addEventListener('mousemove', e => {
+        if (!aiming) return;
+        const rect = canvas.getBoundingClientRect();
+        aimEnd.x = e.clientX - rect.left;
+        aimEnd.y = e.clientY - rect.top;
+    });
+
+    canvas.addEventListener('mouseup', e => {
+        if (!aiming) return;
+        aiming = false;
+        
+        const dx = aimStart.x - aimEnd.x;
+        const dy = aimStart.y - aimEnd.y;
+        const power = Math.sqrt(dx*dx + dy*dy);
+        const angle = Math.atan2(dy, dx);
+        
+        if (power > 20) {
+            shoot(power, angle);
+        }
+    });
+
+    // Touch support
+    canvas.addEventListener('touchstart', e => {
+        e.preventDefault();
+        if (!canShoot) return;
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        aimStart.x = touch.clientX - rect.left;
+        aimStart.y = touch.clientY - rect.top;
+        aimEnd.x = aimStart.x;
+        aimEnd.y = aimStart.y;
+        aiming = true;
+    });
+
+    canvas.addEventListener('touchmove', e => {
+        e.preventDefault();
+        if (!aiming) return;
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        aimEnd.x = touch.clientX - rect.left;
+        aimEnd.y = touch.clientY - rect.top;
+    });
+
+    canvas.addEventListener('touchend', e => {
+        e.preventDefault();
+        if (!aiming) return;
+        aiming = false;
+        
+        const dx = aimStart.x - aimEnd.x;
+        const dy = aimStart.y - aimEnd.y;
+        const power = Math.sqrt(dx*dx + dy*dy);
+        const angle = Math.atan2(dy, dx);
+        
+        if (power > 20) {
+            shoot(power, angle);
+        }
+    });
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+        document.getElementById('startScreen').classList.add('hidden');
+        resetBall();
+        gameLoop();
+    });
+    </script>
+</body>
+</html>

@@ -15,6 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 $validGames = [
+    'helicopter' => ['name' => 'Helicopter', 'icon' => '🚁', 'maxScore' => 10000],
+    'basketball' => ['name' => 'Basketball', 'icon' => '🏀', 'maxScore' => 10000],
     'flappy-bird' => ['name' => 'Flappy Bird', 'icon' => '🐤', 'maxScore' => 1000],
     'snake' => ['name' => 'Snake', 'icon' => '🐍', 'maxScore' => 100000],
     'space-invaders' => ['name' => 'Space Invaders', 'icon' => '👾', 'maxScore' => 1000000],
