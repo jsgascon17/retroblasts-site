@@ -9,7 +9,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
-            background: linear-gradient(135deg, #0d4f21 0%, #116b35 50%, #1a8f4a 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             color: #fff;
             padding: 20px;
@@ -41,7 +41,7 @@
             overflow: hidden;
         }
         .season-banner::before {
-            content: '☘️';
+            content: '🎮';
             position: absolute;
             font-size: 15rem;
             opacity: 0.1;
@@ -425,8 +425,8 @@
         <div id="mainContent" style="display: none;">
             <!-- Season Banner -->
             <div class="season-banner">
-                <div class="season-name">☘️ Season 1: Luck of the Irish</div>
-                <div class="season-dates">March 1 - March 31, 2026</div>
+                <div class="season-name">🎮 Season 1: Arcade Legends</div>
+                <div class="season-dates">March 1 - April 30, 2026</div>
                 <div class="season-timer">
                     <span id="daysLeft">13</span> days remaining
                 </div>
@@ -502,35 +502,35 @@
 
         const rewards = [
             { level: 1, free: { icon: '🪙', name: '50 Coins', type: 'currency' }, premium: { icon: '💎', name: '100 Coins', type: 'currency' } },
-            { level: 2, free: { icon: '☘️', name: 'Shamrock Trail', type: 'trail' }, premium: { icon: '🌈', name: 'Rainbow Trail', type: 'trail' } },
-            { level: 3, free: { icon: '🪙', name: '75 Coins', type: 'currency' }, premium: { icon: '🎨', name: 'Gold Theme', type: 'theme' } },
-            { level: 4, free: { icon: '🍀', name: 'Lucky Cursor', type: 'cursor' }, premium: { icon: '🏆', name: 'Trophy Cursor', type: 'cursor' } },
+            { level: 2, free: { icon: '🎮', name: 'Pixel Trail', type: 'trail' }, premium: { icon: '🌈', name: 'Rainbow Trail', type: 'trail' } },
+            { level: 3, free: { icon: '🪙', name: '75 Coins', type: 'currency' }, premium: { icon: '🎨', name: 'Neon Theme', type: 'theme' } },
+            { level: 4, free: { icon: '🕹️', name: 'Joystick Cursor', type: 'cursor' }, premium: { icon: '🏆', name: 'Trophy Cursor', type: 'cursor' } },
             { level: 5, free: { icon: '🪙', name: '100 Coins', type: 'currency' }, premium: { icon: '✨', name: 'Sparkle Effect', type: 'effect' } },
-            { level: 6, free: { icon: '🎵', name: 'Irish Jig SFX', type: 'sound' }, premium: { icon: '💎', name: '200 Coins', type: 'currency' } },
-            { level: 7, free: { icon: '🪙', name: '100 Coins', type: 'currency' }, premium: { icon: '🎭', name: 'Leprechaun Avatar', type: 'avatar' } },
+            { level: 6, free: { icon: '🎵', name: 'Retro SFX', type: 'sound' }, premium: { icon: '💎', name: '200 Coins', type: 'currency' } },
+            { level: 7, free: { icon: '🪙', name: '100 Coins', type: 'currency' }, premium: { icon: '🎭', name: 'Gamer Avatar', type: 'avatar' } },
             { level: 8, free: { icon: '🌟', name: 'Star Badge', type: 'badge' }, premium: { icon: '👑', name: 'Crown Badge', type: 'badge' } },
-            { level: 9, free: { icon: '🪙', name: '150 Coins', type: 'currency' }, premium: { icon: '🌈', name: 'Rainbow BG', type: 'background' } },
+            { level: 9, free: { icon: '🪙', name: '150 Coins', type: 'currency' }, premium: { icon: '🎆', name: 'Galaxy BG', type: 'background' } },
             { level: 10, free: { icon: '🏅', name: 'Bronze Frame', type: 'frame' }, premium: { icon: '🥇', name: 'Gold Frame', type: 'frame' } },
             { level: 11, free: { icon: '🪙', name: '150 Coins', type: 'currency' }, premium: { icon: '💎', name: '300 Coins', type: 'currency' } },
-            { level: 12, free: { icon: '🎪', name: 'Circus Trail', type: 'trail' }, premium: { icon: '⚡', name: 'Lightning Trail', type: 'trail' } },
-            { level: 13, free: { icon: '🪙', name: '200 Coins', type: 'currency' }, premium: { icon: '🎨', name: 'Emerald Theme', type: 'theme' } },
+            { level: 12, free: { icon: '🔥', name: 'Fire Trail', type: 'trail' }, premium: { icon: '⚡', name: 'Lightning Trail', type: 'trail' } },
+            { level: 13, free: { icon: '🪙', name: '200 Coins', type: 'currency' }, premium: { icon: '🎨', name: 'Synthwave Theme', type: 'theme' } },
             { level: 14, free: { icon: '🎯', name: 'Target Cursor', type: 'cursor' }, premium: { icon: '💫', name: 'Comet Cursor', type: 'cursor' } },
             { level: 15, free: { icon: '🎖️', name: 'Silver Badge', type: 'badge' }, premium: { icon: '💎', name: '500 Coins', type: 'currency' } },
             { level: 16, free: { icon: '🪙', name: '200 Coins', type: 'currency' }, premium: { icon: '🔥', name: 'Fire Effect', type: 'effect' } },
-            { level: 17, free: { icon: '🌸', name: 'Petal Trail', type: 'trail' }, premium: { icon: '❄️', name: 'Frost Trail', type: 'trail' } },
-            { level: 18, free: { icon: '🪙', name: '250 Coins', type: 'currency' }, premium: { icon: '🎭', name: 'Pot of Gold Avatar', type: 'avatar' } },
-            { level: 19, free: { icon: '🎨', name: 'Clover Theme', type: 'theme' }, premium: { icon: '💎', name: '750 Coins', type: 'currency' } },
+            { level: 17, free: { icon: '💜', name: 'Purple Trail', type: 'trail' }, premium: { icon: '❄️', name: 'Frost Trail', type: 'trail' } },
+            { level: 18, free: { icon: '🪙', name: '250 Coins', type: 'currency' }, premium: { icon: '🎭', name: 'Arcade King Avatar', type: 'avatar' } },
+            { level: 19, free: { icon: '🎨', name: 'Cyber Theme', type: 'theme' }, premium: { icon: '💎', name: '750 Coins', type: 'currency' } },
             { level: 20, free: { icon: '🥈', name: 'Silver Frame', type: 'frame' }, premium: { icon: '💠', name: 'Diamond Frame', type: 'frame' } },
             { level: 21, free: { icon: '🪙', name: '300 Coins', type: 'currency' }, premium: { icon: '🌟', name: 'Starburst Effect', type: 'effect' } },
             { level: 22, free: { icon: '🎵', name: 'Victory Fanfare', type: 'sound' }, premium: { icon: '💎', name: '1000 Coins', type: 'currency' } },
-            { level: 23, free: { icon: '🪙', name: '350 Coins', type: 'currency' }, premium: { icon: '🦋', name: 'Butterfly Trail', type: 'trail' } },
+            { level: 23, free: { icon: '🪙', name: '350 Coins', type: 'currency' }, premium: { icon: '🌀', name: 'Vortex Trail', type: 'trail' } },
             { level: 24, free: { icon: '⭐', name: 'Gold Badge', type: 'badge' }, premium: { icon: '💎', name: 'Diamond Badge', type: 'badge' } },
             { level: 25, free: { icon: '🪙', name: '500 Coins', type: 'currency' }, premium: { icon: '🌈', name: 'EXCLUSIVE Rainbow Aura', type: 'aura' } },
             { level: 26, free: { icon: '🎨', name: 'Sunset Theme', type: 'theme' }, premium: { icon: '💎', name: '1500 Coins', type: 'currency' } },
             { level: 27, free: { icon: '🪙', name: '500 Coins', type: 'currency' }, premium: { icon: '👑', name: 'Royal Cursor', type: 'cursor' } },
             { level: 28, free: { icon: '🎪', name: 'Confetti Effect', type: 'effect' }, premium: { icon: '🔮', name: 'Mystic Effect', type: 'effect' } },
             { level: 29, free: { icon: '🪙', name: '750 Coins', type: 'currency' }, premium: { icon: '💎', name: '2000 Coins', type: 'currency' } },
-            { level: 30, free: { icon: '🏆', name: 'Season 1 Trophy', type: 'trophy' }, premium: { icon: '👑', name: 'LEGENDARY Irish King Title', type: 'title' } }
+            { level: 30, free: { icon: '🏆', name: 'Season 1 Trophy', type: 'trophy' }, premium: { icon: '👑', name: 'LEGENDARY Arcade Master Title', type: 'title' } }
         ];
 
         const challenges = {
@@ -677,14 +677,29 @@
             }
         }
 
-        function buyPremium() {
+        async function buyPremium() {
             if (battlePass.premium) return;
-            
+
             if (confirm('Unlock Premium Battle Pass for 500 Coins?')) {
-                battlePass.premium = true;
-                saveBattlePass();
-                updateUI();
-                showToast('Premium unlocked! Enjoy your rewards! ✨', 'success');
+                try {
+                    const resp = await fetch('api/add-coins.php', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ coins: -500, reason: 'Premium Battle Pass' })
+                    });
+                    const data = await resp.json();
+                    if (data.success) {
+                        battlePass.premium = true;
+                        saveBattlePass();
+                        updateUI();
+                        showToast('Premium unlocked! Enjoy your rewards! ✨', 'success');
+                    } else {
+                        showToast(data.error || 'Not enough coins!', 'error');
+                    }
+                } catch (e) {
+                    showToast('Failed to purchase. Try again!', 'error');
+                }
             }
         }
 
@@ -734,7 +749,7 @@
         }
 
         function updateSeasonTimer() {
-            const endDate = new Date('2026-03-31');
+            const endDate = new Date('2026-04-30');
             const now = new Date();
             const diff = endDate - now;
             const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
