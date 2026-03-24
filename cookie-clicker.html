@@ -1924,6 +1924,11 @@
         let lastMousePos = { x: 0, y: 0 };
 
         cookieEl.addEventListener('click', clickCookie);
+        cookieEl.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            clickCookie({ clientX: touch.clientX, clientY: touch.clientY });
+        }, { passive: false });
         cookieEl.addEventListener('mouseenter', () => mouseOverCookie = true);
         cookieEl.addEventListener('mouseleave', () => mouseOverCookie = false);
 

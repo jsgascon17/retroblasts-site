@@ -502,6 +502,7 @@
             hole.dataset.hole = i;
             hole.innerHTML = `<div class="mole normal"><div class="mole-face"><div class="mole-eyes"><div class="eye"></div><div class="eye"></div></div><div class="mole-nose"></div></div><div class="boss-health" style="display:none;"><div class="boss-health-fill" style="width:100%;"></div></div></div>`;
             hole.addEventListener('click', whackMole);
+            hole.addEventListener('touchstart', (e) => { e.preventDefault(); whackMole(e); }, { passive: false });
             gameBoard.appendChild(hole);
         }
         const holes = document.querySelectorAll('.hole');

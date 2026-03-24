@@ -2199,7 +2199,7 @@
             showShop();
         }
 
-        // Input
+        // Input - Click
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.overlay') &&
                 !e.target.closest('.shop-overlay') &&
@@ -2213,6 +2213,12 @@
                 throwKnife();
             }
         });
+
+        // Touch support for mobile (instant response)
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            throwKnife();
+        }, { passive: false });
 
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {

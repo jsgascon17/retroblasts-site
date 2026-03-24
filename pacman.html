@@ -1510,11 +1510,37 @@
             }
         });
 
-        // Mobile controls
-        document.getElementById('upBtn').addEventListener('click', () => { if (gameRunning) pacman.nextDir = { x: 0, y: -1 }; });
-        document.getElementById('downBtn').addEventListener('click', () => { if (gameRunning) pacman.nextDir = { x: 0, y: 1 }; });
-        document.getElementById('leftBtn').addEventListener('click', () => { if (gameRunning) pacman.nextDir = { x: -1, y: 0 }; });
-        document.getElementById('rightBtn').addEventListener('click', () => { if (gameRunning) pacman.nextDir = { x: 1, y: 0 }; });
+        // Mobile controls - use touchstart for instant response
+        const mobileControls = {
+            'upBtn': { x: 0, y: -1 },
+            'downBtn': { x: 0, y: 1 },
+            'leftBtn': { x: -1, y: 0 },
+            'rightBtn': { x: 1, y: 0 }
+        };
+        Object.entries(mobileControls).forEach(([id, dir]) => {
+            const btn = document.getElementById(id);
+            const handler = (e) => { e.preventDefault(); if (gameRunning) pacman.nextDir = dir; };
+            btn.addEventListener('touchstart', handler, { passive: false });
+            btn.addEventListener('mousedown', handler);
+        });
+
+        // Swipe controls on canvas
+        let touchStartX = 0, touchStartY = 0;
+        canvas.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        canvas.addEventListener('touchend', e => {
+            if (!gameRunning) return;
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+            const minSwipe = 30;
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > minSwipe) {
+                pacman.nextDir = dx > 0 ? { x: 1, y: 0 } : { x: -1, y: 0 };
+            } else if (Math.abs(dy) > minSwipe) {
+                pacman.nextDir = dy > 0 ? { x: 0, y: 1 } : { x: 0, y: -1 };
+            }
+        }, { passive: true });
 
         // Buttons
         document.getElementById('startBtn').addEventListener('click', startGame);
