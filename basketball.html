@@ -104,6 +104,7 @@
                 <div><span>Score:</span> <strong id="score">0</strong></div>
                 <div><span>Streak:</span> <strong id="streak" class="streak">0</strong></div>
                 <div><span>Best:</span> <strong id="best">0</strong></div>
+                <button id="submitBtn" style="background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; padding: 6px 12px; border-radius: 15px; font-size: 0.8rem; cursor: pointer;">Submit Score</button>
             </div>
             <a href="index.html" class="back-btn">← Back</a>
         </div>
@@ -439,6 +440,44 @@
         document.getElementById('startScreen').classList.add('hidden');
         resetBall();
         gameLoop();
+    });
+
+    // Submit score to leaderboard
+    document.getElementById('submitBtn').addEventListener('click', async function() {
+        const btn = this;
+        const playerScore = score;
+
+        if (playerScore === 0) {
+            btn.textContent = 'Play first!';
+            setTimeout(() => btn.textContent = 'Submit Score', 2000);
+            return;
+        }
+
+        const playerName = prompt('Enter your name for the leaderboard:', 'Anonymous') || 'Anonymous';
+
+        btn.disabled = true;
+        btn.textContent = 'Submitting...';
+
+        try {
+            const response = await fetch('leaderboard-global.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'basketball', name: playerName, score: playerScore })
+            });
+            const data = await response.json();
+            if (data.success) {
+                btn.textContent = data.isNewHighScore ? 'New High!' : 'Submitted!';
+            } else {
+                btn.textContent = 'Failed';
+            }
+        } catch (e) {
+            btn.textContent = 'Error';
+        }
+
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = 'Submit Score';
+        }, 2000);
     });
     </script>
 </body>
