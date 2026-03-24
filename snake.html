@@ -249,6 +249,47 @@
         .notification-title { color: #ffd700; font-weight: bold; font-size: 0.9rem; }
         .notification-desc { color: #aaa; font-size: 0.8rem; margin-top: 3px; }
 
+        /* Mobile D-Pad */
+        .mobile-controls {
+            display: none;
+            margin-top: 15px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        @media (max-width: 768px), (pointer: coarse) {
+            .mobile-controls { display: block; }
+            .instructions { display: none; }
+        }
+        .dpad {
+            display: grid;
+            grid-template-columns: 60px 60px 60px;
+            grid-template-rows: 60px 60px 60px;
+            gap: 5px;
+            justify-content: center;
+        }
+        .dpad-btn {
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            color: #0f0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .dpad-btn:active {
+            background: rgba(0, 255, 0, 0.5);
+            transform: scale(0.95);
+        }
+        .dpad-btn.up { grid-column: 2; grid-row: 1; }
+        .dpad-btn.left { grid-column: 1; grid-row: 2; }
+        .dpad-btn.right { grid-column: 3; grid-row: 2; }
+        .dpad-btn.down { grid-column: 2; grid-row: 3; }
+        .dpad-center { grid-column: 2; grid-row: 2; }
+
         /* Power-up indicator */
         .powerup-bar {
             display: flex;
@@ -294,6 +335,17 @@
     <p class="instructions">
         <span>WASD</span> or <span>Arrows</span> to move | <span>Space</span> pause | Power-ups spawn randomly!
     </p>
+
+    <!-- Mobile D-Pad -->
+    <div class="mobile-controls" id="mobileControls">
+        <div class="dpad">
+            <button class="dpad-btn up" data-dir="up">▲</button>
+            <button class="dpad-btn left" data-dir="left">◀</button>
+            <div class="dpad-center"></div>
+            <button class="dpad-btn right" data-dir="right">▶</button>
+            <button class="dpad-btn down" data-dir="down">▼</button>
+        </div>
+    </div>
 
     <!-- Start Screen -->
     <div class="overlay" id="startScreen">
@@ -1343,6 +1395,52 @@
                 }
             }
         });
+
+        // ============================================
+        // MOBILE TOUCH CONTROLS
+        // ============================================
+        // D-Pad buttons
+        document.querySelectorAll('.dpad-btn').forEach(btn => {
+            const handleTouch = (e) => {
+                e.preventDefault();
+                if (gameState !== 'playing') return;
+                const dir = btn.dataset.dir;
+                switch(dir) {
+                    case 'up': if (direction.y !== 1) nextDirection = { x: 0, y: -1 }; break;
+                    case 'down': if (direction.y !== -1) nextDirection = { x: 0, y: 1 }; break;
+                    case 'left': if (direction.x !== 1) nextDirection = { x: -1, y: 0 }; break;
+                    case 'right': if (direction.x !== -1) nextDirection = { x: 1, y: 0 }; break;
+                }
+            };
+            btn.addEventListener('touchstart', handleTouch, { passive: false });
+            btn.addEventListener('mousedown', handleTouch);
+        });
+
+        // Swipe controls on canvas
+        let touchStartX = 0, touchStartY = 0;
+        canvas.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        canvas.addEventListener('touchend', e => {
+            if (gameState !== 'playing') return;
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const dx = touchEndX - touchStartX;
+            const dy = touchEndY - touchStartY;
+            const minSwipe = 30;
+
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > minSwipe) {
+                // Horizontal swipe
+                if (dx > 0 && direction.x !== -1) nextDirection = { x: 1, y: 0 };
+                else if (dx < 0 && direction.x !== 1) nextDirection = { x: -1, y: 0 };
+            } else if (Math.abs(dy) > minSwipe) {
+                // Vertical swipe
+                if (dy > 0 && direction.y !== -1) nextDirection = { x: 0, y: 1 };
+                else if (dy < 0 && direction.y !== 1) nextDirection = { x: 0, y: -1 };
+            }
+        }, { passive: true });
 
         // ============================================
         // START GAME

@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tetris - St. Paddy's Arcade</title>
+    <title>Tetris - RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #0d4f21 0%, #116b35 50%, #1a8f4a 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -38,8 +38,18 @@
         .controls { margin-top: 20px; color: #98FB98; text-align: center; font-size: 0.9rem; }
 
         .mobile-controls { display: none; margin-top: 20px; gap: 10px; }
-        .mobile-btn { width: 60px; height: 60px; font-size: 1.5rem; background: rgba(255,215,0,0.3); border: 2px solid #ffd700; border-radius: 10px; color: #fff; }
-        @media (pointer: coarse) { .mobile-controls { display: flex; flex-wrap: wrap; justify-content: center; } }
+        .mobile-btn {
+            width: 65px; height: 65px; font-size: 1.8rem;
+            background: rgba(102,126,234,0.3); border: 2px solid #667eea;
+            border-radius: 12px; color: #fff; cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .mobile-btn:active { background: rgba(102,126,234,0.6); transform: scale(0.95); }
+        @media (max-width: 768px), (pointer: coarse) {
+            .mobile-controls { display: flex; flex-wrap: wrap; justify-content: center; }
+            .controls { display: none; }
+        }
 
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
         .overlay.hidden { display: none; }
@@ -449,6 +459,40 @@
         });
 
         document.getElementById('startBtn').onclick = startGame;
+
+        // Touch/swipe controls on canvas
+        let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
+        canvas.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            touchStartTime = Date.now();
+        }, { passive: true });
+
+        canvas.addEventListener('touchend', e => {
+            if (!gameRunning) return;
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const dx = touchEndX - touchStartX;
+            const dy = touchEndY - touchStartY;
+            const dt = Date.now() - touchStartTime;
+            const minSwipe = 30;
+
+            // Quick tap = rotate
+            if (Math.abs(dx) < 10 && Math.abs(dy) < 10 && dt < 200) {
+                rotate();
+                return;
+            }
+
+            if (Math.abs(dx) > Math.abs(dy)) {
+                // Horizontal swipe
+                if (dx > minSwipe) moveRight();
+                else if (dx < -minSwipe) moveLeft();
+            } else {
+                // Vertical swipe
+                if (dy > minSwipe * 2) hardDrop();
+                else if (dy > minSwipe) softDrop();
+            }
+        }, { passive: true });
 
         // Leaderboard submission
         document.getElementById('submitScoreBtn').addEventListener('click', async function() {
