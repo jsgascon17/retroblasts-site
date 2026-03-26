@@ -1165,6 +1165,10 @@
         }
 
         function gameOver(won) {
+            // Add XP to pet
+            if (typeof PetSystem !== "undefined" && PetSystem.loaded) {
+                PetSystem.addPetXP(Math.max(5, Math.floor(score / 10)));
+            }
             gameRunning = false;
             boss = null; bossActive = false;
             playSound('gameOver');

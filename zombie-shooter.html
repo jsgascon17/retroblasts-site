@@ -3018,6 +3018,10 @@
         }
 
         function gameOver() {
+            // Add XP to pet
+            if (typeof PetSystem !== "undefined" && PetSystem.loaded) {
+                PetSystem.addPetXP(Math.max(5, Math.floor(score / 10)));
+            }
             // Second Wind perk - revive once per run
             if (saveData.perks.includes('secondWind') && !player.usedSecondWind) {
                 player.usedSecondWind = true;

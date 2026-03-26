@@ -2249,6 +2249,10 @@
         }
 
         function gameOver() {
+            // Add XP to pet
+            if (typeof PetSystem !== "undefined" && PetSystem.loaded) {
+                PetSystem.addPetXP(Math.max(5, Math.floor(wave * 5)));
+            }
             gameState = 'gameover';
             playSound('gameOver');
 
@@ -2361,6 +2365,7 @@
             hoverTile = null;
         });
 
+// Touch support for mobile        canvas.addEventListener('touchmove', e => {            e.preventDefault();            const rect = canvas.getBoundingClientRect();            const touch = e.touches[0];            const mx = touch.clientX - rect.left;            const my = touch.clientY - rect.top;            hoverTile = {                x: Math.floor(mx / TILE_W),                y: Math.floor(my / TILE_H)            };        }, { passive: false });        canvas.addEventListener('touchstart', e => {            const rect = canvas.getBoundingClientRect();            const touch = e.touches[0];            const mx = touch.clientX - rect.left;            const my = touch.clientY - rect.top;            hoverTile = {                x: Math.floor(mx / TILE_W),                y: Math.floor(my / TILE_H)            };        });
         canvas.addEventListener('click', e => {
             if (gameState !== 'playing') return;
             const rect = canvas.getBoundingClientRect();

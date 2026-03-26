@@ -388,6 +388,11 @@
         function gameOver() {
             gameRunning = false;
 
+            // Add XP to pet
+            if (typeof PetSystem !== "undefined" && PetSystem.loaded) {
+                PetSystem.addPetXP(Math.max(5, Math.floor(score / 10)));
+            }
+
             // Submit duel score if in a challenge
             if (typeof DuelSystem !== "undefined" && DuelSystem.isInDuel()) {
                 DuelSystem.submitScore(score);

@@ -7,7 +7,7 @@ const THEMES = {
     'stpatricks': {
         name: "St. Patrick's Day",
         icon: '☘️',
-        dates: { start: '03-01', end: '03-31' },
+        dates: { start: '03-15', end: '03-18' },
         colors: {
             primary: '#0d4f21',
             secondary: '#116b35',
@@ -73,7 +73,7 @@ const THEMES = {
     'valentines': {
         name: "Valentine's Day",
         icon: '💕',
-        dates: { start: '02-01', end: '02-28' },
+        dates: { start: '02-10', end: '02-16' },
         colors: {
             primary: '#4a0d2e',
             secondary: '#6b1b4e',
@@ -95,7 +95,7 @@ const THEMES = {
     'easter': {
         name: 'Easter',
         icon: '🐰',
-        dates: { start: '03-15', end: '04-30' },
+        dates: { start: '04-01', end: '04-21' },
         colors: {
             primary: '#e8f5e9',
             secondary: '#c8e6c9',
@@ -159,25 +159,25 @@ const THEMES = {
         `
     },
     'default': {
-        name: 'Classic Arcade',
+        name: 'RetroBlasts',
         icon: '🕹️',
         dates: null,
         colors: {
-            primary: '#1a1a2e',
-            secondary: '#16213e',
-            accent: '#e94560',
-            gold: '#ffd700',
+            primary: '#1a1a3e',
+            secondary: '#2a1f5e',
+            accent: '#00d4ff',
+            gold: '#a855f7',
             text: '#fff'
         },
-        gradient: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-        particles: ['⭐', '🎮', '🕹️', '👾'],
+        gradient: 'linear-gradient(135deg, #1a1a3e 0%, #2a1f5e 50%, #1a0a4e 100%)',
+        particles: ['⭐', '🎮', '🕹️', '👾', '🚀'],
         css: `
-            body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
-            .header, header { background: rgba(26, 26, 46, 0.7); border-bottom: 3px solid #e94560; }
-            .game-card, .card { background: rgba(233, 69, 96, 0.1); border: 2px solid rgba(233, 69, 96, 0.4); }
-            .game-card:hover, .card:hover { border-color: #e94560; box-shadow: 0 0 30px rgba(233, 69, 96, 0.4); }
-            h1, h2, .title { text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 0 0 20px rgba(233, 69, 96, 0.5); }
-            .btn, button { background: linear-gradient(180deg, #e94560, #c73e54); color: #fff; }
+            body { background: linear-gradient(135deg, #1a1a3e 0%, #2a1f5e 50%, #1a0a4e 100%); }
+            .header, header { background: rgba(26, 26, 62, 0.7); border-bottom: 3px solid #00d4ff; }
+            .game-card, .card { background: rgba(0, 212, 255, 0.1); border: 2px solid rgba(168, 85, 247, 0.4); }
+            .game-card:hover, .card:hover { border-color: #00d4ff; box-shadow: 0 0 30px rgba(0, 212, 255, 0.4); }
+            h1, h2, .title { text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 0 0 20px rgba(168, 85, 247, 0.5); }
+            .btn, button { background: linear-gradient(180deg, #a855f7, #7c3aed); color: #fff; }
         `
     }
 };
@@ -295,6 +295,11 @@ function getThemes() {
 
 // Initialize theme on page load
 function initTheme() {
+    // Force reset outdated theme cache (v2 update)
+    const storedTheme = localStorage.getItem('arcadeTheme');
+    if (storedTheme === 'stpatricks' && getSeasonalTheme() !== 'stpatricks') {
+        localStorage.removeItem('arcadeTheme');
+    }
     const themeId = getCurrentTheme();
     applyTheme(themeId);
 }

@@ -971,6 +971,10 @@
         }
 
         function endGame() {
+            // Add XP to pet
+            if (typeof PetSystem !== "undefined" && PetSystem.loaded) {
+                PetSystem.addPetXP(Math.max(5, Math.floor(score / 5)));
+            }
             gameRunning = false;
             gamePaused = false;
             clearInterval(gameTimer);

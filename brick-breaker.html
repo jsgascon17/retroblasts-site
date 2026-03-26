@@ -141,6 +141,7 @@
         }
         .powerup-indicator.active { display: block; }
     </style>
+<script src="js/pets.js"></script>
 </head>
 <body>
     <h1>🧱 Brick Breaker</h1>
@@ -592,6 +593,10 @@
         }
 
         function gameOver() {
+            // Add XP to pet
+            if (typeof PetSystem !== "undefined" && PetSystem.loaded) {
+                PetSystem.addPetXP(Math.max(5, Math.floor(score / 10)));
+            }
             gameRunning = false;
 
             document.getElementById('finalScore').textContent = score;

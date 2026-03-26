@@ -1018,6 +1018,10 @@
         }
 
         function endGame() {
+            // Add XP to pet
+            if (typeof PetSystem !== "undefined" && PetSystem.loaded) {
+                PetSystem.addPetXP(Math.max(5, playerScore + (opponentScore > playerScore ? 0 : 10)));
+            }
             gameState = 'gameOver';
 
             const won = myScore > oppScore;

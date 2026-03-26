@@ -289,6 +289,10 @@
         }
 
         function showGameOver() {
+            // Add XP to pet
+            if (typeof PetSystem !== "undefined" && PetSystem.loaded) {
+                PetSystem.addPetXP(Math.max(5, Math.floor(score / 20)));
+            }
             document.getElementById('finalScore').textContent = score;
 
             // Submit duel score if in a challenge

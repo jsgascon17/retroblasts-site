@@ -1123,6 +1123,10 @@
         }
 
         function die() {
+            // Add XP to pet
+            if (typeof PetSystem !== "undefined" && PetSystem.loaded) {
+                PetSystem.addPetXP(Math.max(5, Math.floor(level * 10)));
+            }
             if (player.dead) return;
             player.dead = true;
             gameRunning = false; // Stop the game loop to prevent speedup on retry

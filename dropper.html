@@ -537,6 +537,10 @@
         }
 
         function die() {
+            // Add XP to pet
+            if (typeof PetSystem !== "undefined" && PetSystem.loaded) {
+                PetSystem.addPetXP(Math.max(5, Math.floor(score / 10)));
+            }
             gameRunning = false;
             deaths++;
             deathsEl.textContent = deaths;
