@@ -223,7 +223,7 @@
             </div>
 
             <div class="inventory-section">
-                <h2>📦 Loot Boxes</h2>
+                <h2 style="display: flex; justify-content: space-between; align-items: center;">📦 Loot Boxes <button id="openAllBtn" onclick="openAllBoxes()" style="font-size: 0.8rem; padding: 8px 16px; background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; border: none; border-radius: 15px; cursor: pointer; font-weight: bold;">Open All</button></h2>
                 <div class="items-grid" id="lootboxGrid"></div>
             </div>
             
@@ -520,6 +520,148 @@
             list.innerHTML = html;
         }
         
+        async function openAllBoxes() {
+
+            var boxes = userData.inventory && userData.inventory.lootboxes ? userData.inventory.lootboxes : [];
+
+            if (boxes.length === 0) {
+
+                alert("No loot boxes to open!");
+
+                return;
+
+            }
+
+            
+
+            var btn = document.getElementById("openAllBtn");
+
+            btn.disabled = true;
+
+            btn.textContent = "Opening...";
+
+            
+
+            var rewards = [];
+
+            var totalBoxes = boxes.length;
+
+            
+
+            for (var i = 0; i < totalBoxes; i++) {
+
+                try {
+
+                    var resp = await fetch("api/lootbox.php", {
+
+                        method: "POST",
+
+                        credentials: "include",
+
+                        headers: { "Content-Type": "application/json" },
+
+                        body: JSON.stringify({ action: "openFromInventory", boxType: boxes[0] })
+
+                    });
+
+                    var data = await resp.json();
+
+                    
+
+                    if (data.success) {
+
+                        userData.coins = data.coins;
+
+                        userData.inventory = data.inventory;
+
+                        boxes = userData.inventory.lootboxes || [];
+
+                        rewards.push(data.reward);
+
+                        btn.textContent = "Opening... (" + (i + 1) + "/" + totalBoxes + ")";
+
+                    }
+
+                } catch (e) {
+
+                    console.log("Error opening box", e);
+
+                }
+
+            }
+
+            
+
+            updateDisplay();
+
+            btn.disabled = false;
+
+            btn.textContent = "Open All";
+
+            
+
+            if (rewards.length > 0) {
+
+                showAllResults(rewards);
+
+            }
+
+        }
+
+        
+
+        function showAllResults(rewards) {
+
+            var summary = {};
+
+            rewards.forEach(function(r) {
+
+                var key = r.name;
+
+                summary[key] = summary[key] || { count: 0, icon: r.icon, rarity: r.rarity };
+
+                summary[key].count++;
+
+            });
+
+            
+
+            var html = "<div style='max-height: 60vh; overflow-y: auto; padding: 10px;'>";
+
+            for (var name in summary) {
+
+                var item = summary[name];
+
+                html += "<div style='display: flex; align-items: center; gap: 10px; margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px;'>";
+
+                html += "<span style='font-size: 1.5rem;'>" + item.icon + "</span>";
+
+                html += "<span class='result-" + item.rarity + "'>" + name + "</span>";
+
+                html += "<span style='margin-left: auto; color: #ffd700;'>x" + item.count + "</span>";
+
+                html += "</div>";
+
+            }
+
+            html += "</div>";
+
+            
+
+            var modal = document.getElementById("resultModal");
+
+            document.getElementById("resultIcon").textContent = "🎉";
+
+            document.getElementById("resultTitle").textContent = "Opened " + rewards.length + " boxes!";
+
+            document.getElementById("resultTitle").className = "title result-legendary";
+
+            document.getElementById("resultDesc").innerHTML = html;
+
+            modal.classList.add("active");
+
+        }
+
         async function openBox(type) {
             try {
                 var resp = await fetch("api/lootbox.php", {
