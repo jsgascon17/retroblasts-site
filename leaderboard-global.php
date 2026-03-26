@@ -41,6 +41,7 @@ $validGames = [
     '2048' => ['name' => '2048', 'icon' => '🔢', 'maxScore' => 1000000],
     'tetris' => ['name' => 'Tetris', 'icon' => '🧱', 'maxScore' => 10000000],
     'minesweeper' => ['name' => 'Minesweeper', 'icon' => '💣', 'maxScore' => 100000],
+    'brick-breaker' => ['name' => 'Brick Breaker', 'icon' => '🧱', 'maxScore' => 1000000],
 ];
 
 $dataDir = __DIR__ . '/leaderboards/';
