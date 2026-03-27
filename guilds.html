@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guilds - RetroBlasts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a3e 0%, #2a1f5e 50%, #1a0a4e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; }
+        .header-btns { display: flex; gap: 15px; align-items: center; }
+        .back-btn, .create-btn {
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold; border: none; cursor: pointer;
+        }
+        .back-btn { background: rgba(255,255,255,0.1); color: #fff; }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        .create-btn { background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; font-size: 1rem; }
+        .create-btn:hover { transform: scale(1.05); }
+
+        .my-guild-banner {
+            background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(124,58,237,0.2));
+            border: 2px solid rgba(168,85,247,0.4);
+            border-radius: 15px; padding: 20px; margin-bottom: 25px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 15px;
+        }
+        .my-guild-info { display: flex; align-items: center; gap: 15px; }
+        .my-guild-icon { font-size: 2.5rem; }
+        .my-guild-name { font-size: 1.3rem; font-weight: bold; }
+        .my-guild-tag { color: #a855f7; font-size: 0.9rem; }
+        .my-guild-level { color: #ffd700; }
+        .view-guild-btn {
+            padding: 10px 25px; background: linear-gradient(135deg, #a855f7, #7c3aed);
+            color: #fff; border: none; border-radius: 20px; font-weight: bold; cursor: pointer;
+            text-decoration: none;
+        }
+
+        .search-section {
+            margin-bottom: 25px; display: flex; gap: 15px; flex-wrap: wrap;
+        }
+        .search-input {
+            flex: 1; min-width: 200px; padding: 12px 20px;
+            border: 2px solid rgba(255,255,255,0.1); border-radius: 25px;
+            background: rgba(0,0,0,0.3); color: #fff; font-size: 1rem;
+        }
+        .search-input:focus { outline: none; border-color: #a855f7; }
+        .search-input::placeholder { color: #666; }
+
+        .guilds-list { display: flex; flex-direction: column; gap: 15px; }
+
+        .guild-card {
+            background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px; padding: 20px;
+            display: flex; align-items: center; gap: 20px;
+            transition: all 0.3s; cursor: pointer;
+        }
+        .guild-card:hover { border-color: rgba(168,85,247,0.5); transform: translateX(5px); }
+
+        .guild-icon { font-size: 3rem; min-width: 60px; text-align: center; }
+        .guild-info { flex: 1; }
+        .guild-name { font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .guild-tag { background: rgba(168,85,247,0.3); padding: 2px 8px; border-radius: 5px; font-size: 0.8rem; }
+        .guild-desc { color: #888; font-size: 0.9rem; margin: 5px 0; }
+        .guild-stats { display: flex; gap: 20px; font-size: 0.85rem; color: #aaa; }
+        .guild-stat { display: flex; align-items: center; gap: 5px; }
+
+        .guild-level { text-align: center; min-width: 80px; }
+        .level-badge { font-size: 1.5rem; font-weight: bold; color: #ffd700; }
+        .level-name { font-size: 0.75rem; color: #888; }
+
+        .join-btn {
+            padding: 10px 25px; border: none; border-radius: 20px;
+            font-weight: bold; cursor: pointer; transition: all 0.2s;
+            background: linear-gradient(135deg, #4ade80, #22c55e); color: #000;
+        }
+        .join-btn:hover { transform: scale(1.05); }
+        .join-btn:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; }
+
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9); z-index: 1000;
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a3e, #2a1f5e);
+            border-radius: 20px; padding: 30px; max-width: 500px; width: 100%;
+            border: 2px solid rgba(168,85,247,0.3);
+        }
+        .modal-title { font-size: 1.5rem; margin-bottom: 25px; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #aaa; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 12px 15px;
+            border: 2px solid rgba(255,255,255,0.1); border-radius: 10px;
+            background: rgba(0,0,0,0.3); color: #fff; font-size: 1rem;
+        }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #a855f7; }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .form-group small { color: #666; font-size: 0.8rem; }
+
+        .icon-picker { display: flex; flex-wrap: wrap; gap: 10px; }
+        .icon-option {
+            font-size: 1.5rem; padding: 10px; border-radius: 10px;
+            background: rgba(0,0,0,0.3); cursor: pointer; transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .icon-option:hover { background: rgba(168,85,247,0.2); }
+        .icon-option.selected { border-color: #a855f7; background: rgba(168,85,247,0.3); }
+
+        .cost-info {
+            text-align: center; padding: 15px; background: rgba(255,215,0,0.1);
+            border-radius: 10px; margin-bottom: 20px;
+        }
+        .cost-info .amount { font-size: 1.3rem; color: #ffd700; font-weight: bold; }
+
+        .modal-btns { display: flex; gap: 15px; justify-content: center; }
+        .modal-btns button {
+            padding: 12px 30px; border: none; border-radius: 25px;
+            font-weight: bold; font-size: 1rem; cursor: pointer;
+        }
+        .btn-cancel { background: rgba(255,255,255,0.1); color: #fff; }
+        .btn-create { background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: #666; }
+        .empty-state .icon { font-size: 4rem; margin-bottom: 15px; }
+
+        .login-prompt {
+            text-align: center; padding: 60px 20px;
+            background: rgba(0,0,0,0.3); border-radius: 20px;
+        }
+        .login-prompt h2 { margin-bottom: 15px; }
+        .login-prompt p { color: #888; margin-bottom: 25px; }
+        .login-prompt .btn {
+            display: inline-block; padding: 15px 40px;
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            color: #fff; text-decoration: none; border-radius: 25px; font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .guild-card { flex-direction: column; text-align: center; }
+            .guild-stats { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏰 Guilds</h1>
+            <div class="header-btns">
+                <button class="create-btn" onclick="showCreateModal()" id="createBtn" style="display:none;">+ Create Guild</button>
+                <a href="index.html" class="back-btn">← Back</a>
+            </div>
+        </div>
+
+        <div id="myGuildBanner" style="display:none;"></div>
+
+        <div class="search-section">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search guilds..." oninput="filterGuilds()">
+        </div>
+
+        <div id="content">
+            <div class="login-prompt">
+                <h2>🔒 Login Required</h2>
+                <p>Log in to browse and join guilds!</p>
+                <a href="login.html" class="btn">Login / Register</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <h2 class="modal-title">🏰 Create Guild</h2>
+            <div class="cost-info">
+                <div>Creation Cost</div>
+                <div class="amount">🪙 500 coins</div>
+            </div>
+            <div class="form-group">
+                <label>Guild Name</label>
+                <input type="text" id="guildName" maxlength="24" placeholder="Epic Warriors">
+                <small>3-24 characters</small>
+            </div>
+            <div class="form-group">
+                <label>Guild Tag</label>
+                <input type="text" id="guildTag" maxlength="5" placeholder="EPIC" style="text-transform: uppercase;">
+                <small>2-5 characters, letters/numbers only</small>
+            </div>
+            <div class="form-group">
+                <label>Icon</label>
+                <div class="icon-picker" id="iconPicker"></div>
+            </div>
+            <div class="form-group">
+                <label>Description (optional)</label>
+                <textarea id="guildDesc" maxlength="200" placeholder="Tell others about your guild..."></textarea>
+            </div>
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="hideCreateModal()">Cancel</button>
+                <button class="btn-create" onclick="createGuild()">Create Guild</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ICONS = ["⚔️", "🛡️", "🏰", "🐉", "🦁", "🐺", "🦅", "🔥", "⚡", "💎", "👑", "🌟", "🎮", "🚀", "💀", "🎯"];
+        const LEVEL_NAMES = ["", "Starter", "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Legendary"];
+
+        let userData = null;
+        let myGuild = null;
+        let allGuilds = [];
+        let selectedIcon = "⚔️";
+
+        async function init() {
+            const picker = document.getElementById("iconPicker");
+            ICONS.forEach(icon => {
+                const opt = document.createElement("div");
+                opt.className = "icon-option" + (icon === selectedIcon ? " selected" : "");
+                opt.textContent = icon;
+                opt.onclick = () => selectIcon(icon);
+                picker.appendChild(opt);
+            });
+
+            try {
+                const resp = await fetch("api/user.php?action=profile", { credentials: "include" });
+                const data = await resp.json();
+                if (data.success) {
+                    userData = data;
+                    document.getElementById("createBtn").style.display = "block";
+                    await loadMyGuild();
+                    await loadGuilds();
+                }
+            } catch (e) {}
+        }
+
+        async function loadMyGuild() {
+            try {
+                const resp = await fetch("api/guilds.php?action=myGuild", { credentials: "include" });
+                const data = await resp.json();
+                if (data.success && data.guild) {
+                    myGuild = data.guild;
+                    renderMyGuild();
+                }
+            } catch (e) {}
+        }
+
+        function renderMyGuild() {
+            const banner = document.getElementById("myGuildBanner");
+            banner.style.display = "flex";
+            banner.innerHTML = '<div class="my-guild-info"><div class="my-guild-icon">' + myGuild.icon + '</div><div><div class="my-guild-name">' + myGuild.name + '</div><div class="my-guild-tag">[' + myGuild.tag + '] • <span class="my-guild-level">Level ' + myGuild.level + ' ' + LEVEL_NAMES[myGuild.level] + '</span></div></div></div><a href="guild.html?id=' + myGuild.id + '" class="view-guild-btn">View My Guild</a>';
+            document.getElementById("createBtn").style.display = "none";
+        }
+
+        async function loadGuilds() {
+            try {
+                const resp = await fetch("api/guilds.php?action=list", { credentials: "include" });
+                const data = await resp.json();
+                if (data.success) {
+                    allGuilds = data.guilds;
+                    renderGuilds(allGuilds);
+                }
+            } catch (e) {}
+        }
+
+        function renderGuilds(guilds) {
+            const content = document.getElementById("content");
+            if (guilds.length === 0) {
+                content.innerHTML = '<div class="empty-state"><div class="icon">🏰</div><h2>No Guilds Found</h2><p>Be the first to create a guild!</p></div>';
+                return;
+            }
+
+            let html = '<div class="guilds-list">';
+            guilds.forEach(guild => {
+                const isFull = guild.memberCount >= guild.maxMembers;
+                const isMyGuild = myGuild && myGuild.id === guild.id;
+                const joinBtn = isMyGuild || myGuild ? '' : '<button class="join-btn" onclick="event.stopPropagation(); joinGuild(\'' + guild.id + '\')" ' + (isFull || !guild.isOpen ? 'disabled' : '') + '>' + (isFull ? 'Full' : (guild.isOpen ? 'Join' : 'Closed')) + '</button>';
+
+                html += '<div class="guild-card" onclick="viewGuild(\'' + guild.id + '\')">' +
+                    '<div class="guild-icon">' + guild.icon + '</div>' +
+                    '<div class="guild-info">' +
+                    '<div class="guild-name">' + guild.name + ' <span class="guild-tag">[' + guild.tag + ']</span></div>' +
+                    '<div class="guild-desc">' + (guild.description || 'No description') + '</div>' +
+                    '<div class="guild-stats">' +
+                    '<div class="guild-stat">👥 ' + guild.memberCount + '/' + guild.maxMembers + '</div>' +
+                    '<div class="guild-stat">⭐ ' + guild.xp.toLocaleString() + ' XP</div>' +
+                    '<div class="guild-stat">' + (guild.isOpen ? '🔓 Open' : '🔒 Invite Only') + '</div>' +
+                    '</div></div>' +
+                    '<div class="guild-level"><div class="level-badge">Lv.' + guild.level + '</div><div class="level-name">' + LEVEL_NAMES[guild.level] + '</div></div>' +
+                    joinBtn + '</div>';
+            });
+            html += '</div>';
+            content.innerHTML = html;
+        }
+
+        function filterGuilds() {
+            const query = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = allGuilds.filter(g => g.name.toLowerCase().includes(query) || g.tag.toLowerCase().includes(query));
+            renderGuilds(filtered);
+        }
+
+        function viewGuild(id) { window.location.href = "guild.html?id=" + id; }
+
+        async function joinGuild(id) {
+            if (myGuild) { alert("You are already in a guild!"); return; }
+            try {
+                const resp = await fetch("api/guilds.php", {
+                    method: "POST", credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "join", guildId: id })
+                });
+                const data = await resp.json();
+                if (data.success) { window.location.href = "guild.html?id=" + id; }
+                else { alert(data.error); }
+            } catch (e) { alert("Failed to join guild"); }
+        }
+
+        function selectIcon(icon) {
+            selectedIcon = icon;
+            document.querySelectorAll(".icon-option").forEach(opt => {
+                opt.classList.toggle("selected", opt.textContent === icon);
+            });
+        }
+
+        function showCreateModal() {
+            if (myGuild) { alert("You are already in a guild!"); return; }
+            document.getElementById("createModal").classList.add("active");
+        }
+        function hideCreateModal() { document.getElementById("createModal").classList.remove("active"); }
+
+        async function createGuild() {
+            const name = document.getElementById("guildName").value.trim();
+            const tag = document.getElementById("guildTag").value.trim().toUpperCase();
+            const desc = document.getElementById("guildDesc").value.trim();
+
+            if (name.length < 3) { alert("Guild name must be at least 3 characters"); return; }
+            if (tag.length < 2) { alert("Guild tag must be at least 2 characters"); return; }
+
+            try {
+                const resp = await fetch("api/guilds.php", {
+                    method: "POST", credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "create", name: name, tag: tag, icon: selectedIcon, description: desc })
+                });
+                const data = await resp.json();
+                if (data.success) { window.location.href = "guild.html?id=" + data.guildId; }
+                else { alert(data.error); }
+            } catch (e) { alert("Failed to create guild"); }
+        }
+
+        init();
+    </script>
+    <script src="themes.js"></script>
+</body>
+</html>

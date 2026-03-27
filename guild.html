@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guild - RetroBlasts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a3e 0%, #2a1f5e 50%, #1a0a4e 100%);
+            min-height: 100vh; color: #fff; padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+        .back-btn { background: rgba(255,255,255,0.1); color: #fff; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: bold; }
+
+        .guild-banner {
+            background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(124,58,237,0.1));
+            border: 2px solid rgba(168,85,247,0.3); border-radius: 20px;
+            padding: 30px; margin-bottom: 25px; text-align: center;
+        }
+        .guild-icon { font-size: 5rem; margin-bottom: 15px; }
+        .guild-name { font-size: 2rem; font-weight: bold; margin-bottom: 5px; }
+        .guild-tag { color: #a855f7; font-size: 1.2rem; margin-bottom: 10px; }
+        .guild-desc { color: #aaa; margin-bottom: 20px; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+        .guild-stats { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-bottom: 20px; }
+        .stat-box { text-align: center; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: #ffd700; }
+        .stat-label { font-size: 0.85rem; color: #888; }
+
+        .xp-bar-container { max-width: 400px; margin: 0 auto 20px; }
+        .xp-bar { background: rgba(255,255,255,0.1); border-radius: 10px; height: 20px; overflow: hidden; }
+        .xp-fill { height: 100%; background: linear-gradient(90deg, #a855f7, #7c3aed); border-radius: 10px; transition: width 0.5s; }
+        .xp-text { font-size: 0.85rem; color: #888; margin-top: 5px; }
+
+        .perks-row { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .perk { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; color: #4ade80; }
+
+        .action-btns { display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+        .action-btn { padding: 10px 25px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .btn-leave { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+        .btn-settings { background: rgba(255,255,255,0.1); color: #fff; }
+
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab { padding: 10px 25px; background: rgba(255,255,255,0.05); border: 2px solid transparent; border-radius: 25px; cursor: pointer; font-weight: bold; }
+        .tab.active { border-color: #a855f7; background: rgba(168,85,247,0.2); }
+
+        .section { background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; }
+
+        .members-list { display: flex; flex-direction: column; gap: 10px; }
+        .member-row { display: flex; align-items: center; gap: 15px; padding: 12px 15px; background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .member-role { font-size: 1.2rem; min-width: 30px; }
+        .member-info { flex: 1; }
+        .member-name { font-weight: bold; }
+        .member-stats { font-size: 0.85rem; color: #888; }
+        .member-xp { color: #ffd700; font-weight: bold; }
+        .member-actions { display: flex; gap: 8px; }
+        .member-actions button { padding: 5px 12px; border: none; border-radius: 15px; font-size: 0.8rem; cursor: pointer; }
+        .btn-promote { background: #4ade80; color: #000; }
+        .btn-demote { background: #fbbf24; color: #000; }
+        .btn-kick { background: #ef4444; color: #fff; }
+
+        .chat-container { height: 400px; display: flex; flex-direction: column; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 15px; }
+        .chat-msg { margin-bottom: 10px; }
+        .chat-msg .author { color: #a855f7; font-weight: bold; }
+        .chat-msg .time { color: #666; font-size: 0.75rem; margin-left: 10px; }
+        .chat-msg .text { color: #ddd; margin-top: 3px; }
+        .chat-input-row { display: flex; gap: 10px; }
+        .chat-input { flex: 1; padding: 12px 15px; border: 2px solid rgba(255,255,255,0.1); border-radius: 25px; background: rgba(0,0,0,0.3); color: #fff; }
+        .chat-input:focus { outline: none; border-color: #a855f7; }
+        .chat-send { padding: 12px 25px; background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; }
+
+        .not-member { text-align: center; padding: 40px; }
+        .not-member .btn { padding: 12px 30px; background: linear-gradient(135deg, #4ade80, #22c55e); color: #000; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="guilds.html" class="back-btn">← All Guilds</a>
+        </div>
+
+        <div id="content">
+            <div style="text-align: center; padding: 60px;"><h2>Loading...</h2></div>
+        </div>
+    </div>
+
+    <script>
+        const LEVEL_NAMES = ["", "Starter", "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Legendary"];
+        let guild = null;
+        let myRole = null;
+        let isMember = false;
+        let currentTab = "members";
+        let username = null;
+
+        async function init() {
+            const params = new URLSearchParams(window.location.search);
+            const guildId = params.get("id");
+            if (!guildId) { window.location.href = "guilds.html"; return; }
+
+            try {
+                const userResp = await fetch("api/user.php?action=profile", { credentials: "include" });
+                const userData = await userResp.json();
+                if (userData.success) username = userData.username;
+            } catch (e) {}
+
+            await loadGuild(guildId);
+        }
+
+        async function loadGuild(guildId) {
+            try {
+                const resp = await fetch("api/guilds.php?action=get&id=" + guildId, { credentials: "include" });
+                const data = await resp.json();
+
+                if (!data.success) {
+                    document.getElementById("content").innerHTML = '<div style="text-align:center;padding:60px;"><h2>Guild not found</h2><a href="guilds.html">Back to Guilds</a></div>';
+                    return;
+                }
+
+                guild = data.guild;
+                isMember = guild.members.some(m => m.username === username);
+                if (isMember) {
+                    const me = guild.members.find(m => m.username === username);
+                    myRole = me ? me.role : null;
+                }
+
+                renderGuild();
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        function renderGuild() {
+            const xpPercent = Math.min(100, (guild.xp / guild.xpForNext) * 100);
+            const perks = guild.perks;
+
+            let html = '<div class="guild-banner">' +
+                '<div class="guild-icon">' + guild.icon + '</div>' +
+                '<div class="guild-name">' + guild.name + '</div>' +
+                '<div class="guild-tag">[' + guild.tag + '] • Level ' + guild.level + ' ' + LEVEL_NAMES[guild.level] + '</div>' +
+                '<div class="guild-desc">' + (guild.description || 'No description') + '</div>' +
+                '<div class="guild-stats">' +
+                '<div class="stat-box"><div class="stat-value">' + guild.memberCount + '/' + guild.maxMembers + '</div><div class="stat-label">Members</div></div>' +
+                '<div class="stat-box"><div class="stat-value">' + guild.xp.toLocaleString() + '</div><div class="stat-label">Total XP</div></div>' +
+                '<div class="stat-box"><div class="stat-value">' + (guild.isOpen ? '🔓' : '🔒') + '</div><div class="stat-label">' + (guild.isOpen ? 'Open' : 'Invite Only') + '</div></div>' +
+                '</div>' +
+                '<div class="xp-bar-container"><div class="xp-bar"><div class="xp-fill" style="width:' + xpPercent + '%"></div></div>' +
+                '<div class="xp-text">' + guild.xp.toLocaleString() + ' / ' + guild.xpForNext.toLocaleString() + ' XP to Level ' + (guild.level + 1) + '</div></div>' +
+                '<div class="perks-row">' +
+                (perks.coinBonus > 0 ? '<div class="perk">+' + perks.coinBonus + '% Coins</div>' : '') +
+                (perks.xpBonus > 0 ? '<div class="perk">+' + perks.xpBonus + '% XP</div>' : '') +
+                '<div class="perk">' + perks.maxMembers + ' Max Members</div>' +
+                '</div>';
+
+            if (isMember) {
+                html += '<div class="action-btns">' +
+                    '<button class="action-btn btn-leave" onclick="leaveGuild()">Leave Guild</button>' +
+                    (myRole === 'leader' ? '<button class="action-btn btn-settings" onclick="showSettings()">⚙️ Settings</button>' : '') +
+                    '</div>';
+            }
+            html += '</div>';
+
+            if (isMember) {
+                html += '<div class="tabs">' +
+                    '<div class="tab ' + (currentTab === 'members' ? 'active' : '') + '" onclick="switchTab(\'members\')">👥 Members</div>' +
+                    '<div class="tab ' + (currentTab === 'chat' ? 'active' : '') + '" onclick="switchTab(\'chat\')">💬 Chat</div>' +
+                    '</div>';
+
+                html += '<div class="section">';
+                if (currentTab === 'members') {
+                    html += renderMembers();
+                } else {
+                    html += renderChat();
+                }
+                html += '</div>';
+            } else {
+                html += '<div class="section not-member">' +
+                    '<h2>You are not a member of this guild</h2>' +
+                    '<p style="color:#888;margin:15px 0;">Join to access chat and contribute XP!</p>' +
+                    (guild.isOpen && guild.memberCount < guild.maxMembers ?
+                        '<button class="btn" onclick="joinGuild()">Join Guild</button>' :
+                        '<p style="color:#666;">' + (guild.memberCount >= guild.maxMembers ? 'Guild is full' : 'Guild is invite only') + '</p>') +
+                    '</div>';
+            }
+
+            document.getElementById("content").innerHTML = html;
+
+            if (isMember && currentTab === 'chat') {
+                const msgs = document.getElementById("chatMessages");
+                if (msgs) msgs.scrollTop = msgs.scrollHeight;
+            }
+        }
+
+        function renderMembers() {
+            const isLeader = myRole === 'leader';
+            const isOfficer = myRole === 'officer' || isLeader;
+
+            let html = '<div class="members-list">';
+            guild.members.forEach(m => {
+                const roleIcon = m.role === 'leader' ? '👑' : (m.role === 'officer' ? '⭐' : '👤');
+                const canManage = isOfficer && m.username !== username && (isLeader || m.role === 'member');
+
+                html += '<div class="member-row">' +
+                    '<div class="member-role">' + roleIcon + '</div>' +
+                    '<div class="member-info">' +
+                    '<div class="member-name">' + m.username + (m.username === username ? ' (You)' : '') + '</div>' +
+                    '<div class="member-stats">Joined: ' + m.joined.split(' ')[0] + '</div>' +
+                    '</div>' +
+                    '<div class="member-xp">' + (m.xpContributed || 0).toLocaleString() + ' XP</div>';
+
+                if (canManage) {
+                    html += '<div class="member-actions">';
+                    if (isLeader) {
+                        if (m.role === 'member') {
+                            html += '<button class="btn-promote" onclick="promote(\'' + m.username + '\')">Promote</button>';
+                        } else if (m.role === 'officer') {
+                            html += '<button class="btn-demote" onclick="demote(\'' + m.username + '\')">Demote</button>';
+                            html += '<button class="btn-promote" onclick="promote(\'' + m.username + '\')">Make Leader</button>';
+                        }
+                    }
+                    html += '<button class="btn-kick" onclick="kick(\'' + m.username + '\')">Kick</button>';
+                    html += '</div>';
+                }
+                html += '</div>';
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function renderChat() {
+            let html = '<div class="chat-container">' +
+                '<div class="chat-messages" id="chatMessages">';
+
+            if (guild.chat && guild.chat.length > 0) {
+                guild.chat.forEach(msg => {
+                    html += '<div class="chat-msg">' +
+                        '<span class="author">' + msg.username + '</span>' +
+                        '<span class="time">' + msg.time + '</span>' +
+                        '<div class="text">' + escapeHtml(msg.message) + '</div>' +
+                        '</div>';
+                });
+            } else {
+                html += '<div style="color:#666;text-align:center;padding:20px;">No messages yet. Say hi!</div>';
+            }
+
+            html += '</div>' +
+                '<div class="chat-input-row">' +
+                '<input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." maxlength="200" onkeypress="if(event.key===\'Enter\')sendChat()">' +
+                '<button class="chat-send" onclick="sendChat()">Send</button>' +
+                '</div></div>';
+            return html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            renderGuild();
+        }
+
+        async function joinGuild() {
+            try {
+                const resp = await fetch("api/guilds.php", {
+                    method: "POST", credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "join", guildId: guild.id })
+                });
+                const data = await resp.json();
+                if (data.success) location.reload();
+                else alert(data.error);
+            } catch (e) { alert("Failed to join"); }
+        }
+
+        async function leaveGuild() {
+            if (!confirm("Are you sure you want to leave this guild?")) return;
+            try {
+                const resp = await fetch("api/guilds.php", {
+                    method: "POST", credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "leave" })
+                });
+                const data = await resp.json();
+                if (data.success) window.location.href = "guilds.html";
+                else alert(data.error);
+            } catch (e) { alert("Failed to leave"); }
+        }
+
+        async function sendChat() {
+            const input = document.getElementById("chatInput");
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            try {
+                const resp = await fetch("api/guilds.php", {
+                    method: "POST", credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "chat", message: msg })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    input.value = "";
+                    await loadGuild(guild.id);
+                } else alert(data.error);
+            } catch (e) { alert("Failed to send"); }
+        }
+
+        async function promote(user) {
+            if (!confirm("Promote " + user + "?")) return;
+            await memberAction("promote", user);
+        }
+
+        async function demote(user) {
+            if (!confirm("Demote " + user + "?")) return;
+            await memberAction("demote", user);
+        }
+
+        async function kick(user) {
+            if (!confirm("Kick " + user + " from the guild?")) return;
+            await memberAction("kick", user);
+        }
+
+        async function memberAction(action, user) {
+            try {
+                const resp = await fetch("api/guilds.php", {
+                    method: "POST", credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: action, username: user })
+                });
+                const data = await resp.json();
+                if (data.success) location.reload();
+                else alert(data.error);
+            } catch (e) { alert("Action failed"); }
+        }
+
+        function showSettings() {
+            alert("Settings coming soon!");
+        }
+
+        init();
+        setInterval(() => { if (isMember && currentTab === 'chat') loadGuild(guild.id); }, 10000);
+    </script>
+    <script src="themes.js"></script>
+</body>
+</html>

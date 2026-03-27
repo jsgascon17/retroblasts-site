@@ -91,6 +91,9 @@ writeUsers($data);
 // Update daily challenge progress
 updateChallengeProgress($username, $game, $score, $coinsEarned);
 
+// Update guild XP
+updateGuildXP($username, $score);
+
 echo json_encode([
     "success" => true,
     "coinsEarned" => $coinsEarned,
@@ -203,4 +206,32 @@ function updateChallengeProgress($username, $game, $score, $coins) {
     }
     
     file_put_contents($challengeFile, json_encode($challengeData, JSON_PRETTY_PRINT));
+}
+
+function updateGuildXP($username, $score) {
+    global $usersFile;
+    $users = json_decode(file_get_contents($usersFile), true);
+    $guildId = $users["users"][$username]["guildId"] ?? null;
+    
+    if (!$guildId) return;
+    
+    $guildsFile = __DIR__ . "/../data/guilds.json";
+    if (!file_exists($guildsFile)) return;
+    
+    $guilds = json_decode(file_get_contents($guildsFile), true);
+    if (!isset($guilds["guilds"][$guildId])) return;
+    
+    // Add XP to guild (1 XP per 10 score)
+    $xpGain = max(1, floor($score / 10));
+    $guilds["guilds"][$guildId]["xp"] += $xpGain;
+    
+    // Update member contribution
+    foreach ($guilds["guilds"][$guildId]["members"] as &$m) {
+        if ($m["username"] === $username) {
+            $m["xpContributed"] = ($m["xpContributed"] ?? 0) + $xpGain;
+            break;
+        }
+    }
+    
+    file_put_contents($guildsFile, json_encode($guilds, JSON_PRETTY_PRINT));
 }
