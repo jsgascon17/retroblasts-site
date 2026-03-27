@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Challenges - RetroBlasts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a3e 0%, #2a1f5e 50%, #1a0a4e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .header h1 { font-size: 2rem; }
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        
+        .coins-display {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            color: #000;
+            font-size: 1.1rem;
+        }
+        
+        .timer-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+        }
+        .timer-section h2 { color: #00d4ff; margin-bottom: 10px; }
+        .timer {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .login-prompt {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+        }
+        .login-prompt h2 { margin-bottom: 15px; }
+        .login-prompt p { color: #888; margin-bottom: 25px; }
+        .login-prompt .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+        
+        .challenges-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .challenge-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+        }
+        .challenge-card:hover {
+            border-color: rgba(0,212,255,0.3);
+        }
+        .challenge-card.completed {
+            border-color: #4ade80;
+            background: rgba(74,222,128,0.1);
+        }
+        .challenge-card.claimed {
+            opacity: 0.6;
+        }
+        
+        .challenge-icon {
+            font-size: 3rem;
+            min-width: 70px;
+            text-align: center;
+        }
+        
+        .challenge-info { flex: 1; }
+        .challenge-desc {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .challenge-progress {
+            margin-bottom: 8px;
+        }
+        .progress-bar {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #a855f7);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        .challenge-card.completed .progress-fill {
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+        }
+        .progress-text {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .challenge-reward {
+            text-align: center;
+            min-width: 100px;
+        }
+        .reward-amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .reward-label {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        
+        .claim-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: #000;
+        }
+        .claim-btn:hover { transform: scale(1.05); }
+        .claim-btn:disabled {
+            background: rgba(255,255,255,0.1);
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .claim-btn.claimed {
+            background: rgba(255,255,255,0.1);
+            color: #4ade80;
+        }
+        
+        .difficulty {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .difficulty.easy { background: #4ade80; color: #000; }
+        .difficulty.medium { background: #fbbf24; color: #000; }
+        .difficulty.hard { background: #ef4444; color: #fff; }
+        
+        .game-icons {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .game-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        
+        @media (max-width: 600px) {
+            .challenge-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            .challenge-reward { margin-top: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Daily Challenges</h1>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div class="coins-display">🪙 <span id="coinCount">0</span></div>
+                <a href="index.html" class="back-btn">← Back</a>
+            </div>
+        </div>
+        
+        <div class="timer-section">
+            <h2>⏰ Resets In</h2>
+            <div class="timer" id="resetTimer">--:--:--</div>
+        </div>
+        
+        <div id="content">
+            <div class="login-prompt">
+                <h2>🔒 Login Required</h2>
+                <p>Log in to view and complete daily challenges!</p>
+                <a href="login.html" class="btn">Login / Register</a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/pets.js"></script>
+    <script>
+        let userData = null;
+        let challenges = [];
+        let progress = [];
+        let completed = [];
+        let claimed = [];
+        
+        const GAME_ICONS = {
+            "snake": "🐍",
+            "tetris": "🧱",
+            "pacman": "👻",
+            "flappy-bird": "🐦",
+            "2048": "🔢",
+            "brick-breaker": "🧱",
+            "space-invaders": "👾",
+            "asteroids": "☄️",
+            "geometry-dash": "🔷",
+            "crossy-road": "🐔"
+        };
+        
+        async function init() {
+            updateTimer();
+            setInterval(updateTimer, 1000);
+            
+            try {
+                const resp = await fetch("api/user.php?action=profile", { credentials: "include" });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    userData = data;
+                    document.getElementById("coinCount").textContent = data.coins || 0;
+                    await loadChallenges();
+                }
+            } catch (e) {
+                console.log("Not logged in");
+            }
+        }
+        
+        async function loadChallenges() {
+            try {
+                const resp = await fetch("api/challenges.php?action=get", { credentials: "include" });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    challenges = data.challenges;
+                    progress = data.progress;
+                    completed = data.completed;
+                    claimed = data.claimed;
+                    renderChallenges();
+                }
+            } catch (e) {
+                console.log("Failed to load challenges", e);
+            }
+        }
+        
+        function renderChallenges() {
+            const content = document.getElementById("content");
+            
+            let html = "<div class=\"challenges-list\">";
+            
+            challenges.forEach((challenge, i) => {
+                const prog = Math.min(progress[i], challenge.target);
+                const percent = Math.min(100, (prog / challenge.target) * 100);
+                const isCompleted = completed[i];
+                const isClaimed = claimed[i];
+                
+                let difficulty = "easy";
+                if (challenge.reward > 100) difficulty = "hard";
+                else if (challenge.reward > 60) difficulty = "medium";
+                
+                let icon = "🎮";
+                if (challenge.game && GAME_ICONS[challenge.game]) {
+                    icon = GAME_ICONS[challenge.game];
+                } else if (challenge.type === "variety") {
+                    icon = "🎲";
+                } else if (challenge.type === "total_score") {
+                    icon = "🏆";
+                } else if (challenge.type === "earn_coins") {
+                    icon = "💰";
+                } else if (challenge.type === "play_any") {
+                    icon = "🕹️";
+                }
+                
+                html += "<div class=\"challenge-card " + (isCompleted ? "completed " : "") + (isClaimed ? "claimed" : "") + "\">";
+                html += "<div class=\"challenge-icon\">" + icon + "</div>";
+                html += "<div class=\"challenge-info\">";
+                html += "<div class=\"challenge-desc\">" + challenge.desc;
+                html += "<span class=\"difficulty " + difficulty + "\">" + difficulty.toUpperCase() + "</span>";
+                html += "</div>";
+                html += "<div class=\"challenge-progress\">";
+                html += "<div class=\"progress-bar\"><div class=\"progress-fill\" style=\"width: " + percent + "%\"></div></div>";
+                html += "<div class=\"progress-text\">" + prog + " / " + challenge.target + (isCompleted ? " ✓ Complete!" : "") + "</div>";
+                html += "</div>";
+                html += "</div>";
+                html += "<div class=\"challenge-reward\">";
+                html += "<div class=\"reward-amount\">🪙 " + challenge.reward + "</div>";
+                html += "<div class=\"reward-label\">REWARD</div>";
+                if (isClaimed) {
+                    html += "<button class=\"claim-btn claimed\" disabled>Claimed ✓</button>";
+                } else if (isCompleted) {
+                    html += "<button class=\"claim-btn\" onclick=\"claimReward(" + i + ")\">Claim!</button>";
+                } else {
+                    html += "<button class=\"claim-btn\" disabled>Locked</button>";
+                }
+                html += "</div>";
+                html += "</div>";
+            });
+            
+            html += "</div>";
+            content.innerHTML = html;
+        }
+        
+        async function claimReward(id) {
+            try {
+                const resp = await fetch("api/challenges.php", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "claim", id: id })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    claimed[id] = true;
+                    document.getElementById("coinCount").textContent = data.newBalance;
+                    renderChallenges();
+                    
+                    // Show reward animation
+                    showRewardPopup(challenges[id].reward);
+                } else {
+                    alert(data.error);
+                }
+            } catch (e) {
+                alert("Failed to claim reward");
+            }
+        }
+        
+        function showRewardPopup(amount) {
+            const popup = document.createElement("div");
+            popup.innerHTML = "🎉 +" + amount + " coins!";
+            popup.style.cssText = "position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 20px 40px; border-radius: 15px; font-size: 1.5rem; font-weight: bold; z-index: 10000; animation: popIn 0.3s ease;";
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 2000);
+        }
+        
+        function updateTimer() {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            
+            const diff = tomorrow - now;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            document.getElementById("resetTimer").textContent = 
+                String(hours).padStart(2, "0") + ":" + 
+                String(minutes).padStart(2, "0") + ":" + 
+                String(seconds).padStart(2, "0");
+        }
+        
+        init();
+    </script>
+    <script src="themes.js"></script>
+</body>
+</html>
