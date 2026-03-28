@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace - RetroBlasts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        .coins-display {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 12px 25px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .tab.active {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .filter-group label { color: #888; }
+        .filter-group select {
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .listings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .listing-card {
+            background: rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .listing-card:hover { border-color: rgba(255,215,0,0.3); transform: translateY(-3px); }
+        .listing-card.mine { border-color: #8b5cf6; }
+
+        .listing-item {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .listing-icon { font-size: 3rem; margin-bottom: 10px; }
+        .listing-name { font-weight: bold; font-size: 1.1rem; }
+        .listing-rarity {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        .rarity-common { background: #9ca3af; color: #000; }
+        .rarity-uncommon { background: #22c55e; color: #000; }
+        .rarity-rare { background: #3b82f6; color: #fff; }
+        .rarity-epic { background: #8b5cf6; color: #fff; }
+        .rarity-legendary { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; }
+
+        .listing-seller {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 15px;
+        }
+
+        .listing-price {
+            background: rgba(255,215,0,0.1);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .listing-price .amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .listing-price .label { font-size: 0.8rem; color: #888; }
+
+        .listing-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .listing-btn.buy {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+        }
+        .listing-btn.buy:hover { transform: scale(1.02); }
+        .listing-btn.cancel {
+            background: rgba(239,68,68,0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        /* Sell Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 { color: #ffd700; }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .sell-items {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .sell-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .sell-item:hover { background: rgba(255,255,255,0.1); }
+        .sell-item.selected { background: rgba(34,197,94,0.2); border: 1px solid #22c55e; }
+        .sell-item-icon { font-size: 2rem; }
+        .sell-item-info { flex: 1; }
+        .sell-item-name { font-weight: bold; }
+        .sell-item-rarity { font-size: 0.85rem; color: #888; }
+
+        .price-input {
+            margin-bottom: 20px;
+        }
+        .price-input label { display: block; margin-bottom: 8px; color: #888; }
+        .price-input input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-size: 1.1rem;
+        }
+        .price-range { font-size: 0.85rem; color: #888; margin-top: 5px; }
+
+        .sell-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .sell-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .login-prompt {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+        }
+        .login-prompt h2 { margin-bottom: 15px; }
+        .login-prompt p { color: #888; margin-bottom: 25px; }
+        .login-prompt .btn-login {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+
+        .fee-notice {
+            background: rgba(255,215,0,0.1);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .no-listings {
+            text-align: center;
+            padding: 60px;
+            color: #888;
+        }
+        .no-listings .icon { font-size: 4rem; margin-bottom: 15px; }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 10px;
+            z-index: 2000;
+            animation: slideUp 0.3s ease;
+        }
+        .toast.success { background: #22c55e; color: #fff; }
+        .toast.error { background: #ef4444; color: #fff; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .pagination button {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+        }
+        .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .pagination button.active { background: #ffd700; color: #000; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏪 Marketplace</h1>
+            <div class="coins-display" id="coinsDisplay">🪙 0</div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">🏠 Home</a>
+                <a href="inventory.html" class="nav-link">🎒 Inventory</a>
+            </div>
+        </div>
+
+        <div id="loginPrompt" class="login-prompt" style="display: none;">
+            <h2>🔐 Login Required</h2>
+            <p>Sign in to buy and sell items!</p>
+            <a href="login.html?redirect=marketplace.html" class="btn-login">Login / Register</a>
+        </div>
+
+        <div id="mainContent" style="display: none;">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('browse')">🛒 Browse</button>
+                <button class="tab" onclick="showTab('myListings')">📋 My Listings</button>
+                <button class="tab" onclick="openSellModal()">💰 Sell Item</button>
+            </div>
+
+            <div class="fee-notice">
+                💡 Marketplace fee: 5% on all sales
+            </div>
+
+            <div id="browseTab">
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Type:</label>
+                        <select id="filterType" onchange="loadListings()">
+                            <option value="all">All Items</option>
+                            <option value="lootbox">Lootboxes</option>
+                            <option value="card">Trading Cards</option>
+                            <option value="booster">Boosters</option>
+                            <option value="petEgg">Pet Eggs</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Rarity:</label>
+                        <select id="filterRarity" onchange="loadListings()">
+                            <option value="all">All Rarities</option>
+                            <option value="common">Common</option>
+                            <option value="uncommon">Uncommon</option>
+                            <option value="rare">Rare</option>
+                            <option value="epic">Epic</option>
+                            <option value="legendary">Legendary</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Sort:</label>
+                        <select id="filterSort" onchange="loadListings()">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="price_low">Price: Low to High</option>
+                            <option value="price_high">Price: High to Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="listings-grid" id="listingsGrid"></div>
+                <div class="pagination" id="pagination"></div>
+            </div>
+
+            <div id="myListingsTab" style="display: none;">
+                <div class="listings-grid" id="myListingsGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sell Modal -->
+    <div class="modal" id="sellModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💰 Sell an Item</h2>
+                <button class="modal-close" onclick="closeSellModal()">&times;</button>
+            </div>
+
+            <div class="sell-items" id="sellItems"></div>
+
+            <div class="price-input">
+                <label>Set Your Price:</label>
+                <input type="number" id="sellPrice" placeholder="Enter price in coins" min="1">
+                <div class="price-range" id="priceRange"></div>
+            </div>
+
+            <button class="sell-btn" id="sellBtn" onclick="listItem()" disabled>
+                List Item for Sale
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentTab = 'browse';
+        let currentPage = 1;
+        let totalPages = 1;
+        let priceRanges = {};
+        let selectedItem = null;
+        let myInventory = { lootboxes: [], tradingCards: [], boosters: [], petEggs: [] };
+
+        async function init() {
+            try {
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await resp.json();
+
+                if (!data.loggedIn) {
+                    document.getElementById('loginPrompt').style.display = 'block';
+                    return;
+                }
+
+                currentUser = data.user;
+                document.getElementById('mainContent').style.display = 'block';
+                document.getElementById('coinsDisplay').textContent = `🪙 ${(currentUser.coins || 0).toLocaleString()}`;
+
+                // Load price ranges
+                const prResp = await fetch('api/marketplace.php?action=priceRanges');
+                const prData = await prResp.json();
+                if (prData.success) priceRanges = prData.priceRanges;
+
+                loadListings();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadListings() {
+            const type = document.getElementById('filterType').value;
+            const rarity = document.getElementById('filterRarity').value;
+            const sort = document.getElementById('filterSort').value;
+
+            const resp = await fetch(`api/marketplace.php?action=listings&type=${type}&rarity=${rarity}&sort=${sort}&page=${currentPage}`, { credentials: 'include' });
+            const data = await resp.json();
+
+            if (!data.success) return;
+
+            totalPages = data.pages;
+            renderListings(data.listings, 'listingsGrid');
+            renderPagination();
+        }
+
+        async function loadMyListings() {
+            const resp = await fetch('api/marketplace.php?action=myListings', { credentials: 'include' });
+            const data = await resp.json();
+
+            if (!data.success) return;
+            renderListings(data.listings, 'myListingsGrid', true);
+        }
+
+        function getItemIcon(type) {
+            switch (type) {
+                case 'lootbox': return '📦';
+                case 'card': return '🃏';
+                case 'booster': return '⚡';
+                case 'petEgg': return '🥚';
+                default: return '❓';
+            }
+        }
+
+        function renderListings(listings, containerId, isMine = false) {
+            const grid = document.getElementById(containerId);
+
+            if (listings.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-listings" style="grid-column: 1/-1;">
+                        <div class="icon">🏪</div>
+                        <p>${isMine ? 'You have no active listings' : 'No items found'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = listings.map(l => `
+                <div class="listing-card ${l.seller === currentUser.username ? 'mine' : ''}">
+                    <div class="listing-item">
+                        <div class="listing-icon">${getItemIcon(l.itemType)}</div>
+                        <div class="listing-name">${l.itemType.charAt(0).toUpperCase() + l.itemType.slice(1)}</div>
+                        <span class="listing-rarity rarity-${l.rarity}">${l.rarity}</span>
+                    </div>
+                    <div class="listing-seller">
+                        <span>👤</span>
+                        <span>${l.seller}</span>
+                    </div>
+                    <div class="listing-price">
+                        <div class="amount">🪙 ${l.price.toLocaleString()}</div>
+                        <div class="label">coins</div>
+                    </div>
+                    ${l.seller === currentUser.username ?
+                        `<button class="listing-btn cancel" onclick="cancelListing('${l.id}')">Cancel Listing</button>` :
+                        `<button class="listing-btn buy" onclick="buyItem('${l.id}', ${l.price})">Buy Now</button>`
+                    }
+                </div>
+            `).join('');
+        }
+
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            html += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>◀ Prev</button>`;
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 2) {
+                    html += `<button class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+                } else if (Math.abs(i - currentPage) === 3) {
+                    html += `<span>...</span>`;
+                }
+            }
+
+            html += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next ▶</button>`;
+            pagination.innerHTML = html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            loadListings();
+        }
+
+        function showTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach((t, i) => {
+                t.classList.toggle('active', (tab === 'browse' && i === 0) || (tab === 'myListings' && i === 1));
+            });
+
+            document.getElementById('browseTab').style.display = tab === 'browse' ? 'block' : 'none';
+            document.getElementById('myListingsTab').style.display = tab === 'myListings' ? 'block' : 'none';
+
+            if (tab === 'myListings') loadMyListings();
+        }
+
+        async function openSellModal() {
+            // Load user inventory
+            const resp = await fetch('api/inventory.php?action=all', { credentials: 'include' });
+            const data = await resp.json();
+
+            if (!data.success) {
+                showToast('Failed to load inventory', 'error');
+                return;
+            }
+
+            myInventory = data.inventory || {};
+            selectedItem = null;
+            renderSellItems();
+            document.getElementById('sellPrice').value = '';
+            document.getElementById('priceRange').textContent = '';
+            document.getElementById('sellBtn').disabled = true;
+            document.getElementById('sellModal').classList.add('active');
+        }
+
+        function closeSellModal() {
+            document.getElementById('sellModal').classList.remove('active');
+        }
+
+        function renderSellItems() {
+            const container = document.getElementById('sellItems');
+            let items = [];
+
+            // Lootboxes
+            (myInventory.lootboxes || []).forEach((l, i) => {
+                items.push({
+                    type: 'lootbox',
+                    index: i,
+                    rarity: l.type,
+                    name: `${l.type.charAt(0).toUpperCase() + l.type.slice(1)} Lootbox`,
+                    icon: '📦'
+                });
+            });
+
+            // Cards
+            (myInventory.tradingCards || []).forEach((c, i) => {
+                items.push({
+                    type: 'card',
+                    index: i,
+                    rarity: c.rarity,
+                    name: `${c.rarity.charAt(0).toUpperCase() + c.rarity.slice(1)} Card`,
+                    icon: '🃏'
+                });
+            });
+
+            // Boosters
+            (myInventory.boosters || []).forEach((b, i) => {
+                items.push({
+                    type: 'booster',
+                    index: i,
+                    rarity: 'rare',
+                    name: b.type,
+                    icon: '⚡'
+                });
+            });
+
+            // Pet eggs
+            (myInventory.petEggs || []).forEach((p, i) => {
+                items.push({
+                    type: 'petEgg',
+                    index: i,
+                    rarity: p.rarity || 'rare',
+                    name: `${(p.rarity || 'rare').charAt(0).toUpperCase() + (p.rarity || 'rare').slice(1)} Pet Egg`,
+                    icon: '🥚'
+                });
+            });
+
+            if (items.length === 0) {
+                container.innerHTML = '<div class="no-listings"><p>No items to sell</p></div>';
+                return;
+            }
+
+            container.innerHTML = items.map((item, i) => `
+                <div class="sell-item" onclick="selectItem(${i}, '${item.type}', ${item.index}, '${item.rarity}')">
+                    <div class="sell-item-icon">${item.icon}</div>
+                    <div class="sell-item-info">
+                        <div class="sell-item-name">${item.name}</div>
+                        <div class="sell-item-rarity">${item.rarity}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectItem(displayIndex, type, itemIndex, rarity) {
+            document.querySelectorAll('.sell-item').forEach((el, i) => {
+                el.classList.toggle('selected', i === displayIndex);
+            });
+
+            selectedItem = { type, index: itemIndex, rarity };
+
+            const range = priceRanges[rarity] || { min: 10, max: 1000 };
+            document.getElementById('priceRange').textContent = `Price range for ${rarity}: ${range.min} - ${range.max} coins`;
+            document.getElementById('sellPrice').min = range.min;
+            document.getElementById('sellPrice').max = range.max;
+
+            updateSellButton();
+        }
+
+        function updateSellButton() {
+            const price = parseInt(document.getElementById('sellPrice').value) || 0;
+            const btn = document.getElementById('sellBtn');
+
+            if (!selectedItem || price < 1) {
+                btn.disabled = true;
+                return;
+            }
+
+            const range = priceRanges[selectedItem.rarity] || { min: 10, max: 1000 };
+            btn.disabled = price < range.min || price > range.max;
+        }
+
+        document.getElementById('sellPrice').addEventListener('input', updateSellButton);
+
+        async function listItem() {
+            if (!selectedItem) return;
+
+            const price = parseInt(document.getElementById('sellPrice').value);
+
+            try {
+                const resp = await fetch('api/marketplace.php?action=list', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        itemType: selectedItem.type,
+                        itemIndex: selectedItem.index,
+                        price: price
+                    })
+                });
+
+                const data = await resp.json();
+
+                if (data.success) {
+                    showToast('Item listed! 🎉', 'success');
+                    closeSellModal();
+                    loadListings();
+                } else {
+                    showToast(data.error || 'Failed to list item', 'error');
+                }
+            } catch (e) {
+                showToast('Error listing item', 'error');
+            }
+        }
+
+        async function buyItem(listingId, price) {
+            if (!confirm(`Buy this item for ${price} coins?`)) return;
+
+            try {
+                const resp = await fetch('api/marketplace.php?action=buy', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ listingId })
+                });
+
+                const data = await resp.json();
+
+                if (data.success) {
+                    showToast('Item purchased! 🎉', 'success');
+                    document.getElementById('coinsDisplay').textContent = `🪙 ${data.newBalance.toLocaleString()}`;
+                    loadListings();
+                } else {
+                    showToast(data.error || 'Failed to buy item', 'error');
+                }
+            } catch (e) {
+                showToast('Error buying item', 'error');
+            }
+        }
+
+        async function cancelListing(listingId) {
+            if (!confirm('Cancel this listing and return the item?')) return;
+
+            try {
+                const resp = await fetch('api/marketplace.php?action=cancel', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ listingId })
+                });
+
+                const data = await resp.json();
+
+                if (data.success) {
+                    showToast('Listing cancelled', 'success');
+                    loadListings();
+                    if (currentTab === 'myListings') loadMyListings();
+                } else {
+                    showToast(data.error || 'Failed to cancel', 'error');
+                }
+            } catch (e) {
+                showToast('Error cancelling listing', 'error');
+            }
+        }
+
+        function showToast(msg, type) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        init();
+    </script>
+</body>
+</html>

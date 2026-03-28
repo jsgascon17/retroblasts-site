@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crafting - RetroBlasts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+
+        .inventory-bar {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .inv-item {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .inv-item .icon { font-size: 1.5rem; }
+        .inv-item .count { font-weight: bold; color: #ffd700; }
+        .inv-item .label { font-size: 0.8rem; color: #888; }
+
+        .recipes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .recipe-card {
+            background: rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .recipe-card:hover { border-color: rgba(255,215,0,0.3); }
+        .recipe-card.can-craft { border-color: #22c55e; }
+        .recipe-card.can-craft:hover { border-color: #16a34a; }
+
+        .recipe-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .recipe-icon {
+            font-size: 2.5rem;
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .recipe-name { font-size: 1.2rem; font-weight: bold; }
+        .recipe-desc { font-size: 0.85rem; color: #888; }
+
+        .ingredients {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .ingredients-title {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        .ingredient {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .ingredient:last-child { border-bottom: none; }
+        .ingredient-name { display: flex; align-items: center; gap: 8px; }
+        .ingredient-count { font-weight: bold; }
+        .ingredient-count.enough { color: #22c55e; }
+        .ingredient-count.not-enough { color: #ef4444; }
+
+        .result {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,140,0,0.1));
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .result-icon { font-size: 1.5rem; }
+        .result-text { font-weight: bold; color: #ffd700; }
+
+        .craft-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .craft-btn.available {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+        }
+        .craft-btn.available:hover { transform: scale(1.02); }
+        .craft-btn.unavailable {
+            background: rgba(255,255,255,0.1);
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .login-prompt {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+        }
+        .login-prompt h2 { margin-bottom: 15px; }
+        .login-prompt p { color: #888; margin-bottom: 25px; }
+        .login-prompt .btn-login {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 10px;
+            z-index: 2000;
+            animation: slideUp 0.3s ease;
+        }
+        .toast.success { background: #22c55e; color: #fff; }
+        .toast.error { background: #ef4444; color: #fff; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .category-tab {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .category-tab.active {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔨 Crafting</h1>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">🏠 Home</a>
+                <a href="inventory.html" class="nav-link">🎒 Inventory</a>
+            </div>
+        </div>
+
+        <div id="loginPrompt" class="login-prompt" style="display: none;">
+            <h2>🔐 Login Required</h2>
+            <p>Sign in to craft items!</p>
+            <a href="login.html?redirect=crafting.html" class="btn-login">Login / Register</a>
+        </div>
+
+        <div id="mainContent" style="display: none;">
+            <div class="inventory-bar" id="inventoryBar"></div>
+
+            <div class="category-tabs">
+                <button class="category-tab active" onclick="filterCategory('all')">All</button>
+                <button class="category-tab" onclick="filterCategory('lootbox')">Lootboxes</button>
+                <button class="category-tab" onclick="filterCategory('card')">Cards</button>
+                <button class="category-tab" onclick="filterCategory('booster')">Boosters</button>
+                <button class="category-tab" onclick="filterCategory('pet')">Pets</button>
+                <button class="category-tab" onclick="filterCategory('special')">Special</button>
+            </div>
+
+            <div class="recipes-grid" id="recipesGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let recipes = {};
+        let inventory = {};
+        let currentCategory = 'all';
+
+        async function init() {
+            try {
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await resp.json();
+
+                if (!data.loggedIn) {
+                    document.getElementById('loginPrompt').style.display = 'block';
+                    return;
+                }
+
+                currentUser = data.user;
+                document.getElementById('mainContent').style.display = 'block';
+
+                await loadData();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadData() {
+            const [recipesResp, invResp] = await Promise.all([
+                fetch('api/crafting.php?action=recipes', { credentials: 'include' }),
+                fetch('api/crafting.php?action=inventory', { credentials: 'include' })
+            ]);
+
+            const recipesData = await recipesResp.json();
+            const invData = await invResp.json();
+
+            if (recipesData.success) recipes = recipesData.recipes;
+            if (invData.success) inventory = invData.inventory;
+
+            renderInventory();
+            renderRecipes();
+        }
+
+        function renderInventory() {
+            const bar = document.getElementById('inventoryBar');
+            bar.innerHTML = `
+                <div class="inv-item">
+                    <div class="icon">🪙</div>
+                    <div class="count">${inventory.coins?.toLocaleString() || 0}</div>
+                    <div class="label">Coins</div>
+                </div>
+                <div class="inv-item">
+                    <div class="icon">📦</div>
+                    <div class="count">${(inventory.lootboxes?.common || 0) + (inventory.lootboxes?.rare || 0) + (inventory.lootboxes?.epic || 0) + (inventory.lootboxes?.legendary || 0)}</div>
+                    <div class="label">Lootboxes</div>
+                </div>
+                <div class="inv-item">
+                    <div class="icon">🃏</div>
+                    <div class="count">${(inventory.cards?.common || 0) + (inventory.cards?.uncommon || 0) + (inventory.cards?.rare || 0) + (inventory.cards?.epic || 0) + (inventory.cards?.legendary || 0)}</div>
+                    <div class="label">Cards</div>
+                </div>
+                <div class="inv-item">
+                    <div class="icon">⚡</div>
+                    <div class="count">${inventory.boosters || 0}</div>
+                    <div class="label">Boosters</div>
+                </div>
+                <div class="inv-item">
+                    <div class="icon">🥚</div>
+                    <div class="count">${inventory.petEggs || 0}</div>
+                    <div class="label">Pet Eggs</div>
+                </div>
+            `;
+        }
+
+        function getRecipeCategory(recipe) {
+            const resultType = recipe.result.type;
+            if (resultType === 'lootbox') return 'lootbox';
+            if (resultType === 'card') return 'card';
+            if (resultType === 'booster') return 'booster';
+            if (resultType === 'petEgg') return 'pet';
+            return 'special';
+        }
+
+        function getIngredientIcon(type, subtype) {
+            if (type === 'lootbox') return '📦';
+            if (type === 'card') return '🃏';
+            if (type === 'booster') return '⚡';
+            if (type === 'coins') return '🪙';
+            return '❓';
+        }
+
+        function getIngredientName(ing) {
+            if (ing.type === 'coins') return `${ing.count} Coins`;
+            const rarity = ing.rarity || ing.id || '';
+            return `${rarity.charAt(0).toUpperCase() + rarity.slice(1)} ${ing.type}`;
+        }
+
+        function renderRecipes() {
+            const grid = document.getElementById('recipesGrid');
+            grid.innerHTML = '';
+
+            Object.entries(recipes).forEach(([id, recipe]) => {
+                const category = getRecipeCategory(recipe);
+                if (currentCategory !== 'all' && category !== currentCategory) return;
+
+                const card = document.createElement('div');
+                card.className = `recipe-card ${recipe.canCraft ? 'can-craft' : ''}`;
+
+                let ingredientsHtml = '';
+                recipe.ingredientsStatus.forEach(ing => {
+                    const icon = getIngredientIcon(ing.type, ing.subtype);
+                    const name = getIngredientName(ing);
+                    ingredientsHtml += `
+                        <div class="ingredient">
+                            <span class="ingredient-name">${icon} ${name}</span>
+                            <span class="ingredient-count ${ing.enough ? 'enough' : 'not-enough'}">
+                                ${ing.have}/${ing.need}
+                            </span>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="recipe-header">
+                        <div class="recipe-icon">${recipe.icon}</div>
+                        <div>
+                            <div class="recipe-name">${recipe.name}</div>
+                            ${recipe.description ? `<div class="recipe-desc">${recipe.description}</div>` : ''}
+                        </div>
+                    </div>
+                    <div class="ingredients">
+                        <div class="ingredients-title">Required Materials:</div>
+                        ${ingredientsHtml}
+                    </div>
+                    <div class="result">
+                        <span class="result-icon">${recipe.icon}</span>
+                        <span class="result-text">= ${recipe.result.count}x ${recipe.name}</span>
+                    </div>
+                    <button class="craft-btn ${recipe.canCraft ? 'available' : 'unavailable'}"
+                            onclick="craft('${id}')" ${recipe.canCraft ? '' : 'disabled'}>
+                        ${recipe.canCraft ? '🔨 Craft' : '❌ Missing Materials'}
+                    </button>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function filterCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderRecipes();
+        }
+
+        async function craft(recipeId) {
+            try {
+                const resp = await fetch('api/crafting.php?action=craft', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ recipe: recipeId })
+                });
+
+                const data = await resp.json();
+
+                if (data.success) {
+                    showToast(`Crafted ${data.crafted}! 🎉`, 'success');
+                    await loadData();
+                } else {
+                    showToast(data.error || 'Crafting failed', 'error');
+                }
+            } catch (e) {
+                showToast('Error crafting item', 'error');
+            }
+        }
+
+        function showToast(msg, type) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        init();
+    </script>
+</body>
+</html>

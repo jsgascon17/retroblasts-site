@@ -4,555 +4,420 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Leaderboards - Game Arcade</title>
+    <title>Leaderboards - RetroBlasts</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Comic Sans MS', 'Chalkboard', -apple-system, sans-serif;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: #fff;
             min-height: 100vh;
+            color: #fff;
             padding: 20px;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
         }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
+        .header h1 { font-size: 2rem; color: #ffd700; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-link {
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; font-weight: bold;
         }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
 
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
-        }
-
-        .subtitle {
-            color: #98FB98;
-            font-size: 1.1rem;
-        }
-
-        .back-btn {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: rgba(255,255,255,0.9);
-            color: #1a1a2e;
-            padding: 10px 20px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
-            z-index: 100;
-        }
-
-        .back-btn:hover {
-            transform: scale(1.05);
-        }
-
-        /* Game Filter Tabs */
-        .game-tabs {
+        .leaderboard-tabs {
             display: flex;
-            flex-wrap: wrap;
             gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
             justify-content: center;
-            margin-bottom: 30px;
         }
-
-        .game-tab {
-            padding: 10px 20px;
-            background: rgba(0,0,0,0.3);
-            border: 2px solid rgba(255,215,0,0.3);
-            border-radius: 25px;
-            color: #98FB98;
+        .lb-tab {
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff;
             cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.9rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
         }
-
-        .game-tab:hover {
+        .lb-tab:hover { border-color: rgba(255,215,0,0.3); }
+        .lb-tab.active {
+            background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,140,0,0.2));
             border-color: #ffd700;
-            color: #fff;
         }
+        .lb-tab .icon { font-size: 1.3rem; }
 
-        .game-tab.active {
-            background: linear-gradient(135deg, #228B22, #32CD32);
-            border-color: #ffd700;
-            color: #fff;
+        .my-rank-card {
+            background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.2));
+            border: 2px solid #8b5cf6;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
-
-        /* Leaderboard Grid */
-        .leaderboards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
-        }
-
-        .leaderboard-card {
-            background: rgba(0,0,0,0.4);
-            border-radius: 20px;
-            padding: 25px;
-            border: 3px solid rgba(255,215,0,0.3);
-            backdrop-filter: blur(10px);
-        }
-
-        .leaderboard-header {
+        .my-rank-info {
             display: flex;
             align-items: center;
             gap: 15px;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid rgba(255,215,0,0.2);
         }
-
-        .game-icon {
-            font-size: 2.5rem;
-            background: rgba(255,215,0,0.2);
+        .my-rank-position {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+            background: rgba(0,0,0,0.3);
             width: 60px;
             height: 60px;
-            border-radius: 15px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-
-        .game-title {
-            font-size: 1.3rem;
+        .my-rank-text h3 { color: #fff; margin-bottom: 5px; }
+        .my-rank-text p { color: #888; font-size: 0.9rem; }
+        .my-rank-value {
+            font-size: 1.8rem;
+            font-weight: bold;
             color: #ffd700;
         }
 
-        .score-list {
-            list-style: none;
+        .leaderboard-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            overflow: hidden;
         }
-
-        .score-item {
+        .leaderboard-header {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .leaderboard-header h2 {
             display: flex;
             align-items: center;
-            padding: 12px 15px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            margin-bottom: 8px;
-            transition: all 0.2s;
+            gap: 10px;
+            font-size: 1.3rem;
         }
+        .updated-time { color: #888; font-size: 0.85rem; }
 
-        .score-item:hover {
-            background: rgba(255,255,255,0.1);
+        .leaderboard-list {
+            padding: 10px 0;
         }
+        .lb-entry {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            transition: background 0.2s;
+        }
+        .lb-entry:hover { background: rgba(255,255,255,0.05); }
+        .lb-entry.top-1 { background: linear-gradient(90deg, rgba(255,215,0,0.15), transparent); }
+        .lb-entry.top-2 { background: linear-gradient(90deg, rgba(192,192,192,0.1), transparent); }
+        .lb-entry.top-3 { background: linear-gradient(90deg, rgba(205,127,50,0.1), transparent); }
+        .lb-entry.me { background: rgba(139,92,246,0.15); border-left: 3px solid #8b5cf6; }
 
-        .rank {
-            font-size: 1.2rem;
+        .lb-position {
+            width: 50px;
             font-weight: bold;
-            width: 35px;
-            text-align: center;
-        }
-
-        .rank.gold { color: #ffd700; }
-        .rank.silver { color: #c0c0c0; }
-        .rank.bronze { color: #cd7f32; }
-
-        .player-name {
-            transition: all 0.3s;
-            flex: 1;
-            margin-left: 10px;
-            color: #fff;
-            font-weight: 500;
-        }
-
-        .player-score {
-            font-weight: bold;
-            color: #98FB98;
             font-size: 1.1rem;
         }
+        .lb-position.gold { color: #ffd700; }
+        .lb-position.silver { color: #c0c0c0; }
+        .lb-position.bronze { color: #cd7f32; }
 
-        .no-scores {
-            text-align: center;
-            padding: 30px;
-            color: #888;
-        }
-
-        /* Single Game View */
-        .single-leaderboard {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .single-leaderboard .leaderboard-card {
-            border-color: #ffd700;
-        }
-
-        .single-leaderboard .score-item {
-            padding: 15px 20px;
-        }
-
-        .single-leaderboard .rank {
-            font-size: 1.5rem;
-        }
-
-        .single-leaderboard .player-name {
-            transition: all 0.3s;
-            font-size: 1.1rem;
-        }
-
-        .single-leaderboard .player-score {
+        .lb-medal {
+            width: 30px;
             font-size: 1.3rem;
         }
 
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 50px;
-            font-size: 1.2rem;
-            color: #98FB98;
+        .lb-player {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-
-        .loading-spinner {
-            display: inline-block;
+        .lb-avatar {
             width: 40px;
             height: 40px;
-            border: 4px solid rgba(255,215,0,0.3);
-            border-top-color: #ffd700;
+            background: rgba(255,255,255,0.1);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
         }
+        .lb-name { font-weight: bold; }
+        .lb-rank-badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+        .rank-bronze { background: #cd7f32; color: #000; }
+        .rank-silver { background: #c0c0c0; color: #000; }
+        .rank-gold { background: #ffd700; color: #000; }
+        .rank-platinum { background: #e5e4e2; color: #000; }
+        .rank-diamond { background: #b9f2ff; color: #000; }
+        .rank-master { background: #8b5cf6; color: #fff; }
+        .rank-legend { background: linear-gradient(135deg, #ff6b6b, #ffd700); color: #000; }
 
-        @keyframes rainbow-scroll {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 200% 50%; }
+        .lb-value {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #ffd700;
+            min-width: 100px;
+            text-align: right;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Date formatting */
-        .score-date {
+        .lb-value .label {
             font-size: 0.75rem;
             color: #888;
-            margin-left: 10px;
+            font-weight: normal;
         }
 
-        /* Refresh button */
-        .refresh-btn {
-            display: inline-block;
-            padding: 10px 25px;
-            background: linear-gradient(135deg, #228B22, #32CD32);
+        .load-more {
+            text-align: center;
+            padding: 20px;
+        }
+        .load-more button {
+            padding: 12px 30px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 10px;
             color: #fff;
-            border: 2px solid #ffd700;
-            border-radius: 25px;
             cursor: pointer;
             font-weight: bold;
-            transition: all 0.3s;
-            margin-bottom: 20px;
         }
+        .load-more button:hover { background: rgba(255,255,255,0.2); }
 
-        .refresh-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(255,215,0,0.4);
-        }
-
-        footer {
+        .no-data {
             text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid rgba(255,215,0,0.2);
-            color: #98FB98;
+            padding: 60px;
+            color: #888;
         }
-
-
-        /* Name Color Styles */
-        .name-gold { color: #ffd700; text-shadow: 0 0 5px rgba(255,215,0,0.5); }
-        .name-rainbow { background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .name-neon_green { color: #39ff14; text-shadow: 0 0 10px #39ff14; }
-        .name-fire { background: linear-gradient(180deg, #ff0, #f00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .name-ice { color: #00ffff; text-shadow: 0 0 10px #00ffff, 0 0 20px #0080ff; }
-        .name-purple { color: #9b59b6; text-shadow: 0 0 8px rgba(155,89,182,0.6); }
-        .name-neon_pink { color: #ff1493; text-shadow: 0 0 10px #ff1493; }
-        .name-cyan { color: #00bcd4; text-shadow: 0 0 8px rgba(0,188,212,0.6); }
-        .name-crimson { color: #dc143c; text-shadow: 0 0 8px rgba(220,20,60,0.6); }
-        .name-silver { color: #c0c0c0; text-shadow: 0 0 5px rgba(192,192,192,0.5); }
-        .name-lime { color: #00ff00; text-shadow: 0 0 8px rgba(0,255,0,0.5); }
-        .player-title-badge { font-size: 0.8em; color: #ffd700; margin-left: 5px; }
-        .name-animated_rainbow { background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff, #ff0000); background-size: 200% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: rainbow-scroll 2s linear infinite; }
-
-        @media (max-width: 768px) {
-            h1 { font-size: 1.8rem; }
-            .leaderboards-grid { grid-template-columns: 1fr; }
-            .game-tabs { gap: 8px; }
-            .game-tab { padding: 8px 15px; font-size: 0.8rem; }
-        }
+        .no-data .icon { font-size: 4rem; margin-bottom: 15px; }
     </style>
 </head>
 <body>
-    <a href="index.html" class="back-btn">← Back</a>
-
     <div class="container">
-        <header>
-            <h1>🏆 Global Leaderboards 🏆</h1>
-            <p class="subtitle">Compete for the top spot!</p>
-        </header>
-
-        <div style="text-align: center;">
-            <button class="refresh-btn" onclick="loadLeaderboards()">🔄 Refresh</button>
-            <button class="refresh-btn" id="rewardBtn" onclick="rewardTopPlayers()" style="display:none; background: linear-gradient(135deg, #ffd700, #ff8c00); margin-left: 10px;">🏆 Reward Top 3</button>
-        </div>
-
-        <div class="game-tabs" id="gameTabs">
-            <button class="game-tab active" data-game="all">🎮 All Games</button>
-        </div>
-
-        <div id="leaderboardsContainer">
-            <div class="loading">
-                <div class="loading-spinner"></div>
-                <p>Loading leaderboards...</p>
+        <div class="header">
+            <h1>🏆 Leaderboards</h1>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">🏠 Home</a>
+                <a href="profile.html" class="nav-link">👤 Profile</a>
             </div>
         </div>
 
-        <footer>
-            <p>☘️ Play games to get on the leaderboard! ☘️</p>
-        </footer>
+        <div class="leaderboard-tabs">
+            <button class="lb-tab active" onclick="showLeaderboard('coins')">
+                <span class="icon">🪙</span> Coins
+            </button>
+            <button class="lb-tab" onclick="showLeaderboard('xp')">
+                <span class="icon">⭐</span> XP
+            </button>
+            <button class="lb-tab" onclick="showLeaderboard('gamesPlayed')">
+                <span class="icon">🎮</span> Games Played
+            </button>
+            <button class="lb-tab" onclick="showLeaderboard('winStreak')">
+                <span class="icon">🔥</span> Win Streak
+            </button>
+            <button class="lb-tab" onclick="showLeaderboard('totalWins')">
+                <span class="icon">🏅</span> Total Wins
+            </button>
+            <button class="lb-tab" onclick="showLeaderboard('highScores')">
+                <span class="icon">📊</span> High Scores
+            </button>
+        </div>
+
+        <div class="my-rank-card" id="myRankCard" style="display: none;">
+            <div class="my-rank-info">
+                <div class="my-rank-position" id="myPosition">#1</div>
+                <div class="my-rank-text">
+                    <h3>Your Ranking</h3>
+                    <p id="myRankDesc">Top 1% of players</p>
+                </div>
+            </div>
+            <div class="my-rank-value" id="myValue">0</div>
+        </div>
+
+        <div class="leaderboard-card">
+            <div class="leaderboard-header">
+                <h2 id="lbTitle">
+                    <span>🪙</span>
+                    <span>Richest Players</span>
+                </h2>
+                <span class="updated-time" id="updatedTime">Updated just now</span>
+            </div>
+            <div class="leaderboard-list" id="leaderboardList"></div>
+            <div class="load-more" id="loadMore" style="display: none;">
+                <button onclick="loadMore()">Load More</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        let currentGame = 'all';
-        let gamesData = {};
+        let currentType = 'coins';
+        let currentOffset = 0;
+        let totalPlayers = 0;
+        let currentUser = null;
 
-        async function loadLeaderboards() {
-            const container = document.getElementById('leaderboardsContainer');
-            container.innerHTML = `
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <p>Loading leaderboards...</p>
-                </div>
-            `;
+        const typeConfig = {
+            coins: { icon: '🪙', title: 'Richest Players', label: 'coins' },
+            xp: { icon: '⭐', title: 'Most Experienced', label: 'XP' },
+            gamesPlayed: { icon: '🎮', title: 'Most Active Players', label: 'games' },
+            winStreak: { icon: '🔥', title: 'Longest Win Streaks', label: 'streak' },
+            totalWins: { icon: '🏅', title: 'Most Victorious', label: 'wins' },
+            highScores: { icon: '📊', title: 'Highest Scorers', label: 'points' }
+        };
 
+        async function init() {
             try {
-                const response = await fetch('leaderboard-global.php?game=' + currentGame);
-                const data = await response.json();
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await resp.json();
+                if (data.loggedIn) currentUser = data.user;
 
-                if (!data.success) {
-                    throw new Error(data.error || 'Failed to load');
-                }
+                showLeaderboard('coins');
+            } catch (e) {
+                console.error(e);
+                showLeaderboard('coins');
+            }
+        }
 
-                if (currentGame === 'all') {
-                    gamesData = data.games;
-                    renderAllLeaderboards(data.leaderboards, data.games);
-                    updateTabs(data.games);
+        async function showLeaderboard(type) {
+            currentType = type;
+            currentOffset = 0;
+
+            document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+            event?.target?.classList.add('active');
+
+            const config = typeConfig[type];
+            document.getElementById('lbTitle').innerHTML = `<span>${config.icon}</span><span>${config.title}</span>`;
+
+            await loadLeaderboard();
+        }
+
+        async function loadLeaderboard() {
+            try {
+                const resp = await fetch(`api/leaderboards.php?action=${currentType}&limit=50&offset=${currentOffset}`, { credentials: 'include' });
+                const data = await resp.json();
+
+                if (!data.success) throw new Error(data.error);
+
+                totalPlayers = data.total;
+
+                if (currentOffset === 0) {
+                    renderLeaderboard(data.leaderboard, data.myPosition);
                 } else {
-                    renderSingleLeaderboard(data);
+                    appendLeaderboard(data.leaderboard);
                 }
-            } catch (error) {
-                container.innerHTML = `
-                    <div class="no-scores">
-                        <p>Failed to load leaderboards. Try again!</p>
-                        <button class="refresh-btn" onclick="loadLeaderboards()">🔄 Retry</button>
+
+                document.getElementById('updatedTime').textContent = 'Updated ' + formatTime(data.updated);
+                document.getElementById('loadMore').style.display = currentOffset + 50 < totalPlayers ? 'block' : 'none';
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('leaderboardList').innerHTML = `
+                    <div class="no-data">
+                        <div class="icon">📊</div>
+                        <p>Unable to load leaderboard</p>
                     </div>
                 `;
             }
         }
 
-        function updateTabs(games) {
-            const tabsContainer = document.getElementById('gameTabs');
-            let tabs = '<button class="game-tab active" data-game="all">🎮 All Games</button>';
+        function renderLeaderboard(entries, myPosition) {
+            const list = document.getElementById('leaderboardList');
+            const config = typeConfig[currentType];
 
-            for (const [gameId, gameInfo] of Object.entries(games)) {
-                tabs += `<button class="game-tab" data-game="${gameId}">${gameInfo.icon} ${gameInfo.name}</button>`;
+            // Show my rank card if logged in and has position
+            const myRankCard = document.getElementById('myRankCard');
+            if (myPosition && currentUser) {
+                myRankCard.style.display = 'flex';
+                document.getElementById('myPosition').textContent = '#' + myPosition.position;
+                document.getElementById('myValue').textContent = myPosition.value.toLocaleString() + ' ' + config.label;
+
+                const percentile = Math.round((1 - myPosition.position / totalPlayers) * 100);
+                document.getElementById('myRankDesc').textContent = `Top ${Math.max(1, 100 - percentile)}% of ${totalPlayers.toLocaleString()} players`;
+            } else {
+                myRankCard.style.display = 'none';
             }
 
-            tabsContainer.innerHTML = tabs;
-
-            // Add click handlers
-            tabsContainer.querySelectorAll('.game-tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    document.querySelectorAll('.game-tab').forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    currentGame = tab.dataset.game;
-                    loadLeaderboards();
-                });
-            });
-        }
-
-        function renderAllLeaderboards(leaderboards, games) {
-            const container = document.getElementById('leaderboardsContainer');
-
-            if (Object.keys(leaderboards).length === 0) {
-                container.innerHTML = `
-                    <div class="no-scores">
-                        <p>No scores yet! Be the first to play!</p>
+            if (entries.length === 0) {
+                list.innerHTML = `
+                    <div class="no-data">
+                        <div class="icon">🏆</div>
+                        <p>No rankings yet. Be the first!</p>
                     </div>
                 `;
                 return;
             }
 
-            let html = '<div class="leaderboards-grid">';
-
-            for (const [gameId, gameData] of Object.entries(leaderboards)) {
-                html += `
-                    <div class="leaderboard-card">
-                        <div class="leaderboard-header">
-                            <div class="game-icon">${gameData.icon}</div>
-                            <h2 class="game-title">${gameData.name}</h2>
-                        </div>
-                        <ul class="score-list">
-                            ${renderScores(gameData.scores)}
-                        </ul>
-                    </div>
-                `;
-            }
-
-            html += '</div>';
-            container.innerHTML = html;
+            list.innerHTML = entries.map(e => renderEntry(e, config)).join('');
         }
 
-        function renderSingleLeaderboard(data) {
-            const container = document.getElementById('leaderboardsContainer');
+        function appendLeaderboard(entries) {
+            const list = document.getElementById('leaderboardList');
+            const config = typeConfig[currentType];
+            list.innerHTML += entries.map(e => renderEntry(e, config)).join('');
+        }
 
-            if (!data.scores || data.scores.length === 0) {
-                container.innerHTML = `
-                    <div class="single-leaderboard">
-                        <div class="leaderboard-card">
-                            <div class="leaderboard-header">
-                                <div class="game-icon">${data.gameInfo.icon}</div>
-                                <h2 class="game-title">${data.gameInfo.name}</h2>
-                            </div>
-                            <div class="no-scores">
-                                <p>No scores yet! Be the first!</p>
-                            </div>
-                        </div>
+        function renderEntry(entry, config) {
+            const isMe = currentUser && entry.username === currentUser.username;
+            const posClass = entry.position === 1 ? 'top-1' : entry.position === 2 ? 'top-2' : entry.position === 3 ? 'top-3' : '';
+            const meClass = isMe ? 'me' : '';
+
+            let medal = '';
+            let posColor = '';
+            if (entry.position === 1) { medal = '🥇'; posColor = 'gold'; }
+            else if (entry.position === 2) { medal = '🥈'; posColor = 'silver'; }
+            else if (entry.position === 3) { medal = '🥉'; posColor = 'bronze'; }
+
+            const rankClass = (entry.rank || 'Bronze').toLowerCase();
+
+            return `
+                <div class="lb-entry ${posClass} ${meClass}">
+                    <div class="lb-position ${posColor}">#${entry.position}</div>
+                    <div class="lb-medal">${medal}</div>
+                    <div class="lb-player">
+                        <div class="lb-avatar">${entry.avatar || '👤'}</div>
+                        <span class="lb-name">${entry.username}</span>
+                        <span class="lb-rank-badge rank-${rankClass}">${entry.rank || 'Bronze'}</span>
                     </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = `
-                <div class="single-leaderboard">
-                    <div class="leaderboard-card">
-                        <div class="leaderboard-header">
-                            <div class="game-icon">${data.gameInfo.icon}</div>
-                            <h2 class="game-title">${data.gameInfo.name}</h2>
-                        </div>
-                        <ul class="score-list">
-                            ${renderScores(data.scores, true)}
-                        </ul>
+                    <div class="lb-value">
+                        ${entry.value.toLocaleString()}
+                        <span class="label">${config.label}</span>
                     </div>
                 </div>
             `;
         }
 
-        function renderScores(scores, showDate = false) {
-            if (!scores || scores.length === 0) {
-                return '<li class="no-scores">No scores yet!</li>';
-            }
-
-            return scores.map((score, index) => {
-                const rank = index + 1;
-                let rankClass = '';
-                let rankDisplay = rank;
-
-                if (rank === 1) { rankClass = 'gold'; rankDisplay = '🥇'; }
-                else if (rank === 2) { rankClass = 'silver'; rankDisplay = '🥈'; }
-                else if (rank === 3) { rankClass = 'bronze'; rankDisplay = '🥉'; }
-
-                const dateStr = showDate && score.date ?
-                    `<span class="score-date">${formatDate(score.date)}</span>` : '';
-
-                return `
-                    <li class="score-item">
-                        <span class="rank ${rankClass}">${rankDisplay}</span>
-                        <span class="player-name ${score.nameColor ? 'name-' + score.nameColor : ''}">${escapeHtml(score.name)}</span>${score.title ? ' <span class="player-title-badge">' + getTitleDisplay(score.title) + '</span>' : ''}
-                        ${dateStr}
-                        <span class="player-score">${formatNumber(score.score)}</span>
-                    </li>
-                `;
-            }).join('');
+        function loadMore() {
+            currentOffset += 50;
+            loadLeaderboard();
         }
 
-        function formatNumber(n) {
-            if (n >= 1e12) return (n / 1e12).toFixed(1) + 'T';
-            if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
-            if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
-            if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
-            return n.toLocaleString();
+        function formatTime(isoString) {
+            const date = new Date(isoString);
+            const now = new Date();
+            const diff = (now - date) / 1000;
+
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            return Math.floor(diff / 86400) + 'd ago';
         }
 
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString();
-        }
-
-        function getTitleDisplay(titleId) {
-            const titles = {
-                "champion": "Champion 👑",
-                "legend": "Legend ⭐",
-                "whale": "Whale 🐋",
-                "og": "OG 🔥"
-            };
-            return titles[titleId] || titleId;
-        }
-
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-
-        // Load on page load
-        loadLeaderboards();
-    // Admin reward function
-    async function checkAdmin() {
-        try {
-            const resp = await fetch("api/auth.php?action=check", { credentials: "include" });
-            const data = await resp.json();
-            if (data.loggedIn && data.user.username === "billybuffalo15") {
-                document.getElementById("rewardBtn").style.display = "inline-block";
-            }
-        } catch(e) {}
-    }
-    checkAdmin();
-
-    async function rewardTopPlayers() {
-        const activeTab = document.querySelector(".game-tab.active");
-        const game = activeTab ? activeTab.dataset.game : "all";
-        
-        if (game === "all") {
-            alert("Please select a specific game first!");
-            return;
-        }
-
-        const btn = document.getElementById("rewardBtn");
-        btn.disabled = true;
-        btn.textContent = "Sending...";
-
-        try {
-            const resp = await fetch("api/admin-reward.php", {
-                method: "POST",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ game: game, rewards: [500, 250, 100] })
-            });
-            const data = await resp.json();
-            
-            if (data.success) {
-                alert("Rewards sent!\n" + data.message);
-            } else {
-                alert("Error: " + data.error);
-            }
-        } catch(e) {
-            alert("Failed to send rewards");
-        }
-        
-        btn.disabled = false;
-        btn.textContent = "🏆 Reward Top 3";
-    }
+        init();
     </script>
 </body>
 </html>
