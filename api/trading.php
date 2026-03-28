@@ -1,324 +1,391 @@
 <?php
-/**
- * Trading System API
- * 
- * GET:
- *   ?action=pending     - Get pending trade offers (incoming/outgoing)
- *   ?action=history     - Get trade history
- * 
- * POST:
- *   { "action": "offer", "to": "username", "offering": {...}, "requesting": {...} }
- *   { "action": "accept", "tradeId": "..." }
- *   { "action": "decline", "tradeId": "..." }
- *   { "action": "cancel", "tradeId": "..." }
- */
-
+header("Content-Type: application/json");
 session_start();
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
+$tradesFile = __DIR__ . "/../data/trades.json";
+$usersFile = __DIR__ . "/../data/users.json";
 
-$tradesFile = __DIR__ . '/../data/trades.json';
-$usersFile = __DIR__ . '/../data/users.json';
-
-function readTrades() {
+function loadTrades() {
     global $tradesFile;
-    if (!file_exists($tradesFile)) return ['trades' => []];
-    return json_decode(file_get_contents($tradesFile), true) ?: ['trades' => []];
+    if (!file_exists($tradesFile)) return ["trades" => [], "nextId" => 1];
+    return json_decode(file_get_contents($tradesFile), true) ?: ["trades" => [], "nextId" => 1];
 }
 
-function writeTrades($data) {
+function saveTrades($data) {
     global $tradesFile;
     file_put_contents($tradesFile, json_encode($data, JSON_PRETTY_PRINT));
 }
 
-function readUsers() {
+function loadUsers() {
     global $usersFile;
-    if (!file_exists($usersFile)) return ['users' => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ['users' => []];
+    if (!file_exists($usersFile)) return ["users" => []];
+    return json_decode(file_get_contents($usersFile), true) ?: ["users" => []];
 }
 
-function writeUsers($data) {
+function saveUsers($data) {
     global $usersFile;
     file_put_contents($usersFile, json_encode($data, JSON_PRETTY_PRINT));
 }
 
-function ensureUserHasFields(&$user) {
-    if (!isset($user['coins'])) $user['coins'] = 0;
-    if (!isset($user['inventory'])) {
-        $user['inventory'] = [
-            'name_colors' => [],
-            'borders' => [],
-            'avatar_effects' => [],
-            'emotes' => [],
-            'boosters' => [],
-            'social' => []
-        ];
-    }
+function getUserInventory($username) {
+    $users = loadUsers();
+    return $users["users"][$username]["inventory"] ?? [
+        "lootboxes" => [],
+        "boosters" => [],
+        "tradingCards" => []
+    ];
 }
 
-function userHasItems($user, $items) {
-    if (isset($items['coins']) && $items['coins'] > 0) {
-        if (($user['coins'] ?? 0) < $items['coins']) return false;
-    }
-    
-    foreach (['name_colors', 'borders', 'avatar_effects', 'emotes', 'boosters', 'social'] as $cat) {
-        if (isset($items[$cat]) && is_array($items[$cat])) {
-            foreach ($items[$cat] as $itemId) {
-                $userItems = $user['inventory'][$cat] ?? [];
-                $count = array_count_values($userItems)[$itemId] ?? 0;
-                $needed = array_count_values($items[$cat])[$itemId] ?? 0;
-                if ($count < $needed) return false;
+function removeItemFromInventory(&$inventory, $type, $item) {
+    if ($type === "lootboxes" || $type === "boosters") {
+        $idx = array_search($item, $inventory[$type] ?? []);
+        if ($idx !== false) {
+            array_splice($inventory[$type], $idx, 1);
+            return true;
+        }
+    } elseif ($type === "tradingCards") {
+        if (isset($inventory[$type][$item]) && $inventory[$type][$item] > 0) {
+            $inventory[$type][$item]--;
+            if ($inventory[$type][$item] <= 0) {
+                unset($inventory[$type][$item]);
             }
+            return true;
         }
     }
-    
-    return true;
+    return false;
 }
 
-function transferItems(&$from, &$to, $items) {
-    if (isset($items['coins']) && $items['coins'] > 0) {
-        $from['coins'] -= $items['coins'];
-        $to['coins'] = ($to['coins'] ?? 0) + $items['coins'];
-    }
-    
-    foreach (['name_colors', 'borders', 'avatar_effects', 'emotes', 'boosters', 'social'] as $cat) {
-        if (isset($items[$cat]) && is_array($items[$cat])) {
-            foreach ($items[$cat] as $itemId) {
-                // Remove from sender
-                $key = array_search($itemId, $from['inventory'][$cat] ?? []);
-                if ($key !== false) {
-                    array_splice($from['inventory'][$cat], $key, 1);
-                }
-                // Add to receiver
-                if (!isset($to['inventory'][$cat])) $to['inventory'][$cat] = [];
-                $to['inventory'][$cat][] = $itemId;
-            }
-        }
+function addItemToInventory(&$inventory, $type, $item) {
+    if ($type === "lootboxes" || $type === "boosters") {
+        $inventory[$type][] = $item;
+    } elseif ($type === "tradingCards") {
+        if (!isset($inventory[$type])) $inventory[$type] = [];
+        $inventory[$type][$item] = ($inventory[$type][$item] ?? 0) + 1;
     }
 }
 
-// Check login
-if (!isset($_SESSION['user'])) {
-    echo json_encode(['success' => false, 'error' => 'Not logged in']);
-    exit();
-}
-
-$currentUser = $_SESSION['user'];
-
-// GET requests
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $action = $_GET['action'] ?? 'pending';
-    $tradesData = readTrades();
+// Handle GET requests
+if ($_SERVER["REQUEST_METHOD"] === "GET") {
+    $action = $_GET["action"] ?? "";
     
-    if ($action === 'pending') {
-        $incoming = [];
-        $outgoing = [];
+    if (!isset($_SESSION["user"])) {
+        echo json_encode(["success" => false, "error" => "Not logged in"]);
+        exit;
+    }
+    
+    $username = $_SESSION["user"];
+    
+    // Get pending trades for user
+    if ($action === "pending") {
+        $data = loadTrades();
+        $pending = [];
         
-        foreach ($tradesData['trades'] as $trade) {
-            if ($trade['status'] !== 'pending') continue;
-            
-            if ($trade['to'] === $currentUser) {
-                $incoming[] = $trade;
-            } else if ($trade['from'] === $currentUser) {
-                $outgoing[] = $trade;
+        foreach ($data["trades"] as $id => $trade) {
+            if ($trade["status"] !== "pending") continue;
+            if ($trade["from"] === $username || $trade["to"] === $username) {
+                $trade["id"] = $id;
+                $pending[] = $trade;
             }
         }
         
-        echo json_encode(['success' => true, 'incoming' => $incoming, 'outgoing' => $outgoing]);
-        exit();
+        echo json_encode(["success" => true, "trades" => $pending]);
+        exit;
     }
     
-    if ($action === 'history') {
-        $history = array_filter($tradesData['trades'], function($t) use ($currentUser) {
-            return ($t['from'] === $currentUser || $t['to'] === $currentUser) && $t['status'] !== 'pending';
-        });
+    // Get trade history
+    if ($action === "history") {
+        $data = loadTrades();
+        $history = [];
         
-        usort($history, function($a, $b) {
-            return strtotime($b['updatedAt'] ?? $b['createdAt']) - strtotime($a['updatedAt'] ?? $a['createdAt']);
-        });
-        
-        echo json_encode(['success' => true, 'history' => array_values(array_slice($history, 0, 20))]);
-        exit();
-    }
-    
-    echo json_encode(['success' => false, 'error' => 'Invalid action']);
-    exit();
-}
-
-// POST requests
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true);
-    $action = $input['action'] ?? '';
-    
-    $tradesData = readTrades();
-    $usersData = readUsers();
-    
-    if (!isset($usersData['users'][$currentUser])) {
-        echo json_encode(['success' => false, 'error' => 'User not found']);
-        exit();
-    }
-    
-    $currentUserData = &$usersData['users'][$currentUser];
-    ensureUserHasFields($currentUserData);
-    
-    if ($action === 'offer') {
-        $toUser = strtolower($input['to'] ?? '');
-        $offering = $input['offering'] ?? [];
-        $requesting = $input['requesting'] ?? [];
-        
-        if ($toUser === $currentUser) {
-            echo json_encode(['success' => false, 'error' => 'Cannot trade with yourself']);
-            exit();
+        foreach ($data["trades"] as $id => $trade) {
+            if ($trade["from"] === $username || $trade["to"] === $username) {
+                $trade["id"] = $id;
+                $history[] = $trade;
+            }
         }
         
-        if (!isset($usersData['users'][$toUser])) {
-            echo json_encode(['success' => false, 'error' => 'User not found']);
-            exit();
+        // Sort by date descending
+        usort($history, fn($a, $b) => strtotime($b["created"]) - strtotime($a["created"]));
+        $history = array_slice($history, 0, 20);
+        
+        echo json_encode(["success" => true, "trades" => $history]);
+        exit;
+    }
+    
+    // Get my inventory for trading
+    if ($action === "myItems") {
+        $inventory = getUserInventory($username);
+        echo json_encode(["success" => true, "inventory" => $inventory]);
+        exit;
+    }
+    
+    // Get friends list
+    if ($action === "friends") {
+        $users = loadUsers();
+        $friends = $users["users"][$username]["friends"] ?? [];
+        echo json_encode(["success" => true, "friends" => $friends]);
+        exit;
+    }
+}
+
+// Handle POST requests
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $input = json_decode(file_get_contents("php://input"), true);
+    $action = $input["action"] ?? "";
+    
+    if (!isset($_SESSION["user"])) {
+        echo json_encode(["success" => false, "error" => "Not logged in"]);
+        exit;
+    }
+    
+    $username = $_SESSION["user"];
+    
+    // Create trade offer
+    if ($action === "create") {
+        $toUser = $input["to"] ?? "";
+        $offerItems = $input["offerItems"] ?? [];
+        $requestItems = $input["requestItems"] ?? [];
+        $offerCoins = intval($input["offerCoins"] ?? 0);
+        $requestCoins = intval($input["requestCoins"] ?? 0);
+        
+        if ($toUser === $username) {
+            echo json_encode(["success" => false, "error" => "Cannot trade with yourself"]);
+            exit;
+        }
+        
+        $users = loadUsers();
+        
+        if (!isset($users["users"][$toUser])) {
+            echo json_encode(["success" => false, "error" => "User not found"]);
+            exit;
         }
         
         // Check if friends
-        if (!in_array($toUser, $currentUserData['friends'] ?? [])) {
-            echo json_encode(['success' => false, 'error' => 'You can only trade with friends']);
-            exit();
+        $friends = $users["users"][$username]["friends"] ?? [];
+        if (!in_array($toUser, $friends)) {
+            echo json_encode(["success" => false, "error" => "You can only trade with friends"]);
+            exit;
         }
         
-        // Verify sender has the items
-        if (!userHasItems($currentUserData, $offering)) {
-            echo json_encode(['success' => false, 'error' => 'You do not have all the items you are offering']);
-            exit();
+        // Validate offer coins
+        $myCoins = $users["users"][$username]["coins"] ?? 0;
+        if ($offerCoins > $myCoins) {
+            echo json_encode(["success" => false, "error" => "Not enough coins"]);
+            exit;
         }
         
-        // Check for empty trade
-        $offeringCount = ($offering['coins'] ?? 0) + count($offering['name_colors'] ?? []) + count($offering['borders'] ?? []) + count($offering['emotes'] ?? []) + count($offering['boosters'] ?? []);
-        $requestingCount = ($requesting['coins'] ?? 0) + count($requesting['name_colors'] ?? []) + count($requesting['borders'] ?? []) + count($requesting['emotes'] ?? []) + count($requesting['boosters'] ?? []);
-        
-        if ($offeringCount === 0 && $requestingCount === 0) {
-            echo json_encode(['success' => false, 'error' => 'Trade cannot be empty']);
-            exit();
+        // Validate offer items exist in inventory
+        $myInventory = getUserInventory($username);
+        foreach ($offerItems as $item) {
+            $type = $item["type"];
+            $name = $item["name"];
+            
+            if ($type === "lootboxes" || $type === "boosters") {
+                if (!in_array($name, $myInventory[$type] ?? [])) {
+                    echo json_encode(["success" => false, "error" => "You dont have that item"]);
+                    exit;
+                }
+            } elseif ($type === "tradingCards") {
+                if (($myInventory[$type][$name] ?? 0) < 1) {
+                    echo json_encode(["success" => false, "error" => "You dont have that card"]);
+                    exit;
+                }
+            }
         }
         
-        $trade = [
-            'id' => bin2hex(random_bytes(8)),
-            'from' => $currentUser,
-            'fromName' => $currentUserData['displayName'],
-            'to' => $toUser,
-            'toName' => $usersData['users'][$toUser]['displayName'],
-            'offering' => $offering,
-            'requesting' => $requesting,
-            'status' => 'pending',
-            'createdAt' => date('c')
+        // Create trade
+        $data = loadTrades();
+        $tradeId = "t" . $data["nextId"];
+        $data["nextId"]++;
+        
+        $data["trades"][$tradeId] = [
+            "from" => $username,
+            "to" => $toUser,
+            "offerItems" => $offerItems,
+            "requestItems" => $requestItems,
+            "offerCoins" => $offerCoins,
+            "requestCoins" => $requestCoins,
+            "status" => "pending",
+            "created" => date("Y-m-d H:i:s")
         ];
         
-        $tradesData['trades'][] = $trade;
-        writeTrades($tradesData);
+        saveTrades($data);
         
-        echo json_encode(['success' => true, 'message' => 'Trade offer sent!', 'trade' => $trade]);
-        exit();
+        echo json_encode(["success" => true, "tradeId" => $tradeId]);
+        exit;
     }
     
-    if ($action === 'accept') {
-        $tradeId = $input['tradeId'] ?? '';
-        $tradeIndex = -1;
+    // Accept trade
+    if ($action === "accept") {
+        $tradeId = $input["tradeId"] ?? "";
         
-        foreach ($tradesData['trades'] as $i => $t) {
-            if ($t['id'] === $tradeId) {
-                $tradeIndex = $i;
-                break;
+        $data = loadTrades();
+        
+        if (!isset($data["trades"][$tradeId])) {
+            echo json_encode(["success" => false, "error" => "Trade not found"]);
+            exit;
+        }
+        
+        $trade = &$data["trades"][$tradeId];
+        
+        if ($trade["to"] !== $username) {
+            echo json_encode(["success" => false, "error" => "This trade is not for you"]);
+            exit;
+        }
+        
+        if ($trade["status"] !== "pending") {
+            echo json_encode(["success" => false, "error" => "Trade already processed"]);
+            exit;
+        }
+        
+        $users = loadUsers();
+        $fromUser = $trade["from"];
+        
+        // Validate both parties still have items
+        $fromInventory = &$users["users"][$fromUser]["inventory"];
+        $toInventory = &$users["users"][$username]["inventory"];
+        
+        // Check sender still has offer items
+        foreach ($trade["offerItems"] as $item) {
+            $type = $item["type"];
+            $name = $item["name"];
+            if ($type === "tradingCards") {
+                if (($fromInventory[$type][$name] ?? 0) < 1) {
+                    $trade["status"] = "cancelled";
+                    saveTrades($data);
+                    echo json_encode(["success" => false, "error" => "Sender no longer has those items"]);
+                    exit;
+                }
+            } else {
+                if (!in_array($name, $fromInventory[$type] ?? [])) {
+                    $trade["status"] = "cancelled";
+                    saveTrades($data);
+                    echo json_encode(["success" => false, "error" => "Sender no longer has those items"]);
+                    exit;
+                }
             }
         }
         
-        if ($tradeIndex === -1) {
-            echo json_encode(['success' => false, 'error' => 'Trade not found']);
-            exit();
-        }
-        
-        $trade = &$tradesData['trades'][$tradeIndex];
-        
-        if ($trade['to'] !== $currentUser) {
-            echo json_encode(['success' => false, 'error' => 'This trade is not for you']);
-            exit();
-        }
-        
-        if ($trade['status'] !== 'pending') {
-            echo json_encode(['success' => false, 'error' => 'Trade is no longer pending']);
-            exit();
-        }
-        
-        $fromUser = &$usersData['users'][$trade['from']];
-        ensureUserHasFields($fromUser);
-        
-        // Verify both parties still have items
-        if (!userHasItems($fromUser, $trade['offering'])) {
-            $trade['status'] = 'cancelled';
-            $trade['updatedAt'] = date('c');
-            writeTrades($tradesData);
-            echo json_encode(['success' => false, 'error' => 'Sender no longer has the offered items']);
-            exit();
-        }
-        
-        if (!userHasItems($currentUserData, $trade['requesting'])) {
-            echo json_encode(['success' => false, 'error' => 'You do not have the requested items']);
-            exit();
-        }
-        
-        // Execute trade
-        transferItems($fromUser, $currentUserData, $trade['offering']);
-        transferItems($currentUserData, $fromUser, $trade['requesting']);
-        
-        $trade['status'] = 'completed';
-        $trade['updatedAt'] = date('c');
-        
-        writeTrades($tradesData);
-        writeUsers($usersData);
-        
-        echo json_encode(['success' => true, 'message' => 'Trade completed!']);
-        exit();
-    }
-    
-    if ($action === 'decline') {
-        $tradeId = $input['tradeId'] ?? '';
-        
-        foreach ($tradesData['trades'] as &$trade) {
-            if ($trade['id'] === $tradeId && $trade['to'] === $currentUser && $trade['status'] === 'pending') {
-                $trade['status'] = 'declined';
-                $trade['updatedAt'] = date('c');
-                writeTrades($tradesData);
-                echo json_encode(['success' => true, 'message' => 'Trade declined']);
-                exit();
+        // Check receiver has request items
+        foreach ($trade["requestItems"] as $item) {
+            $type = $item["type"];
+            $name = $item["name"];
+            if ($type === "tradingCards") {
+                if (($toInventory[$type][$name] ?? 0) < 1) {
+                    echo json_encode(["success" => false, "error" => "You no longer have the requested items"]);
+                    exit;
+                }
+            } else {
+                if (!in_array($name, $toInventory[$type] ?? [])) {
+                    echo json_encode(["success" => false, "error" => "You no longer have the requested items"]);
+                    exit;
+                }
             }
         }
         
-        echo json_encode(['success' => false, 'error' => 'Trade not found']);
-        exit();
-    }
-    
-    if ($action === 'cancel') {
-        $tradeId = $input['tradeId'] ?? '';
+        // Check coins
+        $fromCoins = $users["users"][$fromUser]["coins"] ?? 0;
+        $toCoins = $users["users"][$username]["coins"] ?? 0;
         
-        foreach ($tradesData['trades'] as &$trade) {
-            if ($trade['id'] === $tradeId && $trade['from'] === $currentUser && $trade['status'] === 'pending') {
-                $trade['status'] = 'cancelled';
-                $trade['updatedAt'] = date('c');
-                writeTrades($tradesData);
-                echo json_encode(['success' => true, 'message' => 'Trade cancelled']);
-                exit();
-            }
+        if ($trade["offerCoins"] > $fromCoins) {
+            $trade["status"] = "cancelled";
+            saveTrades($data);
+            echo json_encode(["success" => false, "error" => "Sender doesnt have enough coins"]);
+            exit;
         }
         
-        echo json_encode(['success' => false, 'error' => 'Trade not found']);
-        exit();
+        if ($trade["requestCoins"] > $toCoins) {
+            echo json_encode(["success" => false, "error" => "You dont have enough coins"]);
+            exit;
+        }
+        
+        // Execute trade - remove items from sender, add to receiver
+        foreach ($trade["offerItems"] as $item) {
+            removeItemFromInventory($fromInventory, $item["type"], $item["name"]);
+            addItemToInventory($toInventory, $item["type"], $item["name"]);
+        }
+        
+        // Remove items from receiver, add to sender
+        foreach ($trade["requestItems"] as $item) {
+            removeItemFromInventory($toInventory, $item["type"], $item["name"]);
+            addItemToInventory($fromInventory, $item["type"], $item["name"]);
+        }
+        
+        // Transfer coins
+        $users["users"][$fromUser]["coins"] -= $trade["offerCoins"];
+        $users["users"][$username]["coins"] += $trade["offerCoins"];
+        $users["users"][$username]["coins"] -= $trade["requestCoins"];
+        $users["users"][$fromUser]["coins"] += $trade["requestCoins"];
+        
+        $trade["status"] = "completed";
+        $trade["completedAt"] = date("Y-m-d H:i:s");
+        
+        saveUsers($users);
+        saveTrades($data);
+        
+        echo json_encode(["success" => true]);
+        exit;
     }
     
-    echo json_encode(['success' => false, 'error' => 'Invalid action']);
-    exit();
+    // Decline trade
+    if ($action === "decline") {
+        $tradeId = $input["tradeId"] ?? "";
+        
+        $data = loadTrades();
+        
+        if (!isset($data["trades"][$tradeId])) {
+            echo json_encode(["success" => false, "error" => "Trade not found"]);
+            exit;
+        }
+        
+        $trade = &$data["trades"][$tradeId];
+        
+        if ($trade["to"] !== $username) {
+            echo json_encode(["success" => false, "error" => "This trade is not for you"]);
+            exit;
+        }
+        
+        if ($trade["status"] !== "pending") {
+            echo json_encode(["success" => false, "error" => "Trade already processed"]);
+            exit;
+        }
+        
+        $trade["status"] = "declined";
+        saveTrades($data);
+        
+        echo json_encode(["success" => true]);
+        exit;
+    }
+    
+    // Cancel trade (by sender)
+    if ($action === "cancel") {
+        $tradeId = $input["tradeId"] ?? "";
+        
+        $data = loadTrades();
+        
+        if (!isset($data["trades"][$tradeId])) {
+            echo json_encode(["success" => false, "error" => "Trade not found"]);
+            exit;
+        }
+        
+        $trade = &$data["trades"][$tradeId];
+        
+        if ($trade["from"] !== $username) {
+            echo json_encode(["success" => false, "error" => "Not your trade"]);
+            exit;
+        }
+        
+        if ($trade["status"] !== "pending") {
+            echo json_encode(["success" => false, "error" => "Trade already processed"]);
+            exit;
+        }
+        
+        $trade["status"] = "cancelled";
+        saveTrades($data);
+        
+        echo json_encode(["success" => true]);
+        exit;
+    }
 }
 
-http_response_code(405);
-echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+echo json_encode(["success" => false, "error" => "Invalid request"]);

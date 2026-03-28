@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading - RetroBlasts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a3e 0%, #2a1f5e 50%, #1a0a4e 100%);
+            min-height: 100vh; color: #fff; padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+        .header h1 { font-size: 2rem; }
+        .back-btn { background: rgba(255,255,255,0.1); color: #fff; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: bold; }
+
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .tab { padding: 12px 25px; background: rgba(255,255,255,0.05); border: 2px solid transparent; border-radius: 25px; cursor: pointer; font-weight: bold; }
+        .tab.active { border-color: #a855f7; background: rgba(168,85,247,0.2); }
+
+        .section { background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; }
+
+        .trade-card {
+            background: rgba(0,0,0,0.3); border-radius: 15px; padding: 20px; margin-bottom: 15px;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        .trade-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .trade-users { font-size: 1.1rem; }
+        .trade-users .arrow { color: #a855f7; margin: 0 10px; }
+        .trade-status { padding: 5px 15px; border-radius: 15px; font-size: 0.85rem; font-weight: bold; }
+        .trade-status.pending { background: #fbbf24; color: #000; }
+        .trade-status.completed { background: #4ade80; color: #000; }
+        .trade-status.declined { background: #ef4444; color: #fff; }
+        .trade-status.cancelled { background: #666; color: #fff; }
+
+        .trade-content { display: flex; gap: 20px; flex-wrap: wrap; }
+        .trade-side { flex: 1; min-width: 200px; background: rgba(255,255,255,0.05); border-radius: 10px; padding: 15px; }
+        .trade-side h4 { color: #a855f7; margin-bottom: 10px; font-size: 0.9rem; }
+        .trade-items { display: flex; flex-wrap: wrap; gap: 8px; }
+        .trade-item { background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 15px; font-size: 0.85rem; }
+        .trade-coins { color: #ffd700; font-weight: bold; }
+
+        .trade-actions { display: flex; gap: 10px; margin-top: 15px; justify-content: flex-end; }
+        .trade-actions button { padding: 8px 20px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; }
+        .btn-accept { background: #4ade80; color: #000; }
+        .btn-decline { background: #ef4444; color: #fff; }
+        .btn-cancel { background: rgba(255,255,255,0.1); color: #fff; }
+
+        .new-trade-btn { padding: 12px 30px; background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; border: none; border-radius: 25px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-bottom: 20px; }
+
+        .empty-state { text-align: center; padding: 40px; color: #666; }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 10px; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: flex-start; padding: 20px; overflow-y: auto; }
+        .modal.active { display: flex; }
+        .modal-content { background: linear-gradient(135deg, #1a1a3e, #2a1f5e); border-radius: 20px; padding: 30px; max-width: 800px; width: 100%; margin: 40px 0; border: 2px solid rgba(168,85,247,0.3); }
+        .modal-title { font-size: 1.5rem; margin-bottom: 25px; text-align: center; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #aaa; }
+        .form-group select, .form-group input { width: 100%; padding: 12px 15px; border: 2px solid rgba(255,255,255,0.1); border-radius: 10px; background: rgba(0,0,0,0.3); color: #fff; font-size: 1rem; }
+        .form-group select:focus, .form-group input:focus { outline: none; border-color: #a855f7; }
+
+        .trade-builder { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
+        .trade-builder-side { flex: 1; min-width: 280px; background: rgba(0,0,0,0.2); border-radius: 15px; padding: 20px; }
+        .trade-builder-side h3 { color: #a855f7; margin-bottom: 15px; font-size: 1rem; }
+
+        .item-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; max-height: 200px; overflow-y: auto; }
+        .item-btn { padding: 8px 15px; background: rgba(255,255,255,0.1); border: 2px solid transparent; border-radius: 10px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; color: #fff; }
+        .item-btn:hover { border-color: #a855f7; }
+        .item-btn.selected { border-color: #4ade80; background: rgba(74,222,128,0.2); }
+        .item-btn.disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .selected-items { min-height: 50px; background: rgba(255,255,255,0.05); border-radius: 10px; padding: 10px; margin-top: 10px; }
+        .selected-items h4 { font-size: 0.8rem; color: #888; margin-bottom: 8px; }
+        .selected-tag { display: inline-block; background: #a855f7; color: #fff; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem; margin: 3px; }
+        .selected-tag .remove { margin-left: 8px; cursor: pointer; }
+
+        .coins-input { display: flex; align-items: center; gap: 10px; }
+        .coins-input input { width: 120px; }
+        .coins-input span { color: #ffd700; }
+
+        .modal-btns { display: flex; gap: 15px; justify-content: center; margin-top: 25px; }
+        .modal-btns button { padding: 12px 30px; border: none; border-radius: 25px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+        .btn-send { background: linear-gradient(135deg, #4ade80, #22c55e); color: #000; }
+        .btn-close { background: rgba(255,255,255,0.1); color: #fff; }
+
+        .login-prompt { text-align: center; padding: 60px 20px; background: rgba(0,0,0,0.3); border-radius: 20px; }
+        .login-prompt h2 { margin-bottom: 15px; }
+        .login-prompt p { color: #888; margin-bottom: 25px; }
+        .login-prompt .btn { display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; text-decoration: none; border-radius: 25px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Trading</h1>
+            <a href="index.html" class="back-btn">← Back</a>
+        </div>
+
+        <div id="content">
+            <div class="login-prompt">
+                <h2>🔒 Login Required</h2>
+                <p>Log in to trade with friends!</p>
+                <a href="login.html" class="btn">Login / Register</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="tradeModal">
+        <div class="modal-content">
+            <h2 class="modal-title">🔄 New Trade</h2>
+            <div class="form-group">
+                <label>Trade With</label>
+                <select id="friendSelect"><option value="">Select a friend...</option></select>
+            </div>
+            <div class="trade-builder">
+                <div class="trade-builder-side">
+                    <h3>📤 You Offer</h3>
+                    <div class="item-grid" id="myItemsGrid"></div>
+                    <div class="coins-input">
+                        <span>🪙</span>
+                        <input type="number" id="offerCoins" placeholder="0" min="0">
+                        <span>coins</span>
+                    </div>
+                    <div class="selected-items">
+                        <h4>Selected:</h4>
+                        <div id="offerSelected"></div>
+                    </div>
+                </div>
+                <div class="trade-builder-side">
+                    <h3>📥 You Request</h3>
+                    <p style="color:#888;font-size:0.85rem;margin-bottom:10px;">Type item names you want:</p>
+                    <div class="form-group" style="margin-bottom:10px;">
+                        <input type="text" id="requestItemInput" placeholder="e.g. basic, premium, pikachu...">
+                        <button onclick="addRequestItem()" style="margin-top:8px;padding:8px 15px;background:#a855f7;color:#fff;border:none;border-radius:10px;cursor:pointer;">+ Add Item</button>
+                    </div>
+                    <div class="coins-input">
+                        <span>🪙</span>
+                        <input type="number" id="requestCoins" placeholder="0" min="0">
+                        <span>coins</span>
+                    </div>
+                    <div class="selected-items">
+                        <h4>Requesting:</h4>
+                        <div id="requestSelected"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-btns">
+                <button class="btn-close" onclick="hideModal()">Cancel</button>
+                <button class="btn-send" onclick="sendTrade()">Send Trade Offer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let userData = null;
+        let myInventory = null;
+        let friends = [];
+        let pendingTrades = [];
+        let currentTab = "pending";
+        let offerItems = [];
+        let requestItems = [];
+
+        const ITEM_ICONS = {
+            "basic": "📦", "premium": "🎁", "legendary": "👑",
+            "coin_boost": "🪙", "xp_boost": "⭐", "luck_boost": "🍀"
+        };
+
+        async function init() {
+            try {
+                const resp = await fetch("api/user.php?action=profile", { credentials: "include" });
+                const data = await resp.json();
+                if (data.success) {
+                    userData = data;
+                    await loadData();
+                    renderContent();
+                }
+            } catch (e) {}
+        }
+
+        async function loadData() {
+            const [invResp, friendsResp, tradesResp] = await Promise.all([
+                fetch("api/trading.php?action=myItems", { credentials: "include" }),
+                fetch("api/trading.php?action=friends", { credentials: "include" }),
+                fetch("api/trading.php?action=pending", { credentials: "include" })
+            ]);
+            const invData = await invResp.json();
+            const friendsData = await friendsResp.json();
+            const tradesData = await tradesResp.json();
+
+            if (invData.success) myInventory = invData.inventory;
+            if (friendsData.success) friends = friendsData.friends;
+            if (tradesData.success) pendingTrades = tradesData.trades;
+        }
+
+        function renderContent() {
+            let html = '<button class="new-trade-btn" onclick="showModal()">+ New Trade</button>';
+            html += '<div class="tabs">' +
+                '<div class="tab ' + (currentTab === "pending" ? "active" : "") + '" onclick="switchTab(\'pending\')">📬 Pending (' + pendingTrades.length + ')</div>' +
+                '<div class="tab ' + (currentTab === "history" ? "active" : "") + '" onclick="switchTab(\'history\')">📜 History</div>' +
+                '</div>';
+            html += '<div class="section" id="tradesSection"></div>';
+            document.getElementById("content").innerHTML = html;
+
+            if (currentTab === "pending") renderPending();
+            else loadHistory();
+        }
+
+        function renderPending() {
+            const section = document.getElementById("tradesSection");
+            if (pendingTrades.length === 0) {
+                section.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No pending trades</p></div>';
+                return;
+            }
+
+            let html = "";
+            pendingTrades.forEach(trade => {
+                const isIncoming = trade.to === userData.username;
+                html += renderTradeCard(trade, isIncoming);
+            });
+            section.innerHTML = html;
+        }
+
+        async function loadHistory() {
+            const section = document.getElementById("tradesSection");
+            section.innerHTML = '<div style="text-align:center;padding:20px;">Loading...</div>';
+
+            try {
+                const resp = await fetch("api/trading.php?action=history", { credentials: "include" });
+                const data = await resp.json();
+                if (data.success && data.trades.length > 0) {
+                    let html = "";
+                    data.trades.forEach(trade => {
+                        html += renderTradeCard(trade, false, true);
+                    });
+                    section.innerHTML = html;
+                } else {
+                    section.innerHTML = '<div class="empty-state"><div class="icon">📜</div><p>No trade history</p></div>';
+                }
+            } catch (e) {
+                section.innerHTML = '<div class="empty-state">Failed to load</div>';
+            }
+        }
+
+        function renderTradeCard(trade, isIncoming, isHistory) {
+            const statusClass = trade.status;
+            let html = '<div class="trade-card">' +
+                '<div class="trade-header">' +
+                '<div class="trade-users">' + trade.from + ' <span class="arrow">→</span> ' + trade.to + '</div>' +
+                '<span class="trade-status ' + statusClass + '">' + trade.status.toUpperCase() + '</span>' +
+                '</div>' +
+                '<div class="trade-content">' +
+                '<div class="trade-side"><h4>Offering:</h4><div class="trade-items">';
+
+            trade.offerItems.forEach(item => {
+                const icon = ITEM_ICONS[item.name] || "🎴";
+                html += '<span class="trade-item">' + icon + ' ' + item.name + '</span>';
+            });
+            if (trade.offerCoins > 0) html += '<span class="trade-item trade-coins">🪙 ' + trade.offerCoins + '</span>';
+            if (trade.offerItems.length === 0 && trade.offerCoins === 0) html += '<span style="color:#666;">Nothing</span>';
+
+            html += '</div></div><div class="trade-side"><h4>Requesting:</h4><div class="trade-items">';
+
+            trade.requestItems.forEach(item => {
+                const icon = ITEM_ICONS[item.name] || "🎴";
+                html += '<span class="trade-item">' + icon + ' ' + item.name + '</span>';
+            });
+            if (trade.requestCoins > 0) html += '<span class="trade-item trade-coins">🪙 ' + trade.requestCoins + '</span>';
+            if (trade.requestItems.length === 0 && trade.requestCoins === 0) html += '<span style="color:#666;">Nothing</span>';
+
+            html += '</div></div></div>';
+
+            if (trade.status === "pending" && !isHistory) {
+                html += '<div class="trade-actions">';
+                if (isIncoming) {
+                    html += '<button class="btn-decline" onclick="declineTrade(\'' + trade.id + '\')">Decline</button>';
+                    html += '<button class="btn-accept" onclick="acceptTrade(\'' + trade.id + '\')">Accept</button>';
+                } else {
+                    html += '<button class="btn-cancel" onclick="cancelTrade(\'' + trade.id + '\')">Cancel</button>';
+                }
+                html += '</div>';
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            renderContent();
+        }
+
+        function showModal() {
+            if (friends.length === 0) {
+                alert("Add some friends first to trade with them!");
+                return;
+            }
+            offerItems = [];
+            requestItems = [];
+            document.getElementById("offerCoins").value = "";
+            document.getElementById("requestCoins").value = "";
+            document.getElementById("requestItemInput").value = "";
+
+            const select = document.getElementById("friendSelect");
+            select.innerHTML = '<option value="">Select a friend...</option>';
+            friends.forEach(f => {
+                select.innerHTML += '<option value="' + f + '">' + f + '</option>';
+            });
+
+            renderMyItems();
+            renderSelectedItems();
+            document.getElementById("tradeModal").classList.add("active");
+        }
+
+        function hideModal() {
+            document.getElementById("tradeModal").classList.remove("active");
+        }
+
+        function renderMyItems() {
+            const grid = document.getElementById("myItemsGrid");
+            let html = "";
+
+            // Lootboxes
+            const boxes = {};
+            (myInventory.lootboxes || []).forEach(b => { boxes[b] = (boxes[b] || 0) + 1; });
+            for (let name in boxes) {
+                const icon = ITEM_ICONS[name] || "📦";
+                const selected = offerItems.filter(i => i.type === "lootboxes" && i.name === name).length;
+                const available = boxes[name] - selected;
+                html += '<button class="item-btn ' + (available <= 0 ? 'disabled' : '') + '" onclick="toggleOfferItem(\'lootboxes\',\'' + name + '\')" ' + (available <= 0 ? 'disabled' : '') + '>' + icon + ' ' + name + ' (x' + available + ')</button>';
+            }
+
+            // Boosters
+            const boosts = {};
+            (myInventory.boosters || []).forEach(b => { boosts[b] = (boosts[b] || 0) + 1; });
+            for (let name in boosts) {
+                const icon = ITEM_ICONS[name] || "⚡";
+                const selected = offerItems.filter(i => i.type === "boosters" && i.name === name).length;
+                const available = boosts[name] - selected;
+                html += '<button class="item-btn ' + (available <= 0 ? 'disabled' : '') + '" onclick="toggleOfferItem(\'boosters\',\'' + name + '\')" ' + (available <= 0 ? 'disabled' : '') + '>' + icon + ' ' + name + ' (x' + available + ')</button>';
+            }
+
+            // Trading cards
+            const cards = myInventory.tradingCards || {};
+            for (let name in cards) {
+                const selected = offerItems.filter(i => i.type === "tradingCards" && i.name === name).length;
+                const available = cards[name] - selected;
+                html += '<button class="item-btn ' + (available <= 0 ? 'disabled' : '') + '" onclick="toggleOfferItem(\'tradingCards\',\'' + name + '\')" ' + (available <= 0 ? 'disabled' : '') + '>🎴 ' + name + ' (x' + available + ')</button>';
+            }
+
+            if (!html) html = '<span style="color:#666;">No items to trade</span>';
+            grid.innerHTML = html;
+        }
+
+        function toggleOfferItem(type, name) {
+            offerItems.push({ type, name });
+            renderMyItems();
+            renderSelectedItems();
+        }
+
+        function removeOfferItem(idx) {
+            offerItems.splice(idx, 1);
+            renderMyItems();
+            renderSelectedItems();
+        }
+
+        function addRequestItem() {
+            const input = document.getElementById("requestItemInput");
+            const name = input.value.trim().toLowerCase();
+            if (!name) return;
+
+            // Guess type
+            let type = "tradingCards";
+            if (["basic", "premium", "legendary"].includes(name)) type = "lootboxes";
+            if (["coin_boost", "xp_boost", "luck_boost"].includes(name)) type = "boosters";
+
+            requestItems.push({ type, name });
+            input.value = "";
+            renderSelectedItems();
+        }
+
+        function removeRequestItem(idx) {
+            requestItems.splice(idx, 1);
+            renderSelectedItems();
+        }
+
+        function renderSelectedItems() {
+            let offerHtml = "";
+            offerItems.forEach((item, i) => {
+                const icon = ITEM_ICONS[item.name] || "🎴";
+                offerHtml += '<span class="selected-tag">' + icon + ' ' + item.name + ' <span class="remove" onclick="removeOfferItem(' + i + ')">×</span></span>';
+            });
+            document.getElementById("offerSelected").innerHTML = offerHtml || '<span style="color:#666;font-size:0.8rem;">Click items above to add</span>';
+
+            let reqHtml = "";
+            requestItems.forEach((item, i) => {
+                const icon = ITEM_ICONS[item.name] || "🎴";
+                reqHtml += '<span class="selected-tag">' + icon + ' ' + item.name + ' <span class="remove" onclick="removeRequestItem(' + i + ')">×</span></span>';
+            });
+            document.getElementById("requestSelected").innerHTML = reqHtml || '<span style="color:#666;font-size:0.8rem;">Add items you want</span>';
+        }
+
+        async function sendTrade() {
+            const toUser = document.getElementById("friendSelect").value;
+            const offerCoins = parseInt(document.getElementById("offerCoins").value) || 0;
+            const requestCoins = parseInt(document.getElementById("requestCoins").value) || 0;
+
+            if (!toUser) { alert("Select a friend to trade with"); return; }
+            if (offerItems.length === 0 && offerCoins === 0 && requestItems.length === 0 && requestCoins === 0) {
+                alert("Add some items or coins to trade");
+                return;
+            }
+
+            try {
+                const resp = await fetch("api/trading.php", {
+                    method: "POST", credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "create",
+                        to: toUser,
+                        offerItems: offerItems,
+                        requestItems: requestItems,
+                        offerCoins: offerCoins,
+                        requestCoins: requestCoins
+                    })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    hideModal();
+                    await loadData();
+                    renderContent();
+                    alert("Trade offer sent!");
+                } else {
+                    alert(data.error);
+                }
+            } catch (e) { alert("Failed to send trade"); }
+        }
+
+        async function acceptTrade(id) {
+            if (!confirm("Accept this trade?")) return;
+            try {
+                const resp = await fetch("api/trading.php", {
+                    method: "POST", credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "accept", tradeId: id })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    await loadData();
+                    renderContent();
+                    alert("Trade completed!");
+                } else {
+                    alert(data.error);
+                }
+            } catch (e) { alert("Failed"); }
+        }
+
+        async function declineTrade(id) {
+            if (!confirm("Decline this trade?")) return;
+            try {
+                const resp = await fetch("api/trading.php", {
+                    method: "POST", credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "decline", tradeId: id })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    await loadData();
+                    renderContent();
+                } else { alert(data.error); }
+            } catch (e) { alert("Failed"); }
+        }
+
+        async function cancelTrade(id) {
+            if (!confirm("Cancel this trade offer?")) return;
+            try {
+                const resp = await fetch("api/trading.php", {
+                    method: "POST", credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "cancel", tradeId: id })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    await loadData();
+                    renderContent();
+                } else { alert(data.error); }
+            } catch (e) { alert("Failed"); }
+        }
+
+        init();
+    </script>
+    <script src="themes.js"></script>
+</body>
+</html>
