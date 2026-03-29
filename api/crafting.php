@@ -141,7 +141,7 @@ $RECIPES = [
 ];
 
 $users = loadJson($usersFile);
-$user = &$users[$username];
+$user = &$users['users'][$username];
 
 // Ensure inventory structure
 if (!isset($user['inventory'])) $user['inventory'] = [];

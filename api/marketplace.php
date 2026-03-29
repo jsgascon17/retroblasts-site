@@ -103,7 +103,7 @@ switch ($action) {
             exit;
         }
 
-        $user = &$users[$username];
+        $user = &$users['users'][$username];
 
         // Get item from inventory
         $item = null;
@@ -226,7 +226,7 @@ switch ($action) {
             exit;
         }
 
-        $buyer = &$users[$username];
+        $buyer = &$users['users'][$username];
         if (($buyer['coins'] ?? 0) < $listing['price']) {
             echo json_encode(['success' => false, 'error' => 'Not enough coins']);
             exit;
@@ -252,7 +252,7 @@ switch ($action) {
         }
 
         // Pay seller (minus fee)
-        $seller = &$users[$listing['seller']];
+        $seller = &$users['users'][$listing['seller']];
         $fee = floor($listing['price'] * $MARKET_FEE);
         $sellerReceives = $listing['price'] - $fee;
         $seller['coins'] = ($seller['coins'] ?? 0) + $sellerReceives;
@@ -316,7 +316,7 @@ switch ($action) {
         }
 
         // Return item to seller
-        $user = &$users[$username];
+        $user = &$users['users'][$username];
         switch ($listing['itemType']) {
             case 'lootbox':
                 $user['inventory']['lootboxes'][] = $listing['item'];

@@ -18,7 +18,7 @@ $username = $_SESSION['user'];
 $action = $_GET['action'] ?? '';
 
 $users = loadJson($usersFile);
-$user = $users[$username] ?? null;
+$user = $users['users'][$username] ?? null;
 
 if (!$user) {
     echo json_encode(['success' => false, 'error' => 'User not found']);
