@@ -21,14 +21,14 @@ if (!isset($_SESSION['user'])) {
 $username = $_SESSION['user'];
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
-// Crafting recipes
+// Crafting recipes - using "basic" to match inventory format
 $RECIPES = [
     // Lootbox upgrades
     'rare_lootbox' => [
         'name' => 'Rare Lootbox',
         'icon' => '📦',
         'ingredients' => [
-            ['type' => 'lootbox', 'rarity' => 'common', 'count' => 3]
+            ['type' => 'lootbox', 'rarity' => 'basic', 'count' => 3]
         ],
         'result' => ['type' => 'lootbox', 'rarity' => 'rare', 'count' => 1]
     ],
@@ -80,7 +80,7 @@ $RECIPES = [
         'name' => 'XP Booster (2x, 1hr)',
         'icon' => '⚡',
         'ingredients' => [
-            ['type' => 'card', 'rarity' => 'common', 'count' => 3],
+            ['type' => 'lootbox', 'rarity' => 'basic', 'count' => 2],
             ['type' => 'coins', 'count' => 100]
         ],
         'result' => ['type' => 'booster', 'id' => 'xp_boost_2x_1h', 'count' => 1]
@@ -89,19 +89,10 @@ $RECIPES = [
         'name' => 'Coin Booster (2x, 1hr)',
         'icon' => '🪙',
         'ingredients' => [
-            ['type' => 'card', 'rarity' => 'common', 'count' => 3],
+            ['type' => 'lootbox', 'rarity' => 'basic', 'count' => 2],
             ['type' => 'coins', 'count' => 100]
         ],
         'result' => ['type' => 'booster', 'id' => 'coin_boost_2x_1h', 'count' => 1]
-    ],
-    'mega_xp_booster' => [
-        'name' => 'Mega XP Booster (3x, 2hr)',
-        'icon' => '⚡',
-        'ingredients' => [
-            ['type' => 'booster', 'id' => 'xp_boost_2x_1h', 'count' => 2],
-            ['type' => 'card', 'rarity' => 'rare', 'count' => 2]
-        ],
-        'result' => ['type' => 'booster', 'id' => 'xp_boost_3x_2h', 'count' => 1]
     ],
 
     // Pet egg crafting
@@ -110,7 +101,7 @@ $RECIPES = [
         'icon' => '🥚',
         'ingredients' => [
             ['type' => 'lootbox', 'rarity' => 'rare', 'count' => 2],
-            ['type' => 'card', 'rarity' => 'rare', 'count' => 3]
+            ['type' => 'coins', 'count' => 200]
         ],
         'result' => ['type' => 'petEgg', 'rarity' => 'rare', 'count' => 1]
     ],
@@ -119,7 +110,7 @@ $RECIPES = [
         'icon' => '🥚',
         'ingredients' => [
             ['type' => 'lootbox', 'rarity' => 'epic', 'count' => 2],
-            ['type' => 'card', 'rarity' => 'epic', 'count' => 2]
+            ['type' => 'coins', 'count' => 500]
         ],
         'result' => ['type' => 'petEgg', 'rarity' => 'epic', 'count' => 1]
     ],
@@ -130,20 +121,10 @@ $RECIPES = [
         'icon' => '🍀',
         'description' => '+10% loot drop chance for 24 hours',
         'ingredients' => [
-            ['type' => 'card', 'rarity' => 'rare', 'count' => 5],
+            ['type' => 'lootbox', 'rarity' => 'basic', 'count' => 5],
             ['type' => 'coins', 'count' => 500]
         ],
         'result' => ['type' => 'charm', 'id' => 'lucky_charm', 'duration' => 86400, 'count' => 1]
-    ],
-    'xp_charm' => [
-        'name' => 'XP Charm',
-        'icon' => '✨',
-        'description' => '+25% XP for 24 hours',
-        'ingredients' => [
-            ['type' => 'card', 'rarity' => 'epic', 'count' => 3],
-            ['type' => 'coins', 'count' => 750]
-        ],
-        'result' => ['type' => 'charm', 'id' => 'xp_charm', 'duration' => 86400, 'count' => 1]
     ],
 
     // Mystery box
@@ -152,9 +133,8 @@ $RECIPES = [
         'icon' => '🎁',
         'description' => 'Contains random rare+ items',
         'ingredients' => [
-            ['type' => 'lootbox', 'rarity' => 'common', 'count' => 2],
-            ['type' => 'lootbox', 'rarity' => 'rare', 'count' => 1],
-            ['type' => 'card', 'rarity' => 'uncommon', 'count' => 5]
+            ['type' => 'lootbox', 'rarity' => 'basic', 'count' => 5],
+            ['type' => 'lootbox', 'rarity' => 'rare', 'count' => 1]
         ],
         'result' => ['type' => 'mysteryBox', 'count' => 1]
     ]
@@ -172,14 +152,49 @@ if (!isset($user['inventory']['petEggs'])) $user['inventory']['petEggs'] = [];
 if (!isset($user['inventory']['charms'])) $user['inventory']['charms'] = [];
 if (!isset($user['inventory']['mysteryBoxes'])) $user['inventory']['mysteryBoxes'] = [];
 
+// Helper to get lootbox rarity (handles both string and object format)
+function getLootboxRarity($lootbox) {
+    if (is_string($lootbox)) {
+        return $lootbox; // "basic", "rare", etc.
+    }
+    return $lootbox['type'] ?? $lootbox['rarity'] ?? 'basic';
+}
+
+// Helper to get card rarity
+function getCardRarity($card) {
+    if (is_string($card)) {
+        return $card;
+    }
+    return $card['rarity'] ?? 'common';
+}
+
 function countItems(&$user, $type, $subtype = null) {
     switch ($type) {
         case 'lootbox':
-            return count(array_filter($user['inventory']['lootboxes'], fn($l) => $l['type'] === $subtype));
+            $count = 0;
+            foreach ($user['inventory']['lootboxes'] as $lb) {
+                if (getLootboxRarity($lb) === $subtype) {
+                    $count++;
+                }
+            }
+            return $count;
         case 'card':
-            return count(array_filter($user['inventory']['tradingCards'], fn($c) => $c['rarity'] === $subtype));
+            $count = 0;
+            foreach ($user['inventory']['tradingCards'] as $card) {
+                if (getCardRarity($card) === $subtype) {
+                    $count++;
+                }
+            }
+            return $count;
         case 'booster':
-            return count(array_filter($user['inventory']['boosters'], fn($b) => $b['type'] === $subtype));
+            $count = 0;
+            foreach ($user['inventory']['boosters'] as $b) {
+                $bType = is_string($b) ? $b : ($b['type'] ?? '');
+                if ($bType === $subtype) {
+                    $count++;
+                }
+            }
+            return $count;
         case 'coins':
             return $user['coins'] ?? 0;
         default:
@@ -191,42 +206,41 @@ function removeItems(&$user, $type, $subtype, $count) {
     switch ($type) {
         case 'lootbox':
             $removed = 0;
-            $user['inventory']['lootboxes'] = array_values(array_filter(
-                $user['inventory']['lootboxes'],
-                function($l) use ($subtype, &$removed, $count) {
-                    if ($l['type'] === $subtype && $removed < $count) {
-                        $removed++;
-                        return false;
-                    }
-                    return true;
+            $newLootboxes = [];
+            foreach ($user['inventory']['lootboxes'] as $lb) {
+                if (getLootboxRarity($lb) === $subtype && $removed < $count) {
+                    $removed++;
+                    // Skip this one (remove it)
+                } else {
+                    $newLootboxes[] = $lb;
                 }
-            ));
+            }
+            $user['inventory']['lootboxes'] = $newLootboxes;
             break;
         case 'card':
             $removed = 0;
-            $user['inventory']['tradingCards'] = array_values(array_filter(
-                $user['inventory']['tradingCards'],
-                function($c) use ($subtype, &$removed, $count) {
-                    if ($c['rarity'] === $subtype && $removed < $count) {
-                        $removed++;
-                        return false;
-                    }
-                    return true;
+            $newCards = [];
+            foreach ($user['inventory']['tradingCards'] as $card) {
+                if (getCardRarity($card) === $subtype && $removed < $count) {
+                    $removed++;
+                } else {
+                    $newCards[] = $card;
                 }
-            ));
+            }
+            $user['inventory']['tradingCards'] = $newCards;
             break;
         case 'booster':
             $removed = 0;
-            $user['inventory']['boosters'] = array_values(array_filter(
-                $user['inventory']['boosters'],
-                function($b) use ($subtype, &$removed, $count) {
-                    if ($b['type'] === $subtype && $removed < $count) {
-                        $removed++;
-                        return false;
-                    }
-                    return true;
+            $newBoosters = [];
+            foreach ($user['inventory']['boosters'] as $b) {
+                $bType = is_string($b) ? $b : ($b['type'] ?? '');
+                if ($bType === $subtype && $removed < $count) {
+                    $removed++;
+                } else {
+                    $newBoosters[] = $b;
                 }
-            ));
+            }
+            $user['inventory']['boosters'] = $newBoosters;
             break;
         case 'coins':
             $user['coins'] = ($user['coins'] ?? 0) - $count;
@@ -298,7 +312,8 @@ switch ($action) {
         for ($i = 0; $i < $result['count']; $i++) {
             switch ($result['type']) {
                 case 'lootbox':
-                    $user['inventory']['lootboxes'][] = ['type' => $result['rarity'], 'obtained' => date('c')];
+                    // Store as string to match existing format
+                    $user['inventory']['lootboxes'][] = $result['rarity'];
                     break;
                 case 'card':
                     $cardIds = ['arcade_hero', 'pixel_warrior', 'retro_master', 'game_legend', 'digital_knight'];
@@ -340,6 +355,7 @@ switch ($action) {
         // Return crafting-relevant inventory counts
         $counts = [
             'lootboxes' => [
+                'basic' => countItems($user, 'lootbox', 'basic'),
                 'common' => countItems($user, 'lootbox', 'common'),
                 'rare' => countItems($user, 'lootbox', 'rare'),
                 'epic' => countItems($user, 'lootbox', 'epic'),
