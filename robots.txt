@@ -1,0 +1,15 @@
+# robots.txt for RetroBlasts.com
+
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://retroblasts.com/sitemap.xml
+
+# Disallow admin and API endpoints
+Disallow: /api/
+Disallow: /admin.html
+Disallow: /game-admin-panel.html
+
+# Disallow backup files
+Disallow: /*.backup$
