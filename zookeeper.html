@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Zookeeper online free! Match animals to rescue them. Puzzle fun!">
+    <meta name="keywords" content="zookeeper game, animal match, puzzle game, matching game, zoo game, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/zookeeper.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/zookeeper.html">
+    <meta property="og:title" content="Zookeeper - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Zookeeper online free! Match animals to rescue them. Puzzle fun!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Zookeeper - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Zookeeper online free! Match animals to rescue them. Puzzle fun!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Zookeeper",
+        "description": "Play Zookeeper online free! Match animals to rescue them. Puzzle fun!",
+        "url": "https://retroblasts.com/zookeeper.html",
+        "genre": "Puzzle",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zookeeper - Free Online Game | RetroBlasts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; font-family: "Press Start 2P", monospace; background: #000; }
+        #gameContainer { position: relative; width: 100vw; height: 100vh; }
+        #ui { position: absolute; top: 20px; left: 20px; z-index: 100; }
+        #coinDisplay { background: linear-gradient(135deg, #ffd700, #ffed4a); color: #000; padding: 12px 20px; border-radius: 25px; font-size: 1rem; font-weight: bold; box-shadow: 0 4px 15px rgba(255,215,0,0.4); display: flex; align-items: center; gap: 10px; }
+        #coinDisplay .coin-icon { font-size: 1.3rem; }
+        #statsBar { display: flex; gap: 10px; margin-top: 10px; }
+        .stat-box { background: rgba(0,0,0,0.8); color: #fff; padding: 10px 15px; border-radius: 12px; font-size: 0.6rem; border: 2px solid rgba(255,255,255,0.2); }
+        .stat-box .label { color: #888; margin-bottom: 3px; }
+        .stat-box .value { color: #4ade80; font-size: 0.8rem; }
+        #animalList { position: absolute; top: 100px; left: 20px; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 15px; max-width: 200px; z-index: 100; border: 2px solid rgba(255,255,255,0.1); }
+        #animalList h3 { color: #ffd700; font-size: 0.7rem; margin-bottom: 10px; }
+        .animal-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 0.6rem; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .animal-row:last-child { border-bottom: none; }
+        .animal-row .emoji { font-size: 1.2rem; }
+        .animal-row.locked { opacity: 0.4; }
+        .animal-row .income { color: #4ade80; margin-left: auto; }
+        #controls { position: absolute; bottom: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 12px 15px; border-radius: 10px; color: #888; font-size: 0.55rem; z-index: 100; }
+        #controls span { color: #fff; }
+        #shopBtn { position: absolute; bottom: 20px; right: 20px; padding: 15px 30px; font-size: 0.9rem; font-family: inherit; background: linear-gradient(135deg, #8b5cf6, #a855f7); color: #fff; border: none; border-radius: 15px; cursor: pointer; z-index: 100; box-shadow: 0 4px 15px rgba(139,92,246,0.4); }
+        #shopBtn:hover { transform: scale(1.05); }
+        #message { position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #10b981, #059669); padding: 20px 40px; border-radius: 20px; color: #fff; font-size: 1rem; z-index: 200; display: none; text-align: center; }
+        #shop { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #1e1e2e, #2d2d44); padding: 25px; border-radius: 20px; color: #fff; z-index: 300; display: none; border: 3px solid #8b5cf6; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+        #shop h2 { color: #fff; margin-bottom: 20px; text-align: center; font-size: 1.2rem; }
+        .shop-tabs { display: flex; gap: 5px; margin-bottom: 20px; }
+        .shop-tab { flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: none; border-radius: 10px; color: #888; font-family: inherit; font-size: 0.6rem; cursor: pointer; }
+        .shop-tab.active { background: #8b5cf6; color: #fff; }
+        .shop-section { display: none; }
+        .shop-section.active { display: block; }
+        .upgrade-card { background: rgba(255,255,255,0.05); border-radius: 15px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; }
+        .upgrade-icon { width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .upgrade-info { flex: 1; }
+        .upgrade-name { font-size: 0.75rem; margin-bottom: 3px; }
+        .upgrade-desc { font-size: 0.55rem; color: #888; }
+        .upgrade-level { font-size: 0.5rem; color: #8b5cf6; margin-top: 5px; }
+        .buy-btn { padding: 10px 20px; font-size: 0.65rem; font-family: inherit; background: linear-gradient(135deg, #4ade80, #22c55e); color: #000; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .buy-btn:hover { transform: scale(1.05); }
+        .buy-btn:disabled { background: #444; color: #666; cursor: not-allowed; }
+        .buy-btn.owned { background: #8b5cf6; color: #fff; }
+        #closeShop { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.1); border: none; color: #fff; width: 35px; height: 35px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
+        #startScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1a472a 0%, #2d5a3f 50%, #1a472a 100%); z-index: 300; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; }
+        #startScreen h1 { font-size: 2rem; color: #ffd700; margin-bottom: 10px; }
+        #startScreen .subtitle { font-size: 0.7rem; color: #8fbc8f; margin-bottom: 30px; }
+        #startScreen .animals-preview { font-size: 2.5rem; margin-bottom: 30px; }
+        #startBtn { padding: 18px 50px; font-size: 1rem; font-family: inherit; background: linear-gradient(135deg, #ffd700, #ffed4a); color: #000; border: none; border-radius: 15px; cursor: pointer; }
+        #startBtn:hover { transform: scale(1.05); }
+        #startScreen .hint { margin-top: 30px; font-size: 0.55rem; color: #666; }
+        #minimap { position: absolute; top: 20px; right: 20px; width: 150px; height: 150px; background: rgba(0,0,0,0.8); border: 3px solid #ffd700; border-radius: 10px; z-index: 100; }
+        #minimap canvas { width: 100%; height: 100%; border-radius: 7px; }
+        #minimap-label { position: absolute; bottom: 5px; left: 0; right: 0; text-align: center; font-size: 0.4rem; color: #ffd700; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<script src="js/vip.js"></script>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="startScreen">
+            <h1>ZOOKEEPER TYCOON</h1>
+            <p class="subtitle">Build and manage your dream zoo!</p>
+            <div class="animals-preview">🦁 🐘 🦊 🐧 🐯 🐼</div>
+            <button id="startBtn">PLAY</button>
+            <p class="hint">WASD to move | Catch animals | Earn from visitors!</p>
+        </div>
+
+        <div id="ui">
+            <div id="coinDisplay"><span class="coin-icon">🪙</span><span id="coins">0</span></div>
+            <div id="statsBar">
+                <div class="stat-box"><div class="label">INCOME</div><div class="value">+<span id="income">0</span>/s</div></div>
+                <div class="stat-box"><div class="label">VISITORS</div><div class="value"><span id="visitorCount">0</span></div></div>
+                <div class="stat-box"><div class="label">ANIMALS</div><div class="value"><span id="animalCount">0</span>/<span id="totalAnimals">4</span></div></div>
+            </div>
+        </div>
+
+        <div id="animalList"><h3>🦁 ZOO ANIMALS</h3><div id="animalListContent"></div></div>
+        <div id="controls"><span>WASD</span> Move | <span>E</span> Shop</div>
+        <button id="shopBtn">🛒 SHOP</button>
+        <div id="minimap"><canvas id="minimapCanvas"></canvas><div id="minimap-label">MAP</div></div>
+
+        <div id="shop">
+            <button id="closeShop">x</button>
+            <h2>🏪 UPGRADE SHOP</h2>
+            <div class="shop-tabs">
+                <button class="shop-tab active" data-tab="upgrades">💰 Income</button>
+                <button class="shop-tab" data-tab="zones">🗺️ Zones</button>
+                <button class="shop-tab" data-tab="zoo">🏗️ Zoo</button>
+            </div>
+            <div id="upgradesTab" class="shop-section active">
+                <div class="upgrade-card">
+                    <div class="upgrade-icon">🎟️</div>
+                    <div class="upgrade-info"><div class="upgrade-name">Premium Tickets</div><div class="upgrade-desc">Visitors pay more per level</div><div class="upgrade-level">Level <span id="ticketLevel">0</span>/10</div></div>
+                    <button class="buy-btn" data-upgrade="ticket"><span id="ticketCost">200</span>🪙</button>
+                </div>
+                <div class="upgrade-card">
+                    <div class="upgrade-icon">📢</div>
+                    <div class="upgrade-info"><div class="upgrade-name">Marketing</div><div class="upgrade-desc">More visitors come</div><div class="upgrade-level">Level <span id="adLevel">0</span>/10</div></div>
+                    <button class="buy-btn" data-upgrade="ad"><span id="adCost">300</span>🪙</button>
+                </div>
+            </div>
+            <div id="zonesTab" class="shop-section">
+                <div class="upgrade-card">
+                    <div class="upgrade-icon">🌲</div>
+                    <div class="upgrade-info"><div class="upgrade-name">Forest Zone</div><div class="upgrade-desc">Bears, Foxes, Deer, Wolves</div></div>
+                    <button class="buy-btn" data-upgrade="forest"><span id="forestCost">1500</span>🪙</button>
+                </div>
+                <div class="upgrade-card">
+                    <div class="upgrade-icon">❄️</div>
+                    <div class="upgrade-info"><div class="upgrade-name">Arctic Zone</div><div class="upgrade-desc">Penguins, Polar Bears, Seals</div></div>
+                    <button class="buy-btn" data-upgrade="arctic"><span id="arcticCost">5000</span>🪙</button>
+                </div>
+                <div class="upgrade-card">
+                    <div class="upgrade-icon">🌴</div>
+                    <div class="upgrade-info"><div class="upgrade-name">Jungle Zone</div><div class="upgrade-desc">Tigers, Monkeys, Pandas</div></div>
+                    <button class="buy-btn" data-upgrade="jungle"><span id="jungleCost">15000</span>🪙</button>
+                </div>
+            </div>
+            <div id="zooTab" class="shop-section">
+                <div class="upgrade-card">
+                    <div class="upgrade-icon">🏗️</div>
+                    <div class="upgrade-info"><div class="upgrade-name">Expand Zoo</div><div class="upgrade-desc">More space for animals</div><div class="upgrade-level">Level <span id="zooLevel">0</span>/5</div></div>
+                    <button class="buy-btn" data-upgrade="zoo"><span id="zooCost">500</span>🪙</button>
+                </div>
+                <div class="upgrade-card">
+                    <div class="upgrade-icon">✨</div>
+                    <div class="upgrade-info"><div class="upgrade-name">Golden Fence</div><div class="upgrade-desc">Attracts more visitors</div><div class="upgrade-level">Level <span id="fenceLevel">0</span>/5</div></div>
+                    <button class="buy-btn" data-upgrade="fence"><span id="fenceCost">600</span>🪙</button>
+                </div>
+            </div>
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, playerGroup;
+        let player = { x: 0, z: 40, angle: 0 };
+        let keys = {}, animals = [], caughtAnimals = [], visitors = [], zooAnimals = [];
+        let gameStarted = false, shopOpen = false, coins = 0, incomePerSecond = 0;
+        let zooSize = 20, worldSize = 80, fenceMeshes = [];
+
+        let upgrades = {
+            ticket: { level: 0, maxLevel: 10, baseCost: 200, costMult: 1.8 },
+            ad: { level: 0, maxLevel: 10, baseCost: 300, costMult: 1.8 },
+            forest: { owned: false, cost: 1500 },
+            arctic: { owned: false, cost: 5000 },
+            jungle: { owned: false, cost: 15000 },
+            zoo: { level: 0, maxLevel: 5, baseCost: 500, costMult: 2.2 },
+            fence: { level: 0, maxLevel: 5, baseCost: 600, costMult: 2 }
+        };
+
+        const SAVE_KEY = "zookeeperTycoonSave";
+        const SAVE_VERSION = 3; // Increment when making breaking changes
+
+        function saveGame() {
+            const saveData = {
+                version: SAVE_VERSION,
+                coins: coins,
+                upgrades: {
+                    ticket: upgrades.ticket.level,
+                    ad: upgrades.ad.level,
+                    forest: upgrades.forest.owned,
+                    arctic: upgrades.arctic.owned,
+                    jungle: upgrades.jungle.owned,
+                    zoo: upgrades.zoo.level,
+                    fence: upgrades.fence.level
+                },
+                caughtAnimals: caughtAnimals.map(a => a.name),
+                zooSize: zooSize,
+                worldSize: worldSize
+            };
+            localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem(SAVE_KEY);
+            if (!saved) return false;
+            try {
+                const data = JSON.parse(saved);
+                // Reset old saves with incompatible version
+                if (!data.version || data.version < SAVE_VERSION) {
+                    localStorage.removeItem(SAVE_KEY);
+                    return false;
+                }
+                coins = data.coins || 0;
+                upgrades.ticket.level = data.upgrades.ticket || 0;
+                upgrades.ad.level = data.upgrades.ad || 0;
+                upgrades.forest.owned = data.upgrades.forest || false;
+                upgrades.arctic.owned = data.upgrades.arctic || false;
+                upgrades.jungle.owned = data.upgrades.jungle || false;
+                upgrades.zoo.level = data.upgrades.zoo || 0;
+                upgrades.fence.level = data.upgrades.fence || 0;
+                zooSize = data.zooSize || 20;
+                worldSize = data.worldSize || 80;
+
+                // Unlock biomes
+                BIOMES.forest.unlocked = upgrades.forest.owned;
+                BIOMES.arctic.unlocked = upgrades.arctic.owned;
+                BIOMES.jungle.unlocked = upgrades.jungle.owned;
+
+                // Restore caught animals
+                if (data.caughtAnimals) {
+                    data.caughtAnimals.forEach(name => {
+                        Object.keys(BIOMES).forEach(biomeKey => {
+                            const animal = BIOMES[biomeKey].animals.find(a => a.name === name);
+                            if (animal && !caughtAnimals.find(a => a.name === name)) {
+                                caughtAnimals.push(animal);
+                            }
+                        });
+                    });
+                }
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Create a detailed animal model
+        function createAnimalModel(type, includeMarker = true) {
+            const group = new THREE.Group();
+            const mat = new THREE.MeshLambertMaterial({ color: type.color });
+            const darkMat = new THREE.MeshLambertMaterial({ color: darkenColor(type.color, 0.7) });
+
+            // Body - elongated box
+            const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1, 2), mat);
+            body.position.y = 1.2;
+            group.add(body);
+
+            // Head - sphere or box depending on animal
+            const headSize = type.name === "Elephant" ? 1 : 0.7;
+            const head = new THREE.Mesh(new THREE.SphereGeometry(headSize * 0.5, 12, 12), mat);
+            head.position.set(0, 1.5, 1.2);
+            group.add(head);
+
+            // Snout/nose for most animals
+            if (type.name !== "Penguin" && type.name !== "Parrot" && type.name !== "Snow Owl") {
+                const snout = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.25, 0.4), darkMat);
+                snout.position.set(0, 1.35, 1.55);
+                group.add(snout);
+            }
+
+            // 4 Legs
+            const legGeo = new THREE.BoxGeometry(0.25, 0.7, 0.25);
+            const positions = [[-0.4, 0.35, 0.6], [0.4, 0.35, 0.6], [-0.4, 0.35, -0.6], [0.4, 0.35, -0.6]];
+            positions.forEach(pos => {
+                const leg = new THREE.Mesh(legGeo, darkMat);
+                leg.position.set(...pos);
+                group.add(leg);
+            });
+
+            // Ears (for most mammals)
+            if (["Lion", "Bear", "Fox", "Wolf", "Tiger", "Panda", "Polar Bear", "Monkey"].includes(type.name)) {
+                const earGeo = new THREE.ConeGeometry(0.15, 0.3, 8);
+                const ear1 = new THREE.Mesh(earGeo, mat);
+                ear1.position.set(-0.25, 2, 1.1);
+                const ear2 = new THREE.Mesh(earGeo, mat);
+                ear2.position.set(0.25, 2, 1.1);
+                group.add(ear1, ear2);
+            }
+
+            // Elephant trunk
+            if (type.name === "Elephant") {
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.15, 1, 8), mat);
+                trunk.position.set(0, 1, 1.7);
+                trunk.rotation.x = Math.PI / 4;
+                group.add(trunk);
+                // Big ears
+                const earGeo = new THREE.CircleGeometry(0.5, 12);
+                const ear1 = new THREE.Mesh(earGeo, mat);
+                ear1.position.set(-0.7, 1.5, 1);
+                ear1.rotation.y = Math.PI / 2;
+                const ear2 = new THREE.Mesh(earGeo, mat);
+                ear2.position.set(0.7, 1.5, 1);
+                ear2.rotation.y = -Math.PI / 2;
+                group.add(ear1, ear2);
+            }
+
+            // Giraffe neck
+            if (type.name === "Giraffe") {
+                const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 1.5, 8), mat);
+                neck.position.set(0, 2.2, 0.8);
+                neck.rotation.x = -0.3;
+                group.add(neck);
+                head.position.set(0, 2.8, 1.3);
+            }
+
+            // Zebra stripes (darker body parts)
+            if (type.name === "Zebra") {
+                const stripe = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.15, 2.05), darkMat);
+                stripe.position.y = 1.4;
+                group.add(stripe);
+                const stripe2 = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.15, 2.05), darkMat);
+                stripe2.position.y = 1;
+                group.add(stripe2);
+            }
+
+            // Tail for most animals
+            if (!["Penguin", "Seal", "Parrot", "Snow Owl"].includes(type.name)) {
+                const tail = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.6), darkMat);
+                tail.position.set(0, 1.3, -1.3);
+                group.add(tail);
+            }
+
+            // Bird wings
+            if (["Parrot", "Snow Owl"].includes(type.name)) {
+                body.scale.set(0.7, 0.7, 0.7);
+                body.position.y = 0.9;
+                const wingGeo = new THREE.BoxGeometry(0.1, 0.4, 0.8);
+                const wing1 = new THREE.Mesh(wingGeo, darkMat);
+                wing1.position.set(-0.5, 1, 0);
+                const wing2 = new THREE.Mesh(wingGeo, darkMat);
+                wing2.position.set(0.5, 1, 0);
+                group.add(wing1, wing2);
+                // Beak
+                const beak = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.3, 8), new THREE.MeshLambertMaterial({ color: 0xffa500 }));
+                beak.position.set(0, 1.3, 1.1);
+                beak.rotation.x = Math.PI / 2;
+                group.add(beak);
+            }
+
+            // Penguin specifics
+            if (type.name === "Penguin") {
+                // White belly
+                const belly = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.5), new THREE.MeshLambertMaterial({ color: 0xffffff }));
+                belly.position.set(0, 1.2, 0.5);
+                group.add(belly);
+            }
+
+            // Panda markings
+            if (type.name === "Panda") {
+                // Black eye patches
+                const eyePatch1 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), darkMat);
+                eyePatch1.position.set(-0.15, 1.55, 1.4);
+                const eyePatch2 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), darkMat);
+                eyePatch2.position.set(0.15, 1.55, 1.4);
+                group.add(eyePatch1, eyePatch2);
+            }
+
+            // Rarity marker (floating orb above animal)
+            if (includeMarker) {
+                const markerColors = { common: 0x90EE90, uncommon: 0x4a9eff, rare: 0xa855f7, legendary: 0xffd700 };
+                const marker = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.35, 16, 16),
+                    new THREE.MeshBasicMaterial({ color: markerColors[type.rarity] })
+                );
+                marker.position.y = 3;
+                group.add(marker);
+            }
+
+            return group;
+        }
+
+        function darkenColor(color, factor) {
+            const r = ((color >> 16) & 255) * factor;
+            const g = ((color >> 8) & 255) * factor;
+            const b = (color & 255) * factor;
+            return (Math.floor(r) << 16) | (Math.floor(g) << 8) | Math.floor(b);
+        }
+
+        // Create a zoo enclosure with animal inside
+        function createZooAnimal(type, x, z) {
+            const group = new THREE.Group();
+
+            // Platform/enclosure base
+            const platform = new THREE.Mesh(
+                new THREE.CylinderGeometry(2.5, 2.5, 0.3, 16),
+                new THREE.MeshLambertMaterial({ color: 0x8d6e63 })
+            );
+            platform.position.y = 0.15;
+            group.add(platform);
+
+            // Grass on platform
+            const grass = new THREE.Mesh(
+                new THREE.CylinderGeometry(2.3, 2.3, 0.1, 16),
+                new THREE.MeshLambertMaterial({ color: 0x7cb342 })
+            );
+            grass.position.y = 0.35;
+            group.add(grass);
+
+            // The animal (no marker in zoo)
+            const animal = createAnimalModel(type, false);
+            animal.scale.set(0.9, 0.9, 0.9);
+            animal.position.y = 0.3;
+            animal.rotation.y = Math.random() * Math.PI * 2;
+            group.add(animal);
+
+            // Small fence around enclosure
+            const fenceColor = 0x5d4037;
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const post = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.1, 0.6, 0.1),
+                    new THREE.MeshLambertMaterial({ color: fenceColor })
+                );
+                post.position.set(Math.cos(angle) * 2.3, 0.6, Math.sin(angle) * 2.3);
+                group.add(post);
+            }
+
+            group.position.set(x, 0, z);
+            return group;
+        }
+
+        const BIOMES = {
+            savanna: { animals: [
+                { name: "Lion", emoji: "🦁", color: 0xd4a843, rarity: "common", value: 1 },
+                { name: "Zebra", emoji: "🦓", color: 0xeeeeee, rarity: "common", value: 1 },
+                { name: "Giraffe", emoji: "🦒", color: 0xdaa520, rarity: "uncommon", value: 3 },
+                { name: "Elephant", emoji: "🐘", color: 0x888888, rarity: "uncommon", value: 3 }
+            ], unlocked: true },
+            forest: { animals: [
+                { name: "Bear", emoji: "🐻", color: 0x8b4513, rarity: "common", value: 2 },
+                { name: "Fox", emoji: "🦊", color: 0xff6600, rarity: "common", value: 2 },
+                { name: "Deer", emoji: "🦌", color: 0xc4a35a, rarity: "uncommon", value: 4 },
+                { name: "Wolf", emoji: "🐺", color: 0x555555, rarity: "rare", value: 8 }
+            ], unlocked: false },
+            arctic: { animals: [
+                { name: "Penguin", emoji: "🐧", color: 0x222222, rarity: "common", value: 3 },
+                { name: "Polar Bear", emoji: "🐻‍❄️", color: 0xfafafa, rarity: "uncommon", value: 5 },
+                { name: "Seal", emoji: "🦭", color: 0x708090, rarity: "uncommon", value: 5 },
+                { name: "Snow Owl", emoji: "🦉", color: 0xf0f0f0, rarity: "rare", value: 10 }
+            ], unlocked: false },
+            jungle: { animals: [
+                { name: "Monkey", emoji: "🐵", color: 0x8b4513, rarity: "common", value: 4 },
+                { name: "Tiger", emoji: "🐯", color: 0xff8c00, rarity: "rare", value: 12 },
+                { name: "Panda", emoji: "🐼", color: 0xffffff, rarity: "rare", value: 15 },
+                { name: "Parrot", emoji: "🦜", color: 0xff0000, rarity: "legendary", value: 30 }
+            ], unlocked: false }
+        };
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87ceeb);
+            scene.fog = new THREE.Fog(0x87ceeb, 80, 200);
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.getElementById("gameContainer").appendChild(renderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+            const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+            sun.position.set(50, 100, 50);
+            sun.castShadow = true;
+            scene.add(sun);
+
+            // Load saved game data before creating world
+            const hadSave = loadGame();
+
+            createWorld(); createPlayer(); createZoo(); createPath(); spawnAnimals();
+
+            // Recreate zoo animals from saved data
+            if (hadSave && caughtAnimals.length > 0) {
+                recreateZooAnimals();
+            }
+
+            updateAnimalList(); updateAnimalCount(); updateUI();
+
+            document.addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; if (e.key.toLowerCase() === "e" && gameStarted) toggleShop(); });
+            document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+            document.getElementById("startBtn").addEventListener("click", startGame);
+            document.getElementById("shopBtn").addEventListener("click", toggleShop);
+            document.getElementById("closeShop").addEventListener("click", toggleShop);
+
+            document.querySelectorAll(".shop-tab").forEach(tab => {
+                tab.addEventListener("click", () => {
+                    document.querySelectorAll(".shop-tab").forEach(t => t.classList.remove("active"));
+                    document.querySelectorAll(".shop-section").forEach(s => s.classList.remove("active"));
+                    tab.classList.add("active");
+                    document.getElementById(tab.dataset.tab + "Tab").classList.add("active");
+                });
+            });
+
+            document.querySelectorAll(".buy-btn").forEach(btn => {
+                btn.addEventListener("click", () => buyUpgrade(btn.dataset.upgrade));
+            });
+
+            setInterval(() => { if (gameStarted && caughtAnimals.length > 0) { calculateIncome(); const vipIncome = typeof VIPSystem !== "undefined" ? VIPSystem.applyMultiplier(incomePerSecond) : incomePerSecond; coins += vipIncome; updateUI(); } }, 1000);
+            setInterval(() => { if (gameStarted && caughtAnimals.length > 0) spawnVisitor(); }, 3000);
+            // Auto-save every 30 seconds
+            setInterval(() => { if (gameStarted) saveGame(); }, 30000);
+            window.addEventListener("resize", () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+            // Save when leaving page
+            window.addEventListener("beforeunload", () => saveGame());
+            window.addEventListener("visibilitychange", () => { if (document.hidden) saveGame(); });
+            animate();
+        }
+
+        function createWorld() {
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshLambertMaterial({ color: 0x5a8f3e }));
+            ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+            for (let i = 0; i < 80; i++) {
+                let x, z; do { x = (Math.random() - 0.5) * 160; z = (Math.random() - 0.5) * 160; } while (Math.abs(x) < 30 && Math.abs(z) < 35);
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 4, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
+                trunk.position.set(x, 2, z); scene.add(trunk);
+                const leaves = new THREE.Mesh(new THREE.SphereGeometry(2.5, 8, 8), new THREE.MeshLambertMaterial({ color: 0x2d5a27 }));
+                leaves.position.set(x, 5.5, z); scene.add(leaves);
+            }
+        }
+
+        function createPlayer() {
+            playerGroup = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1.5, 8), new THREE.MeshLambertMaterial({ color: 0x2196f3 }));
+            body.position.y = 1; playerGroup.add(body);
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), new THREE.MeshLambertMaterial({ color: 0xffdbac }));
+            head.position.y = 2; playerGroup.add(head);
+            const hat = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.3, 16), new THREE.MeshLambertMaterial({ color: 0x8b4513 }));
+            hat.position.y = 2.4; playerGroup.add(hat);
+            playerGroup.position.set(player.x, 0, player.z);
+            scene.add(playerGroup);
+        }
+
+        function createZoo() {
+            fenceMeshes.forEach(m => scene.remove(m)); fenceMeshes = [];
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(zooSize * 2, zooSize * 2), new THREE.MeshLambertMaterial({ color: 0x7cb342 }));
+            floor.rotation.x = -Math.PI / 2; floor.position.y = 0.01; scene.add(floor); fenceMeshes.push(floor);
+            const fenceColor = [0x8b4513, 0xa0522d, 0xcd853f, 0xdaa520, 0xffd700, 0xffe135][upgrades.fence.level];
+            const fenceMat = new THREE.MeshLambertMaterial({ color: fenceColor });
+            for (let i = -zooSize; i <= zooSize; i += 3) {
+                if (i >= -3 && i <= 3) continue;
+                [[i, -zooSize], [i, zooSize], [-zooSize, i], [zooSize, i]].forEach(pos => {
+                    if (pos[0] >= -3 && pos[0] <= 3 && pos[1] === zooSize) return;
+                    const post = new THREE.Mesh(new THREE.BoxGeometry(0.3, 2, 0.3), fenceMat);
+                    post.position.set(pos[0], 1, pos[1]); scene.add(post); fenceMeshes.push(post);
+                });
+            }
+            const archMat = new THREE.MeshLambertMaterial({ color: 0xffd700 });
+            [[-4, 2, zooSize], [4, 2, zooSize]].forEach(p => { const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.8, 4, 0.8), archMat); pillar.position.set(...p); scene.add(pillar); fenceMeshes.push(pillar); });
+            const archTop = new THREE.Mesh(new THREE.BoxGeometry(9, 1, 1), archMat); archTop.position.set(0, 4.5, zooSize); scene.add(archTop); fenceMeshes.push(archTop);
+        }
+
+        function createPath() {
+            for (let z = zooSize; z < zooSize + 30; z += 2) {
+                const path = new THREE.Mesh(new THREE.PlaneGeometry(6, 2), new THREE.MeshLambertMaterial({ color: 0xd4a373 }));
+                path.rotation.x = -Math.PI / 2; path.position.set(0, 0.02, z + 1); scene.add(path);
+            }
+        }
+
+        function recreateZooAnimals() {
+            // Clear existing zoo animals
+            zooAnimals.forEach(a => scene.remove(a));
+            zooAnimals = [];
+
+            // Recreate each caught animal in the zoo
+            caughtAnimals.forEach((animal, aidx) => {
+                const cols = Math.floor((zooSize * 2 - 6) / 6);
+                const ax = -zooSize + 5 + (aidx % cols) * 6;
+                const az = -zooSize + 5 + Math.floor(aidx / cols) * 6;
+                const ag = createZooAnimal(animal, ax, az);
+                scene.add(ag);
+                zooAnimals.push(ag);
+            });
+        }
+
+        function spawnAnimals() {
+            animals.forEach(a => scene.remove(a.group)); animals = [];
+            Object.keys(BIOMES).forEach(biomeKey => {
+                const biome = BIOMES[biomeKey];
+                if (!biome.unlocked) return;
+                biome.animals.forEach(type => {
+                    if (caughtAnimals.find(a => a.name === type.name)) return;
+                    let x, z;
+                    if (biomeKey === "savanna") { do { x = (Math.random() - 0.5) * 120; z = (Math.random() - 0.5) * 100; } while (Math.abs(x) < 30 && z > -30); }
+                    else if (biomeKey === "forest") { x = 50 + Math.random() * 50; z = (Math.random() - 0.5) * 60; }
+                    else if (biomeKey === "arctic") { x = (Math.random() - 0.5) * 60; z = -50 - Math.random() * 50; }
+                    else { x = -50 - Math.random() * 50; z = (Math.random() - 0.5) * 60; }
+                    const group = createAnimalModel(type, true);
+                    group.position.set(x, 0, z);
+                    scene.add(group);
+                    animals.push({ type, biome: biomeKey, group, x, z, angle: Math.random() * Math.PI * 2, moveTimer: 0 });
+                });
+            });
+            updateAnimalCount();
+        }
+
+        function spawnVisitor() {
+            const maxVisitors = 5 + upgrades.ad.level * 2;
+            if (visitors.length >= maxVisitors) return;
+            const colors = [0xef5350, 0x42a5f5, 0xffee58, 0x66bb6a, 0xab47bc];
+            const group = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 1, 8), new THREE.MeshLambertMaterial({ color: colors[Math.floor(Math.random() * colors.length)] }));
+            body.position.y = 0.7; group.add(body);
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 16), new THREE.MeshLambertMaterial({ color: 0xffdbac }));
+            head.position.y = 1.4; group.add(head);
+            const startX = (Math.random() - 0.5) * 8;
+            group.position.set(startX, 0, zooSize + 35); scene.add(group);
+            visitors.push({ group, x: startX, z: zooSize + 35, targetX: (Math.random() - 0.5) * (zooSize - 5), targetZ: (Math.random() - 0.5) * (zooSize - 5), state: "entering", stateTimer: 0 });
+        }
+
+        function calculateIncome() {
+            if (caughtAnimals.length === 0) { incomePerSecond = 0; return; }
+            let base = 0; caughtAnimals.forEach(a => base += a.value);
+            incomePerSecond = Math.floor(base * (1 + upgrades.ticket.level * 0.5) * (1 + upgrades.fence.level * 0.2) * (1 + visitors.length * 0.15));
+            document.getElementById("income").textContent = incomePerSecond;
+        }
+
+        function updateUI() {
+            document.getElementById("coins").textContent = Math.floor(coins);
+            document.getElementById("visitorCount").textContent = visitors.length;
+            updateShopButtons();
+        }
+
+        function updateAnimalCount() {
+            let total = 0; Object.keys(BIOMES).forEach(b => { if (BIOMES[b].unlocked) total += BIOMES[b].animals.length; });
+            document.getElementById("animalCount").textContent = caughtAnimals.length;
+            document.getElementById("totalAnimals").textContent = total;
+        }
+
+        function updateAnimalList() {
+            let html = "";
+            Object.keys(BIOMES).forEach(biomeKey => {
+                BIOMES[biomeKey].animals.forEach(animal => {
+                    const caught = caughtAnimals.find(a => a.name === animal.name);
+                    const locked = !BIOMES[biomeKey].unlocked;
+                    html += '<div class="animal-row ' + (locked ? 'locked' : '') + '"><span class="emoji">' + (caught ? animal.emoji : (locked ? '❓' : '❔')) + '</span><span>' + (locked ? '???' : animal.name) + '</span>' + (caught ? '<span class="income">+' + animal.value + '/s</span>' : '') + '</div>';
+                });
+            });
+            document.getElementById("animalListContent").innerHTML = html;
+        }
+
+        function toggleShop() { shopOpen = !shopOpen; document.getElementById("shop").style.display = shopOpen ? "block" : "none"; updateShopButtons(); }
+
+        function updateShopButtons() {
+            // Helper function to update level-based upgrades safely
+            function updateLevelUpgrade(type, levelId, costId, upgrade) {
+                const btn = document.querySelector('[data-upgrade="' + type + '"]');
+                const levelEl = document.getElementById(levelId);
+                const costEl = document.getElementById(costId);
+
+                if (levelEl) levelEl.textContent = upgrade.level;
+
+                if (upgrade.level >= upgrade.maxLevel) {
+                    btn.innerHTML = "MAX";
+                    btn.disabled = true;
+                    btn.classList.add("owned");
+                } else {
+                    const cost = Math.floor(upgrade.baseCost * Math.pow(upgrade.costMult, upgrade.level));
+                    if (costEl) costEl.textContent = cost;
+                    btn.disabled = coins < cost;
+                }
+            }
+
+            // Update all level-based upgrades
+            updateLevelUpgrade("ticket", "ticketLevel", "ticketCost", upgrades.ticket);
+            updateLevelUpgrade("ad", "adLevel", "adCost", upgrades.ad);
+            updateLevelUpgrade("zoo", "zooLevel", "zooCost", upgrades.zoo);
+            updateLevelUpgrade("fence", "fenceLevel", "fenceCost", upgrades.fence);
+
+            // Zone upgrades (one-time purchases)
+            const forestBtn = document.querySelector('[data-upgrade="forest"]');
+            if (upgrades.forest.owned) {
+                forestBtn.innerHTML = "OWNED";
+                forestBtn.classList.add("owned");
+                forestBtn.disabled = true;
+            } else {
+                forestBtn.disabled = coins < upgrades.forest.cost;
+            }
+
+            const arcticBtn = document.querySelector('[data-upgrade="arctic"]');
+            if (upgrades.arctic.owned) {
+                arcticBtn.innerHTML = "OWNED";
+                arcticBtn.classList.add("owned");
+                arcticBtn.disabled = true;
+            } else if (!upgrades.forest.owned) {
+                arcticBtn.innerHTML = "🔒";
+                arcticBtn.disabled = true;
+            } else {
+                arcticBtn.disabled = coins < upgrades.arctic.cost;
+            }
+
+            const jungleBtn = document.querySelector('[data-upgrade="jungle"]');
+            if (upgrades.jungle.owned) {
+                jungleBtn.innerHTML = "OWNED";
+                jungleBtn.classList.add("owned");
+                jungleBtn.disabled = true;
+            } else if (!upgrades.arctic.owned) {
+                jungleBtn.innerHTML = "🔒";
+                jungleBtn.disabled = true;
+            } else {
+                jungleBtn.disabled = coins < upgrades.jungle.cost;
+            }
+        }
+
+        function buyUpgrade(type) {
+            if (type === "ticket" && upgrades.ticket.level < upgrades.ticket.maxLevel) {
+                const cost = Math.floor(upgrades.ticket.baseCost * Math.pow(upgrades.ticket.costMult, upgrades.ticket.level));
+                if (coins >= cost) { coins -= cost; upgrades.ticket.level++; showMessage("Tickets upgraded!"); }
+            } else if (type === "ad" && upgrades.ad.level < upgrades.ad.maxLevel) {
+                const cost = Math.floor(upgrades.ad.baseCost * Math.pow(upgrades.ad.costMult, upgrades.ad.level));
+                if (coins >= cost) { coins -= cost; upgrades.ad.level++; showMessage("Marketing upgraded!"); }
+            } else if (type === "forest" && !upgrades.forest.owned && coins >= upgrades.forest.cost) {
+                coins -= upgrades.forest.cost; upgrades.forest.owned = true; BIOMES.forest.unlocked = true; worldSize = 120; spawnAnimals(); updateAnimalList(); showMessage("🌲 Forest Unlocked!");
+            } else if (type === "arctic" && !upgrades.arctic.owned && upgrades.forest.owned && coins >= upgrades.arctic.cost) {
+                coins -= upgrades.arctic.cost; upgrades.arctic.owned = true; BIOMES.arctic.unlocked = true; worldSize = 150; spawnAnimals(); updateAnimalList(); showMessage("❄️ Arctic Unlocked!");
+            } else if (type === "jungle" && !upgrades.jungle.owned && upgrades.arctic.owned && coins >= upgrades.jungle.cost) {
+                coins -= upgrades.jungle.cost; upgrades.jungle.owned = true; BIOMES.jungle.unlocked = true; worldSize = 180; spawnAnimals(); updateAnimalList(); showMessage("🌴 Jungle Unlocked!");
+            } else if (type === "zoo" && upgrades.zoo.level < upgrades.zoo.maxLevel) {
+                const cost = Math.floor(upgrades.zoo.baseCost * Math.pow(upgrades.zoo.costMult, upgrades.zoo.level));
+                if (coins >= cost) { coins -= cost; upgrades.zoo.level++; zooSize += 8; createZoo(); createPath(); showMessage("Zoo Expanded!"); }
+            } else if (type === "fence" && upgrades.fence.level < upgrades.fence.maxLevel) {
+                const cost = Math.floor(upgrades.fence.baseCost * Math.pow(upgrades.fence.costMult, upgrades.fence.level));
+                if (coins >= cost) { coins -= cost; upgrades.fence.level++; createZoo(); showMessage("Fence Upgraded!"); }
+            }
+            updateUI(); updateAnimalCount();
+            saveGame(); // Save after buying upgrade
+        }
+
+        function showMessage(text) { const msg = document.getElementById("message"); msg.textContent = text; msg.style.display = "block"; setTimeout(() => msg.style.display = "none", 2000); }
+
+        function updateMinimap() {
+            const canvas = document.getElementById("minimapCanvas");
+            const ctx = canvas.getContext("2d");
+            canvas.width = 150; canvas.height = 150;
+
+            // Background
+            ctx.fillStyle = "#1a3d1a";
+            ctx.fillRect(0, 0, 150, 150);
+
+            const scale = 150 / (worldSize * 2.5);
+            const cx = 75, cy = 75;
+
+            // Zoo area
+            ctx.fillStyle = "#2d5a2d";
+            ctx.fillRect(cx - zooSize * scale, cy - zooSize * scale, zooSize * 2 * scale, zooSize * 2 * scale);
+            ctx.strokeStyle = "#ffd700";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(cx - zooSize * scale, cy - zooSize * scale, zooSize * 2 * scale, zooSize * 2 * scale);
+
+            // Animals as yellow dots
+            animals.forEach(a => {
+                const ax = cx + a.x * scale;
+                const ay = cy + a.z * scale;
+                ctx.fillStyle = "#ffff00";
+                ctx.beginPath();
+                ctx.arc(ax, ay, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Player as red dot
+            const px = cx + player.x * scale;
+            const py = cy + player.z * scale;
+            ctx.fillStyle = "#ff0000";
+            ctx.beginPath();
+            ctx.arc(px, py, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+        function startGame() { document.getElementById("startScreen").style.display = "none"; gameStarted = true; }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (!gameStarted) { camera.position.set(40 * Math.sin(Date.now() * 0.0002), 30, 40 * Math.cos(Date.now() * 0.0002)); camera.lookAt(0, 0, 0); renderer.render(scene, camera); return; }
+
+            if (!shopOpen) {
+                const speed = 0.35; // Faster player to chase animals
+                if (keys["w"] || keys["arrowup"]) { player.z -= speed; player.angle = 0; }
+                if (keys["s"] || keys["arrowdown"]) { player.z += speed; player.angle = Math.PI; }
+                if (keys["a"] || keys["arrowleft"]) { player.x -= speed; player.angle = Math.PI / 2; }
+                if (keys["d"] || keys["arrowright"]) { player.x += speed; player.angle = -Math.PI / 2; }
+                player.x = Math.max(-worldSize, Math.min(worldSize, player.x));
+                player.z = Math.max(-worldSize, Math.min(worldSize, player.z));
+                playerGroup.position.set(player.x, 0, player.z);
+                playerGroup.rotation.y = player.angle;
+            }
+
+            camera.position.set(player.x, 20, player.z + 25);
+            camera.lookAt(player.x, 0, player.z);
+
+            animals.forEach((animal, idx) => {
+                animal.moveTimer++;
+                if (animal.moveTimer > 80) { animal.moveTimer = 0; animal.angle += (Math.random() - 0.5) * Math.PI; }
+
+                // Animals flee from player when close
+                const dx = animal.x - player.x;
+                const dz = animal.z - player.z;
+                const distToPlayer = Math.sqrt(dx * dx + dz * dz);
+                let speed = 0.06; // Base speed (faster than before)
+
+                if (distToPlayer < 15) {
+                    // Run away from player!
+                    animal.angle = Math.atan2(dx, dz);
+                    speed = 0.12; // Sprint away
+                }
+
+                animal.x += Math.sin(animal.angle) * speed;
+                animal.z += Math.cos(animal.angle) * speed;
+                if (Math.abs(animal.x) > worldSize * 0.9 || Math.abs(animal.z) > worldSize * 0.9) animal.angle += Math.PI;
+                animal.group.position.set(animal.x, 0, animal.z);
+                animal.group.rotation.y = animal.angle;
+                // Animate the marker (last child in the group)
+                const marker = animal.group.children[animal.group.children.length - 1];
+                if (marker) marker.position.y = 3 + Math.sin(Date.now() * 0.005) * 0.2;
+
+                const dist = Math.sqrt((player.x - animal.x) ** 2 + (player.z - animal.z) ** 2);
+                if (dist < 2) {
+                    scene.remove(animal.group); caughtAnimals.push(animal.type); animals.splice(idx, 1);
+                    showMessage(animal.type.emoji + " " + animal.type.name + " caught!");
+                    updateAnimalList(); updateAnimalCount();
+                    const aidx = zooAnimals.length; const cols = Math.floor((zooSize * 2 - 6) / 6);
+                    const ax = -zooSize + 5 + (aidx % cols) * 6; const az = -zooSize + 5 + Math.floor(aidx / cols) * 6;
+                    const ag = createZooAnimal(animal.type, ax, az);
+                    scene.add(ag); zooAnimals.push(ag);
+                    saveGame(); // Save after catching animal
+                }
+            });
+
+            visitors.forEach((v, idx) => {
+                if (v.state === "entering") {
+                    if (v.z > zooSize - 5) v.z -= 0.08; else { v.state = "viewing"; v.stateTimer = 300; }
+                } else if (v.state === "viewing") {
+                    const dx = v.targetX - v.x, dz = v.targetZ - v.z, dist = Math.sqrt(dx*dx + dz*dz);
+                    if (dist > 1) { v.x += (dx/dist) * 0.05; v.z += (dz/dist) * 0.05; }
+                    else { v.targetX = (Math.random() - 0.5) * (zooSize - 5); v.targetZ = (Math.random() - 0.5) * (zooSize - 5); }
+                    v.stateTimer--; if (v.stateTimer <= 0) v.state = "leaving";
+                } else { v.z += 0.08; if (v.z > zooSize + 40) { scene.remove(v.group); visitors.splice(idx, 1); } }
+                v.group.position.set(v.x, 0, v.z);
+            });
+
+            updateMinimap();
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+<script src="js/zoo-admin.js"></script>
+</body>
+</html>

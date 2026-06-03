@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Admin Control Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #ffd700; margin-bottom: 20px; text-align: center; }
+        
+        .login-box {
+            background: rgba(0,0,0,0.3);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 400px;
+            margin: 50px auto;
+            text-align: center;
+            border: 1px solid #333;
+        }
+        .login-box h2 { color: #ff6b6b; margin-bottom: 20px; }
+        .login-box p { color: #888; margin-bottom: 20px; }
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: #ffd700;
+            border: none;
+            border-radius: 5px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .login-box button:hover { background: #ffed4a; }
+        .error-msg { color: #ff6b6b; margin-top: 10px; }
+        .user-info { color: #4ecdc4; margin-bottom: 15px; font-size: 14px; }
+        
+        .controls {
+            display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+        }
+        .controls button {
+            padding: 10px 20px;
+            background: #333;
+            border: 1px solid #ffd700;
+            color: #ffd700;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .controls button:hover { background: #444; }
+        .controls button.danger { border-color: #ff6b6b; color: #ff6b6b; }
+        
+        .game-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .game-title { font-size: 1.2rem; color: #4ecdc4; }
+        .game-status { font-size: 0.9rem; }
+        .status-enabled { color: #4ade80; }
+        .status-disabled { color: #ff6b6b; }
+        
+        .admin-list { margin-top: 10px; }
+        .admin-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+            margin: 5px 0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .admin-info { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .admin-type { font-size: 0.8rem; color: #888; }
+        .admin-date { font-size: 0.75rem; color: #666; }
+        
+        .btn-revoke {
+            background: #ff4444;
+            border: none;
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .btn-revoke:hover { background: #ff6666; }
+        .btn-toggle {
+            background: #4ecdc4;
+            border: none;
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .no-admins { color: #666; font-style: italic; }
+        
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #333;
+            border-radius: 5px;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        .search-box::placeholder { color: #666; }
+        
+        .loading { text-align: center; padding: 50px; color: #888; }
+        .logout-btn { 
+            position: fixed; top: 20px; right: 20px;
+            background: #333; border: 1px solid #666; color: #fff;
+            padding: 8px 15px; border-radius: 5px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Game Admin Control Panel</h1>
+        
+        <div id="loading" class="loading">Loading...</div>
+        
+        <div id="loginBox" class="login-box" style="display:none;">
+            <h2>🔒 Owner Access Required</h2>
+            <p id="userInfo" class="user-info"></p>
+            <p>Enter the owner password to access:</p>
+            <input type="password" id="ownerPassword" placeholder="Owner password...">
+            <button onclick="passwordLogin()">Access Panel</button>
+            <p id="loginError" class="error-msg"></p>
+        </div>
+        
+        <div id="mainContent" style="display:none;">
+            <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+            
+            <div class="controls">
+                <button onclick="disableAllCodes()" class="danger">🔒 Disable ALL Admin Codes</button>
+                <button onclick="loadData()">🔄 Refresh</button>
+            </div>
+            
+            <input type="text" class="search-box" id="searchBox" placeholder="Search by username..." oninput="filterAdmins()">
+            
+            <div id="gamesList"></div>
+        </div>
+    </div>
+    
+    <script>
+        const OWNER_PASSWORD = 'JsgOwner2024X';
+        let allData = null;
+        let authenticated = false;
+        
+        async function checkAccess() {
+            document.getElementById('loading').style.display = 'none';
+            
+            // Check if already authenticated via session storage
+            if (sessionStorage.getItem('adminPanelAuth') === 'true') {
+                authenticated = true;
+                showMainContent();
+                return;
+            }
+            
+            // Try server auth first
+            try {
+                const resp = await fetch('api/game-admin.php?action=listAll&ownerPw=JsgOwner2024X', { credentials: 'include' });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    authenticated = true;
+                    allData = data;
+                    sessionStorage.setItem('adminPanelAuth', 'true');
+                    showMainContent();
+                    return;
+                }
+                
+                // Show what user is logged in as
+                const authResp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const authData = await authResp.json();
+                if (authData.loggedIn && authData.user) {
+                    document.getElementById('userInfo').textContent = 'Logged in as: ' + authData.user.username;
+                } else {
+                    document.getElementById('userInfo').textContent = 'Not logged in to RetroBlasts';
+                }
+            } catch (e) {
+                console.log('Server auth failed, using password');
+            }
+            
+            // Show password login
+            document.getElementById('loginBox').style.display = 'block';
+        }
+        
+        function passwordLogin() {
+            const pw = document.getElementById('ownerPassword').value;
+            if (pw === OWNER_PASSWORD) {
+                authenticated = true;
+                sessionStorage.setItem('adminPanelAuth', 'true');
+                document.getElementById('loginBox').style.display = 'none';
+                showMainContent();
+            } else {
+                document.getElementById('loginError').textContent = 'Invalid password';
+            }
+        }
+        
+        document.getElementById('ownerPassword')?.addEventListener('keypress', e => {
+            if (e.key === 'Enter') passwordLogin();
+        });
+        
+        async function showMainContent() {
+            document.getElementById('mainContent').style.display = 'block';
+            await loadData();
+        }
+        
+        function logout() {
+            sessionStorage.removeItem('adminPanelAuth');
+            location.reload();
+        }
+        
+        async function loadData() {
+            try {
+                // Direct file read via a simple PHP endpoint
+                const resp = await fetch('api/game-admin.php?action=listAll&ownerPw=JsgOwner2024X', { credentials: 'include' });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    allData = data;
+                    renderGames();
+                } else {
+                    // Fallback: read files directly
+                    await loadDataDirect();
+                }
+            } catch (e) {
+                await loadDataDirect();
+            }
+        }
+        
+        async function loadDataDirect() {
+            // Create default structure if server doesn't respond properly
+            allData = {
+                games: ['space-invaders', 'flappy-bird', 'rhythm', 'cookie-clicker', 'doodle-jump', 'knife-hit'],
+                admins: {},
+                settings: {}
+            };
+            
+            try {
+                const adminsResp = await fetch('data/game-admins.json');
+                if (adminsResp.ok) allData.admins = await adminsResp.json();
+            } catch (e) {}
+            
+            try {
+                const settingsResp = await fetch('data/game-admin-settings.json');
+                if (settingsResp.ok) allData.settings = await settingsResp.json();
+            } catch (e) {}
+            
+            renderGames();
+        }
+        
+        function renderGames() {
+            const container = document.getElementById('gamesList');
+            const search = document.getElementById('searchBox').value.toLowerCase();
+            let html = '';
+            
+            for (const game of allData.games) {
+                const admins = allData.admins[game] || {};
+                const codeEnabled = allData.settings[game]?.codeEnabled ?? true;
+                
+                let filteredAdmins = Object.entries(admins);
+                if (search) {
+                    filteredAdmins = filteredAdmins.filter(([user]) => user.includes(search));
+                }
+                
+                html += '<div class="game-section">';
+                html += '<div class="game-header">';
+                html += '<span class="game-title">' + formatGameName(game) + '</span>';
+                html += '<div>';
+                html += '<span class="game-status ' + (codeEnabled ? 'status-enabled' : 'status-disabled') + '">';
+                html += codeEnabled ? '✓ Code Enabled' : '✗ Code Disabled';
+                html += '</span> ';
+                html += '<button class="btn-toggle" onclick="toggleCode(\'' + game + '\')">' + (codeEnabled ? 'Disable' : 'Enable') + '</button>';
+                html += '</div></div>';
+                
+                html += '<div class="admin-list">';
+                if (filteredAdmins.length === 0) {
+                    html += '<div class="no-admins">No admins</div>';
+                } else {
+                    for (const [user, info] of filteredAdmins) {
+                        html += '<div class="admin-item">';
+                        html += '<div class="admin-info">';
+                        html += '<strong>' + user + '</strong>';
+                        html += '<span class="admin-type">' + (info.type || 'admin') + '</span>';
+                        html += '<span class="admin-date">' + (info.grantedAt || '') + '</span>';
+                        html += '</div>';
+                        html += '<button class="btn-revoke" onclick="revokeAdmin(\'' + game + '\', \'' + user + '\')">Revoke</button>';
+                        html += '</div>';
+                    }
+                }
+                html += '</div></div>';
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function formatGameName(game) {
+            return game.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        }
+        
+        function filterAdmins() { renderGames(); }
+        
+        async function toggleCode(game) {
+            const resp = await fetch('api/game-admin.php?action=toggleCode&ownerPw=JsgOwner2024X&game=' + game, {
+                method: 'POST', credentials: 'include'
+            });
+            const data = await resp.json();
+            alert(data.message || data.error);
+            loadData();
+        }
+        
+        async function revokeAdmin(game, username) {
+            if (!confirm('Revoke admin from ' + username + ' in ' + formatGameName(game) + '?')) return;
+            
+            const resp = await fetch('api/game-admin.php?action=revoke&ownerPw=JsgOwner2024X&game=' + game, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                credentials: 'include',
+                body: 'username=' + encodeURIComponent(username)
+            });
+            const data = await resp.json();
+            alert(data.message || data.error);
+            loadData();
+        }
+        
+        async function disableAllCodes() {
+            if (!confirm('Disable admin codes for ALL games?')) return;
+            
+            const resp = await fetch('api/game-admin.php?action=disableAll&ownerPw=JsgOwner2024X', {
+                method: 'POST', credentials: 'include'
+            });
+            const data = await resp.json();
+            alert(data.message || data.error);
+            loadData();
+        }
+        
+        checkAccess();
+    </script>
+</body>
+</html>

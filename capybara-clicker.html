@@ -1,10 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Capybara Clicker online free! Click capybaras, earn coins, unlock upgrades!">
+    <meta name="keywords" content="capybara clicker, capybara game, idle clicker, cute game, clicker game, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/capybara-clicker.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/capybara-clicker.html">
+    <meta property="og:title" content="Capybara Clicker - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Capybara Clicker online free! Click capybaras, earn coins, unlock upgrades!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Capybara Clicker - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Capybara Clicker online free! Click capybaras, earn coins, unlock upgrades!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Capybara Clicker",
+        "description": "Play Capybara Clicker online free! Click capybaras, earn coins, unlock upgrades!",
+        "url": "https://retroblasts.com/capybara-clicker.html",
+        "genre": "Idle",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capybara Clicker - Chill & Click</title>
+    <title>Capybara Clicker - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -1297,7 +1345,13 @@
         let clicksThisSession = 0;
         let capybarasThisSession = 0;
         function loadArcadeStats() { return JSON.parse(localStorage.getItem('arcadeStats')) || { totalGamesPlayed: 0, totalTimePlayed: 0, totalCoinsEarned: 0, games: {} }; }
-        function saveArcadeStats(stats) { localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
+        function saveArcadeStats(stats) {
+            // Sync to server for logged-in users
+            fetch("api/game-stats.php", {
+                method: "POST", credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "save", game: "capybara-clicker", data: stats.games["capybara-clicker"] || {} })
+            }).catch(() => {}); localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
         function trackGameEnd() {
             const stats = loadArcadeStats();
             const gameId = 'capybara-clicker';
@@ -1308,6 +1362,16 @@
             if (capybarasThisSession > gameStats.highScore) gameStats.highScore = Math.floor(capybarasThisSession);
             stats.totalGamesPlayed++; stats.totalTimePlayed += sessionTime;
             saveArcadeStats(stats);
+
+            // Contribute damage to boss event
+            if (finalScore > 0) {
+                fetch("api/boss-events.php?action=contribute", {
+                    method: "POST",
+                    credentials: "include",
+                    keepalive: true, headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ score: finalScore, game: "capybara-clicker" })
+                }).catch(e => console.log("Boss damage:", e));
+            }
         }
         window.addEventListener('beforeunload', trackGameEnd);
 

@@ -1,10 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Casino games online free! Slots, blackjack, roulette. Win virtual coins!">
+    <meta name="keywords" content="casino games, free slots, online casino, blackjack, roulette game, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/casino.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/casino.html">
+    <meta property="og:title" content="Casino - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Casino games online free! Slots, blackjack, roulette. Win virtual coins!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Casino - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Casino games online free! Slots, blackjack, roulette. Win virtual coins!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Casino",
+        "description": "Play Casino games online free! Slots, blackjack, roulette. Win virtual coins!",
+        "url": "https://retroblasts.com/casino.html",
+        "genre": "Casino",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Casino - RetroBlasts</title>
+    <title>Casino - Free Online Game | RetroBlasts</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -432,6 +480,60 @@
             from { opacity: 0; transform: translate(-50%, 20px); }
             to { opacity: 1; transform: translate(-50%, 0); }
         }
+    
+        /* Progressive Jackpot */
+        .jackpot-display {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-radius: 15px;
+            padding: 15px 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+            animation: jackpotGlow 2s ease-in-out infinite;
+        }
+        @keyframes jackpotGlow {
+            0%, 100% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.5); }
+            50% { box-shadow: 0 0 50px rgba(251, 191, 36, 0.8); }
+        }
+        .jackpot-label {
+            font-size: 0.9rem;
+            color: #000;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .jackpot-amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #000;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .jackpot-win-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        .jackpot-win-overlay.show { display: flex; }
+        .jackpot-win-text {
+            font-size: 4rem;
+            color: #fbbf24;
+            text-shadow: 0 0 30px #fbbf24;
+            animation: jackpotPulse 0.5s ease-in-out infinite;
+        }
+        .jackpot-win-amount {
+            font-size: 3rem;
+            color: #fff;
+            margin-top: 20px;
+        }
+        @keyframes jackpotPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
     </style>
 </head>
 <body>
@@ -447,7 +549,7 @@
         <div id="loginPrompt" class="login-prompt" style="display: none;">
             <h2>Login Required</h2>
             <p style="margin-bottom: 20px; color: #aaa;">You need to be logged in to play.</p>
-            <a href="login.html">Login / Register</a>
+            <a href="login.html?redirect=casino.html">Login / Register</a>
         </div>
         
         <div id="casinoContent" style="display: none;">
@@ -463,7 +565,36 @@
             </div>
             
             <div class="games-grid">
-                <!-- Coin Flip -->
+                <!-- Crash Game Link -->
+                <a href="crash.html" class="game-card" style="text-decoration:none; cursor:pointer;">
+                    <div class="game-header">
+                        <div class="game-icon">🚀</div>
+                        <div class="game-title">CRASH</div>
+                        <div class="game-desc">Cash out before the rocket crashes!</div>
+                    </div>
+                    <div class="game-content" style="text-align:center; padding:20px;">
+                        <div style="font-size:2rem; margin-bottom:10px;">📈</div>
+                        <div style="color:#00ff88; font-weight:bold;">Up to 1000x multiplier!</div>
+                        <div style="margin-top:15px; background:linear-gradient(135deg,#f43f5e,#be123c); padding:12px 25px; border-radius:8px; display:inline-block; font-weight:bold;">PLAY NOW</div>
+                    </div>
+                </a>
+
+                
+                <!-- Texas Holdem Poker Link -->
+                <a href="poker.html" class="game-card" style="text-decoration:none; cursor:pointer;">
+                    <div class="game-header">
+                        <div class="game-icon">🃏</div>
+                        <div class="game-title">POKER</div>
+                        <div class="game-desc">Texas Hold'em - Beat the bots or real players!</div>
+                    </div>
+                    <div class="game-content" style="text-align:center; padding:20px;">
+                        <div style="font-size:2rem; margin-bottom:10px;">♠️♥️♦️♣️</div>
+                        <div style="color:#ffd700; font-weight:bold;">5 AI difficulties + Multiplayer</div>
+                        <div style="margin-top:15px; background:linear-gradient(135deg,#e94560,#ff6b6b); padding:12px 25px; border-radius:8px; display:inline-block; font-weight:bold;">PLAY NOW</div>
+                    </div>
+                </a>
+
+<!-- Coin Flip -->
                 <div class="game-card">
                     <div class="game-header">
                         <div class="game-icon">🪙</div>
@@ -488,6 +619,13 @@
                         <button class="play-btn coinflip-btn" id="coinflipBtn" onclick="playCoinflip()">Flip Coin</button>
                         <div id="coinflipResult"></div>
                     </div>
+                </div>
+                
+                <!-- Jackpot Display -->
+                <div class="jackpot-display">
+                    <div class="jackpot-label">🎰 Progressive Jackpot 🎰</div>
+                    <div class="jackpot-amount" id="jackpotAmount">Loading...</div>
+                    <div style="font-size: 0.8rem; color: #000; opacity: 0.7;">Hit 7️⃣7️⃣7️⃣ to win!</div>
                 </div>
                 
                 <!-- Slots -->
@@ -609,7 +747,23 @@
         let userCoins = 0;
         let coinflipChoice = 'heads';
         let diceTarget = 'over';
-        
+
+        // Send boss damage when winning at casino
+        function sendCasinoBossDamage(game, winnings) {
+            if (winnings > 0) {
+                fetch('api/boss-events.php?action=contribute', {
+                    method: 'POST',
+                    credentials: 'include',
+                    keepalive: true, headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ game: 'casino-' + game, score: winnings })
+                }).then(r => r.json()).then(data => {
+                    if (data.success && data.damage > 0) {
+                        console.log('Casino boss damage:', data.damage);
+                    }
+                }).catch(() => {});
+            }
+        }
+
         async function init() {
             try {
                 const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
@@ -682,8 +836,9 @@
                     
                     const result = document.getElementById('coinflipResult');
                     result.innerHTML = '<div class="result ' + (data.won ? 'win' : 'lose') + '">' +
-                        (data.won ? '🎉 You won +' + data.winnings + ' coins!' : '😢 You lost ' + Math.abs(data.winnings) + ' coins') + 
+                        (data.won ? '🎉 You won +' + data.winnings + ' coins!' : '😢 You lost ' + Math.abs(data.winnings) + ' coins') +
                         '</div>';
+                    if (data.won) sendCasinoBossDamage('coinflip', data.winnings);
                 } else {
                     showToast(data.error, 'error');
                 }
@@ -694,7 +849,36 @@
             document.getElementById('coinflipBtn').disabled = false;
         }
         
-        async function playSlots() {
+        
+        // Jackpot system
+        async function loadJackpot() {
+            try {
+                const resp = await fetch('api/casino.php?action=jackpot', { credentials: 'include' });
+                const data = await resp.json();
+                if (data.success) {
+                    updateJackpotDisplay(data.jackpot.amount);
+                }
+            } catch (e) {
+                console.error('Failed to load jackpot');
+            }
+        }
+        
+        function updateJackpotDisplay(amount) {
+            document.getElementById('jackpotAmount').textContent = '🪙 ' + amount.toLocaleString();
+        }
+        
+        function showJackpotWin(amount) {
+            document.getElementById('jackpotWinAmount').textContent = '+' + amount.toLocaleString() + ' COINS!';
+            document.getElementById('jackpotOverlay').classList.add('show');
+            // Confetti or sound could go here
+        }
+        
+        // Load jackpot on page load
+        loadJackpot();
+        // Refresh jackpot every 10 seconds
+        setInterval(loadJackpot, 10000);
+        
+async function playSlots() {
             const bet = parseInt(document.getElementById('slotsBet').value);
             if (bet < 10 || bet > userCoins) {
                 showToast('Invalid bet amount', 'error');
@@ -735,9 +919,17 @@
                     
                     const result = document.getElementById('slotsResult');
                     if (data.won) {
+                        if (data.isJackpot) {
+                        result.innerHTML = '<div class="result win">🎰 JACKPOT!!! You won +' + data.winnings.toLocaleString() + ' coins!</div>';
+                        showJackpotWin(data.winnings);
+                    } else {
                         result.innerHTML = '<div class="result win">🎉 ' + data.multiplier + 'x! You won +' + data.winnings + ' coins!</div>';
+                    }
+                    updateJackpotDisplay(data.jackpot);
+                        sendCasinoBossDamage('slots', data.winnings);
                     } else {
                         result.innerHTML = '<div class="result lose">😢 No match. Lost ' + Math.abs(data.winnings) + ' coins</div>';
+                    updateJackpotDisplay(data.jackpot);
                     }
                 } else {
                     showToast(data.error, 'error');
@@ -808,6 +1000,7 @@
                     const result = document.getElementById('diceResult');
                     if (data.won) {
                         result.innerHTML = '<div class="result win">🎉 Rolled ' + data.roll + '! Won +' + data.winnings + ' coins (' + data.multiplier + 'x)</div>';
+                        sendCasinoBossDamage('dice', data.winnings);
                     } else {
                         result.innerHTML = '<div class="result lose">😢 Rolled ' + data.roll + '. Lost ' + Math.abs(data.winnings) + ' coins</div>';
                     }
@@ -931,11 +1124,16 @@
         function endBlackjack(data) {
             document.getElementById('bjActions').querySelectorAll('button').forEach(b => b.disabled = true);
             document.getElementById('bjNewGame').style.display = 'block';
-            
+
             const result = document.getElementById('bjResult');
             const type = data.status === 'push' ? 'push' : (data.won || data.status === 'blackjack' || data.status === 'win' || data.status === 'dealer_bust' ? 'win' : 'lose');
-            result.innerHTML = '<div class="result ' + type + '">' + data.message + 
+            result.innerHTML = '<div class="result ' + type + '">' + data.message +
                 (data.winnings !== 0 ? (data.winnings > 0 ? ' (+' + data.winnings + ')' : ' (' + data.winnings + ')') : '') + '</div>';
+
+            // Send boss damage on win
+            if (type === 'win' && data.winnings > 0) {
+                sendCasinoBossDamage('blackjack', data.winnings);
+            }
         }
         
         function resetBlackjack() {
@@ -960,5 +1158,12 @@
         
         init();
     </script>
+
+    <!-- Jackpot Win Overlay -->
+    <div class="jackpot-win-overlay" id="jackpotOverlay" onclick="this.classList.remove('show')">
+        <div class="jackpot-win-text">🎉 JACKPOT!!! 🎉</div>
+        <div class="jackpot-win-amount" id="jackpotWinAmount"></div>
+        <div style="color: #888; margin-top: 30px;">Click anywhere to close</div>
+    </div>
 </body>
 </html>

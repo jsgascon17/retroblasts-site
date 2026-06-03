@@ -1,10 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="View your items, skins, and collectibles!">
+    <meta name="keywords" content="inventory, items, skins, collection, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/inventory.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/inventory.html">
+    <meta property="og:title" content="Inventory - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="View your items, skins, and collectibles!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Inventory - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="View your items, skins, and collectibles!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory - RetroBlasts</title>
+    <title>Inventory - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -203,7 +231,7 @@
         <div id="loginPrompt" class="login-prompt" style="display: none;">
             <h2>🔐 Login Required</h2>
             <p>Sign in to view your inventory!</p>
-            <a href="login.html" class="btn">Login / Register</a>
+            <a href="login.html?redirect=inventory.html" class="btn">Login / Register</a>
         </div>
         
         <div id="mainContent" style="display: none;">
@@ -521,94 +549,58 @@
         }
         
         async function openAllBoxes() {
-
             var boxes = userData.inventory && userData.inventory.lootboxes ? userData.inventory.lootboxes : [];
-
             if (boxes.length === 0) {
-
                 alert("No loot boxes to open!");
-
                 return;
-
             }
-
             
-
             var btn = document.getElementById("openAllBtn");
-
             btn.disabled = true;
-
-            btn.textContent = "Opening...";
-
-            
-
-            var rewards = [];
-
             var totalBoxes = boxes.length;
-
+            btn.textContent = "Opening... (0/" + totalBoxes + ")";
+            console.log("Starting to open " + totalBoxes + " boxes");
             
-
+            var rewards = [];
+            var opened = 0;
+            
             for (var i = 0; i < totalBoxes; i++) {
-
+                if (!userData.inventory.lootboxes || userData.inventory.lootboxes.length === 0) break;
+                
                 try {
-
-                    var resp = await fetch("api/lootbox.php", {
-
+                    console.log("Opening box, type: " + type);
+                var resp = await fetch("api/lootbox.php", {
                         method: "POST",
-
                         credentials: "include",
-
                         headers: { "Content-Type": "application/json" },
-
-                        body: JSON.stringify({ action: "openFromInventory", boxType: boxes[0] })
-
+                        body: JSON.stringify({ action: "openFromInventory", boxType: (typeof userData.inventory.lootboxes[0] === "object" ? userData.inventory.lootboxes[0].type : userData.inventory.lootboxes[0]) })
                     });
-
                     var data = await resp.json();
-
+                console.log("Box response:", data);
                     
-
                     if (data.success) {
-
                         userData.coins = data.coins;
-
                         userData.inventory = data.inventory;
-
-                        boxes = userData.inventory.lootboxes || [];
-
                         rewards.push(data.reward);
-
-                        btn.textContent = "Opening... (" + (i + 1) + "/" + totalBoxes + ")";
-
+                        opened++;
+                        btn.textContent = "Opening... (" + opened + "/" + totalBoxes + ")";
+                        await new Promise(r => setTimeout(r, 5));
+                    } else {
+                        break;
                     }
-
                 } catch (e) {
-
-                    console.log("Error opening box", e);
-
+                    console.log("Error opening box " + i + ":", e);
                 }
-
             }
-
             
-
             updateDisplay();
-
             btn.disabled = false;
-
             btn.textContent = "Open All";
-
             
-
             if (rewards.length > 0) {
-
                 showAllResults(rewards);
-
             }
-
         }
-
-        
 
         function showAllResults(rewards) {
 
@@ -664,6 +656,7 @@
 
         async function openBox(type) {
             try {
+                console.log("Opening box, type: " + type);
                 var resp = await fetch("api/lootbox.php", {
                     method: "POST",
                     credentials: "include",
@@ -671,6 +664,7 @@
                     body: JSON.stringify({ action: "openFromInventory", boxType: type })
                 });
                 var data = await resp.json();
+                console.log("Box response:", data);
                 
                 if (data.success) {
                     userData.coins = data.coins;
@@ -687,6 +681,7 @@
         
         async function openCrate(crateType) {
             try {
+                console.log("Opening box, type: " + crateType);
                 var resp = await fetch("api/lootbox.php", {
                     method: "POST",
                     credentials: "include",
@@ -694,6 +689,7 @@
                     body: JSON.stringify({ action: "openCrate", crateType: crateType })
                 });
                 var data = await resp.json();
+                console.log("Box response:", data);
                 
                 if (data.success) {
                     userData.coins = data.coins;
@@ -717,6 +713,7 @@
                     body: JSON.stringify({ action: "activateBoost", boostType: type })
                 });
                 var data = await resp.json();
+                console.log("Box response:", data);
                 
                 if (data.success) {
                     userData.inventory = data.inventory;

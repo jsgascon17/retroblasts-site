@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Unlock exclusive rewards with the RetroBlasts Battle Pass!">
+    <meta name="keywords" content="battle pass, season pass, rewards, premium, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/battlepass.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/battlepass.html">
+    <meta property="og:title" content="Battle Pass - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Unlock exclusive rewards with the RetroBlasts Battle Pass!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Battle Pass - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Unlock exclusive rewards with the RetroBlasts Battle Pass!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle Pass - Free Online Game | RetroBlasts</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #ffd700, #ff6b35, #f7258a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255,215,0,0.3);
+        }
+
+        .season-info {
+            text-align: right;
+        }
+
+        .season-name {
+            font-size: 1.3em;
+            color: #ffd700;
+        }
+
+        .season-timer {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        .user-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #aaa;
+        }
+
+        /* XP Progress Bar */
+        .xp-section {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .xp-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .current-tier {
+            font-size: 1.2em;
+        }
+
+        .tier-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #ffd700, #ff6b35);
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .xp-bar-container {
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            height: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .xp-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A, #CDDC39);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .xp-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        /* Premium Banner */
+        .premium-banner {
+            background: linear-gradient(135deg, #ffd700 0%, #ff6b35 50%, #f7258a 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .premium-banner.owned {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+        }
+
+        .premium-text h2 {
+            color: #000;
+            font-size: 1.5em;
+        }
+
+        .premium-text p {
+            color: rgba(0,0,0,0.7);
+        }
+
+        .premium-banner.owned .premium-text h2,
+        .premium-banner.owned .premium-text p {
+            color: #fff;
+        }
+
+        .buy-premium-btn {
+            background: #000;
+            color: #ffd700;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .buy-premium-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .buy-premium-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            padding: 15px 30px;
+            font-size: 1em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .tab.active {
+            background: linear-gradient(45deg, #ffd700, #ff6b35);
+            color: #000;
+            font-weight: bold;
+        }
+
+        /* Rewards Track */
+        .rewards-section {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .rewards-track {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 20px 0;
+            scrollbar-width: thin;
+            scrollbar-color: #ffd700 rgba(0,0,0,0.3);
+        }
+
+        .rewards-track::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .rewards-track::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+        }
+
+        .rewards-track::-webkit-scrollbar-thumb {
+            background: #ffd700;
+            border-radius: 4px;
+        }
+
+        .reward-tier {
+            min-width: 140px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .reward-tier.unlocked {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4CAF50;
+        }
+
+        .reward-tier.current {
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.3);
+        }
+
+        .tier-number {
+            background: rgba(0,0,0,0.5);
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .reward-tier.unlocked .tier-number {
+            background: #4CAF50;
+        }
+
+        .reward-tier.current .tier-number {
+            background: #ffd700;
+            color: #000;
+        }
+
+        .reward-content {
+            padding: 15px;
+        }
+
+        .free-reward, .premium-reward {
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .free-reward {
+            background: rgba(100,100,100,0.3);
+        }
+
+        .premium-reward {
+            background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,107,53,0.2));
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+
+        .premium-reward.locked {
+            filter: grayscale(1);
+            opacity: 0.5;
+        }
+
+        .reward-icon {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .reward-name {
+            font-size: 0.85em;
+            color: #ddd;
+        }
+
+        .claim-btn {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .claim-btn.claimable {
+            background: #4CAF50;
+            color: #fff;
+        }
+
+        .claim-btn.claimable:hover {
+            background: #45a049;
+        }
+
+        .claim-btn.claimed {
+            background: #666;
+            color: #aaa;
+            cursor: default;
+        }
+
+        .claim-btn.locked {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        /* Challenges Section */
+        .challenges-section {
+            display: none;
+        }
+
+        .challenges-section.active {
+            display: block;
+        }
+
+        .challenges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 15px;
+        }
+
+        .challenge-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .challenge-card.completed {
+            background: rgba(76,175,80,0.2);
+            border: 1px solid #4CAF50;
+        }
+
+        .challenge-icon {
+            font-size: 2.5em;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .challenge-info {
+            flex: 1;
+        }
+
+        .challenge-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .challenge-desc {
+            color: #aaa;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .challenge-progress-bar {
+            background: rgba(0,0,0,0.5);
+            border-radius: 5px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .challenge-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        .challenge-progress-text {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .challenge-reward {
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .xp-reward {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .challenge-type {
+            font-size: 0.7em;
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        .challenge-type.daily {
+            background: #2196F3;
+        }
+
+        .challenge-type.weekly {
+            background: #9C27B0;
+        }
+
+        .challenge-type.seasonal {
+            background: #FF9800;
+        }
+
+        .claim-challenge-btn {
+            margin-top: 10px;
+            padding: 8px 20px;
+            background: #4CAF50;
+            border: none;
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .claim-challenge-btn:hover {
+            background: #45a049;
+        }
+
+        .claim-challenge-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        /* Back button */
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(0,0,0,0.8);
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: #4CAF50;
+        }
+
+        .toast.error {
+            background: #f44336;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,215,0,0.3);
+            border-top-color: #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Login prompt */
+        .login-prompt {
+            text-align: center;
+            padding: 60px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+        }
+
+        .login-prompt h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .login-btn {
+            background: linear-gradient(45deg, #ffd700, #ff6b35);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .login-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .user-stats {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .season-info {
+                text-align: center;
+            }
+
+            .premium-banner {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .challenges-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .reward-tier {
+                min-width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="location.href='index.html'">← Back</button>
+    
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>⚔️ BATTLE PASS</h1>
+            </div>
+            <div class="season-info">
+                <div class="season-name" id="seasonName">Season 1: Origins</div>
+                <div class="season-timer" id="seasonTimer">29 days remaining</div>
+            </div>
+            <div class="user-stats" id="userStats">
+                <div class="stat-box">
+                    <div class="stat-value" id="userCoins">0</div>
+                    <div class="stat-label">Coins</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="userTier">1</div>
+                    <div class="stat-label">Tier</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Prompt (shown if not logged in) -->
+        <div class="login-prompt hidden" id="loginPrompt">
+            <h2>🔒 Login Required</h2>
+            <p style="margin-bottom: 20px; color: #aaa;">You need to be logged in to access the Battle Pass.</p>
+            <button class="login-btn" onclick="location.href='login.html?redirect=battlepass.html'">Login / Register</button>
+        </div>
+
+        <!-- Main Content (shown if logged in) -->
+        <div id="mainContent" class="hidden">
+            <!-- XP Progress -->
+            <div class="xp-section">
+                <div class="xp-header">
+                    <div class="current-tier">
+                        Current Tier: <span class="tier-badge" id="currentTierBadge">1</span>
+                    </div>
+                    <div>Next Tier: <span id="nextTierXp">500 XP</span></div>
+                </div>
+                <div class="xp-bar-container">
+                    <div class="xp-bar" id="xpBar" style="width: 0%"></div>
+                    <div class="xp-text" id="xpText">0 / 500 XP</div>
+                </div>
+            </div>
+
+            <!-- Premium Banner -->
+            <div class="premium-banner" id="premiumBanner">
+                <div class="premium-text">
+                    <h2>🌟 Unlock Premium Pass</h2>
+                    <p>Get exclusive rewards at every tier + 20% bonus XP!</p>
+                </div>
+                <button class="buy-premium-btn" id="buyPremiumBtn" onclick="buyPremium()">
+                    Buy for 5,000 🪙
+                </button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('rewards')">🎁 Rewards</button>
+                <button class="tab" onclick="switchTab('challenges')">⚡ Challenges</button>
+            </div>
+
+            <!-- Rewards Track -->
+            <div class="rewards-section" id="rewardsTab">
+                <div class="rewards-track" id="rewardsTrack">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
+            <!-- Challenges -->
+            <div class="challenges-section" id="challengesTab">
+                <h3 style="margin-bottom: 15px;">Daily Challenges</h3>
+                <div class="challenges-grid" id="dailyChallenges">
+                    <!-- Filled by JS -->
+                </div>
+                
+                <h3 style="margin: 25px 0 15px;">Weekly Challenges</h3>
+                <div class="challenges-grid" id="weeklyChallenges">
+                    <!-- Filled by JS -->
+                </div>
+                
+                <h3 style="margin: 25px 0 15px;">Seasonal Challenges</h3>
+                <div class="challenges-grid" id="seasonalChallenges">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Battle Pass Configuration
+        const SEASON = {
+            id: 1,
+            name: "Season 1: Origins",
+            endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+            premiumCost: 5000,
+            xpPerTier: 500,
+            maxTier: 50
+        };
+
+        // Rewards for each tier
+        const TIER_REWARDS = [
+            { tier: 1, free: { type: 'coins', amount: 100, icon: '🪙', name: '100 Coins' }, premium: { type: 'skin', item: 'neon', icon: '✨', name: 'Neon Color' }},
+            { tier: 2, free: { type: 'coins', amount: 150, icon: '🪙', name: '150 Coins' }, premium: { type: 'border', item: 'silver', icon: '🔲', name: 'Silver Border' }},
+            { tier: 3, free: { type: 'xp_boost', amount: 10, icon: '⚡', name: '+10% XP (1 day)' }, premium: { type: 'coins', amount: 500, icon: '🪙', name: '500 Coins' }},
+            { tier: 4, free: { type: 'coins', amount: 200, icon: '🪙', name: '200 Coins' }, premium: { type: 'effect', item: 'sparkles', icon: '✨', name: 'Sparkle Effect' }},
+            { tier: 5, free: { type: 'skin', item: 'blue', icon: '🔵', name: 'Blue Color' }, premium: { type: 'lootbox', amount: 1, icon: '📦', name: 'Epic Loot Box' }},
+            { tier: 6, free: { type: 'coins', amount: 250, icon: '🪙', name: '250 Coins' }, premium: { type: 'skin', item: 'purple', icon: '🟣', name: 'Purple Color' }},
+            { tier: 7, free: { type: 'coins', amount: 300, icon: '🪙', name: '300 Coins' }, premium: { type: 'border', item: 'gold', icon: '🔲', name: 'Gold Border' }},
+            { tier: 8, free: { type: 'xp_boost', amount: 15, icon: '⚡', name: '+15% XP (1 day)' }, premium: { type: 'coins', amount: 750, icon: '🪙', name: '750 Coins' }},
+            { tier: 9, free: { type: 'coins', amount: 350, icon: '🪙', name: '350 Coins' }, premium: { type: 'effect', item: 'flames', icon: '🔥', name: 'Flame Effect' }},
+            { tier: 10, free: { type: 'lootbox', amount: 1, icon: '📦', name: 'Rare Loot Box' }, premium: { type: 'skin', item: 'rainbow', icon: '🌈', name: 'Rainbow Color' }},
+            { tier: 11, free: { type: 'coins', amount: 400, icon: '🪙', name: '400 Coins' }, premium: { type: 'coins', amount: 1000, icon: '🪙', name: '1,000 Coins' }},
+            { tier: 12, free: { type: 'coins', amount: 450, icon: '🪙', name: '450 Coins' }, premium: { type: 'border', item: 'diamond', icon: '💎', name: 'Diamond Border' }},
+            { tier: 13, free: { type: 'xp_boost', amount: 20, icon: '⚡', name: '+20% XP (1 day)' }, premium: { type: 'effect', item: 'lightning', icon: '⚡', name: 'Lightning Effect' }},
+            { tier: 14, free: { type: 'coins', amount: 500, icon: '🪙', name: '500 Coins' }, premium: { type: 'skin', item: 'galaxy', icon: '🌌', name: 'Galaxy Color' }},
+            { tier: 15, free: { type: 'skin', item: 'green', icon: '🟢', name: 'Green Color' }, premium: { type: 'lootbox', amount: 2, icon: '📦', name: '2x Epic Loot Box' }},
+            { tier: 16, free: { type: 'coins', amount: 550, icon: '🪙', name: '550 Coins' }, premium: { type: 'coins', amount: 1500, icon: '🪙', name: '1,500 Coins' }},
+            { tier: 17, free: { type: 'coins', amount: 600, icon: '🪙', name: '600 Coins' }, premium: { type: 'effect', item: 'snow', icon: '❄️', name: 'Snow Effect' }},
+            { tier: 18, free: { type: 'xp_boost', amount: 25, icon: '⚡', name: '+25% XP (1 day)' }, premium: { type: 'border', item: 'platinum', icon: '🔲', name: 'Platinum Border' }},
+            { tier: 19, free: { type: 'coins', amount: 650, icon: '🪙', name: '650 Coins' }, premium: { type: 'skin', item: 'plasma', icon: '💜', name: 'Plasma Color' }},
+            { tier: 20, free: { type: 'lootbox', amount: 1, icon: '📦', name: 'Epic Loot Box' }, premium: { type: 'skin', item: 'cosmic', icon: '🌟', name: 'Cosmic Color' }},
+            { tier: 21, free: { type: 'coins', amount: 700, icon: '🪙', name: '700 Coins' }, premium: { type: 'coins', amount: 2000, icon: '🪙', name: '2,000 Coins' }},
+            { tier: 22, free: { type: 'coins', amount: 750, icon: '🪙', name: '750 Coins' }, premium: { type: 'effect', item: 'hearts', icon: '💕', name: 'Hearts Effect' }},
+            { tier: 23, free: { type: 'xp_boost', amount: 30, icon: '⚡', name: '+30% XP (1 day)' }, premium: { type: 'border', item: 'champion', icon: '🏆', name: 'Champion Border' }},
+            { tier: 24, free: { type: 'coins', amount: 800, icon: '🪙', name: '800 Coins' }, premium: { type: 'skin', item: 'void', icon: '⬛', name: 'Void Color' }},
+            { tier: 25, free: { type: 'skin', item: 'orange', icon: '🟠', name: 'Orange Color' }, premium: { type: 'lootbox', amount: 3, icon: '📦', name: '3x Epic Loot Box' }},
+            { tier: 26, free: { type: 'coins', amount: 850, icon: '🪙', name: '850 Coins' }, premium: { type: 'coins', amount: 2500, icon: '🪙', name: '2,500 Coins' }},
+            { tier: 27, free: { type: 'coins', amount: 900, icon: '🪙', name: '900 Coins' }, premium: { type: 'effect', item: 'confetti', icon: '🎊', name: 'Confetti Effect' }},
+            { tier: 28, free: { type: 'xp_boost', amount: 35, icon: '⚡', name: '+35% XP (1 day)' }, premium: { type: 'border', item: 'legend', icon: '👑', name: 'Legend Border' }},
+            { tier: 29, free: { type: 'coins', amount: 950, icon: '🪙', name: '950 Coins' }, premium: { type: 'skin', item: 'aurora', icon: '🌈', name: 'Aurora Color' }},
+            { tier: 30, free: { type: 'lootbox', amount: 2, icon: '📦', name: '2x Epic Loot Box' }, premium: { type: 'effect', item: 'golden_trail', icon: '✨', name: 'Golden Trail' }},
+            { tier: 31, free: { type: 'coins', amount: 1000, icon: '🪙', name: '1,000 Coins' }, premium: { type: 'coins', amount: 3000, icon: '🪙', name: '3,000 Coins' }},
+            { tier: 32, free: { type: 'coins', amount: 1000, icon: '🪙', name: '1,000 Coins' }, premium: { type: 'skin', item: 'fire', icon: '🔥', name: 'Fire Color' }},
+            { tier: 33, free: { type: 'xp_boost', amount: 40, icon: '⚡', name: '+40% XP (1 day)' }, premium: { type: 'border', item: 'mythic', icon: '🌟', name: 'Mythic Border' }},
+            { tier: 34, free: { type: 'coins', amount: 1000, icon: '🪙', name: '1,000 Coins' }, premium: { type: 'effect', item: 'rainbow_trail', icon: '🌈', name: 'Rainbow Trail' }},
+            { tier: 35, free: { type: 'skin', item: 'pink', icon: '🩷', name: 'Pink Color' }, premium: { type: 'lootbox', amount: 1, icon: '📦', name: 'Mythic Loot Box' }},
+            { tier: 36, free: { type: 'coins', amount: 1000, icon: '🪙', name: '1,000 Coins' }, premium: { type: 'coins', amount: 4000, icon: '🪙', name: '4,000 Coins' }},
+            { tier: 37, free: { type: 'coins', amount: 1000, icon: '🪙', name: '1,000 Coins' }, premium: { type: 'effect', item: 'dragon', icon: '🐲', name: 'Dragon Effect' }},
+            { tier: 38, free: { type: 'xp_boost', amount: 50, icon: '⚡', name: '+50% XP (1 day)' }, premium: { type: 'skin', item: 'ice', icon: '🧊', name: 'Ice Color' }},
+            { tier: 39, free: { type: 'coins', amount: 1000, icon: '🪙', name: '1,000 Coins' }, premium: { type: 'border', item: 'animated', icon: '💫', name: 'Animated Border' }},
+            { tier: 40, free: { type: 'lootbox', amount: 2, icon: '📦', name: '2x Epic Loot Box' }, premium: { type: 'skin', item: 'mythic_gold', icon: '👑', name: 'Mythic Gold Color' }},
+            { tier: 41, free: { type: 'coins', amount: 1200, icon: '🪙', name: '1,200 Coins' }, premium: { type: 'coins', amount: 5000, icon: '🪙', name: '5,000 Coins' }},
+            { tier: 42, free: { type: 'coins', amount: 1200, icon: '🪙', name: '1,200 Coins' }, premium: { type: 'effect', item: 'phoenix', icon: '🦅', name: 'Phoenix Effect' }},
+            { tier: 43, free: { type: 'xp_boost', amount: 50, icon: '⚡', name: '+50% XP (1 day)' }, premium: { type: 'skin', item: 'thunder', icon: '⛈️', name: 'Thunder Color' }},
+            { tier: 44, free: { type: 'coins', amount: 1200, icon: '🪙', name: '1,200 Coins' }, premium: { type: 'border', item: 'elite', icon: '🌟', name: 'Elite Border' }},
+            { tier: 45, free: { type: 'skin', item: 'silver', icon: '⚪', name: 'Silver Color' }, premium: { type: 'lootbox', amount: 2, icon: '📦', name: '2x Mythic Loot Box' }},
+            { tier: 46, free: { type: 'coins', amount: 1500, icon: '🪙', name: '1,500 Coins' }, premium: { type: 'coins', amount: 7500, icon: '🪙', name: '7,500 Coins' }},
+            { tier: 47, free: { type: 'coins', amount: 1500, icon: '🪙', name: '1,500 Coins' }, premium: { type: 'effect', item: 'cosmic_aura', icon: '🌌', name: 'Cosmic Aura' }},
+            { tier: 48, free: { type: 'xp_boost', amount: 100, icon: '⚡', name: '+100% XP (1 day)' }, premium: { type: 'skin', item: 'dark_matter', icon: '🕳️', name: 'Dark Matter Color' }},
+            { tier: 49, free: { type: 'coins', amount: 2000, icon: '🪙', name: '2,000 Coins' }, premium: { type: 'border', item: 'ultimate', icon: '👑', name: 'Ultimate Border' }},
+            { tier: 50, free: { type: 'lootbox', amount: 1, icon: '📦', name: 'Mega Loot Box' }, premium: { type: 'title', item: 'season1_champion', icon: '🏆', name: 'Season 1 Champion Title' }}
+        ];
+
+        // Challenges
+        const DAILY_CHALLENGES = [
+            { id: 'd1', name: 'Play Any Game', desc: 'Play any game for at least 2 minutes', icon: '🎮', xp: 100, target: 1, game: 'any' },
+            { id: 'd2', name: 'Coin Collector', desc: 'Earn 500 coins across all games', icon: '🪙', xp: 150, target: 500, type: 'coins' },
+            { id: 'd3', name: 'Social Butterfly', desc: 'Visit the shop or profile page', icon: '🦋', xp: 75, target: 1, type: 'visit' }
+        ];
+
+        const WEEKLY_CHALLENGES = [
+            { id: 'w1', name: 'Gaming Marathon', desc: 'Play 10 different game sessions', icon: '🏃', xp: 500, target: 10, type: 'sessions' },
+            { id: 'w2', name: 'Big Spender', desc: 'Spend 2,000 coins in the shop', icon: '💰', xp: 750, target: 2000, type: 'spend' },
+            { id: 'w3', name: 'High Roller', desc: 'Win 5,000 coins total', icon: '🎰', xp: 1000, target: 5000, type: 'win_coins' }
+        ];
+
+        const SEASONAL_CHALLENGES = [
+            { id: 's1', name: 'Completionist', desc: 'Unlock 25 tiers in the battle pass', icon: '🎯', xp: 2500, target: 25, type: 'tiers' },
+            { id: 's2', name: 'Legendary Collector', desc: 'Collect 10 items from the battle pass', icon: '👑', xp: 5000, target: 10, type: 'collect' },
+            { id: 's3', name: 'Master Gamer', desc: 'Complete 50 daily challenges', icon: '🌟', xp: 10000, target: 50, type: 'daily_complete' }
+        ];
+
+        // State
+        let currentUser = null;
+        let battlePassData = null;
+
+        // Initialize
+        async function init() {
+            await checkLogin();
+            updateSeasonTimer();
+            setInterval(updateSeasonTimer, 1000);
+        }
+
+        async function checkLogin() {
+            try {
+                const res = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await res.json();
+                
+                if (data.loggedIn) {
+                    currentUser = data.user;
+                    document.getElementById('loginPrompt').classList.add('hidden');
+                    document.getElementById('mainContent').classList.remove('hidden');
+                    await loadBattlePassData();
+                    renderAll();
+                } else {
+                    document.getElementById('loginPrompt').classList.remove('hidden');
+                    document.getElementById('mainContent').classList.add('hidden');
+                }
+            } catch (e) {
+                console.error('Auth check failed:', e);
+            }
+            
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        async function loadBattlePassData() {
+            try {
+                const res = await fetch('api/battlepass.php?action=get', { credentials: 'include' });
+                battlePassData = await res.json();
+            } catch (e) {
+                // Initialize default data
+                battlePassData = {
+                    xp: 0,
+                    tier: 1,
+                    premium: false,
+                    claimedFree: [],
+                    claimedPremium: [],
+                    challenges: {},
+                    coins: currentUser?.coins || 0
+                };
+            }
+        }
+
+        function renderAll() {
+            updateHeader();
+            updateXPBar();
+            updatePremiumBanner();
+            renderRewardsTrack();
+            renderChallenges();
+        }
+
+        function updateHeader() {
+            document.getElementById('userCoins').textContent = (battlePassData.coins || 0).toLocaleString();
+            document.getElementById('userTier').textContent = battlePassData.tier || 1;
+        }
+
+        function updateXPBar() {
+            const tier = battlePassData.tier || 1;
+            const xp = battlePassData.xp || 0;
+            const xpInTier = xp % SEASON.xpPerTier;
+            const percent = (xpInTier / SEASON.xpPerTier) * 100;
+            
+            document.getElementById('currentTierBadge').textContent = tier;
+            document.getElementById('xpBar').style.width = percent + '%';
+            document.getElementById('xpText').textContent = `${xpInTier} / ${SEASON.xpPerTier} XP`;
+            
+            if (tier < SEASON.maxTier) {
+                document.getElementById('nextTierXp').textContent = `${SEASON.xpPerTier - xpInTier} XP`;
+            } else {
+                document.getElementById('nextTierXp').textContent = 'MAX TIER!';
+            }
+        }
+
+        function updatePremiumBanner() {
+            const banner = document.getElementById('premiumBanner');
+            const btn = document.getElementById('buyPremiumBtn');
+            
+            if (battlePassData.premium) {
+                banner.classList.add('owned');
+                banner.querySelector('.premium-text h2').textContent = '🌟 Premium Pass Active';
+                banner.querySelector('.premium-text p').textContent = 'You have access to all premium rewards!';
+                btn.textContent = '✓ Owned';
+                btn.disabled = true;
+            } else {
+                banner.classList.remove('owned');
+                btn.disabled = battlePassData.coins < SEASON.premiumCost;
+            }
+        }
+
+        function renderRewardsTrack() {
+            const track = document.getElementById('rewardsTrack');
+            track.innerHTML = '';
+            
+            const currentTier = battlePassData.tier || 1;
+            
+            TIER_REWARDS.forEach(reward => {
+                const isUnlocked = reward.tier <= currentTier;
+                const isCurrent = reward.tier === currentTier;
+                const freeClaimed = battlePassData.claimedFree?.includes(reward.tier);
+                const premiumClaimed = battlePassData.claimedPremium?.includes(reward.tier);
+                
+                const tierEl = document.createElement('div');
+                tierEl.className = `reward-tier ${isUnlocked ? 'unlocked' : ''} ${isCurrent ? 'current' : ''}`;
+                
+                tierEl.innerHTML = `
+                    <div class="tier-number">Tier ${reward.tier}</div>
+                    <div class="reward-content">
+                        <div class="free-reward">
+                            <div class="reward-icon">${reward.free.icon}</div>
+                            <div class="reward-name">${reward.free.name}</div>
+                        </div>
+                        <button class="claim-btn ${getClaimButtonClass(isUnlocked, freeClaimed, true)}" 
+                                onclick="claimReward(${reward.tier}, 'free')"
+                                ${!isUnlocked || freeClaimed ? 'disabled' : ''}>
+                            ${freeClaimed ? '✓ Claimed' : (isUnlocked ? 'Claim' : '🔒')}
+                        </button>
+                        <div class="premium-reward ${battlePassData.premium ? '' : 'locked'}">
+                            <div class="reward-icon">${reward.premium.icon}</div>
+                            <div class="reward-name">${reward.premium.name}</div>
+                        </div>
+                        <button class="claim-btn ${getClaimButtonClass(isUnlocked && battlePassData.premium, premiumClaimed, false)}" 
+                                onclick="claimReward(${reward.tier}, 'premium')"
+                                ${!isUnlocked || !battlePassData.premium || premiumClaimed ? 'disabled' : ''}>
+                            ${premiumClaimed ? '✓ Claimed' : (battlePassData.premium ? (isUnlocked ? 'Claim' : '🔒') : '🔒 Premium')}
+                        </button>
+                    </div>
+                `;
+                
+                track.appendChild(tierEl);
+            });
+            
+            // Scroll to current tier
+            setTimeout(() => {
+                const currentEl = track.querySelector('.current');
+                if (currentEl) {
+                    currentEl.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+                }
+            }, 100);
+        }
+
+        function getClaimButtonClass(canClaim, isClaimed, isFree) {
+            if (isClaimed) return 'claimed';
+            if (canClaim) return 'claimable';
+            return 'locked';
+        }
+
+        function renderChallenges() {
+            renderChallengeList('dailyChallenges', DAILY_CHALLENGES, 'daily');
+            renderChallengeList('weeklyChallenges', WEEKLY_CHALLENGES, 'weekly');
+            renderChallengeList('seasonalChallenges', SEASONAL_CHALLENGES, 'seasonal');
+        }
+
+        function renderChallengeList(containerId, challenges, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            challenges.forEach(challenge => {
+                const progress = battlePassData.challenges?.[challenge.id] || 0;
+                const completed = progress >= challenge.target;
+                const claimed = battlePassData.challenges?.[challenge.id + '_claimed'];
+                const percent = Math.min(100, (progress / challenge.target) * 100);
+                
+                const card = document.createElement('div');
+                card.className = `challenge-card ${completed ? 'completed' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="challenge-icon">${challenge.icon}</div>
+                    <div class="challenge-info">
+                        <div class="challenge-name">${challenge.name}</div>
+                        <div class="challenge-desc">${challenge.desc}</div>
+                        <div class="challenge-progress-bar">
+                            <div class="challenge-progress-fill" style="width: ${percent}%"></div>
+                        </div>
+                        <div class="challenge-progress-text">${progress} / ${challenge.target}</div>
+                    </div>
+                    <div class="challenge-reward">
+                        <div class="xp-reward">+${challenge.xp} XP</div>
+                        <span class="challenge-type ${type}">${type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                        ${completed && !claimed ? `<button class="claim-challenge-btn" onclick="claimChallenge('${challenge.id}', ${challenge.xp})">Claim</button>` : ''}
+                        ${claimed ? '<div style="color: #4CAF50; margin-top: 10px;">✓ Claimed</div>' : ''}
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('rewardsTab').style.display = tab === 'rewards' ? 'block' : 'none';
+            document.getElementById('challengesTab').classList.toggle('active', tab === 'challenges');
+        }
+
+        async function buyPremium() {
+            if (battlePassData.coins < SEASON.premiumCost) {
+                showToast('Not enough coins!', 'error');
+                return;
+            }
+            
+            try {
+                const res = await fetch('api/battlepass.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'buy_premium' })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    battlePassData.premium = true;
+                    battlePassData.coins -= SEASON.premiumCost;
+                    renderAll();
+                    showToast('Premium Pass unlocked! 🎉', 'success');
+                } else {
+                    showToast(data.error || 'Failed to purchase', 'error');
+                }
+            } catch (e) {
+                showToast('Error purchasing premium', 'error');
+            }
+        }
+
+        async function claimReward(tier, type) {
+            try {
+                const res = await fetch('api/battlepass.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'claim_reward', tier, type })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    if (type === 'free') {
+                        battlePassData.claimedFree.push(tier);
+                    } else {
+                        battlePassData.claimedPremium.push(tier);
+                    }
+                    
+                    if (data.coins) {
+                        battlePassData.coins = data.coins;
+                    }
+                    
+                    renderAll();
+                    showToast(`Reward claimed: ${data.reward}! 🎁`, 'success');
+                } else {
+                    showToast(data.error || 'Failed to claim', 'error');
+                }
+            } catch (e) {
+                showToast('Error claiming reward', 'error');
+            }
+        }
+
+        async function claimChallenge(challengeId, xp) {
+            try {
+                const res = await fetch('api/battlepass.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'claim_challenge', challengeId, xp })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    battlePassData.challenges[challengeId + '_claimed'] = true;
+                    battlePassData.xp = data.xp;
+                    battlePassData.tier = data.tier;
+                    
+                    renderAll();
+                    showToast(`+${xp} XP earned! 🎉`, 'success');
+                } else {
+                    showToast(data.error || 'Failed to claim', 'error');
+                }
+            } catch (e) {
+                showToast('Error claiming challenge', 'error');
+            }
+        }
+
+        function updateSeasonTimer() {
+            const now = new Date();
+            const diff = SEASON.endDate - now;
+            
+            if (diff <= 0) {
+                document.getElementById('seasonTimer').textContent = 'Season ended!';
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            document.getElementById('seasonTimer').textContent = `${days} days, ${hours} hours remaining`;
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

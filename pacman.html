@@ -1,10 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Pac-Man online free! Classic arcade game. Eat dots, avoid ghosts, clear the maze!">
+    <meta name="keywords" content="pacman online, pac-man game, free pacman, arcade pacman, ghost game, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/pacman.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/pacman.html">
+    <meta property="og:title" content="Pac-Man - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Pac-Man online free! Classic arcade game. Eat dots, avoid ghosts, clear the maze!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Pac-Man - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Pac-Man online free! Classic arcade game. Eat dots, avoid ghosts, clear the maze!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Pac-Man",
+        "description": "Play Pac-Man online free! Classic arcade game. Eat dots, avoid ghosts, clear the maze!",
+        "url": "https://retroblasts.com/pacman.html",
+        "genre": "Arcade",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pac-Man - RetroBlasts</title>
+    <title>Pac-Man - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -102,6 +150,7 @@
 <script src="js/wars.js"></script>
 <script src="js/activity.js"></script>
 <script src="js/pets.js"></script>
+<script src="js/vip.js"></script>
 </head>
 <body>
     <h1>PAC-MAN</h1>
@@ -157,6 +206,7 @@
         </div>
         <div class="button-row">
             <button class="btn btn-shop" id="shopBtn">SHOP</button>
+            <button class="btn" id="vipBtn" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000;">VIP</button>
             <button class="btn btn-achieve" id="achieveBtn">BADGES</button>
         </div>
     </div>
@@ -559,7 +609,13 @@
         function loadArcadeStats() {
             return JSON.parse(localStorage.getItem('arcadeStats')) || { totalGamesPlayed: 0, totalTimePlayed: 0, totalCoinsEarned: 0, games: {} };
         }
-        function saveArcadeStats(stats) { localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
+        function saveArcadeStats(stats) {
+            // Sync to server for logged-in users
+            fetch("api/game-stats.php", {
+                method: "POST", credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "save", game: "pacman", data: stats.games["pacman"] || {} })
+            }).catch(() => {}); localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
         function trackGameStart() { gameStartTime = Date.now(); }
         function trackGameEnd(finalScore, coinsEarned, levelsCompleted) {
             const stats = loadArcadeStats();
@@ -579,6 +635,16 @@
             stats.totalTimePlayed += sessionTime;
             stats.totalCoinsEarned += coinsEarned;
             saveArcadeStats(stats);
+
+            // Contribute damage to boss event
+            if (finalScore > 0) {
+                fetch("api/boss-events.php?action=contribute", {
+                    method: "POST",
+                    credentials: "include",
+                    keepalive: true, headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ score: finalScore, game: "pacman" })
+                }).then(r => r.json()).then(data => { if (data.success) { console.log("Boss damage dealt:", data.damage); if (typeof showToast === "function") showToast("⚔️ Dealt " + data.damage + " boss damage!", "success"); } else { console.log("Boss damage failed:", data.error); } }).catch(e => console.log("Boss damage error:", e));
+            }
         }
 
         // ============================================
@@ -1216,7 +1282,8 @@
                 saveData.stats.highScore = score;
             }
 
-            saveData.coins += sessionCoins;
+            const vipCoins = typeof VIPSystem !== "undefined" ? VIPSystem.applyMultiplier(sessionCoins) : sessionCoins;
+            saveData.coins += vipCoins;
             saveData.stats.totalCoinsEarned += sessionCoins;
             saveData.stats.gamesPlayed++;
 
@@ -1586,6 +1653,13 @@
         if (savedPacName) document.getElementById('playerName').value = savedPacName;
 
         // Shop
+        document.getElementById('vipBtn').addEventListener('click', () => {
+            if (typeof VIPSystem !== 'undefined') {
+                if (VIPSystem.isVIP()) VIPSystem.showStatusModal();
+                else VIPSystem.showActivationModal();
+            }
+        });
+        if (typeof VIPSystem !== 'undefined') VIPSystem.showIndicator();
         document.getElementById('shopBtn').addEventListener('click', () => {
             startScreen.classList.add('hidden');
             renderSkinsGrid();
@@ -1615,5 +1689,13 @@
             document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
         });
     </script>
+
+<!-- More Games Section -->
+<div style="background:rgba(0,0,0,0.3);padding:20px;margin-top:20px;border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto">
+    <h3 style="color:#ffd700;margin-bottom:15px;text-align:center">🎮 More Games</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
+        <a href="flappy-bird.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🐦 Flappy Bird</a><a href="snake.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🐍 Snake</a><a href="tetris.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🧱 Tetris</a><a href="2048.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🔢 2048</a><a href="chess.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">♟️ Chess</a><a href="space-invaders.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">👾 Space Invaders</a>
+    </div>
+</div>
 </body>
 </html>

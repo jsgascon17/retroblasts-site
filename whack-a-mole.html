@@ -1,10 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Whack-a-Mole online free! Hit the moles as they pop up. Fast reflexes needed!">
+    <meta name="keywords" content="whack a mole, mole game, reflex game, arcade game, whack game, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/whack-a-mole.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/whack-a-mole.html">
+    <meta property="og:title" content="Whack-a-Mole - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Whack-a-Mole online free! Hit the moles as they pop up. Fast reflexes needed!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Whack-a-Mole - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Whack-a-Mole online free! Hit the moles as they pop up. Fast reflexes needed!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Whack-a-Mole",
+        "description": "Play Whack-a-Mole online free! Hit the moles as they pop up. Fast reflexes needed!",
+        "url": "https://retroblasts.com/whack-a-mole.html",
+        "genre": "Arcade",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Whack-a-Mole - RetroBlasts</title>
+    <title>Whack-a-Mole - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -449,7 +497,13 @@
         function loadArcadeStats() {
             return JSON.parse(localStorage.getItem('arcadeStats')) || { totalGamesPlayed: 0, totalTimePlayed: 0, totalCoinsEarned: 0, games: {} };
         }
-        function saveArcadeStats(stats) { localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
+        function saveArcadeStats(stats) {
+            // Sync to server for logged-in users
+            fetch("api/game-stats.php", {
+                method: "POST", credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "save", game: "whack-a-mole", data: stats.games["whack-a-mole"] || {} })
+            }).catch(() => {}); localStorage.setItem('arcadeStats', JSON.stringify(stats)); }
         function trackGameStart() { gameStartTime = Date.now(); }
         function trackGameEnd(finalScore, coinsEarned, molesHit) {
             const stats = loadArcadeStats();
@@ -469,6 +523,16 @@
             stats.totalTimePlayed += sessionTime;
             stats.totalCoinsEarned += coinsEarned;
             saveArcadeStats(stats);
+
+            // Contribute damage to boss event
+            if (finalScore > 0) {
+                fetch("api/boss-events.php?action=contribute", {
+                    method: "POST",
+                    credentials: "include",
+                    keepalive: true, headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ score: finalScore, game: "whack-a-mole" })
+                }).catch(e => console.log("Boss damage:", e));
+            }
         }
 
         let powerups = { slow: { active: false, timer: 0 }, multi: { active: false, timer: 0 }, frenzy: { active: false, timer: 0 } };

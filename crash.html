@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Crash game online free! Bet and cash out before the crash!">
+    <meta name="keywords" content="crash game, betting game, multiplier game, casino game, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/crash.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/crash.html">
+    <meta property="og:title" content="Crash - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Crash game online free! Bet and cash out before the crash!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Crash - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Crash game online free! Bet and cash out before the crash!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Crash",
+        "description": "Play Crash game online free! Bet and cash out before the crash!",
+        "url": "https://retroblasts.com/crash.html",
+        "genre": "Casino",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crash - Free Online Game | RetroBlasts</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0f0f2f 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .header {
+            background: rgba(0,0,0,0.5);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f43f5e;
+        }
+        .header h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            color: #f43f5e;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .coins-display {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            color: #000;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #666;
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        
+        .game-area {
+            background: rgba(0,0,0,0.4);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid #333;
+            margin-bottom: 20px;
+        }
+        
+        .crash-display {
+            height: 300px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .multiplier {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 4rem;
+            color: #00ff88;
+            text-shadow: 0 0 30px rgba(0,255,136,0.5);
+            z-index: 10;
+            transition: color 0.3s;
+        }
+        .multiplier.crashed {
+            color: #ff4444;
+            text-shadow: 0 0 30px rgba(255,68,68,0.5);
+        }
+        .multiplier.cashed {
+            color: #ffd700;
+            text-shadow: 0 0 30px rgba(255,215,0,0.5);
+        }
+        
+        .rocket {
+            position: absolute;
+            font-size: 3rem;
+            transition: all 0.1s linear;
+            z-index: 5;
+        }
+        
+        .trail {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .trail-dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ff88;
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+        
+        .crash-text {
+            position: absolute;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 2rem;
+            color: #ff4444;
+            text-shadow: 0 0 20px #ff4444;
+            animation: crashPulse 0.5s ease-in-out infinite;
+        }
+        @keyframes crashPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .waiting-text {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.2rem;
+            color: #888;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .bet-section {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .bet-section h3 {
+            margin-bottom: 15px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .bet-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .bet-input {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #555;
+            color: #fff;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+        }
+        
+        .quick-bets {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .quick-bet {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #444;
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .quick-bet:hover { background: rgba(255,255,255,0.2); }
+        
+        .action-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .play-btn {
+            background: linear-gradient(135deg, #00ff88, #00cc6f);
+            color: #000;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .play-btn:hover { transform: scale(1.05); }
+        .play-btn:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .cashout-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            animation: cashoutPulse 0.5s ease-in-out infinite;
+        }
+        @keyframes cashoutPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255,215,0,0.5); }
+            50% { box-shadow: 0 0 40px rgba(255,215,0,0.8); }
+        }
+        
+        .auto-cashout {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .auto-cashout input {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #555;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            width: 80px;
+        }
+        .auto-cashout label {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .history {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .history h3 {
+            margin-bottom: 15px;
+            color: #888;
+        }
+        .history-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .history-item {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .history-item.low { background: rgba(255,68,68,0.2); color: #ff4444; }
+        .history-item.mid { background: rgba(255,136,0,0.2); color: #ff8800; }
+        .history-item.high { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .history-item.mega { background: rgba(255,215,0,0.2); color: #ffd700; }
+        
+        .result-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 100;
+            display: none;
+            border: 2px solid;
+        }
+        .result-popup.win { border-color: #00ff88; }
+        .result-popup.lose { border-color: #ff4444; }
+        .result-popup h2 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        .result-popup.win h2 { color: #00ff88; }
+        .result-popup.lose h2 { color: #ff4444; }
+        .result-popup p { margin: 10px 0; }
+        .result-popup .close-btn {
+            margin-top: 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #666;
+            color: #fff;
+            padding: 10px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .login-prompt {
+            text-align: center;
+            padding: 40px;
+        }
+        .login-prompt a { color: #f43f5e; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 CRASH</h1>
+        <div class="header-right">
+            <div class="coins-display">🪙 <span id="userCoins">-</span></div>
+            <a href="casino.html" class="back-btn">← Casino</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div id="loginPrompt" class="login-prompt" style="display:none;">
+            <h2>Login Required</h2>
+            <p><a href="index.html">Go back to login</a></p>
+        </div>
+        
+        <div id="gameContent">
+            <div class="game-area">
+                <div class="crash-display" id="crashDisplay">
+                    <div class="trail" id="trail"></div>
+                    <div class="rocket" id="rocket">🚀</div>
+                    <div class="multiplier" id="multiplier">1.00x</div>
+                </div>
+                
+                <div class="controls">
+                    <div class="bet-section">
+                        <h3>BET AMOUNT</h3>
+                        <div class="bet-input-group">
+                            <input type="number" class="bet-input" id="betAmount" value="100" min="10" max="50000">
+                        </div>
+                        <div class="quick-bets">
+                            <button class="quick-bet" onclick="setBet(10)">10</button>
+                            <button class="quick-bet" onclick="setBet(50)">50</button>
+                            <button class="quick-bet" onclick="setBet(100)">100</button>
+                            <button class="quick-bet" onclick="setBet(500)">500</button>
+                            <button class="quick-bet" onclick="setBet(1000)">1K</button>
+                            <button class="quick-bet" onclick="setBet('half')">½</button>
+                            <button class="quick-bet" onclick="setBet('double')">2x</button>
+                            <button class="quick-bet" onclick="setBet('max')">MAX</button>
+                        </div>
+                        <div class="auto-cashout">
+                            <label>Auto Cashout:</label>
+                            <input type="number" id="autoCashout" step="0.1" min="1.1" placeholder="Off">
+                            <span style="color:#666">x</span>
+                        </div>
+                    </div>
+                    
+                    <div class="action-section">
+                        <button class="play-btn" id="playBtn" onclick="startGame()">
+                            Place Bet
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="history">
+                <h3>Recent Crashes</h3>
+                <div class="history-list" id="historyList">
+                    <span style="color:#666">No history yet</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="result-popup" id="resultPopup">
+        <h2 id="resultTitle">CRASHED!</h2>
+        <p id="resultMultiplier"></p>
+        <p id="resultWinnings"></p>
+        <button class="close-btn" onclick="closeResult()">Continue</button>
+    </div>
+    
+    <script>
+        let currentUser = null;
+        let userCoins = 0;
+        let gameActive = false;
+        let currentMultiplier = 1.00;
+        let crashPoint = 0;
+        let animationFrame = null;
+        let startTime = 0;
+        let history = [];
+        
+        async function init() {
+            try {
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await resp.json();
+                if (data.success && data.loggedIn && data.user) {
+                    currentUser = data.user;
+                    userCoins = data.user.coins || 0;
+                    document.getElementById('userCoins').textContent = userCoins.toLocaleString();
+                } else {
+                    document.getElementById('loginPrompt').style.display = 'block';
+                    document.getElementById('gameContent').style.display = 'none';
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        
+        function setBet(value) {
+            const input = document.getElementById('betAmount');
+            if (value === 'half') {
+                input.value = Math.floor(parseInt(input.value) / 2) || 10;
+            } else if (value === 'double') {
+                input.value = Math.min(parseInt(input.value) * 2, 50000, userCoins);
+            } else if (value === 'max') {
+                input.value = Math.min(50000, userCoins);
+            } else {
+                input.value = value;
+            }
+        }
+        
+        async function startGame() {
+            if (gameActive) {
+                cashOut();
+                return;
+            }
+            
+            const bet = parseInt(document.getElementById('betAmount').value);
+            if (bet < 10) {
+                alert('Minimum bet is 10 coins');
+                return;
+            }
+            if (bet > userCoins) {
+                alert('Not enough coins!');
+                return;
+            }
+            
+            try {
+                const resp = await fetch('api/casino.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'crash_start', bet })
+                });
+                const data = await resp.json();
+                
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                
+                userCoins = data.coins;
+                document.getElementById('userCoins').textContent = userCoins.toLocaleString();
+                
+                // Start the game animation
+                gameActive = true;
+                currentMultiplier = 1.00;
+                startTime = Date.now();
+                
+                const btn = document.getElementById('playBtn');
+                btn.textContent = 'CASH OUT';
+                btn.classList.add('cashout-btn');
+                
+                document.getElementById('multiplier').className = 'multiplier';
+                document.getElementById('rocket').style.display = 'block';
+                document.getElementById('trail').innerHTML = '';
+                
+                animateGame();
+                
+            } catch(e) {
+                console.error(e);
+                alert('Failed to start game');
+            }
+        }
+        
+        function animateGame() {
+            if (!gameActive) return;
+            
+            const elapsed = (Date.now() - startTime) / 1000;
+            // Multiplier increases exponentially
+            currentMultiplier = Math.pow(Math.E, elapsed * 0.15);
+            currentMultiplier = Math.round(currentMultiplier * 100) / 100;
+            
+            const multiplierEl = document.getElementById('multiplier');
+            multiplierEl.textContent = currentMultiplier.toFixed(2) + 'x';
+            
+            // Move rocket
+            const rocket = document.getElementById('rocket');
+            const display = document.getElementById('crashDisplay');
+            const progress = Math.min(elapsed / 20, 0.9); // Max 90% across
+            const x = progress * display.offsetWidth;
+            const y = display.offsetHeight - (progress * display.offsetHeight * 0.8) - 50;
+            rocket.style.left = x + 'px';
+            rocket.style.bottom = (display.offsetHeight - y) + 'px';
+            rocket.style.transform = `rotate(-${45 + progress * 20}deg)`;
+            
+            // Add trail dot
+            if (Math.random() > 0.7) {
+                const trail = document.getElementById('trail');
+                const dot = document.createElement('div');
+                dot.className = 'trail-dot';
+                dot.style.left = (x - 10 + Math.random() * 20) + 'px';
+                dot.style.bottom = (display.offsetHeight - y - 20 + Math.random() * 20) + 'px';
+                trail.appendChild(dot);
+                setTimeout(() => dot.remove(), 1000);
+            }
+            
+            // Check auto cashout
+            const autoCashout = parseFloat(document.getElementById('autoCashout').value);
+            if (autoCashout && currentMultiplier >= autoCashout) {
+                cashOut();
+                return;
+            }
+            
+            animationFrame = requestAnimationFrame(animateGame);
+        }
+        
+        async function cashOut() {
+            if (!gameActive) return;
+            
+            gameActive = false;
+            cancelAnimationFrame(animationFrame);
+            
+            try {
+                const resp = await fetch('api/casino.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'crash_cashout', multiplier: currentMultiplier })
+                });
+                const data = await resp.json();
+                
+                if (data.error) {
+                    alert(data.error);
+                    resetGame();
+                    return;
+                }
+                
+                userCoins = data.coins;
+                document.getElementById('userCoins').textContent = userCoins.toLocaleString();
+                
+                // Show result
+                const multiplierEl = document.getElementById('multiplier');
+                if (data.result === 'win') {
+                    multiplierEl.classList.add('cashed');
+                    showResult('win', data.cashoutMultiplier, data.winnings, data.crashPoint);
+                } else {
+                    multiplierEl.classList.add('crashed');
+                    showResult('lose', data.crashPoint, -data.bet, data.crashPoint);
+                }
+                
+                addToHistory(data.crashPoint);
+                
+            } catch(e) {
+                console.error(e);
+            }
+            
+            resetGame();
+        }
+        
+        async function reportCrash(crashPoint) {
+            try {
+                await fetch('api/casino.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'crash_result' })
+                });
+            } catch(e) {}
+        }
+        
+        function showResult(type, multiplier, winnings, crashPoint) {
+            const popup = document.getElementById('resultPopup');
+            popup.className = 'result-popup ' + (type === 'win' ? 'win' : 'lose');
+            
+            document.getElementById('resultTitle').textContent = type === 'win' ? 'CASHED OUT!' : 'CRASHED!';
+            document.getElementById('resultMultiplier').textContent = type === 'win' 
+                ? `You cashed out at ${multiplier.toFixed(2)}x` 
+                : `Crashed at ${crashPoint.toFixed(2)}x`;
+            document.getElementById('resultWinnings').innerHTML = type === 'win'
+                ? `<span style="color:#00ff88">+${winnings.toLocaleString()} coins</span>`
+                : `<span style="color:#ff4444">${winnings.toLocaleString()} coins</span>`;
+            
+            popup.style.display = 'block';
+        }
+        
+        function closeResult() {
+            document.getElementById('resultPopup').style.display = 'none';
+        }
+        
+        function addToHistory(crashPoint) {
+            history.unshift(crashPoint);
+            if (history.length > 20) history.pop();
+            
+            const list = document.getElementById('historyList');
+            list.innerHTML = history.map(cp => {
+                let cls = 'low';
+                if (cp >= 10) cls = 'mega';
+                else if (cp >= 3) cls = 'high';
+                else if (cp >= 2) cls = 'mid';
+                return `<span class="history-item ${cls}">${cp.toFixed(2)}x</span>`;
+            }).join('');
+        }
+        
+        function resetGame() {
+            const btn = document.getElementById('playBtn');
+            btn.textContent = 'Place Bet';
+            btn.classList.remove('cashout-btn');
+            btn.disabled = false;
+            
+            document.getElementById('rocket').style.left = '10px';
+            document.getElementById('rocket').style.bottom = '50px';
+            document.getElementById('rocket').style.transform = 'rotate(-45deg)';
+        }
+        
+        init();
+    </script>
+</body>
+</html>

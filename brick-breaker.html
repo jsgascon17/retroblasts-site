@@ -1,10 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Brick Breaker online free! Classic breakout game with power-ups. Destroy all bricks!">
+    <meta name="keywords" content="brick breaker, breakout game, arkanoid, brick game, paddle game, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/brick-breaker.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/brick-breaker.html">
+    <meta property="og:title" content="Brick Breaker - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Brick Breaker online free! Classic breakout game with power-ups. Destroy all bricks!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Brick Breaker - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Brick Breaker online free! Classic breakout game with power-ups. Destroy all bricks!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Brick Breaker",
+        "description": "Play Brick Breaker online free! Classic breakout game with power-ups. Destroy all bricks!",
+        "url": "https://retroblasts.com/brick-breaker.html",
+        "genre": "Arcade",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Brick Breaker - RetroBlasts</title>
+    <title>Brick Breaker - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -610,8 +658,16 @@
             fetch('api/add-coins.php', {
                 method: 'POST',
                 credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
+                keepalive: true, headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ coins: coins, score: score, game: 'brick-breaker' })
+            }).catch(() => {});
+
+            // Contribute score to boss event (score = damage)
+            fetch('api/boss-events.php?action=contribute', {
+                method: 'POST',
+                credentials: 'include',
+                keepalive: true, headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'brick-breaker', score: score })
             }).catch(() => {});
 
             // Reset submit button

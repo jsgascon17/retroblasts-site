@@ -1,10 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="See the top players on RetroBlasts!">
+    <meta name="keywords" content="leaderboards, high scores, rankings, top players, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/leaderboards.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/leaderboards.html">
+    <meta property="og:title" content="Leaderboards - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="See the top players on RetroBlasts!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Leaderboards - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="See the top players on RetroBlasts!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboards - RetroBlasts</title>
+    <title>Leaderboards - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -206,6 +234,63 @@
             color: #888;
         }
         .no-data .icon { font-size: 4rem; margin-bottom: 15px; }
+
+        /* Game Selector Styles */
+        .game-selector {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .game-selector h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        .game-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .game-card:hover {
+            border-color: #ffd700;
+            background: rgba(255,215,0,0.1);
+            transform: translateY(-2px);
+        }
+        .game-card .game-name {
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        .game-card .game-stats {
+            font-size: 0.85rem;
+            color: #888;
+        }
+        .game-card .top-player {
+            font-size: 0.8rem;
+            color: #ffd700;
+            margin-top: 5px;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
@@ -228,15 +313,21 @@
             <button class="lb-tab" onclick="showLeaderboard('gamesPlayed')">
                 <span class="icon">🎮</span> Games Played
             </button>
-            <button class="lb-tab" onclick="showLeaderboard('winStreak')">
-                <span class="icon">🔥</span> Win Streak
-            </button>
-            <button class="lb-tab" onclick="showLeaderboard('totalWins')">
-                <span class="icon">🏅</span> Total Wins
+            <button class="lb-tab" onclick="showLeaderboard('timePlayed')">
+                <span class="icon">⏱️</span> Time Played
             </button>
             <button class="lb-tab" onclick="showLeaderboard('highScores')">
                 <span class="icon">📊</span> High Scores
             </button>
+            <button class="lb-tab" onclick="showPerGameLeaderboards()">
+                <span class="icon">🏆</span> Per Game
+            </button>
+        </div>
+
+        <!-- Game selector for per-game leaderboards -->
+        <div class="game-selector" id="gameSelector" style="display: none;">
+            <h3>Select a Game</h3>
+            <div class="game-grid" id="gameGrid"></div>
         </div>
 
         <div class="my-rank-card" id="myRankCard" style="display: none;">
@@ -271,13 +362,14 @@
         let totalPlayers = 0;
         let currentUser = null;
 
+        let currentGame = null;
+
         const typeConfig = {
             coins: { icon: '🪙', title: 'Richest Players', label: 'coins' },
             xp: { icon: '⭐', title: 'Most Experienced', label: 'XP' },
             gamesPlayed: { icon: '🎮', title: 'Most Active Players', label: 'games' },
-            winStreak: { icon: '🔥', title: 'Longest Win Streaks', label: 'streak' },
-            totalWins: { icon: '🏅', title: 'Most Victorious', label: 'wins' },
-            highScores: { icon: '📊', title: 'Highest Scorers', label: 'points' }
+            timePlayed: { icon: '⏱️', title: 'Most Time Played', label: '' },
+            highScores: { icon: '📊', title: 'Highest Scorers', label: 'pts' }
         };
 
         async function init() {
@@ -296,14 +388,134 @@
         async function showLeaderboard(type) {
             currentType = type;
             currentOffset = 0;
+            currentGame = null;
 
             document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
             event?.target?.classList.add('active');
+
+            // Hide game selector, show leaderboard
+            document.getElementById('gameSelector').style.display = 'none';
+            document.querySelector('.leaderboard-card').style.display = 'block';
 
             const config = typeConfig[type];
             document.getElementById('lbTitle').innerHTML = `<span>${config.icon}</span><span>${config.title}</span>`;
 
             await loadLeaderboard();
+        }
+
+        async function showPerGameLeaderboards() {
+            document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+            event?.target?.classList.add('active');
+
+            // Show game selector, hide regular leaderboard
+            document.getElementById('gameSelector').style.display = 'block';
+            document.querySelector('.leaderboard-card').style.display = 'none';
+            document.getElementById('myRankCard').style.display = 'none';
+
+            try {
+                const resp = await fetch('api/leaderboards.php?action=games');
+                const data = await resp.json();
+
+                if (data.success) {
+                    renderGameGrid(data.games);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderGameGrid(games) {
+            const grid = document.getElementById('gameGrid');
+
+            if (games.length === 0) {
+                grid.innerHTML = '<p style="color:#888;text-align:center;">No game scores yet!</p>';
+                return;
+            }
+
+            grid.innerHTML = games.map(game => `
+                <div class="game-card" onclick="showGameLeaderboard('${game.id}')">
+                    <div class="game-name">${game.name}</div>
+                    <div class="game-stats">${game.playerCount} player${game.playerCount !== 1 ? 's' : ''}</div>
+                    <div class="top-player">👑 ${game.topPlayer}: ${game.topScore.toLocaleString()}</div>
+                </div>
+            `).join('');
+        }
+
+        async function showGameLeaderboard(gameId) {
+            currentGame = gameId;
+
+            // Hide game selector, show leaderboard
+            document.getElementById('gameSelector').style.display = 'none';
+            document.querySelector('.leaderboard-card').style.display = 'block';
+
+            try {
+                const resp = await fetch(`api/leaderboards.php?action=gameLeaderboard&game=${gameId}`);
+                const data = await resp.json();
+
+                if (data.success) {
+                    document.getElementById('lbTitle').innerHTML = `<span>🏆</span><span>${data.gameName} High Scores</span>`;
+                    renderGameLeaderboard(data.leaderboard);
+                    document.getElementById('updatedTime').textContent = 'Updated ' + formatTime(data.updated);
+                    document.getElementById('loadMore').style.display = 'none';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderGameLeaderboard(entries) {
+            const list = document.getElementById('leaderboardList');
+            document.getElementById('myRankCard').style.display = 'none';
+
+            // Add back button
+            let html = '<button class="back-btn" onclick="showPerGameLeaderboards()">← Back to Games</button>';
+
+            if (entries.length === 0) {
+                html += `
+                    <div class="no-data">
+                        <div class="icon">🏆</div>
+                        <p>No scores yet. Be the first!</p>
+                    </div>
+                `;
+            } else {
+                html += entries.map(e => {
+                    const posClass = e.position === 1 ? 'top-1' : e.position === 2 ? 'top-2' : e.position === 3 ? 'top-3' : '';
+                    let medal = '';
+                    let posColor = '';
+                    if (e.position === 1) { medal = '🥇'; posColor = 'gold'; }
+                    else if (e.position === 2) { medal = '🥈'; posColor = 'silver'; }
+                    else if (e.position === 3) { medal = '🥉'; posColor = 'bronze'; }
+
+                    let nameStyle = '';
+                    if (e.nameColor === 'rainbow' || e.nameColor === 'animated_rainbow') {
+                        nameStyle = 'background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #8f00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;';
+                    } else if (e.nameColor === 'gold') {
+                        nameStyle = 'color: #ffd700;';
+                    } else if (e.nameColor === 'cyan') {
+                        nameStyle = 'color: #00bcd4;';
+                    } else if (e.nameColor === 'fire') {
+                        nameStyle = 'background: linear-gradient(180deg, #ff0, #f00); -webkit-background-clip: text; -webkit-text-fill-color: transparent;';
+                    }
+
+                    return `
+                        <div class="lb-entry ${posClass}">
+                            <div class="lb-position ${posColor}">#${e.position}</div>
+                            <div class="lb-medal">${medal}</div>
+                            <div class="lb-player">
+                                <div class="lb-avatar">${e.avatar}</div>
+                                <span class="lb-name" style="${nameStyle}">${e.username}</span>
+                                ${e.title ? `<span class="lb-rank-badge rank-gold">${e.title.toUpperCase()}</span>` : ''}
+                            </div>
+                            <div class="lb-value">
+                                ${e.value.toLocaleString()}
+                                <span class="label">pts</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            list.innerHTML = html;
         }
 
         async function loadLeaderboard() {
@@ -344,7 +556,12 @@
             if (myPosition && currentUser) {
                 myRankCard.style.display = 'flex';
                 document.getElementById('myPosition').textContent = '#' + myPosition.position;
-                document.getElementById('myValue').textContent = myPosition.value.toLocaleString() + ' ' + config.label;
+
+                // Format value for time played
+                let myDisplayValue = currentType === 'timePlayed' && myPosition.formatted
+                    ? myPosition.formatted
+                    : myPosition.value.toLocaleString() + ' ' + config.label;
+                document.getElementById('myValue').textContent = myDisplayValue;
 
                 const percentile = Math.round((1 - myPosition.position / totalPlayers) * 100);
                 document.getElementById('myRankDesc').textContent = `Top ${Math.max(1, 100 - percentile)}% of ${totalPlayers.toLocaleString()} players`;
@@ -372,7 +589,7 @@
         }
 
         function renderEntry(entry, config) {
-            const isMe = currentUser && entry.username === currentUser.username;
+            const isMe = currentUser && (entry.username === currentUser.username || entry.realUsername === currentUser.username);
             const posClass = entry.position === 1 ? 'top-1' : entry.position === 2 ? 'top-2' : entry.position === 3 ? 'top-3' : '';
             const meClass = isMe ? 'me' : '';
 
@@ -384,18 +601,48 @@
 
             const rankClass = (entry.rank || 'Bronze').toLowerCase();
 
+            // Format value - use formatted time for timePlayed, otherwise use number
+            let displayValue = currentType === 'timePlayed' && entry.formatted
+                ? entry.formatted
+                : entry.value.toLocaleString();
+
+            // For highScores, show extra info
+            let extraInfo = '';
+            if (currentType === 'highScores' && entry.bestGame) {
+                extraInfo = `<div style="font-size:0.75rem;color:#888;margin-top:2px;">Best: ${entry.bestGame} (${entry.bestScore.toLocaleString()})</div>`;
+            }
+
+            // Handle name colors for highScores entries
+            let nameStyle = '';
+            if (entry.nameColor === 'rainbow' || entry.nameColor === 'animated_rainbow') {
+                nameStyle = 'background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #8f00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;';
+            } else if (entry.nameColor === 'gold') {
+                nameStyle = 'color: #ffd700;';
+            } else if (entry.nameColor === 'cyan') {
+                nameStyle = 'color: #00bcd4;';
+            }
+
+            // Show title badge for highScores
+            let titleBadge = '';
+            if (currentType === 'highScores' && entry.title) {
+                titleBadge = `<span class="lb-rank-badge rank-gold">${entry.title.toUpperCase()}</span>`;
+            } else if (entry.rank) {
+                titleBadge = `<span class="lb-rank-badge rank-${rankClass}">${entry.rank}</span>`;
+            }
+
             return `
                 <div class="lb-entry ${posClass} ${meClass}">
                     <div class="lb-position ${posColor}">#${entry.position}</div>
                     <div class="lb-medal">${medal}</div>
                     <div class="lb-player">
                         <div class="lb-avatar">${entry.avatar || '👤'}</div>
-                        <span class="lb-name">${entry.username}</span>
-                        <span class="lb-rank-badge rank-${rankClass}">${entry.rank || 'Bronze'}</span>
+                        <span class="lb-name" style="${nameStyle}">${entry.username}</span>
+                        ${titleBadge}
                     </div>
                     <div class="lb-value">
-                        ${entry.value.toLocaleString()}
+                        ${displayValue}
                         <span class="label">${config.label}</span>
+                        ${extraInfo}
                     </div>
                 </div>
             `;

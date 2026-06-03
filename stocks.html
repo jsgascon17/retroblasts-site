@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Trade virtual stocks!">
+    <meta name="keywords" content="stocks, trading, virtual stocks, market, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/stocks.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/stocks.html">
+    <meta property="og:title" content="Stocks - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Trade virtual stocks!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Stocks - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Trade virtual stocks!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stocks - Free Online Game | RetroBlasts</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0f0f2f 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .header {
+            background: rgba(0,0,0,0.5);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #00ff88;
+        }
+        .header h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            color: #00ff88;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #666;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-box {
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            text-align: center;
+        }
+        .stat-label { font-size: 0.75rem; color: #888; margin-bottom: 5px; }
+        .stat-value { font-size: 1.3rem; font-weight: bold; }
+        .stat-value.coins { color: #ffd700; }
+        .stat-value.positive { color: #00ff88; }
+        .stat-value.negative { color: #ff4444; }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+        
+        .section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+        .section h2 {
+            color: #00ff88;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .stock-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .stock-table th {
+            text-align: left;
+            padding: 10px;
+            color: #888;
+            font-size: 0.8rem;
+            border-bottom: 1px solid #333;
+        }
+        .stock-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #222;
+        }
+        .stock-table tr:hover {
+            background: rgba(0,255,136,0.05);
+            cursor: pointer;
+        }
+        .stock-table tr.selected {
+            background: rgba(0,255,136,0.1);
+            border-left: 3px solid #00ff88;
+        }
+        
+        .stock-symbol {
+            font-weight: bold;
+            color: #00ff88;
+        }
+        .stock-name {
+            font-size: 0.85rem;
+            color: #888;
+        }
+        .stock-price {
+            font-weight: bold;
+        }
+        .stock-change {
+            font-size: 0.9rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+        .stock-change.up {
+            background: rgba(0,255,136,0.2);
+            color: #00ff88;
+        }
+        .stock-change.down {
+            background: rgba(255,68,68,0.2);
+            color: #ff4444;
+        }
+        
+        .mini-chart {
+            width: 80px;
+            height: 30px;
+        }
+        
+        .trade-panel h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+        }
+        .trade-stock-info {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .trade-symbol {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        .trade-price {
+            font-size: 1.2rem;
+            margin: 5px 0;
+        }
+        
+        .trade-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .trade-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .trade-input label {
+            width: 60px;
+            color: #888;
+        }
+        .trade-input input {
+            flex: 1;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 1rem;
+        }
+        .trade-total {
+            text-align: right;
+            color: #ffd700;
+            font-size: 1.1rem;
+            padding: 10px 0;
+        }
+        .trade-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .btn-buy {
+            background: #00ff88;
+            color: #000;
+        }
+        .btn-buy:hover { background: #00cc6a; }
+        .btn-sell {
+            background: #ff4444;
+            color: #fff;
+        }
+        .btn-sell:hover { background: #cc3333; }
+        
+        .portfolio-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .portfolio-symbol {
+            font-weight: bold;
+            color: #00ff88;
+        }
+        .portfolio-shares {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        .portfolio-value {
+            text-align: right;
+        }
+        .portfolio-profit {
+            font-size: 0.85rem;
+        }
+        
+        .next-update {
+            text-align: center;
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 15px;
+        }
+        
+        .login-prompt {
+            text-align: center;
+            padding: 30px;
+        }
+        .login-prompt a { color: #00ff88; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📈 STOCK MARKET</h1>
+        <a href="index.html" class="back-btn">← Back</a>
+    </div>
+    
+    <div class="container">
+        <div class="stats-bar">
+            <div class="stat-box">
+                <div class="stat-label">Your Coins</div>
+                <div class="stat-value coins" id="userCoins">-</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Portfolio Value</div>
+                <div class="stat-value" id="portfolioValue">-</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Total Profit/Loss</div>
+                <div class="stat-value" id="totalProfit">-</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Next Update</div>
+                <div class="stat-value" id="nextUpdate">-</div>
+            </div>
+        </div>
+        
+        <div id="loginPrompt" class="login-prompt" style="display:none;">
+            <p>🔒 <a href="login.html?redirect=stocks.html">Log in</a> to trade stocks!</p>
+        </div>
+        
+        <div class="main-grid">
+            <div class="section">
+                <h2>📊 Market Prices</h2>
+                <table class="stock-table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Price</th>
+                            <th>Change</th>
+                            <th>Chart</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stocksTable">
+                        <tr><td colspan="4" style="text-align:center;color:#666;">Loading...</td></tr>
+                    </tbody>
+                </table>
+                <div class="next-update">Prices update every 10 minutes</div>
+            </div>
+            
+            <div>
+                <div class="section" style="margin-bottom:20px;">
+                    <h2>💼 Trade</h2>
+                    <div id="tradePanel">
+                        <p style="color:#666;text-align:center;">Select a stock to trade</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>📁 Your Portfolio</h2>
+                    <div id="portfolioList">
+                        <p style="color:#666;text-align:center;">No holdings yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let stocks = {};
+        let portfolio = {};
+        let selectedStock = null;
+        let currentUser = null;
+        let updateTimer = null;
+        
+        async function init() {
+            await loadStocks();
+            await checkLogin();
+            startUpdateTimer();
+        }
+        
+        async function checkLogin() {
+            try {
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await resp.json();
+                if (data.success && data.loggedIn && data.user) {
+                    currentUser = data.user;
+                    document.getElementById('userCoins').textContent = (data.user.coins || 0).toLocaleString();
+                    await loadPortfolio();
+                } else {
+                    document.getElementById('loginPrompt').style.display = 'block';
+                }
+            } catch (e) {
+                document.getElementById('loginPrompt').style.display = 'block';
+            }
+        }
+        
+        async function loadStocks() {
+            try {
+                const resp = await fetch('api/stocks.php?action=prices');
+                const data = await resp.json();
+                if (data.success) {
+                    stocks = data.stocks;
+                    renderStocks();
+                    updateNextUpdateTimer(data.nextUpdate);
+                }
+            } catch (e) {
+                console.error('Failed to load stocks:', e);
+            }
+        }
+        
+        async function loadPortfolio() {
+            try {
+                const resp = await fetch('api/stocks.php?action=portfolio', { credentials: 'include' });
+                const data = await resp.json();
+                if (data.success) {
+                    portfolio = data.holdings;
+                    document.getElementById('userCoins').textContent = data.coins.toLocaleString();
+                    document.getElementById('portfolioValue').textContent = data.totalValue.toLocaleString();
+                    
+                    let totalProfit = 0;
+                    Object.values(portfolio).forEach(h => totalProfit += h.profit);
+                    
+                    const profitEl = document.getElementById('totalProfit');
+                    profitEl.textContent = (totalProfit >= 0 ? '+' : '') + totalProfit.toLocaleString();
+                    profitEl.className = 'stat-value ' + (totalProfit >= 0 ? 'positive' : 'negative');
+                    
+                    renderPortfolio();
+                }
+            } catch (e) {}
+        }
+        
+        function renderStocks() {
+            const tbody = document.getElementById('stocksTable');
+            let html = '';
+            
+            for (const [symbol, stock] of Object.entries(stocks)) {
+                const isUp = stock.change >= 0;
+                const isSelected = selectedStock === symbol;
+                
+                html += '<tr class="' + (isSelected ? 'selected' : '') + '" onclick="selectStock(\'' + symbol + '\')">';
+                html += '<td><span class="stock-symbol">' + symbol + '</span><br><span class="stock-name">' + stock.name + '</span></td>';
+                html += '<td class="stock-price">' + stock.price.toLocaleString() + '</td>';
+                html += '<td><span class="stock-change ' + (isUp ? 'up' : 'down') + '">';
+                html += (isUp ? '▲' : '▼') + ' ' + Math.abs(stock.changePercent) + '%</span></td>';
+                html += '<td><canvas class="mini-chart" id="chart-' + symbol + '"></canvas></td>';
+                html += '</tr>';
+            }
+            
+            tbody.innerHTML = html;
+            
+            // Draw mini charts
+            for (const [symbol, stock] of Object.entries(stocks)) {
+                drawMiniChart('chart-' + symbol, stock.history);
+            }
+        }
+        
+        function drawMiniChart(canvasId, history) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || !history || history.length < 2) return;
+            
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            ctx.clearRect(0, 0, w, h);
+            
+            const min = Math.min(...history);
+            const max = Math.max(...history);
+            const range = max - min || 1;
+            
+            const isUp = history[history.length - 1] >= history[0];
+            ctx.strokeStyle = isUp ? '#00ff88' : '#ff4444';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            
+            history.forEach((price, i) => {
+                const x = (i / (history.length - 1)) * w;
+                const y = h - ((price - min) / range) * h;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            
+            ctx.stroke();
+        }
+        
+        function selectStock(symbol) {
+            selectedStock = symbol;
+            renderStocks();
+            renderTradePanel();
+        }
+        
+        function renderTradePanel() {
+            const panel = document.getElementById('tradePanel');
+            
+            if (!selectedStock || !stocks[selectedStock]) {
+                panel.innerHTML = '<p style="color:#666;text-align:center;">Select a stock to trade</p>';
+                return;
+            }
+            
+            const stock = stocks[selectedStock];
+            const holding = portfolio[selectedStock];
+            const shares = holding ? holding.shares : 0;
+            
+            let html = '<div class="trade-stock-info">';
+            html += '<div class="trade-symbol">' + selectedStock + '</div>';
+            html += '<div style="color:#888;">' + stock.name + '</div>';
+            html += '<div class="trade-price">$' + stock.price.toLocaleString() + '</div>';
+            if (shares > 0) {
+                html += '<div style="color:#888;">You own: ' + shares + ' shares</div>';
+            }
+            html += '</div>';
+            
+            html += '<div class="trade-form">';
+            html += '<div class="trade-input">';
+            html += '<label>Shares</label>';
+            html += '<input type="number" id="tradeShares" value="1" min="1" oninput="updateTotal()">';
+            html += '</div>';
+            html += '<div class="trade-total">Total: <span id="tradeTotal">' + stock.price.toLocaleString() + '</span> coins</div>';
+            html += '<div class="trade-buttons">';
+            html += '<button class="btn btn-buy" onclick="buyStock()">Buy</button>';
+            html += '<button class="btn btn-sell" onclick="sellStock()"' + (shares <= 0 ? ' disabled style="opacity:0.5;cursor:not-allowed;"' : '') + '>Sell</button>';
+            html += '</div>';
+            html += '</div>';
+            
+            panel.innerHTML = html;
+        }
+        
+        function updateTotal() {
+            if (!selectedStock || !stocks[selectedStock]) return;
+            const shares = parseInt(document.getElementById('tradeShares').value) || 0;
+            const total = shares * stocks[selectedStock].price;
+            document.getElementById('tradeTotal').textContent = total.toLocaleString();
+        }
+        
+        async function buyStock() {
+            if (!selectedStock) return;
+            const shares = parseInt(document.getElementById('tradeShares').value) || 0;
+            if (shares <= 0) {
+                alert('Enter a valid number of shares');
+                return;
+            }
+            
+            try {
+                const resp = await fetch('api/stocks.php?action=buy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    credentials: 'include',
+                    body: 'symbol=' + selectedStock + '&shares=' + shares
+                });
+                const data = await resp.json();
+                alert(data.message || data.error);
+                if (data.success) {
+                    await loadPortfolio();
+                    renderTradePanel();
+                }
+            } catch (e) {
+                alert('Error buying stock');
+            }
+        }
+        
+        async function sellStock() {
+            if (!selectedStock) return;
+            const shares = parseInt(document.getElementById('tradeShares').value) || 0;
+            if (shares <= 0) {
+                alert('Enter a valid number of shares');
+                return;
+            }
+            
+            try {
+                const resp = await fetch('api/stocks.php?action=sell', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    credentials: 'include',
+                    body: 'symbol=' + selectedStock + '&shares=' + shares
+                });
+                const data = await resp.json();
+                alert(data.message || data.error);
+                if (data.success) {
+                    await loadPortfolio();
+                    renderTradePanel();
+                }
+            } catch (e) {
+                alert('Error selling stock');
+            }
+        }
+        
+        function renderPortfolio() {
+            const list = document.getElementById('portfolioList');
+            const holdings = Object.values(portfolio);
+            
+            if (holdings.length === 0) {
+                list.innerHTML = '<p style="color:#666;text-align:center;">No holdings yet</p>';
+                return;
+            }
+            
+            let html = '';
+            for (const h of holdings) {
+                const isProfit = h.profit >= 0;
+                html += '<div class="portfolio-item" onclick="selectStock(\'' + h.symbol + '\')">';
+                html += '<div>';
+                html += '<div class="portfolio-symbol">' + h.symbol + '</div>';
+                html += '<div class="portfolio-shares">' + h.shares + ' shares @ ' + h.avgPrice.toLocaleString() + '</div>';
+                html += '</div>';
+                html += '<div class="portfolio-value">';
+                html += '<div>' + h.value.toLocaleString() + '</div>';
+                html += '<div class="portfolio-profit" style="color:' + (isProfit ? '#00ff88' : '#ff4444') + '">';
+                html += (isProfit ? '+' : '') + h.profit.toLocaleString() + ' (' + h.profitPercent + '%)</div>';
+                html += '</div>';
+                html += '</div>';
+            }
+            
+            list.innerHTML = html;
+        }
+        
+        function updateNextUpdateTimer(seconds) {
+            if (updateTimer) clearInterval(updateTimer);
+            
+            let remaining = Math.max(0, seconds);
+            const el = document.getElementById('nextUpdate');
+            
+            function update() {
+                const mins = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                el.textContent = mins + ':' + secs.toString().padStart(2, '0');
+                remaining--;
+                
+                if (remaining < 0) {
+                    loadStocks();
+                    if (currentUser) loadPortfolio();
+                }
+            }
+            
+            update();
+            updateTimer = setInterval(update, 1000);
+        }
+        
+        function startUpdateTimer() {
+            // Refresh every 10 minutes
+            setInterval(() => {
+                loadStocks();
+                if (currentUser) loadPortfolio();
+            }, 600000);
+        }
+        
+        init();
+    </script>
+</body>
+</html>

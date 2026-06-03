@@ -1,10 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Fishing game online free! Catch fish, earn coins, upgrade your rod!">
+    <meta name="keywords" content="fishing game, fish catching, fishing simulator, relaxing game, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/fishing.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/fishing.html">
+    <meta property="og:title" content="Fishing - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Fishing game online free! Catch fish, earn coins, upgrade your rod!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Fishing - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Fishing game online free! Catch fish, earn coins, upgrade your rod!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Fishing",
+        "description": "Play Fishing game online free! Catch fish, earn coins, upgrade your rod!",
+        "url": "https://retroblasts.com/fishing.html",
+        "genre": "Simulation",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gone Fishing - RetroBlasts</title>
+    <title>Fishing - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -458,6 +506,16 @@
             if (fishCaughtThisSession > gameStats.highScore) gameStats.highScore = fishCaughtThisSession;
             stats.totalGamesPlayed++; stats.totalTimePlayed += sessionTime; stats.totalCoinsEarned += coinsThisSession;
             saveArcadeStats(stats);
+
+            // Contribute damage to boss event
+            if (finalScore > 0) {
+                fetch("api/boss-events.php?action=contribute", {
+                    method: "POST",
+                    credentials: "include",
+                    keepalive: true, headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ score: finalScore, game: "fishing" })
+                }).catch(e => console.log("Boss damage:", e));
+            }
         }
 
         // ============================================

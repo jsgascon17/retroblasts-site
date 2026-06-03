@@ -1,10 +1,59 @@
+<!-- cache-bust-1776798565 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Flappy Bird online free! Classic arcade game with boss battles and power-ups. No download required.">
+    <meta name="keywords" content="flappy bird, flappy bird online, free flappy bird, browser flappy bird game, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/flappy-bird.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/flappy-bird.html">
+    <meta property="og:title" content="Flappy Bird - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Flappy Bird online free! Classic arcade game with boss battles and power-ups. No download required.">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Flappy Bird - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Flappy Bird online free! Classic arcade game with boss battles and power-ups. No download required.">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Flappy Bird",
+        "description": "Play Flappy Bird online free! Classic arcade game with boss battles and power-ups. No download required.",
+        "url": "https://retroblasts.com/flappy-bird.html",
+        "genre": "Arcade",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flappy Bird - RetroBlasts</title>
+    <title>Flappy Bird - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -39,6 +88,7 @@
         .btn-secondary { background: linear-gradient(to bottom, #9C27B0, #7B1FA2); border-color: #4A148C; box-shadow: 0 5px 0 #4A148C; }
         .btn-shop { background: linear-gradient(to bottom, #FF9800, #F57C00); border-color: #E65100; box-shadow: 0 5px 0 #E65100; }
         .btn-daily { background: linear-gradient(to bottom, #00BCD4, #0097A7); border-color: #006064; box-shadow: 0 5px 0 #006064; }
+        .btn-vip { background: linear-gradient(to bottom, #FFD700, #FFA500); border-color: #B8860B; box-shadow: 0 5px 0 #B8860B; color: #000; }
         .btn-small { padding: 8px 20px; font-size: 0.9rem; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -87,12 +137,66 @@
         .daily-complete { background: linear-gradient(135deg, #8BC34A, #33691E); }
 
         .stats-display { color: #aaa; font-size: 0.8rem; margin: 10px 0; }
+    
+        /* Revive System */
+        .revive-option {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        .revive-btn {
+            background: linear-gradient(135deg, #ffd700, #ff6b35);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+        }
+        .revive-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.6);
+        }
+        .revive-btn:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .revive-btn:disabled:hover {
+            transform: none;
+        }
+        .revive-cost {
+            background: rgba(0,0,0,0.3);
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+        .revive-text {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        .revive-used {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
     </style>
-<script src="js/duel.js"></script>
 <script src="js/duel.js"></script>
 <script src="js/victory.js"></script>
 <script src="js/wars.js"></script>
 <script src="js/activity.js"></script>
+<script src="js/vip.js"></script>
 <script src="js/pets.js"></script>
 </head>
 <body>
@@ -121,6 +225,7 @@
         <div class="button-row">
             <button class="btn btn-shop" id="shopBtn">SHOP</button>
             <button class="btn btn-secondary" id="achieveBtn">BADGES</button>
+            <button class="btn btn-vip" id="vipBtn">VIP</button>
         </div>
     </div>
 
@@ -199,6 +304,113 @@
         <button class="btn" id="victoryBtn">AWESOME!</button>
     </div>
 
+    <!-- Admin Panel -->
+    <div class="overlay hidden" id="adminPanel" style="background: rgba(0,0,0,0.95);">
+        <h2 style="color: #ff6b6b;">🔧 Admin Panel</h2>
+        <div style="max-width: 500px; width: 100%; text-align: left; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin: 15px 0;">
+            <h3 style="color: #ffd700; margin-bottom: 15px;">💰 Coins</h3>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <input type="number" id="adminCoins" placeholder="Amount" style="flex: 1; padding: 10px; border-radius: 8px; border: none;">
+                <button class="btn" onclick="adminAddCoins()" style="background: #2ecc71;">Add</button>
+                <button class="btn" onclick="adminSetCoins()" style="background: #3498db;">Set</button>
+            </div>
+
+            <h3 style="color: #ffd700; margin-bottom: 15px;">🏆 High Score</h3>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <input type="number" id="adminScore" placeholder="Score" style="flex: 1; padding: 10px; border-radius: 8px; border: none;">
+                <button class="btn" onclick="adminSetScore()" style="background: #9b59b6;">Set Score</button>
+            </div>
+
+            <h3 style="color: #ffd700; margin-bottom: 15px;">🎨 Skins</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                <button class="btn" onclick="adminUnlockAllSkins()" style="background: #e74c3c;">Unlock All</button>
+                <button class="btn" onclick="adminLockAllSkins()" style="background: #7f8c8d;">Lock All</button>
+            </div>
+
+            <h3 style="color: #ffd700; margin-bottom: 15px;">📊 Current Stats</h3>
+            <div id="adminStats" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; font-family: monospace; font-size: 0.9rem;"></div>
+        </div>
+        <button class="btn" onclick="closeAdminPanel()" style="background: #666;">Close</button>
+    </div>
+
+    <!-- Owner Panel -->
+    <div class="overlay hidden" id="ownerPanel" style="background: rgba(20,0,40,0.98);">
+        <h2 style="color: #ffd700;">👑 Owner Panel</h2>
+        <div style="max-width: 600px; width: 100%; text-align: left; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin: 15px 0; max-height: 70vh; overflow-y: auto;">
+
+            <h3 style="color: #ff6b6b; margin-bottom: 15px;">💰 Economy</h3>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="number" id="ownerCoins" placeholder="Coins" style="flex: 1; padding: 10px; border-radius: 8px; border: none;">
+                <button class="btn" onclick="ownerAddCoins()" style="background: #2ecc71;">Add</button>
+                <button class="btn" onclick="ownerSetCoins()" style="background: #3498db;">Set</button>
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="btn" onclick="ownerMaxCoins()" style="background: #f39c12;">Max Coins (999999)</button>
+                <button class="btn" onclick="ownerResetCoins()" style="background: #e74c3c;">Reset to 0</button>
+            </div>
+
+            <h3 style="color: #ff6b6b; margin-bottom: 15px;">🏆 Stats</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <div>
+                    <label style="color: #888; font-size: 0.8rem;">High Score</label>
+                    <input type="number" id="ownerHighScore" placeholder="0" style="width: 100%; padding: 8px; border-radius: 8px; border: none;">
+                </div>
+                <div>
+                    <label style="color: #888; font-size: 0.8rem;">Games Played</label>
+                    <input type="number" id="ownerGamesPlayed" placeholder="0" style="width: 100%; padding: 8px; border-radius: 8px; border: none;">
+                </div>
+                <div>
+                    <label style="color: #888; font-size: 0.8rem;">Bosses Defeated</label>
+                    <input type="number" id="ownerBossesDefeated" placeholder="0" style="width: 100%; padding: 8px; border-radius: 8px; border: none;">
+                </div>
+                <div>
+                    <label style="color: #888; font-size: 0.8rem;">Daily Streak</label>
+                    <input type="number" id="ownerDailyStreak" placeholder="0" style="width: 100%; padding: 8px; border-radius: 8px; border: none;">
+                </div>
+            </div>
+            <button class="btn" onclick="ownerApplyStats()" style="width: 100%; background: #9b59b6; margin-bottom: 15px;">Apply Stats</button>
+
+            <h3 style="color: #ff6b6b; margin-bottom: 15px;">🎨 Skins & Upgrades</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                <button class="btn" onclick="ownerUnlockAll()" style="background: #2ecc71;">Unlock Everything</button>
+                <button class="btn" onclick="ownerMaxUpgrades()" style="background: #3498db;">Max Upgrades</button>
+                <button class="btn" onclick="ownerResetProgress()" style="background: #e74c3c;">Reset All Progress</button>
+            </div>
+
+            <h3 style="color: #ff6b6b; margin-bottom: 15px;">🎮 Game Cheats</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                <button class="btn" onclick="ownerGodMode()" id="godModeBtn" style="background: #8e44ad;">God Mode: OFF</button>
+                <button class="btn" onclick="ownerTurboMode()" id="turboModeBtn" style="background: #e67e22;">Turbo: OFF</button>
+                <button class="btn" onclick="ownerInfiniteCoins()" style="background: #16a085;">Auto-Collect Coins</button>
+                <button class="btn" onclick="ownerSkipToBoss()" style="background: #d35400;">Skip to Boss 1</button>
+                <button class="btn" onclick="ownerSkipToBoss2()" style="background: #c0392b;">Skip to Boss 2</button>
+                <button class="btn" onclick="ownerSkipToBoss3()" style="background: #2980b9;">Skip to Boss 3</button>
+                <button class="btn" onclick="ownerSkipToBoss4()" style="background: #8e44ad;">Skip to Boss 4</button>
+            </div>
+
+            <h3 style="color: #ff6b6b; margin-bottom: 15px;">🔧 Debug</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                <button class="btn" onclick="ownerExportData()" style="background: #34495e;">Export Save</button>
+                <button class="btn" onclick="ownerImportData()" style="background: #34495e;">Import Save</button>
+                <button class="btn" onclick="ownerClearStorage()" style="background: #c0392b;">Clear All Data</button>
+            </div>
+
+            <h3 style="color: #ff6b6b; margin-bottom: 15px;">📊 Full Save Data</h3>
+            <div id="ownerSaveData" style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; font-family: monospace; font-size: 0.75rem; max-height: 200px; overflow-y: auto; white-space: pre-wrap;"></div>
+        </div>
+        <button class="btn" onclick="closeOwnerPanel()" style="background: #666;">Close</button>
+    </div>
+
+    <!-- Password Modal -->
+    <div class="overlay hidden" id="passwordModal" style="background: rgba(0,0,0,0.95);">
+        <h2 style="color: #ffd700;">🔐 Enter Password</h2>
+        <p id="passwordPrompt" style="color: #888;">Enter admin password:</p>
+        <input type="password" id="panelPassword" placeholder="Password" style="padding: 15px; border-radius: 10px; border: none; font-size: 1.2rem; width: 250px; margin: 15px 0;" onkeypress="if(event.key==='Enter')checkPassword()">
+        <br>
+        <button class="btn" onclick="checkPassword()" style="background: #2ecc71;">Enter</button>
+        <button class="btn" onclick="closePasswordModal()" style="background: #666;">Cancel</button>
+    </div>
+
     <script>
         // ============================================
         // TOURNAMENT MODE
@@ -242,6 +454,9 @@
                 hit: () => { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(50, now + 0.3); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3); osc.start(now); osc.stop(now + 0.3); },
                 fireball: () => { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(80, now + 0.15); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15); osc.start(now); osc.stop(now + 0.15); },
                 bossRoar: () => { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now); osc.frequency.exponentialRampToValueAtTime(50, now + 0.5); gain.gain.setValueAtTime(0.25, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5); osc.start(now); osc.stop(now + 0.5); },
+                ice: () => { osc.type = 'sine'; osc.frequency.setValueAtTime(1200, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.2); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2); },
+                lightning: () => { osc.type = 'square'; osc.frequency.setValueAtTime(80, now); osc.frequency.setValueAtTime(200, now + 0.05); osc.frequency.setValueAtTime(60, now + 0.1); gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25); osc.start(now); osc.stop(now + 0.25); },
+                wind: () => { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(60, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.3); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3); osc.start(now); osc.stop(now + 0.3); },
                 victory: () => { osc.type = 'sine'; osc.frequency.setValueAtTime(523, now); osc.frequency.setValueAtTime(659, now + 0.15); osc.frequency.setValueAtTime(784, now + 0.3); osc.frequency.setValueAtTime(1047, now + 0.45); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7); osc.start(now); osc.stop(now + 0.7); },
                 unlock: () => { osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(500, now + 0.1); osc.frequency.setValueAtTime(600, now + 0.2); osc.frequency.setValueAtTime(800, now + 0.3); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5); osc.start(now); osc.stop(now + 0.5); },
                 purchase: () => { osc.type = 'sine'; osc.frequency.setValueAtTime(800, now); osc.frequency.setValueAtTime(1000, now + 0.1); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2); }
@@ -352,8 +567,78 @@
             }
         };
 
+        // Current logged-in user (for account-specific saves)
+        let currentUsername = null;
+        let userInitialized = false;
+
+        // Get storage key based on logged-in user
+        function getSaveKey() {
+            return currentUsername ? `flappyBirdSave_${currentUsername}` : 'flappyBirdSave_guest';
+        }
+
+        function getArcadeStatsKey() {
+            return currentUsername ? `arcadeStats_${currentUsername}` : 'arcadeStats_guest';
+        }
+
+        function getPlayerNameKey() {
+            return currentUsername ? `flappyPlayerName_${currentUsername}` : 'flappyPlayerName_guest';
+        }
+
+        // Check who is logged in and load their data
+        async function checkCurrentUser() {
+            try {
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await resp.json();
+                const newUsername = (data.loggedIn && data.user) ? data.user.username : null;
+
+                // Always load on first run, or when user changes
+                if (!userInitialized || newUsername !== currentUsername) {
+                    currentUsername = newUsername;
+                    resetSaveData();
+                    loadSaveData();
+                    updateDisplays();
+                    userInitialized = true;
+                }
+            } catch (e) {
+                console.log('Auth check failed:', e);
+                // Still initialize with guest if auth fails
+                if (!userInitialized) {
+                    currentUsername = null;
+                    resetSaveData();
+                    loadSaveData();
+                    updateDisplays();
+                    userInitialized = true;
+                }
+            }
+        }
+
+        // Reset save data to defaults
+        function resetSaveData() {
+            saveData = {
+                coins: 0,
+                highScore: 0,
+                ownedSkins: ['default'],
+                equippedSkin: 'default',
+                upgrades: { hitbox: 0, pipeSpeed: 0, magnet: 0, doubleCoins: 0, shield: 0 },
+                achievements: [],
+                stats: {
+                    gamesPlayed: 0,
+                    totalCoinsEarned: 0,
+                    highScore: 0,
+                    bossesDefeated: 0,
+                    skinsOwned: 1,
+                    upgradesBought: 0,
+                    upgradesMaxed: 0,
+                    dailyCompleted: 0,
+                    dailyStreak: 0,
+                    lastDailyDate: null,
+                    dailyCompletedToday: false
+                }
+            };
+        }
+
         function loadSaveData() {
-            const saved = localStorage.getItem('flappyBirdSave');
+            const saved = localStorage.getItem(getSaveKey());
             if (saved) {
                 const parsed = JSON.parse(saved);
                 saveData = { ...saveData, ...parsed };
@@ -369,7 +654,7 @@
         }
 
         function saveSaveData() {
-            localStorage.setItem('flappyBirdSave', JSON.stringify(saveData));
+            localStorage.setItem(getSaveKey(), JSON.stringify(saveData));
         }
 
         // ============================================
@@ -378,13 +663,19 @@
         let gameStartTime = 0;
 
         function loadArcadeStats() {
-            return JSON.parse(localStorage.getItem('arcadeStats')) || {
+            return JSON.parse(localStorage.getItem(getArcadeStatsKey())) || {
                 totalGamesPlayed: 0, totalTimePlayed: 0, totalCoinsEarned: 0, games: {}
             };
         }
 
         function saveArcadeStats(stats) {
-            localStorage.setItem('arcadeStats', JSON.stringify(stats));
+            // Sync to server for logged-in users
+            fetch("api/game-stats.php", {
+                method: "POST", credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "save", game: "flappy-bird", data: stats.games["flappy-bird"] || {} })
+            }).catch(() => {});
+            localStorage.setItem(getArcadeStatsKey(), JSON.stringify(stats));
         }
 
         function trackGameStart() { gameStartTime = Date.now(); }
@@ -406,6 +697,23 @@
             stats.totalTimePlayed += sessionTime;
             stats.totalCoinsEarned += coinsEarned;
             saveArcadeStats(stats);
+
+            // Contribute damage to boss event
+            if (finalScore > 0) {
+                fetch("api/boss-events.php?action=contribute", {
+                    method: "POST",
+                    credentials: "include",
+                    keepalive: true, headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ score: finalScore, game: "flappy-bird" })
+                }).then(r => r.json()).then(data => {
+                    if (data.success) {
+                        console.log("Boss damage dealt:", data.damage);
+                        if (typeof showToast === 'function') showToast(`⚔️ Dealt ${data.damage} boss damage!`, 'success');
+                    } else {
+                        console.log("Boss damage failed:", data.error);
+                    }
+                }).catch(e => console.log("Boss damage error:", e));
+            }
         }
 
         // ============================================
@@ -419,12 +727,21 @@
         const PIPE_SPAWN_RATE = 100;
         const BOSS_START_SCORE = 50;
         const BOSS_END_SCORE = 100;
+        const BOSS2_START_SCORE = 150;
+        const BOSS2_END_SCORE = 200;
+        const BOSS3_START_SCORE = 250;
+        const BOSS3_END_SCORE = 300;
+        const BOSS4_START_SCORE = 350;
+        const BOSS4_END_SCORE = 400;
 
         // ============================================
         // GAME STATE
         // ============================================
         let gameRunning = false, gameStarted = false, gamePaused = false;
         let bossMode = false, bossDefeated = false;
+        let boss2Mode = false, boss2Defeated = false;
+        let boss3Mode = false, boss3Defeated = false;
+        let boss4Mode = false, boss4Defeated = false;
         let isDailyChallenge = false;
         let dailyChallenge = null;
         let score = 0, frameCount = 0, bossScoreTimer = 0;
@@ -435,10 +752,18 @@
         let newAchievementsThisGame = [];
         let zigzagHigh = true;
 
-        let bird = { x: 80, y: H / 2, width: 40, height: 30, velocity: 0, rotation: 0 };
+        let bird = { x: 80, y: H / 2, width: 40, height: 30, velocity: 0, rotation: 0 , invincible: false, invincibleTime: 0, flash: false};
         let boss = { x: W - 100, y: H / 2 - 60, width: 80, height: 100 };
         let fireballs = [], pipes = [], clouds = [];
         let coins = [], coinParticles = [];
+        let freezeZones = [], lightning = [];
+        let birdFrozen = false, frozenTimer = 0;
+        let boss4Phase = 1, windForce = 0;
+        let lightningZone = 'top'; // alternates between 'top' and 'bottom'
+        let lightningWarning = false;
+        let lightningWarningTimer = 0;
+        let lightningActive = false;
+        let lightningActiveTimer = 0;
 
         const COIN_TYPES = {
             bronze: { value: 1, color: '#CD7F32', radius: 12, chance: 0.6 },
@@ -453,10 +778,11 @@
         const highScoreDisplay = document.getElementById('highScore');
         const coinCountDisplay = document.getElementById('coinCount');
 
-        // Init
-        loadSaveData();
-        updateDisplays();
+        // Init - check user first, then load their data
+        checkCurrentUser(); // This handles loadSaveData and updateDisplays
+        window.addEventListener('focus', checkCurrentUser); // Re-check when tab gains focus
         initClouds();
+        if (typeof VIPSystem !== "undefined") VIPSystem.showIndicator();
 
         function initClouds() {
             clouds = [];
@@ -780,56 +1106,327 @@
             }
         }
 
-        function drawBoss() {
-            const x = boss.x, y = boss.y + Math.sin(frameCount * 0.05) * 10;
+        function drawBoss(bossType = 1) {
+            const bobAmount = [10, 15, 12, 20][bossType - 1];
+            const x = boss.x, y = boss.y + Math.sin(frameCount * 0.05) * bobAmount;
 
-            ctx.fillStyle = '#228B22';
-            ctx.beginPath();
-            ctx.ellipse(x + boss.width / 2, y + boss.height / 2, boss.width / 2, boss.height / 2, 0, 0, Math.PI * 2);
-            ctx.fill();
+            // Boss configurations
+            const bossConfigs = {
+                1: { scale: 1, bodyColor: '#228B22', faceColor: '#FFA500', eyeColor: '#f00', label: '👹 BOSS 1', healthColor: ['#f00', '#ff0'] },
+                2: { scale: 1.2, bodyColor: '#8B0000', faceColor: '#FF4500', eyeColor: '#ff0', label: '🌈 BOSS 2', healthColor: ['#ff00ff', '#00ffff'] },
+                3: { scale: 1.1, bodyColor: '#4169E1', faceColor: '#87CEEB', eyeColor: '#00ffff', label: '❄️ ICE KING', healthColor: ['#00bfff', '#ffffff'] },
+                4: { scale: 1.4, bodyColor: '#1a0033', faceColor: '#4B0082', eyeColor: '#ff00ff', label: '🐉 SHADOW DRAGON', healthColor: ['#8b00ff', '#ff0000'] }
+            };
+            const config = bossConfigs[bossType];
 
-            // Crown
-            ctx.fillStyle = '#FFD700';
-            for (let i = 0; i < 5; i++) {
-                const spikeX = x + 15 + i * 15;
+            // Boss 4 (Dragon) has special shape
+            if (bossType === 4) {
+                // Dragon body
+                ctx.fillStyle = config.bodyColor;
                 ctx.beginPath();
-                ctx.moveTo(spikeX, y + 10 + Math.sin(i) * 5);
-                ctx.lineTo(spikeX - 8, y + 25);
-                ctx.lineTo(spikeX + 8, y + 25);
+                ctx.ellipse(x + boss.width / 2, y + boss.height / 2, (boss.width / 2) * config.scale, (boss.height / 2) * config.scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Dragon wings
+                ctx.fillStyle = '#2d0050';
+                ctx.beginPath();
+                ctx.moveTo(x + boss.width, y + 30);
+                ctx.lineTo(x + boss.width + 40 + Math.sin(frameCount * 0.1) * 10, y + 10);
+                ctx.lineTo(x + boss.width + 30, y + 50);
                 ctx.closePath();
                 ctx.fill();
+
+                // Dragon horns
+                ctx.fillStyle = '#4B0082';
+                ctx.beginPath();
+                ctx.moveTo(x + 10, y + 15);
+                ctx.lineTo(x - 5, y - 15);
+                ctx.lineTo(x + 20, y + 20);
+                ctx.closePath();
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(x + 50, y + 15);
+                ctx.lineTo(x + 65, y - 15);
+                ctx.lineTo(x + 40, y + 20);
+                ctx.closePath();
+                ctx.fill();
+
+                // Dragon face
+                ctx.fillStyle = config.faceColor;
+                ctx.beginPath();
+                ctx.ellipse(x + 30, y + 45, 30, 25, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Dragon eyes (glowing)
+                ctx.shadowColor = config.eyeColor;
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = config.eyeColor;
+                ctx.beginPath();
+                ctx.arc(x + 18, y + 40, 8, 0, Math.PI * 2);
+                ctx.arc(x + 42, y + 40, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Dragon nostrils with smoke
+                ctx.fillStyle = '#ff4400';
+                ctx.beginPath();
+                ctx.arc(x + 25, y + 55, 4, 0, Math.PI * 2);
+                ctx.arc(x + 35, y + 55, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+            } else if (bossType === 3) {
+                // Ice King body
+                ctx.fillStyle = config.bodyColor;
+                ctx.beginPath();
+                ctx.ellipse(x + boss.width / 2, y + boss.height / 2, (boss.width / 2) * config.scale, (boss.height / 2) * config.scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Ice crystals on body
+                ctx.fillStyle = '#add8e6';
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i / 6) * Math.PI * 2 + frameCount * 0.02;
+                    const cx = x + boss.width / 2 + Math.cos(angle) * 35;
+                    const cy = y + boss.height / 2 + Math.sin(angle) * 45;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy - 8);
+                    ctx.lineTo(cx - 5, cy + 5);
+                    ctx.lineTo(cx + 5, cy + 5);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // Ice crown
+                ctx.fillStyle = '#00ffff';
+                for (let i = 0; i < 5; i++) {
+                    const spikeX = x + 15 + i * 15;
+                    const spikeHeight = 15 + Math.sin(i * 1.5 + frameCount * 0.05) * 5;
+                    ctx.beginPath();
+                    ctx.moveTo(spikeX, y + 5 - spikeHeight);
+                    ctx.lineTo(spikeX - 6, y + 20);
+                    ctx.lineTo(spikeX + 6, y + 20);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // Face
+                ctx.fillStyle = config.faceColor;
+                ctx.beginPath();
+                ctx.arc(x + 20, y + 40, 25 * config.scale, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Glowing ice eyes
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(x + 12, y + 35, 8, 0, Math.PI * 2);
+                ctx.arc(x + 28, y + 35, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = config.eyeColor;
+                ctx.beginPath();
+                ctx.arc(x + 12, y + 35, 5, 0, Math.PI * 2);
+                ctx.arc(x + 28, y + 35, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+            } else {
+                // Boss 1 and 2 (original goblin style)
+                ctx.fillStyle = config.bodyColor;
+                ctx.beginPath();
+                ctx.ellipse(x + boss.width / 2, y + boss.height / 2, (boss.width / 2) * config.scale, (boss.height / 2) * config.scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Crown
+                if (bossType === 2) {
+                    const rainbowColors = ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff'];
+                    for (let i = 0; i < 5; i++) {
+                        ctx.fillStyle = rainbowColors[i];
+                        const spikeX = x + 15 + i * 15;
+                        ctx.beginPath();
+                        ctx.moveTo(spikeX, y + 5 + Math.sin(i + frameCount * 0.1) * 5);
+                        ctx.lineTo(spikeX - 8, y + 25);
+                        ctx.lineTo(spikeX + 8, y + 25);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                } else {
+                    ctx.fillStyle = '#FFD700';
+                    for (let i = 0; i < 5; i++) {
+                        const spikeX = x + 15 + i * 15;
+                        ctx.beginPath();
+                        ctx.moveTo(spikeX, y + 10 + Math.sin(i) * 5);
+                        ctx.lineTo(spikeX - 8, y + 25);
+                        ctx.lineTo(spikeX + 8, y + 25);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+
+                // Face
+                ctx.fillStyle = config.faceColor;
+                ctx.beginPath();
+                ctx.arc(x + 20, y + 40, 25 * config.scale, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eyes
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(x + 12, y + 35, 8, 0, Math.PI * 2);
+                ctx.arc(x + 28, y + 35, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = config.eyeColor;
+                ctx.beginPath();
+                ctx.arc(x + 12, y + 35, bossType === 2 ? 5 : 4, 0, Math.PI * 2);
+                ctx.arc(x + 28, y + 35, bossType === 2 ? 5 : 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Angry eyebrows for boss 2
+                if (bossType === 2) {
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(x + 5, y + 28);
+                    ctx.lineTo(x + 18, y + 32);
+                    ctx.moveTo(x + 35, y + 28);
+                    ctx.lineTo(x + 22, y + 32);
+                    ctx.stroke();
+                }
             }
 
-            // Face
-            ctx.fillStyle = '#FFA500';
-            ctx.beginPath();
-            ctx.arc(x + 20, y + 40, 25, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Eyes
-            ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.arc(x + 12, y + 35, 8, 0, Math.PI * 2);
-            ctx.arc(x + 28, y + 35, 8, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#f00';
-            ctx.beginPath();
-            ctx.arc(x + 12, y + 35, 4, 0, Math.PI * 2);
-            ctx.arc(x + 28, y + 35, 4, 0, Math.PI * 2);
-            ctx.fill();
-
             // Health bar
-            const bossEndScore = getBossEndScore();
-            const bossStartScore = getBossStartScore();
-            const healthPercent = Math.max(0, (bossEndScore - score) / (bossEndScore - bossStartScore));
+            let healthPercent;
+            if (bossType === 4) {
+                healthPercent = Math.max(0, (BOSS4_END_SCORE - score) / (BOSS4_END_SCORE - BOSS4_START_SCORE));
+            } else if (bossType === 3) {
+                healthPercent = Math.max(0, (BOSS3_END_SCORE - score) / (BOSS3_END_SCORE - BOSS3_START_SCORE));
+            } else if (bossType === 2) {
+                healthPercent = Math.max(0, (BOSS2_END_SCORE - score) / (BOSS2_END_SCORE - BOSS2_START_SCORE));
+            } else {
+                const bossEndScore = getBossEndScore();
+                const bossStartScore = getBossStartScore();
+                healthPercent = Math.max(0, (bossEndScore - score) / (bossEndScore - bossStartScore));
+            }
             ctx.fillStyle = '#333';
             ctx.fillRect(x - 10, y - 20, boss.width + 20, 10);
-            ctx.fillStyle = healthPercent > 0.3 ? '#f00' : '#ff0';
+            ctx.fillStyle = healthPercent > 0.3 ? config.healthColor[0] : config.healthColor[1];
             ctx.fillRect(x - 10, y - 20, (boss.width + 20) * healthPercent, 10);
             ctx.fillStyle = '#fff';
             ctx.font = 'bold 12px Courier New';
             ctx.textAlign = 'center';
-            ctx.fillText('BOSS', x + boss.width / 2, y - 25);
+            ctx.fillText(config.label, x + boss.width / 2, y - 25);
+        }
+
+        // Draw ice shard projectile
+        function drawIceShard(shard) {
+            ctx.save();
+            ctx.translate(shard.x, shard.y);
+            ctx.rotate(shard.rotation);
+            ctx.fillStyle = '#00bfff';
+            ctx.beginPath();
+            ctx.moveTo(0, -15);
+            ctx.lineTo(-8, 10);
+            ctx.lineTo(0, 5);
+            ctx.lineTo(8, 10);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.globalAlpha = 0.7;
+            ctx.beginPath();
+            ctx.moveTo(0, -10);
+            ctx.lineTo(-3, 3);
+            ctx.lineTo(3, 3);
+            ctx.closePath();
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            ctx.restore();
+        }
+
+        // Draw freeze zone
+        function drawFreezeZone(zone) {
+            ctx.fillStyle = `rgba(135, 206, 250, ${0.3 + Math.sin(frameCount * 0.1) * 0.1})`;
+            ctx.fillRect(zone.x, zone.y, zone.width, zone.height);
+            // Ice crystal pattern
+            ctx.strokeStyle = '#add8e6';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 3; i++) {
+                const cx = zone.x + zone.width * (i + 1) / 4;
+                const cy = zone.y + zone.height / 2 + Math.sin(frameCount * 0.05 + i) * 10;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - 15);
+                ctx.lineTo(cx, cy + 15);
+                ctx.moveTo(cx - 10, cy - 5);
+                ctx.lineTo(cx + 10, cy + 5);
+                ctx.moveTo(cx - 10, cy + 5);
+                ctx.lineTo(cx + 10, cy - 5);
+                ctx.stroke();
+            }
+        }
+
+        // Draw lightning zone (horizontal band covering top or bottom half)
+        function drawLightningZone() {
+            const playableHeight = H - groundHeight;
+            const midY = playableHeight / 2;
+
+            // Draw warning
+            if (lightningWarning) {
+                const flash = Math.sin(frameCount * 0.3) * 0.3 + 0.5;
+
+                // Highlight danger zone
+                if (lightningZone === 'top') {
+                    ctx.fillStyle = `rgba(255, 255, 0, ${flash * 0.3})`;
+                    ctx.fillRect(0, 0, W, midY);
+                } else {
+                    ctx.fillStyle = `rgba(255, 255, 0, ${flash * 0.3})`;
+                    ctx.fillRect(0, midY, W, midY);
+                }
+
+                // Warning text
+                ctx.fillStyle = `rgba(255, 255, 0, ${flash})`;
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3;
+                const warningText = lightningZone === 'top' ? '⚡ LIGHTNING - GO LOW! ⚡' : '⚡ LIGHTNING - GO HIGH! ⚡';
+                ctx.strokeText(warningText, W / 2, midY);
+                ctx.fillText(warningText, W / 2, midY);
+
+                // Safe zone indicator
+                ctx.fillStyle = '#00ff00';
+                ctx.font = 'bold 16px Arial';
+                const safeY = lightningZone === 'top' ? midY + 60 : midY - 50;
+                ctx.fillText('↓ SAFE ↓', W / 2, safeY);
+            }
+
+            // Draw active lightning
+            if (lightningActive) {
+                const zoneTop = lightningZone === 'top' ? 0 : midY;
+                const zoneBottom = lightningZone === 'top' ? midY : playableHeight;
+
+                // Fill zone with electric effect
+                ctx.fillStyle = `rgba(255, 255, 100, ${0.4 + Math.random() * 0.3})`;
+                ctx.fillRect(0, zoneTop, W, zoneBottom - zoneTop);
+
+                // Draw multiple horizontal lightning bolts
+                ctx.strokeStyle = '#ffff00';
+                ctx.lineWidth = 3;
+                ctx.shadowColor = '#fff';
+                ctx.shadowBlur = 20;
+
+                for (let i = 0; i < 5; i++) {
+                    const boltY = zoneTop + (zoneBottom - zoneTop) * (i + 0.5) / 5;
+                    ctx.beginPath();
+                    ctx.moveTo(0, boltY);
+                    let x = 0;
+                    while (x < W) {
+                        const nextX = Math.min(x + 40, W);
+                        const offsetY = (Math.random() - 0.5) * 20;
+                        ctx.lineTo(nextX, boltY + offsetY);
+                        x = nextX;
+                    }
+                    ctx.stroke();
+                }
+                ctx.shadowBlur = 0;
+            }
         }
 
         function drawFireball(fb) {
@@ -940,6 +1537,10 @@
             if (isDailyChallenge && dailyChallenge.speedMod) {
                 speed *= dailyChallenge.speedMod;
             }
+            // Turbo mode: FASTER pipes (fast forward)
+            if (turboModeEnabled) {
+                speed *= 2.5;
+            }
             return speed;
         }
 
@@ -963,6 +1564,15 @@
 
         function getFlapPower() {
             return BASE_FLAP_POWER;
+        }
+
+        // Get boss score timer speed (how fast score counts up during bosses)
+        function getBossScoreSpeed() {
+            // Turbo mode: score counts up faster during boss fights
+            if (turboModeEnabled) {
+                return 15; // Much faster (normally 40-60)
+            }
+            return null; // Use default per-boss timing
         }
 
         function getMagnetRange() {
@@ -999,7 +1609,7 @@
         }
 
         function updatePipes() {
-            if (bossMode) return;
+            if (bossMode || boss2Mode) return;
             const pipeSpeed = getPipeSpeed();
             const pipeGap = getPipeGap();
 
@@ -1022,8 +1632,18 @@
             if (isDailyChallenge && dailyChallenge.doublePipes) {
                 spawnRate = 70;
             }
+            // Turbo mode: spawn pipes less frequently to match faster speed (keeps same spacing)
+            if (turboModeEnabled) {
+                spawnRate = Math.floor(spawnRate / 2.5);
+            }
 
-            if (frameCount % spawnRate === 0 && score < getBossStartScore()) {
+            // Spawn pipes between boss fights
+            const shouldSpawnPipes = (score < getBossStartScore()) ||
+                (bossDefeated && score < BOSS2_START_SCORE) ||
+                (boss2Defeated && score < BOSS3_START_SCORE) ||
+                (boss3Defeated && score < BOSS4_START_SCORE) ||
+                boss4Defeated;
+            if (frameCount % spawnRate === 0 && shouldSpawnPipes) {
                 const minHeight = 80;
                 const maxHeight = H - groundHeight - pipeGap - minHeight;
                 let topHeight;
@@ -1054,7 +1674,7 @@
                     scoreDisplay.textContent = score;
                     playSound('score');
 
-                    if (score >= getBossStartScore() && !bossMode) startBossMode();
+                    if (score >= getBossStartScore() && !bossMode && !bossDefeated) startBossMode();
                 }
             });
         }
@@ -1160,14 +1780,16 @@
             if (!bossMode) return;
 
             bossScoreTimer++;
-            if (bossScoreTimer >= 60) {
+            const scoreSpeed = getBossScoreSpeed() || 60;
+            if (bossScoreTimer >= scoreSpeed) {
                 bossScoreTimer = 0;
                 score++;
                 scoreDisplay.textContent = score;
                 if (score >= getBossEndScore()) { bossVictory(); return; }
             }
 
-            if (frameCount % 45 === 0) {
+            const fireballRate = turboModeEnabled ? 20 : 45;
+            if (frameCount % fireballRate === 0) {
                 fireballs.push({ x: boss.x, y: 100 + Math.random() * (H - groundHeight - 200), speed: 4 + Math.random() * 2, rotation: 0 });
                 playSound('fireball');
             }
@@ -1213,11 +1835,62 @@
 
         function handleCollision() {
             if (window.ghostMode) return; // Ghost mode - pass through pipes
+            if (boss4Defeated) return; // Don't die after beating final boss!
+            if (!gameRunning) return; // Game already ended
             if (hasShield) {
                 useShield();
                 bird.velocity = getFlapPower() * 0.5;
             } else {
                 gameOver();
+            }
+        }
+
+        function checkBoss3Collision() {
+            if (!boss3Mode) return;
+            const hitboxMod = UPGRADES.hitbox.effect(saveData.upgrades.hitbox);
+            const birdW = bird.width * hitboxMod;
+            const birdH = bird.height * hitboxMod;
+            const birdX = bird.x + (bird.width - birdW) / 2;
+            const birdY = bird.y + (bird.height - birdH) / 2;
+
+            // Ice shards (in fireballs array with isIce flag)
+            fireballs.forEach(fb => {
+                const dx = (birdX + birdW / 2) - fb.x;
+                const dy = (birdY + birdH / 2) - fb.y;
+                if (Math.sqrt(dx * dx + dy * dy) < 25) {
+                    handleCollision();
+                }
+            });
+        }
+
+        function checkBoss4Collision() {
+            if (!boss4Mode) return;
+            const hitboxMod = UPGRADES.hitbox.effect(saveData.upgrades.hitbox);
+            const birdW = bird.width * hitboxMod;
+            const birdH = bird.height * hitboxMod;
+            const birdX = bird.x + (bird.width - birdW) / 2;
+            const birdY = bird.y + (bird.height - birdH) / 2;
+
+            // Fireballs
+            fireballs.forEach(fb => {
+                const dx = (birdX + birdW / 2) - fb.x;
+                const dy = (birdY + birdH / 2) - fb.y;
+                if (Math.sqrt(dx * dx + dy * dy) < 25) {
+                    handleCollision();
+                }
+            });
+
+            // Lightning zone collision
+            if (lightningActive) {
+                const playableHeight = H - groundHeight;
+                const midY = playableHeight / 2;
+                const birdCenterY = birdY + birdH / 2;
+
+                if (lightningZone === 'top' && birdCenterY < midY) {
+                    handleCollision();
+                } else if (lightningZone === 'bottom' && birdCenterY >= midY) {
+                    handleCollision();
+                }
             }
         }
 
@@ -1231,8 +1904,8 @@
         }
 
         function bossVictory() {
-            gameRunning = false;
             bossDefeated = true;
+            bossMode = false;
             playSound('victory');
 
             saveData.stats.bossesDefeated++;
@@ -1241,6 +1914,297 @@
             const bossBonus = 50;
             sessionCoins += bossBonus;
 
+            // Show "Keep going!" message briefly, then continue
+            const msg = document.createElement('div');
+            msg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: #ffd700; padding: 30px; border-radius: 15px; text-align: center; z-index: 1000; font-size: 1.5rem;';
+            msg.innerHTML = '👹 BOSS 1 DEFEATED! 👹<br><span style="color: #fff; font-size: 1rem;">Keep going for the 🌈 RAINBOW SKIN!</span><br><span style="color: #4ecdc4; font-size: 0.9rem;">Survive to 200!</span>';
+            document.body.appendChild(msg);
+
+            // Resume game after 2 seconds
+            setTimeout(() => {
+                msg.remove();
+                fireballs = [];
+                // Continue with harder pipes
+            }, 2000);
+        }
+
+        function startBoss2Mode() {
+            boss2Mode = true;
+            pipes = [];
+            coins = [];
+            fireballs = [];
+            bossScoreTimer = 0;
+            playSound('bossRoar');
+        }
+
+        function updateBoss2() {
+            if (!boss2Mode) return;
+
+            bossScoreTimer++;
+            const scoreSpeed = getBossScoreSpeed() || 50;
+            if (bossScoreTimer >= scoreSpeed) {
+                bossScoreTimer = 0;
+                score++;
+                scoreDisplay.textContent = score;
+                if (score >= BOSS2_END_SCORE) { boss2Victory(); return; }
+            }
+
+            // More frequent and faster fireballs
+            const fireballRate = turboModeEnabled ? 15 : 30;
+            if (frameCount % fireballRate === 0) {
+                fireballs.push({ x: boss.x, y: 80 + Math.random() * (H - groundHeight - 180), speed: 5 + Math.random() * 3, rotation: 0 });
+                playSound('fireball');
+            }
+            // Sometimes shoot two at once
+            const doubleRate = turboModeEnabled ? 40 : 90;
+            if (frameCount % doubleRate === 0) {
+                fireballs.push({ x: boss.x, y: 100, speed: 6, rotation: 0 });
+                fireballs.push({ x: boss.x, y: H - groundHeight - 150, speed: 6, rotation: 0 });
+            }
+
+            fireballs.forEach(fb => { fb.x -= fb.speed; fb.rotation += 0.2; });
+            fireballs = fireballs.filter(fb => fb.x > -30);
+        }
+
+        function boss2Victory() {
+            boss2Defeated = true;
+            boss2Mode = false;
+            playSound('victory');
+
+            saveData.stats.bossesDefeated++;
+
+            // Bonus coins for boss 2
+            const bossBonus = 100;
+            sessionCoins += bossBonus;
+
+            // UNLOCK RAINBOW SKIN!
+            if (!saveData.ownedSkins.includes('rainbowbird')) {
+                saveData.ownedSkins.push('rainbowbird');
+                saveData.stats.skinsOwned = saveData.ownedSkins.length;
+            }
+            saveSaveData();
+
+            // Show "Keep going!" message briefly, then continue to Boss 3
+            const msg = document.createElement('div');
+            msg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: #ffd700; padding: 30px; border-radius: 15px; text-align: center; z-index: 1000; font-size: 1.5rem;';
+            msg.innerHTML = '🌈 BOSS 2 DEFEATED! 🌈<br><span style="color: #fff; font-size: 1rem;">Rainbow skin unlocked!</span><br><span style="color: #00bfff; font-size: 0.9rem;">Keep going for ❄️ ICE KING at 250!</span>';
+            document.body.appendChild(msg);
+
+            setTimeout(() => {
+                msg.remove();
+                fireballs = [];
+            }, 2500);
+        }
+
+        // ============================================
+        // BOSS 3 - ICE KING
+        // ============================================
+        function startBoss3Mode() {
+            boss3Mode = true;
+            pipes = [];
+            coins = [];
+            fireballs = [];
+            freezeZones = [];
+            bossScoreTimer = 0;
+            playSound('bossRoar');
+        }
+
+        function updateBoss3() {
+            if (!boss3Mode) return;
+
+            bossScoreTimer++;
+            const scoreSpeed = getBossScoreSpeed() || 45;
+            if (bossScoreTimer >= scoreSpeed) {
+                bossScoreTimer = 0;
+                score++;
+                scoreDisplay.textContent = score;
+                if (score >= BOSS3_END_SCORE) { boss3Victory(); return; }
+            }
+
+            // Ice shards (using fireballs array for simplicity, but they're blue)
+            const iceRate = turboModeEnabled ? 15 : 35;
+            if (frameCount % iceRate === 0) {
+                fireballs.push({ x: boss.x, y: 80 + Math.random() * (H - groundHeight - 180), speed: 5 + Math.random() * 2, rotation: 0, isIce: true });
+                playSound('ice');
+            }
+
+            // Triple shot pattern
+            const tripleRate = turboModeEnabled ? 45 : 100;
+            if (frameCount % tripleRate === 0) {
+                const centerY = H / 2 - groundHeight / 2;
+                fireballs.push({ x: boss.x, y: centerY - 80, speed: 6, rotation: 0, isIce: true });
+                fireballs.push({ x: boss.x, y: centerY, speed: 6, rotation: 0, isIce: true });
+                fireballs.push({ x: boss.x, y: centerY + 80, speed: 6, rotation: 0, isIce: true });
+            }
+
+            // Spawn freeze zones periodically
+            const freezeRate = turboModeEnabled ? 70 : 150;
+            if (frameCount % freezeRate === 0) {
+                const zoneY = 80 + Math.random() * (H - groundHeight - 200);
+                freezeZones.push({ x: W, y: zoneY, width: 100, height: 120, speed: 2 });
+            }
+
+            // Update fireballs (ice shards)
+            fireballs.forEach(fb => { fb.x -= fb.speed; fb.rotation += 0.15; });
+            fireballs = fireballs.filter(fb => fb.x > -30);
+
+            // Update freeze zones
+            freezeZones.forEach(zone => { zone.x -= zone.speed; });
+            freezeZones = freezeZones.filter(zone => zone.x + zone.width > 0);
+
+            // Check if bird is in freeze zone (slow down)
+            birdFrozen = false;
+            freezeZones.forEach(zone => {
+                if (bird.x + bird.width > zone.x && bird.x < zone.x + zone.width &&
+                    bird.y + bird.height > zone.y && bird.y < zone.y + zone.height) {
+                    birdFrozen = true;
+                }
+            });
+        }
+
+        function boss3Victory() {
+            boss3Defeated = true;
+            boss3Mode = false;
+            playSound('victory');
+
+            saveData.stats.bossesDefeated++;
+
+            // Bonus coins for boss 3
+            const bossBonus = 150;
+            sessionCoins += bossBonus;
+
+            // UNLOCK ICE BIRD SKIN!
+            if (!saveData.ownedSkins.includes('icebird')) {
+                saveData.ownedSkins.push('icebird');
+                saveData.stats.skinsOwned = saveData.ownedSkins.length;
+            }
+            saveSaveData();
+
+            // Show message and continue to Boss 4
+            const msg = document.createElement('div');
+            msg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: #00bfff; padding: 30px; border-radius: 15px; text-align: center; z-index: 1000; font-size: 1.5rem;';
+            msg.innerHTML = '❄️ ICE KING DEFEATED! ❄️<br><span style="color: #fff; font-size: 1rem;">Frost skin unlocked!</span><br><span style="color: #8b00ff; font-size: 0.9rem;">Final boss: 🐉 SHADOW DRAGON at 350!</span>';
+            document.body.appendChild(msg);
+
+            setTimeout(() => {
+                msg.remove();
+                fireballs = [];
+                freezeZones = [];
+                birdFrozen = false;
+            }, 2500);
+        }
+
+        // ============================================
+        // BOSS 4 - SHADOW DRAGON
+        // ============================================
+        function startBoss4Mode() {
+            boss4Mode = true;
+            pipes = [];
+            coins = [];
+            fireballs = [];
+            freezeZones = [];
+            lightning = [];
+            boss4Phase = 1;
+            windForce = 0;
+            lightningZone = 'top';
+            lightningWarning = false;
+            lightningWarningTimer = 0;
+            lightningActive = false;
+            lightningActiveTimer = 0;
+            bossScoreTimer = 0;
+            playSound('bossRoar');
+        }
+
+        function updateBoss4() {
+            if (!boss4Mode) return;
+
+            bossScoreTimer++;
+            const scoreSpeed = getBossScoreSpeed() || 40;
+            if (bossScoreTimer >= scoreSpeed) {
+                bossScoreTimer = 0;
+                score++;
+                scoreDisplay.textContent = score;
+                if (score >= BOSS4_END_SCORE) { boss4Victory(); return; }
+            }
+
+            // Phase transitions
+            const progress = (score - BOSS4_START_SCORE) / (BOSS4_END_SCORE - BOSS4_START_SCORE);
+            if (progress < 0.33) boss4Phase = 1;
+            else if (progress < 0.66) boss4Phase = 2;
+            else boss4Phase = 3;
+
+            // Phase 1: Fireballs (like boss 2 but more)
+            if (boss4Phase === 1 || boss4Phase === 3) {
+                const fireballRate = turboModeEnabled ? 12 : 25;
+                if (frameCount % fireballRate === 0) {
+                    fireballs.push({ x: boss.x, y: 80 + Math.random() * (H - groundHeight - 180), speed: 6 + Math.random() * 2, rotation: 0 });
+                    playSound('fireball');
+                }
+            }
+
+            // Phase 2: Lightning strikes (zone-based)
+            if (boss4Phase === 2 || boss4Phase === 3) {
+                // Start warning phase
+                const lightningRate = turboModeEnabled ? 90 : 180;
+                if (!lightningWarning && !lightningActive && frameCount % lightningRate === 0) {
+                    lightningWarning = true;
+                    lightningWarningTimer = turboModeEnabled ? 60 : 120; // Shorter warning in turbo
+                    // Alternate zones
+                    lightningZone = lightningZone === 'top' ? 'bottom' : 'top';
+                    playSound('lightning');
+                }
+
+                // Warning countdown
+                if (lightningWarning) {
+                    lightningWarningTimer--;
+                    if (lightningWarningTimer <= 0) {
+                        lightningWarning = false;
+                        lightningActive = true;
+                        lightningActiveTimer = 40; // Lightning lasts ~0.7 seconds
+                        playSound('lightning');
+                    }
+                }
+
+                // Active lightning countdown
+                if (lightningActive) {
+                    lightningActiveTimer--;
+                    if (lightningActiveTimer <= 0) {
+                        lightningActive = false;
+                    }
+                }
+            }
+
+            // Phase 3: Wind gusts
+            if (boss4Phase === 3) {
+                if (frameCount % 150 === 0) {
+                    windForce = (Math.random() - 0.5) * 3; // Slightly weaker wind
+                    playSound('wind');
+                    setTimeout(() => { windForce = 0; }, 2000);
+                }
+            }
+
+            // Update fireballs
+            fireballs.forEach(fb => { fb.x -= fb.speed; fb.rotation += 0.2; });
+            fireballs = fireballs.filter(fb => fb.x > -30);
+        }
+
+        function boss4Victory() {
+            gameRunning = false;
+            boss4Defeated = true;
+            playSound('victory');
+
+            saveData.stats.bossesDefeated++;
+
+            // Big bonus for final boss
+            const bossBonus = 200;
+            sessionCoins += bossBonus;
+
+            // UNLOCK GALAXY BIRD SKIN!
+            if (!saveData.ownedSkins.includes('galaxybird')) {
+                saveData.ownedSkins.push('galaxybird');
+                saveData.stats.skinsOwned = saveData.ownedSkins.length;
+            }
+
             if (score > saveData.highScore) {
                 if (typeof VictoryEffects !== "undefined") VictoryEffects.newHighScore();
                 if (typeof ActivityFeed !== "undefined") ActivityFeed.logHighScore("flappy-bird", score);
@@ -1248,11 +2212,41 @@
                 saveData.stats.highScore = score;
             }
 
-            saveData.coins += sessionCoins;
+            const vipCoins = typeof VIPSystem !== "undefined" ? VIPSystem.applyMultiplier(sessionCoins) : sessionCoins;
+            saveData.coins += vipCoins;
             saveData.stats.totalCoinsEarned += sessionCoins;
             saveData.stats.gamesPlayed++;
 
-            // Daily challenge completion
+            if (isDailyChallenge && !saveData.stats.dailyCompletedToday) {
+                completeDailyChallenge();
+            }
+
+            checkAchievements();
+            saveSaveData();
+
+            document.getElementById('victoryTitle').textContent = '🐉 DRAGON SLAYER! 🐉';
+            document.getElementById('victoryText').textContent = `+${sessionCoins} coins earned!`;
+            document.getElementById('victoryReward').textContent = '🌌';
+            document.getElementById('victoryRewardText').textContent = 'Galaxy skin unlocked! You beat ALL bosses!';
+            document.getElementById('victoryScreen').classList.remove('hidden');
+        }
+
+        function endGameNormal() {
+            // Called when player wants to end after boss 1 without going for rainbow
+            gameRunning = false;
+
+            if (score > saveData.highScore) {
+                if (typeof VictoryEffects !== "undefined") VictoryEffects.newHighScore();
+                if (typeof ActivityFeed !== "undefined") ActivityFeed.logHighScore("flappy-bird", score);
+                saveData.highScore = score;
+                saveData.stats.highScore = score;
+            }
+
+            const vipCoins = typeof VIPSystem !== "undefined" ? VIPSystem.applyMultiplier(sessionCoins) : sessionCoins;
+            saveData.coins += vipCoins;
+            saveData.stats.totalCoinsEarned += sessionCoins;
+            saveData.stats.gamesPlayed++;
+
             if (isDailyChallenge && !saveData.stats.dailyCompletedToday) {
                 completeDailyChallenge();
             }
@@ -1288,6 +2282,9 @@
         }
 
         function gameOver() {
+            // Don't run if final boss was defeated!
+            if (boss4Defeated) return;
+
             // Add XP to pet
             if (typeof PetSystem !== "undefined" && PetSystem.loaded) {
                 PetSystem.addPetXP(Math.max(5, Math.floor(score / 5)));
@@ -1302,7 +2299,8 @@
                 saveData.stats.highScore = score;
             }
 
-            saveData.coins += sessionCoins;
+            const vipCoins = typeof VIPSystem !== "undefined" ? VIPSystem.applyMultiplier(sessionCoins) : sessionCoins;
+            saveData.coins += vipCoins;
             saveData.stats.totalCoinsEarned += sessionCoins;
             saveData.stats.gamesPlayed++;
 
@@ -1374,6 +2372,8 @@
             submitBtn.textContent = 'Submit';
             document.getElementById('leaderboardMsg').textContent = '';
 
+            storeBirdState();
+            updateReviveButton();
             document.getElementById('gameOverScreen').classList.remove('hidden');
         }
 
@@ -1386,13 +2386,25 @@
             score = 0; frameCount = 0;
             pipes = []; fireballs = [];
             coins = []; coinParticles = [];
+            freezeZones = []; lightning = [];
             sessionCoins = 0;
             newAchievementsThisGame = [];
             zigzagHigh = true;
 
-            bird.y = H / 2; bird.velocity = 0; bird.rotation = 0;
-            gamePaused = false; bossMode = false; bossDefeated = false;
+            bird.x = 80; bird.y = H / 2; bird.velocity = 0; bird.rotation = 0;
+            gamePaused = false;
+            bossMode = false; bossDefeated = false;
+            boss2Mode = false; boss2Defeated = false;
+            boss3Mode = false; boss3Defeated = false;
+            boss4Mode = false; boss4Defeated = false;
             bossScoreTimer = 0;
+            birdFrozen = false; frozenTimer = 0;
+            boss4Phase = 1; windForce = 0;
+            lightningZone = 'top';
+            lightningWarning = false;
+            lightningWarningTimer = 0;
+            lightningActive = false;
+            lightningActiveTimer = 0;
 
             // Apply shield upgrade
             hasShield = saveData.upgrades.shield > 0;
@@ -1400,7 +2412,8 @@
 
             scoreDisplay.textContent = score;
             document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
-            gameRunning = true; gameStarted = true;
+            gameRunning = true;
+            resetRevives(); gameStarted = true;
             replayFrames = [];
             gameStartTime = Date.now();
             gameLoop();
@@ -1422,25 +2435,129 @@
             ctx.clearRect(0, 0, W, H);
 
             drawBackground();
-            if (!bossMode) {
+
+            // Determine if we're in any boss mode
+            const inBossMode = bossMode || boss2Mode || boss3Mode || boss4Mode;
+
+            if (!inBossMode) {
                 pipes.forEach(drawPipe);
                 coins.forEach(c => !c.collected && drawCoin(c));
                 drawCoinParticles();
             }
-            if (bossMode) { drawBoss(); fireballs.forEach(drawFireball); }
+
+            // Draw bosses and their projectiles
+            if (bossMode) {
+                drawBoss(1);
+                fireballs.forEach(drawFireball);
+            } else if (boss2Mode) {
+                drawBoss(2);
+                fireballs.forEach(drawFireball);
+            } else if (boss3Mode) {
+                drawBoss(3);
+                // Draw freeze zones first (behind ice shards)
+                freezeZones.forEach(drawFreezeZone);
+                // Draw ice shards
+                fireballs.forEach(fb => {
+                    if (fb.isIce) drawIceShard(fb);
+                    else drawFireball(fb);
+                });
+            } else if (boss4Mode) {
+                drawBoss(4);
+                fireballs.forEach(drawFireball);
+                // Draw lightning zone (warning or active)
+                if (lightningWarning || lightningActive) {
+                    drawLightningZone();
+                }
+                // Draw wind indicator
+                if (windForce !== 0) {
+                    ctx.fillStyle = 'rgba(100,100,200,0.3)';
+                    ctx.font = 'bold 24px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(windForce > 0 ? '💨➡️' : '⬅️💨', W/2, 140);
+                }
+            }
+
             drawGround();
             drawBird();
             drawScore();
 
+            // Show boss progress indicators
+            if (gameRunning) {
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(W/2 - 100, 5, 200, 30);
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+
+                if (bossDefeated && !boss2Defeated && !boss2Mode) {
+                    ctx.fillStyle = '#ffd700';
+                    ctx.fillText('🌈 Rainbow at 200!', W/2, 25);
+                } else if (boss2Defeated && !boss3Defeated && !boss3Mode) {
+                    ctx.fillStyle = '#00bfff';
+                    ctx.fillText('❄️ Ice King at 250!', W/2, 25);
+                } else if (boss3Defeated && !boss4Defeated && !boss4Mode) {
+                    ctx.fillStyle = '#8b00ff';
+                    ctx.fillText('🐉 Dragon at 350!', W/2, 25);
+                } else if (boss4Defeated) {
+                    ctx.fillStyle = '#ffd700';
+                    ctx.fillText('🏆 ALL BOSSES DEFEATED!', W/2, 25);
+                } else if (boss3Mode) {
+                    ctx.fillStyle = '#00bfff';
+                    ctx.fillText(`❄️ SURVIVE TO ${BOSS3_END_SCORE}!`, W/2, 25);
+                } else if (boss4Mode) {
+                    ctx.fillStyle = '#8b00ff';
+                    const phaseText = boss4Phase === 1 ? '🔥' : boss4Phase === 2 ? '⚡' : '🌀';
+                    ctx.fillText(`${phaseText} SURVIVE TO ${BOSS4_END_SCORE}!`, W/2, 25);
+                }
+            }
+
+            // Frozen effect on bird
+            if (birdFrozen && gameRunning) {
+                ctx.fillStyle = 'rgba(135, 206, 250, 0.4)';
+                ctx.beginPath();
+                ctx.arc(bird.x + bird.width/2, bird.y + bird.height/2, 30, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
             if (gameRunning && !gamePaused) {
+                // Apply wind force from Boss 4
+                if (boss4Mode && windForce !== 0) {
+                    bird.x += windForce;
+                    bird.x = Math.max(20, Math.min(W - bird.width - 20, bird.x));
+                }
+
+                // Apply frozen slow effect
+                if (birdFrozen) {
+                    bird.velocity *= 0.95; // Slower falling/rising
+                }
+
                 updateBird();
                 updateClouds();
-                if (!bossMode) {
+
+                if (!inBossMode) {
                     updatePipes();
                     updateCoins();
-                } else {
+                    // Start bosses at their score thresholds
+                    if (bossDefeated && score >= BOSS2_START_SCORE && !boss2Mode && !boss2Defeated) {
+                        startBoss2Mode();
+                    }
+                    if (boss2Defeated && score >= BOSS3_START_SCORE && !boss3Mode && !boss3Defeated) {
+                        startBoss3Mode();
+                    }
+                    if (boss3Defeated && score >= BOSS4_START_SCORE && !boss4Mode && !boss4Defeated) {
+                        startBoss4Mode();
+                    }
+                } else if (bossMode) {
                     updateBoss();
+                } else if (boss2Mode) {
+                    updateBoss2();
+                } else if (boss3Mode) {
+                    updateBoss3();
+                    checkBoss3Collision();
+                } else if (boss4Mode) {
+                    updateBoss4();
+                    checkBoss4Collision();
                 }
+
                 groundX -= getPipeSpeed();
                 if (groundX <= -40) groundX = 0;
                 checkCollision();
@@ -1559,7 +2676,7 @@
                         msgEl.textContent = '✓ Rank #' + data.rank;
                     }
                     btn.textContent = 'Done!';
-                    localStorage.setItem('flappyPlayerName', playerName);
+                    localStorage.setItem(getPlayerNameKey(), playerName);
 
                     // Submit to tournament if active
                     if (tournamentId) {
@@ -1582,9 +2699,13 @@
             }
         });
 
-        // Load saved player name
-        const savedName = localStorage.getItem('flappyPlayerName');
-        if (savedName) document.getElementById('playerName').value = savedName;
+        // Load saved player name (after user is initialized)
+        function loadPlayerName() {
+            const savedName = localStorage.getItem(getPlayerNameKey());
+            if (savedName) document.getElementById('playerName').value = savedName;
+        }
+        // Load after checkCurrentUser completes
+        setTimeout(loadPlayerName, 500);
 
         document.getElementById('victoryBtn').addEventListener('click', () => {
             document.getElementById('victoryScreen').classList.add('hidden');
@@ -1625,6 +2746,17 @@
             document.getElementById('dailyScreen').classList.remove('hidden');
         });
         document.getElementById('dailyBackBtn').addEventListener('click', showMenu);
+
+        // VIP
+        document.getElementById('vipBtn').addEventListener('click', () => {
+            if (typeof VIPSystem !== 'undefined') {
+                if (VIPSystem.isVIP()) {
+                    VIPSystem.showStatusModal();
+                } else {
+                    VIPSystem.showActivationModal();
+                }
+            }
+        });
         document.getElementById('playDailyBtn').addEventListener('click', () => {
             if (!saveData.stats.dailyCompletedToday) {
                 startGame(true);
@@ -1647,7 +2779,7 @@
                 const resp = await fetch("api/replays.php", {
                     method: "POST",
                     credentials: "include",
-                    headers: { "Content-Type": "application/json" },
+                    keepalive: true, headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         action: "save",
                         game: "flappy-bird",
@@ -1670,6 +2802,582 @@
                 btn.style.background = "#ef4444";
             }
         }
+
+        // ============================================
+        // ADMIN & OWNER PANELS
+        // ============================================
+        const ADMIN_PASSWORD = 'flappy123';
+        const OWNER_PASSWORD = 'jsgowner2008';
+        let pendingPanelType = null;
+        let godModeEnabled = false;
+        let turboModeEnabled = false;
+
+        // Keyboard shortcut to open panels
+        let keySequence = [];
+        document.addEventListener('keydown', (e) => {
+            // Ignore if typing in an input field
+            const tag = document.activeElement?.tagName?.toLowerCase();
+            if (tag === 'input' || tag === 'textarea') {
+                return;
+            }
+
+            keySequence.push(e.key.toLowerCase());
+            if (keySequence.length > 10) keySequence.shift();
+
+            // Ctrl+Shift+A for Admin
+            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') {
+                e.preventDefault();
+                openPasswordModal('admin');
+            }
+            // Ctrl+Shift+O for Owner
+            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'o') {
+                e.preventDefault();
+                openPasswordModal('owner');
+            }
+            // Type "admin" to open admin
+            if (keySequence.slice(-5).join('') === 'admin') {
+                openPasswordModal('admin');
+                keySequence = [];
+            }
+            // Type "owner" to open owner
+            if (keySequence.slice(-5).join('') === 'owner') {
+                openPasswordModal('owner');
+                keySequence = [];
+            }
+        });
+
+        function openPasswordModal(type) {
+            pendingPanelType = type;
+            document.getElementById('passwordPrompt').textContent =
+                type === 'owner' ? 'Enter OWNER password:' : 'Enter admin password:';
+            document.getElementById('panelPassword').value = '';
+            document.getElementById('passwordModal').classList.remove('hidden');
+            document.getElementById('panelPassword').focus();
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+            pendingPanelType = null;
+        }
+
+        function checkPassword() {
+            const password = document.getElementById('panelPassword').value;
+            if (pendingPanelType === 'owner' && password === OWNER_PASSWORD) {
+                closePasswordModal();
+                openOwnerPanel();
+            } else if (pendingPanelType === 'admin' && (password === ADMIN_PASSWORD || password === OWNER_PASSWORD)) {
+                closePasswordModal();
+                openAdminPanel();
+            } else {
+                document.getElementById('panelPassword').style.border = '3px solid #e74c3c';
+                document.getElementById('panelPassword').value = '';
+                setTimeout(() => {
+                    document.getElementById('panelPassword').style.border = 'none';
+                }, 500);
+            }
+        }
+
+        // ============ ADMIN FUNCTIONS ============
+        function openAdminPanel() {
+            updateAdminStats();
+            document.getElementById('adminPanel').classList.remove('hidden');
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('adminPanel').classList.add('hidden');
+        }
+
+        function updateAdminStats() {
+            const stats = `Coins: ${saveData.coins}
+High Score: ${saveData.highScore}
+Games Played: ${saveData.stats?.gamesPlayed || 0}
+Bosses Defeated: ${saveData.stats?.bossesDefeated || 0}
+Total Coins Earned: ${saveData.stats?.totalCoinsEarned || 0}
+Daily Streak: ${saveData.stats?.dailyStreak || 0}
+Skins Unlocked: ${saveData.unlockedSkins?.length || 1}
+Current Skin: ${saveData.currentSkin}`;
+            document.getElementById('adminStats').textContent = stats;
+        }
+
+        function adminAddCoins() {
+            const amount = parseInt(document.getElementById('adminCoins').value) || 0;
+            saveData.coins += amount;
+            saveSaveData();
+            updateAdminStats();
+            updateDisplays();
+        }
+
+        function adminSetCoins() {
+            const amount = parseInt(document.getElementById('adminCoins').value) || 0;
+            saveData.coins = amount;
+            saveSaveData();
+            updateAdminStats();
+            updateDisplays();
+        }
+
+        function adminSetScore() {
+            const newScore = parseInt(document.getElementById('adminScore').value) || 0;
+            saveData.highScore = newScore;
+            if (saveData.stats) saveData.stats.highScore = newScore;
+            saveSaveData();
+            updateAdminStats();
+            updateDisplays();
+        }
+
+        function adminUnlockAllSkins() {
+            SKINS.forEach(skin => {
+                if (!saveData.unlockedSkins.includes(skin.id)) {
+                    saveData.unlockedSkins.push(skin.id);
+                }
+            });
+            saveSaveData();
+            updateAdminStats();
+            alert('All skins unlocked!');
+        }
+
+        function adminLockAllSkins() {
+            saveData.unlockedSkins = ['default'];
+            saveData.currentSkin = 'default';
+            saveSaveData();
+            updateAdminStats();
+            alert('All skins locked (except default)');
+        }
+
+        // ============ OWNER FUNCTIONS ============
+        function openOwnerPanel() {
+            updateOwnerPanel();
+            document.getElementById('ownerPanel').classList.remove('hidden');
+        }
+
+        function closeOwnerPanel() {
+            document.getElementById('ownerPanel').classList.add('hidden');
+        }
+
+        function updateOwnerPanel() {
+            document.getElementById('ownerHighScore').value = saveData.highScore || 0;
+            document.getElementById('ownerGamesPlayed').value = saveData.stats?.gamesPlayed || 0;
+            document.getElementById('ownerBossesDefeated').value = saveData.stats?.bossesDefeated || 0;
+            document.getElementById('ownerDailyStreak').value = saveData.stats?.dailyStreak || 0;
+            document.getElementById('ownerSaveData').textContent = JSON.stringify(saveData, null, 2);
+            document.getElementById('godModeBtn').textContent = godModeEnabled ? 'God Mode: ON' : 'God Mode: OFF';
+            document.getElementById('godModeBtn').style.background = godModeEnabled ? '#2ecc71' : '#8e44ad';
+            document.getElementById('turboModeBtn').textContent = turboModeEnabled ? 'Turbo: ON' : 'Turbo: OFF';
+            document.getElementById('turboModeBtn').style.background = turboModeEnabled ? '#2ecc71' : '#e67e22';
+        }
+
+        function ownerAddCoins() {
+            const amount = parseInt(document.getElementById('ownerCoins').value) || 0;
+            saveData.coins += amount;
+            saveSaveData();
+            updateOwnerPanel();
+            updateDisplays();
+        }
+
+        function ownerSetCoins() {
+            const amount = parseInt(document.getElementById('ownerCoins').value) || 0;
+            saveData.coins = amount;
+            saveSaveData();
+            updateOwnerPanel();
+            updateDisplays();
+        }
+
+        function ownerMaxCoins() {
+            saveData.coins = 999999;
+            saveSaveData();
+            updateOwnerPanel();
+            updateDisplays();
+        }
+
+        function ownerResetCoins() {
+            saveData.coins = 0;
+            saveSaveData();
+            updateOwnerPanel();
+            updateDisplays();
+        }
+
+        function ownerApplyStats() {
+            saveData.highScore = parseInt(document.getElementById('ownerHighScore').value) || 0;
+            if (!saveData.stats) saveData.stats = {};
+            saveData.stats.highScore = saveData.highScore;
+            saveData.stats.gamesPlayed = parseInt(document.getElementById('ownerGamesPlayed').value) || 0;
+            saveData.stats.bossesDefeated = parseInt(document.getElementById('ownerBossesDefeated').value) || 0;
+            saveData.stats.dailyStreak = parseInt(document.getElementById('ownerDailyStreak').value) || 0;
+            saveSaveData();
+            updateOwnerPanel();
+            updateDisplays();
+            alert('Stats applied!');
+        }
+
+        function ownerUnlockAll() {
+            SKINS.forEach(skin => {
+                if (!saveData.unlockedSkins.includes(skin.id)) {
+                    saveData.unlockedSkins.push(skin.id);
+                }
+            });
+            Object.keys(UPGRADES).forEach(key => {
+                saveData.upgrades[key] = UPGRADES[key].maxLevel;
+            });
+            ACHIEVEMENTS.forEach(ach => {
+                if (!saveData.achievements.includes(ach.id)) {
+                    saveData.achievements.push(ach.id);
+                }
+            });
+            saveSaveData();
+            updateOwnerPanel();
+            updateDisplays();
+            alert('Everything unlocked!');
+        }
+
+        function ownerMaxUpgrades() {
+            Object.keys(UPGRADES).forEach(key => {
+                saveData.upgrades[key] = UPGRADES[key].maxLevel;
+            });
+            saveSaveData();
+            updateOwnerPanel();
+            alert('All upgrades maxed!');
+        }
+
+        function ownerResetProgress() {
+            if (confirm('Are you sure? This will DELETE ALL progress for this account!')) {
+                localStorage.removeItem(getSaveKey());
+                localStorage.removeItem(getArcadeStatsKey());
+                localStorage.removeItem(getPlayerNameKey());
+                location.reload();
+            }
+        }
+
+        function ownerGodMode() {
+            godModeEnabled = !godModeEnabled;
+            window.ghostMode = godModeEnabled;
+            updateOwnerPanel();
+        }
+
+        function ownerTurboMode() {
+            turboModeEnabled = !turboModeEnabled;
+            updateOwnerPanel();
+        }
+
+        function ownerInfiniteCoins() {
+            saveData.coins += 10000;
+            saveSaveData();
+            updateOwnerPanel();
+            updateDisplays();
+            alert('+10,000 coins!');
+        }
+
+        function ownerSkipToBoss() {
+            if (!gameRunning) {
+                alert('Start a game first!');
+                return;
+            }
+            score = BOSS_START_SCORE - 1;
+            scoreDisplay.textContent = score;
+            closeOwnerPanel();
+        }
+
+        function ownerSkipToBoss2() {
+            if (!gameRunning) {
+                alert('Start a game first!');
+                return;
+            }
+            score = BOSS2_START_SCORE - 1;
+            bossDefeated = true;
+            bossMode = false;
+            scoreDisplay.textContent = score;
+            closeOwnerPanel();
+        }
+
+        function ownerSkipToBoss3() {
+            if (!gameRunning) {
+                alert('Start a game first!');
+                return;
+            }
+            score = BOSS3_START_SCORE - 1;
+            bossDefeated = true;
+            boss2Defeated = true;
+            bossMode = false;
+            boss2Mode = false;
+            scoreDisplay.textContent = score;
+            closeOwnerPanel();
+        }
+
+        function ownerSkipToBoss4() {
+            if (!gameRunning) {
+                alert('Start a game first!');
+                return;
+            }
+            score = BOSS4_START_SCORE - 1;
+            bossDefeated = true;
+            boss2Defeated = true;
+            boss3Defeated = true;
+            bossMode = false;
+            boss2Mode = false;
+            boss3Mode = false;
+            scoreDisplay.textContent = score;
+            closeOwnerPanel();
+        }
+
+        function ownerExportData() {
+            const data = JSON.stringify(saveData, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'flappy-bird-save.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function ownerImportData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        saveData = imported;
+                        saveSaveData();
+                        updateOwnerPanel();
+                        updateDisplays();
+                        alert('Save data imported!');
+                    } catch (err) {
+                        alert('Invalid save file!');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function ownerClearStorage() {
+            if (confirm('DELETE ALL DATA for current account? This cannot be undone!')) {
+                localStorage.removeItem(getSaveKey());
+                localStorage.removeItem(getArcadeStatsKey());
+                localStorage.removeItem(getPlayerNameKey());
+                location.reload();
+            }
+        }
     </script>
+
+<!-- More Games Section -->
+<div style="background:rgba(0,0,0,0.3);padding:20px;margin-top:20px;border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto">
+    <h3 style="color:#ffd700;margin-bottom:15px;text-align:center">🎮 More Games</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
+        <a href="snake.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🐍 Snake</a><a href="tetris.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🧱 Tetris</a><a href="pacman.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">👻 Pac-Man</a><a href="2048.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🔢 2048</a><a href="chess.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">♟️ Chess</a><a href="space-invaders.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">👾 Space Invaders</a>
+    </div>
+</div>
 </body>
 </html>
+
+<script>
+// ============================================
+// CENTRALIZED ADMIN SYSTEM
+// ============================================
+(async function() {
+    try {
+        const resp = await fetch('api/game-admin.php?action=check&game=flappy-bird', { credentials: 'include' });
+        const data = await resp.json();
+        if (data.success) {
+            if (data.isAdmin) {
+                document.getElementById('adminPanel')?.classList.add('visible');
+                document.querySelector('[onclick*="showPasswordPrompt(\'admin\'"]')?.classList.add('visible');
+            }
+            if (data.isOwner) {
+                document.getElementById('ownerPanel')?.classList.add('visible');
+                document.querySelector('[onclick*="showPasswordPrompt(\'owner\'"]')?.classList.add('visible');
+            }
+        }
+    } catch (e) { console.log('Admin check failed'); }
+})();
+
+// Override password check to use server
+const originalCheckPassword = typeof checkPassword === 'function' ? checkPassword : null;
+window.checkPasswordServer = async function() {
+    const input = document.getElementById('passwordInput');
+    const password = input.value;
+    
+    try {
+        const resp = await fetch('api/game-admin.php?action=unlock&game=flappy-bird', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            credentials: 'include',
+            body: 'password=' + encodeURIComponent(password)
+        });
+        const data = await resp.json();
+        
+        if (data.success) {
+            document.getElementById('passwordPrompt').textContent = data.message;
+            if (data.type === 'owner') {
+                document.getElementById('ownerPanel')?.classList.add('visible');
+                document.getElementById('adminPanel')?.classList.add('visible');
+            } else {
+                document.getElementById('adminPanel')?.classList.add('visible');
+            }
+            setTimeout(() => {
+                document.getElementById('passwordModal')?.classList.add('hidden');
+            }, 1000);
+        } else {
+            document.getElementById('passwordPrompt').textContent = data.error || 'Invalid password';
+        }
+    } catch (e) {
+        document.getElementById('passwordPrompt').textContent = 'Server error';
+    }
+    input.value = '';
+};
+</script>
+
+<script>
+// ============================================
+// BOUNTY SYSTEM INTEGRATION
+// ============================================
+async function checkBounties(finalScore) {
+    try {
+        const resp = await fetch('api/bounties.php?action=check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            credentials: 'include',
+            body: 'game=flappy-bird&score=' + finalScore
+        });
+        const data = await resp.json();
+        
+        if (data.success && data.claimable && data.claimable.length > 0) {
+            // Show bounty claim UI
+            for (const bounty of data.claimable) {
+                const claim = confirm(
+                    '🎯 BOUNTY AVAILABLE!\n\n' +
+                    'You scored ' + finalScore + ' and beat the target of ' + bounty.targetScore + '!\n' +
+                    'Reward: ' + bounty.reward.toLocaleString() + ' coins\n\n' +
+                    'Claim this bounty?'
+                );
+                
+                if (claim) {
+                    const claimResp = await fetch('api/bounties.php?action=claim', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        credentials: 'include',
+                        body: 'bountyId=' + bounty.id + '&score=' + finalScore
+                    });
+                    const claimData = await claimResp.json();
+                    
+                    if (claimData.success) {
+                        alert('🎉 ' + claimData.message);
+                    } else {
+                        alert(claimData.error || 'Failed to claim bounty');
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.log('Bounty check failed:', e);
+    }
+}
+
+// Hook into game over
+const originalGameOver = typeof gameOver === 'function' ? gameOver : null;
+if (originalGameOver) {
+    window.gameOver = function() {
+        originalGameOver();
+        // Check bounties after game over
+        setTimeout(() => {
+            if (typeof score !== 'undefined') {
+                checkBounties(score);
+            }
+        }, 500);
+    };
+}
+
+        // ==================== REVIVE SYSTEM ====================
+        const REVIVE_COST = 50;
+        let revivesUsed = 0;
+        let maxRevives = 2;
+        let lastBirdY = 0;
+        let lastBirdVelocity = 0;
+        let lastScore = 0;
+
+        function updateReviveButton() {
+            const btn = document.getElementById('reviveBtn');
+            const option = document.getElementById('reviveOption');
+            
+            if (!btn || !option) return;
+            
+            if (revivesUsed >= maxRevives) {
+                option.innerHTML = '<div class="revive-used">❌ No revives left this game</div>';
+                return;
+            }
+            
+            // Check if user has enough coins
+            const userCoins = loadCoins();
+            if (userCoins < REVIVE_COST) {
+                btn.disabled = true;
+                btn.innerHTML = '<span>🔄 Revive</span><span class="revive-cost">💰 Need ' + REVIVE_COST + ' Coins</span>';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '<span>🔄 Revive</span><span class="revive-cost">💰 ' + REVIVE_COST + ' Coins</span>';
+            }
+        }
+
+        function reviveWithCoins() {
+            const userCoins = loadCoins();
+            
+            if (userCoins < REVIVE_COST) {
+                alert('Not enough coins! You need ' + REVIVE_COST + ' coins to revive.');
+                return;
+            }
+            
+            if (revivesUsed >= maxRevives) {
+                alert('No revives left for this game!');
+                return;
+            }
+            
+            // Deduct coins
+            saveCoins(userCoins - REVIVE_COST);
+            updateCoinDisplay();
+            
+            // Track revive
+            revivesUsed++;
+            
+            // Hide game over screen
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            
+            // Revive the bird
+            performRevive();
+        }
+
+        function performRevive() {
+            // Reset bird to safe position
+            bird.y = canvas.height / 2;
+            bird.velocity = -5;
+            bird.rotation = 0;
+            
+            // Give brief invincibility
+            bird.invincible = true;
+            bird.invincibleTime = 120; // 2 seconds at 60fps
+            
+            // Resume game
+            gameRunning = true;
+            paused = false;
+            
+            // Flash effect
+            bird.flash = true;
+            setTimeout(() => { bird.flash = false; }, 200);
+            
+            // Restart game loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Store bird state before death for potential revive
+        function storeBirdState() {
+            lastBirdY = bird.y;
+            lastBirdVelocity = bird.velocity;
+            lastScore = score;
+        }
+
+        // Reset revives for new game
+        function resetRevives() {
+            revivesUsed = 0;
+        }
+
+        </script>

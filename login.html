@@ -1,10 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - RetroBlasts</title>
+    <title>Login - RetroBlasts Free Games</title>
+    <meta name="description" content="Login to your free RetroBlasts gaming account to save progress, appear on leaderboards, and unlock achievements. No personal information required.">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -213,6 +222,67 @@
             border-color: #888;
             color: #fff;
         }
+    
+        .security-notice {
+            background: rgba(74,222,128,0.1);
+            border: 1px solid rgba(74,222,128,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .security-notice .lock-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        .security-notice p {
+            color: #4ade80;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        .account-info {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .account-info p {
+            color: #888;
+            font-size: 0.8rem;
+            margin: 0;
+        }
+        .legal-links {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .legal-links a {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.8rem;
+            margin: 0 10px;
+        }
+        .legal-links a:hover {
+            color: #fff;
+        }
+        .site-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .site-badge .verified {
+            background: #4ade80;
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body>
@@ -224,6 +294,19 @@
             <p>Sign in to track your progress, add friends, and compete!</p>
         </div>
         
+        
+            <div class="site-badge">
+                <span>🎮 RetroBlasts</span>
+                <span class="verified">OFFICIAL SITE</span>
+            </div>
+            <div class="security-notice">
+                <div class="lock-icon">🔒</div>
+                <p>Secure game account login</p>
+            </div>
+            <div class="account-info">
+                <p>This is a FREE gaming account for saving progress and leaderboards. No personal information required.</p>
+            </div>
+
         <div class="tabs">
             <button class="tab active" onclick="showTab('login')">Login</button>
             <button class="tab" onclick="showTab('register')">Register</button>
@@ -274,6 +357,11 @@
                         <div class="avatar-option" data-avatar="🏆">🏆</div>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label>Referral Code (optional)</label>
+                    <input type="text" id="referralCode" placeholder="Got a friends code? Enter it for bonus rewards!" maxlength="10" style="text-transform: uppercase;">
+                    <div id="referralStatus" style="font-size: 0.85rem; margin-top: 8px; color: #888;"></div>
+                </div>
                 <button type="submit" class="btn">Create Account</button>
             </form>
         </div>
@@ -284,6 +372,48 @@
 
     <script>
         let selectedAvatar = '😎';
+        
+        // Check for referral code in URL
+        const urlRef = new URLSearchParams(window.location.search).get('ref');
+        if (urlRef) {
+            setTimeout(() => {
+                showTab('register');
+                document.getElementById('referralCode').value = urlRef.toUpperCase();
+                validateReferralCode(urlRef);
+            }, 100);
+        }
+        
+        // Validate referral code as user types
+        document.addEventListener('DOMContentLoaded', () => {
+            const refInput = document.getElementById('referralCode');
+            if (refInput) {
+                refInput.addEventListener('input', (e) => {
+                    e.target.value = e.target.value.toUpperCase();
+                    if (e.target.value.length >= 4) {
+                        validateReferralCode(e.target.value);
+                    } else {
+                        document.getElementById('referralStatus').textContent = '';
+                    }
+                });
+            }
+        });
+        
+        async function validateReferralCode(code) {
+            const statusEl = document.getElementById('referralStatus');
+            try {
+                const resp = await fetch('api/referrals.php?action=validateCode&code=' + code);
+                const data = await resp.json();
+                if (data.valid) {
+                    statusEl.innerHTML = '✅ Valid code from <strong>' + data.referrer + '</strong> - You both get rewards!';
+                    statusEl.style.color = '#22c55e';
+                } else {
+                    statusEl.innerHTML = '❌ Invalid code';
+                    statusEl.style.color = '#ef4444';
+                }
+            } catch (e) {
+                statusEl.textContent = '';
+            }
+        }
         
         
         // Check if already logged in (skip if just logged out)
@@ -355,6 +485,23 @@
                 
                 if (data.success) {
                     localStorage.setItem('arcadeUser', JSON.stringify(data.user));
+                    
+                    // Process referral code if provided
+                    const refCode = document.getElementById('referralCode').value.trim();
+                    if (refCode) {
+                        try {
+                            await fetch('api/referrals.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                credentials: 'include',
+                                body: JSON.stringify({
+                                    action: 'useCode',
+                                    code: refCode,
+                                    newUsername: data.user.username
+                                })
+                            });
+                        } catch (e) { console.error('Referral error:', e); }
+                    }
                     showMessage('Welcome back! Redirecting...', false);
                     setTimeout(() => {
                         const redirect = new URLSearchParams(window.location.search).get('redirect');
@@ -397,6 +544,23 @@
                 
                 if (data.success) {
                     localStorage.setItem('arcadeUser', JSON.stringify(data.user));
+                    
+                    // Process referral code if provided
+                    const refCode = document.getElementById('referralCode').value.trim();
+                    if (refCode) {
+                        try {
+                            await fetch('api/referrals.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                credentials: 'include',
+                                body: JSON.stringify({
+                                    action: 'useCode',
+                                    code: refCode,
+                                    newUsername: data.user.username
+                                })
+                            });
+                        } catch (e) { console.error('Referral error:', e); }
+                    }
                     
                     // Offer to import existing progress
                     const existingStats = localStorage.getItem('arcadeStats');

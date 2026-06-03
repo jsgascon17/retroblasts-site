@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Card Prices - RetroBlasts</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .header {
+            background: rgba(0,0,0,0.5);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ffd700;
+        }
+        .header h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            color: #ffd700;
+        }
+        .header-right { display: flex; gap: 15px; align-items: center; }
+        .coins-display {
+            background: rgba(255,215,0,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #666;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .search-section {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+        
+        .search-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+        
+        .search-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-group label {
+            color: #98FB98;
+            font-weight: 600;
+        }
+        
+        .form-group input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+        
+        .search-btn {
+            grid-column: 1 / -1;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: 2px solid #ffd700;
+            color: #fff;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .search-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 20px rgba(255,215,0,0.4);
+        }
+        
+        .search-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #ffd700;
+            font-size: 1.2rem;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+        
+        .results-count {
+            color: #98FB98;
+            font-size: 1.1rem;
+        }
+        
+        .pagination {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .page-btn {
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #666;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .page-btn:hover:not(:disabled) {
+            background: rgba(255,215,0,0.2);
+            border-color: #ffd700;
+        }
+        
+        .page-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .page-btn.active {
+            background: #ffd700;
+            color: #000;
+            border-color: #ffd700;
+        }
+        
+        .page-info {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .results-section {
+            display: none;
+        }
+        
+        .results-section.active {
+            display: block;
+        }
+        
+        .card-result {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid #333;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .card-result:hover {
+            border-color: #ffd700;
+            box-shadow: 0 5px 20px rgba(255,215,0,0.2);
+        }
+        
+        .card-header {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .card-image-container {
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card-image {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .card-name {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .card-details {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            color: #98FB98;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #888;
+        }
+        
+        .pricing-section {
+            margin-top: 30px;
+        }
+        
+        .pricing-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+            text-align: center;
+        }
+        
+        .price-source {
+            text-align: center;
+            color: #888;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+        
+        .price-source.real {
+            color: #22c55e;
+        }
+        
+        .price-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        
+        .price-card {
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #333;
+            transition: all 0.3s;
+        }
+        
+        .price-card:hover {
+            border-color: #ffd700;
+            transform: translateY(-3px);
+        }
+        
+        .price-card.loading {
+            opacity: 0.5;
+        }
+        
+        .price-grade {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #98FB98;
+            margin-bottom: 10px;
+        }
+        
+        .price-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .price-value.na {
+            color: #666;
+            font-size: 1.2rem;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            font-size: 1.1rem;
+        }
+        
+        .error-message {
+            background: rgba(220,38,38,0.2);
+            border: 1px solid #DC2626;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-header {
+                grid-template-columns: 1fr;
+            }
+            
+            .price-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .results-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🃏 Pokemon Card Prices</h1>
+        <div class="header-right">
+            <span class="coins-display" id="coinsDisplay">💰 Loading...</span>
+            <a href="index.html" class="back-btn">← Back</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="search-section">
+            <h2 class="search-title">Search Pokemon Cards</h2>
+            <form class="search-form" id="searchForm">
+                <div class="form-group">
+                    <label for="cardName">Card Name</label>
+                    <input type="text" id="cardName" placeholder="e.g. Charizard" required>
+                </div>
+                <div class="form-group">
+                    <label for="cardSet">Set (Optional)</label>
+                    <input type="text" id="cardSet" placeholder="e.g. Base Set">
+                </div>
+                <button type="submit" class="search-btn" id="searchBtn">🔍 Search Cards</button>
+            </form>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="results-header" id="resultsHeader">
+                <div class="results-count" id="resultsCount">0 cards found</div>
+                <div class="pagination" id="paginationTop"></div>
+            </div>
+            <div id="resultsContainer"></div>
+            <div class="pagination" id="paginationBottom" style="justify-content: center; margin-top: 20px; padding: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'c18e7d59-10fb-401c-9eb9-f6ce9f4cac02';
+        const API_URL = 'https://api.pokemontcg.io/v2/cards';
+        const CARDS_PER_PAGE = 25;
+        
+        let allCards = [];
+        let currentPage = 1;
+        let totalPages = 1;
+
+        // Check auth
+        async function checkAuth() {
+            try {
+                const res = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await res.json();
+                if (data.loggedIn) {
+                    document.getElementById('coinsDisplay').textContent = `💰 ${data.coins.toLocaleString()}`;
+                } else {
+                    document.getElementById('coinsDisplay').textContent = '💰 Not logged in';
+                }
+            } catch (err) {
+                document.getElementById('coinsDisplay').textContent = '💰 Error';
+            }
+        }
+
+        checkAuth();
+
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const cardName = document.getElementById('cardName').value.trim();
+            const cardSet = document.getElementById('cardSet').value.trim();
+            const searchBtn = document.getElementById('searchBtn');
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            if (!cardName) return;
+            
+            // Show loading
+            searchBtn.disabled = true;
+            searchBtn.textContent = '🔄 Searching...';
+            resultsSection.classList.add('active');
+            resultsContainer.innerHTML = '<div class="loading">Searching for all matching cards...</div>';
+            
+            try {
+                // Build query
+                let query = `name:${cardName}`;
+                if (cardSet) {
+                    query += ` set.name:${cardSet}`;
+                }
+                
+                // Fetch ALL pages of results
+                allCards = [];
+                let page = 1;
+                let hasMore = true;
+                
+                while (hasMore) {
+                    const response = await fetch(`${API_URL}?q=${encodeURIComponent(query)}&orderBy=-set.releaseDate&page=${page}&pageSize=250`, {
+                        headers: {
+                            'X-Api-Key': API_KEY
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.data && data.data.length > 0) {
+                        allCards = allCards.concat(data.data);
+                        
+                        // Check if there are more pages
+                        if (data.page < data.totalCount / data.pageSize) {
+                            page++;
+                        } else {
+                            hasMore = false;
+                        }
+                    } else {
+                        hasMore = false;
+                    }
+                    
+                    // Safety limit - don't fetch more than 10 pages (2500 cards)
+                    if (page > 10) {
+                        hasMore = false;
+                    }
+                }
+                
+                if (allCards.length > 0) {
+                    currentPage = 1;
+                    totalPages = Math.ceil(allCards.length / CARDS_PER_PAGE);
+                    displayPage(currentPage);
+                } else {
+                    resultsContainer.innerHTML = '<div class="no-results">No cards found. Try a different search.</div>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultsContainer.innerHTML = '<div class="error-message">Error searching for cards. Please try again.</div>';
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.textContent = '🔍 Search Cards';
+            }
+        });
+
+        function displayPage(page) {
+            currentPage = page;
+            const startIdx = (page - 1) * CARDS_PER_PAGE;
+            const endIdx = Math.min(startIdx + CARDS_PER_PAGE, allCards.length);
+            const cardsToShow = allCards.slice(startIdx, endIdx);
+            
+            // Update count
+            document.getElementById('resultsCount').textContent = `${allCards.length} card${allCards.length !== 1 ? 's' : ''} found`;
+            
+            // Render pagination
+            renderPagination();
+            
+            // Render cards
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.innerHTML = '';
+            
+            cardsToShow.forEach(card => {
+                displayCard(card, resultsContainer);
+            });
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderPagination() {
+            const paginationHTML = `
+                <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>
+                <span class="page-info">Page ${currentPage} of ${totalPages}</span>
+                <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>
+            `;
+            
+            document.getElementById('paginationTop').innerHTML = paginationHTML;
+            document.getElementById('paginationBottom').innerHTML = paginationHTML;
+        }
+
+        function changePage(newPage) {
+            if (newPage < 1 || newPage > totalPages) return;
+            displayPage(newPage);
+        }
+
+        async function displayCard(card, container) {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'card-result';
+            
+            cardDiv.innerHTML = `
+                <div class="card-header">
+                    <div class="card-image-container">
+                        <img src="${card.images.large}" alt="${card.name}" class="card-image">
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-name">${card.name}</h3>
+                        <div class="card-details">
+                            <span class="detail-label">Set:</span>
+                            <span>${card.set.name}</span>
+                            
+                            <span class="detail-label">Number:</span>
+                            <span>${card.number}/${card.set.printedTotal || card.set.total}</span>
+                            
+                            <span class="detail-label">Rarity:</span>
+                            <span>${card.rarity || 'Unknown'}</span>
+                            
+                            <span class="detail-label">Release Date:</span>
+                            <span>${card.set.releaseDate || 'Unknown'}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pricing-section">
+                    <h3 class="pricing-title">💎 Market Prices</h3>
+                    <div class="price-source" id="source-${card.id}">Loading real prices...</div>
+                    <div class="price-grid" id="prices-${card.id}">
+                        <div class="price-card loading">
+                            <div class="price-grade">Raw/Ungraded</div>
+                            <div class="price-value">...</div>
+                        </div>
+                        <div class="price-card loading">
+                            <div class="price-grade">PSA 7</div>
+                            <div class="price-value">...</div>
+                        </div>
+                        <div class="price-card loading">
+                            <div class="price-grade">PSA 8</div>
+                            <div class="price-value">...</div>
+                        </div>
+                        <div class="price-card loading">
+                            <div class="price-grade">PSA 9</div>
+                            <div class="price-value">...</div>
+                        </div>
+                        <div class="price-card loading">
+                            <div class="price-grade">PSA 10</div>
+                            <div class="price-value">...</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(cardDiv);
+            
+            // Fetch real prices
+            fetchRealPrices(card);
+        }
+
+        async function fetchRealPrices(card) {
+            // First, calculate base prices from TCGPlayer data that we already have
+            const prices = card.tcgplayer?.prices || {};
+            const normalPrices = prices.normal || prices.holofoil || prices.reverseHolofoil || prices["1stEditionHolofoil"] || prices.unlimitedHolofoil || {};
+            const basePrice = normalPrices.market || normalPrices.mid || 0;
+            
+            // If we have TCGPlayer data, use it for base and estimate PSA grades
+            if (basePrice > 0) {
+                const estimatedPrices = {
+                    ungraded: basePrice,
+                    psa7: basePrice * 1.35,
+                    psa8: basePrice * 1.75,
+                    psa9: basePrice * 2.5,
+                    psa10: basePrice * 4
+                };
+                
+                displayPrices(card.id, estimatedPrices, "tcgplayer");
+                
+                // Try to get real PSA prices in background (do not wait for it)
+                tryGetRealPSAPrices(card);
+            } else {
+                // No TCGPlayer data, try API
+                try {
+                    const response = await fetch(`api/pokemon-prices.php?name=${encodeURIComponent(card.name)}&set=${encodeURIComponent(card.set.name)}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.prices && (data.prices.ungraded || data.prices.psa10)) {
+                        displayPrices(card.id, data.prices, data.source);
+                    } else {
+                        // Show N/A
+                        displayPrices(card.id, {
+                            ungraded: null,
+                            psa7: null,
+                            psa8: null,
+                            psa9: null,
+                            psa10: null
+                        }, "unavailable");
+                    }
+                } catch (error) {
+                    console.error("Error fetching prices:", error);
+                    displayPrices(card.id, {
+                        ungraded: null,
+                        psa7: null,
+                        psa8: null,
+                        psa9: null,
+                        psa10: null
+                    }, "unavailable");
+                }
+            }
+        }
+
+        async function tryGetRealPSAPrices(card) {
+            // Try to get real PSA prices without blocking the UI
+            try {
+                const response = await fetch(`api/pokemon-prices.php?name=${encodeURIComponent(card.name)}&set=${encodeURIComponent(card.set.name)}`);
+                const data = await response.json();
+                
+                if (data.success && data.source === "real" && data.prices.psa10) {
+                    // We got real PSA data, update the display
+                    displayPrices(card.id, data.prices, "real");
+                }
+            } catch (error) {
+                // Silently fail, we already showed estimated prices
+                console.log("Could not fetch real PSA prices:", error);
+            }
+        }
+
+        function displayPrices(cardId, prices, source) {
+            const priceContainer = document.getElementById(`prices-${cardId}`);
+            const sourceElement = document.getElementById(`source-${cardId}`);
+            
+            if (!priceContainer || !sourceElement) return;
+            
+            if (source === "real") {
+                sourceElement.textContent = "✅ Real PSA prices from PriceCharting/eBay";
+                sourceElement.className = "price-source real";
+            } else if (source === "tcgplayer") {
+                sourceElement.textContent = "📊 TCGPlayer market price + estimated PSA grades";
+                sourceElement.className = "price-source";
+            } else if (source === "estimated") {
+                sourceElement.textContent = "📊 Estimated prices";
+                sourceElement.className = "price-source";
+            } else {
+                sourceElement.textContent = "❌ Pricing data unavailable";
+                sourceElement.className = "price-source";
+            }
+            
+            priceContainer.innerHTML = `
+                <div class="price-card">
+                    <div class="price-grade">Raw/Ungraded</div>
+                    <div class="price-value${prices.ungraded ? "" : " na"}">${prices.ungraded ? "$" + prices.ungraded.toFixed(2) : "N/A"}</div>
+                </div>
+                <div class="price-card">
+                    <div class="price-grade">PSA 7</div>
+                    <div class="price-value${prices.psa7 ? "" : " na"}">${prices.psa7 ? "$" + prices.psa7.toFixed(2) : "N/A"}</div>
+                </div>
+                <div class="price-card">
+                    <div class="price-grade">PSA 8</div>
+                    <div class="price-value${prices.psa8 ? "" : " na"}">${prices.psa8 ? "$" + prices.psa8.toFixed(2) : "N/A"}</div>
+                </div>
+                <div class="price-card">
+                    <div class="price-grade">PSA 9</div>
+                    <div class="price-value${prices.psa9 ? "" : " na"}">${prices.psa9 ? "$" + prices.psa9.toFixed(2) : "N/A"}</div>
+                </div>
+                <div class="price-card">
+                    <div class="price-grade">PSA 10</div>
+                    <div class="price-value${prices.psa10 ? "" : " na"}">${prices.psa10 ? "$" + prices.psa10.toFixed(2) : "N/A"}</div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

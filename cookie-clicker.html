@@ -1,10 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Cookie Clicker online free! Click cookies, buy upgrades, become a cookie tycoon!">
+    <meta name="keywords" content="cookie clicker, idle game, clicker game, cookie game, free cookie clicker, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/cookie-clicker.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/cookie-clicker.html">
+    <meta property="og:title" content="Cookie Clicker - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Cookie Clicker online free! Click cookies, buy upgrades, become a cookie tycoon!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Cookie Clicker - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Cookie Clicker online free! Click cookies, buy upgrades, become a cookie tycoon!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Cookie Clicker",
+        "description": "Play Cookie Clicker online free! Click cookies, buy upgrades, become a cookie tycoon!",
+        "url": "https://retroblasts.com/cookie-clicker.html",
+        "genre": "Idle",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cookie Clicker</title>
+    <title>Cookie Clicker - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -927,9 +975,17 @@
             }
         };
 
+        // Current logged-in user (for account-specific saves)
+        let currentUsername = null;
+        let userInitialized = false;
+
+        function getSaveKey() {
+            return currentUsername ? `cookieClicker_${currentUsername}` : 'cookieClicker_guest';
+        }
+
         // Load/Save
         function loadSaveData() {
-            const saved = localStorage.getItem('cookieClicker');
+            const saved = localStorage.getItem(getSaveKey());
             if (saved) {
                 const data = JSON.parse(saved);
                 saveData = { ...saveData, ...data };
@@ -946,7 +1002,75 @@
         }
 
         function saveSaveData() {
-            localStorage.setItem('cookieClicker', JSON.stringify(saveData));
+            localStorage.setItem(getSaveKey(), JSON.stringify(saveData));
+            saveServerStats();
+        }
+
+        // Server sync for per-user saves
+        let isLoggedIn = false;
+        let serverSyncTimeout = null;
+
+        async function loadServerStats() {
+            try {
+                const authRes = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const auth = await authRes.json();
+                const newUsername = (auth.loggedIn && auth.user) ? auth.user.username : null;
+
+                // Handle user change
+                if (!userInitialized || newUsername !== currentUsername) {
+                    currentUsername = newUsername;
+                    // Reset to defaults and reload from new user's localStorage
+                    saveData = {
+                        cookies: 0, totalCookies: 0, clickPower: 1, cps: 0,
+                        buildings: {}, upgrades: [], clickUpgrades: [], achievements: [],
+                        goldenClicks: 0, codeRedeemed: [], ownerStats: {
+                            clickMult: 0, cpsMult: 0, goldenRate: 0, autoClick: 0, buildingMult: 0, infiniteCookies: false
+                        }
+                    };
+                    const saved = localStorage.getItem(getSaveKey());
+                    if (saved) {
+                        const data = JSON.parse(saved);
+                        saveData = { ...saveData, ...data };
+                    }
+                    userInitialized = true;
+                    updateDisplay();
+                }
+
+                if (auth.loggedIn) {
+                    isLoggedIn = true;
+                    const statsRes = await fetch('api/game-stats.php?action=load&game=cookie-clicker', { credentials: 'include' });
+                    const stats = await statsRes.json();
+                    if (stats.success && stats.data) {
+                        const serverCookies = stats.data.cookies || 0;
+                        const serverTotal = stats.data.totalCookies || 0;
+                        if (serverCookies > saveData.cookies || serverTotal > saveData.totalCookies) {
+                            saveData = { ...saveData, ...stats.data };
+                            localStorage.setItem(getSaveKey(), JSON.stringify(saveData));
+                        }
+                    }
+                } else {
+                    isLoggedIn = false;
+                }
+            } catch (e) {
+                console.log('Stats sync failed');
+                if (!userInitialized) {
+                    currentUsername = null;
+                    userInitialized = true;
+                }
+            }
+        }
+
+        function saveServerStats() {
+            if (!isLoggedIn) return;
+            if (serverSyncTimeout) return;
+            serverSyncTimeout = setTimeout(() => {
+                fetch('api/game-stats.php', {
+                    method: 'POST', credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'save', game: 'cookie-clicker', data: saveData })
+                }).catch(() => {});
+                serverSyncTimeout = null;
+            }, 5000);
         }
 
         // Format numbers
@@ -1614,7 +1738,7 @@
 
         function adminResetGame() {
             if (confirm('Are you sure you want to reset EVERYTHING? This cannot be undone!')) {
-                localStorage.removeItem('cookieClicker');
+                localStorage.removeItem(getSaveKey());
                 location.reload();
             }
         }
@@ -1955,6 +2079,8 @@
         });
 
         loadSaveData();
+        loadServerStats();
+        window.addEventListener('focus', loadServerStats);
         updateUI();
 
         // Show admin/owner buttons if previously unlocked
@@ -1967,6 +2093,39 @@
 
         setInterval(gameLoop, 1000 / 30);
         setInterval(saveSaveData, 10000);
+
+        // Boss damage contribution - send damage based on cookies per minute
+        let lastBossDamageTime = Date.now();
+        let cookiesAtLastBossDamage = saveData.cookies || 0;
+
+        function sendBossDamage() {
+            const cookiesNow = saveData.cookies || 0;
+            const cookiesEarned = Math.max(0, cookiesNow - cookiesAtLastBossDamage);
+
+            if (cookiesEarned > 0) {
+                // Convert cookies to damage (1 damage per 100 cookies, minimum 1)
+                const damage = Math.max(1, Math.floor(cookiesEarned / 100));
+
+                fetch('api/boss-events.php?action=contribute', {
+                    method: 'POST',
+                    credentials: 'include',
+                    keepalive: true, headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ game: 'cookie-clicker', score: damage })
+                }).then(r => r.json()).then(data => {
+                    if (data.success && data.damage > 0) {
+                        console.log('Boss damage dealt:', data.damage);
+                    }
+                }).catch(() => {});
+
+                cookiesAtLastBossDamage = cookiesNow;
+            }
+        }
+
+        // Send boss damage every 60 seconds
+        setInterval(sendBossDamage, 60000);
+
+        // Also send when leaving the page
+        window.addEventListener('beforeunload', sendBossDamage);
 
         // First golden cookie after 30-90 seconds
         setTimeout(spawnGoldenCookie, 30000 + Math.random() * 60000);
@@ -1988,5 +2147,31 @@
         }
         initSeasonalEvents();
     </script>
+
+<!-- More Games Section -->
+<div style="background:rgba(0,0,0,0.3);padding:20px;margin-top:20px;border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto">
+    <h3 style="color:#ffd700;margin-bottom:15px;text-align:center">🎮 More Games</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
+        <a href="flappy-bird.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🐦 Flappy Bird</a><a href="snake.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🐍 Snake</a><a href="tetris.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🧱 Tetris</a><a href="pacman.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">👻 Pac-Man</a><a href="2048.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🔢 2048</a><a href="chess.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">♟️ Chess</a>
+    </div>
+</div>
 </body>
 </html>
+
+<script>
+// CENTRALIZED ADMIN SYSTEM
+(async function() {
+    try {
+        const resp = await fetch('api/game-admin.php?action=check&game=cookie-clicker', { credentials: 'include' });
+        const data = await resp.json();
+        if (data.success && data.isAdmin) {
+            saveData.adminUnlocked = true;
+            document.getElementById('adminBtn')?.classList.add('visible');
+        }
+        if (data.success && data.isOwner) {
+            saveData.ownerUnlocked = true;
+            document.getElementById('ownerBtn')?.classList.add('visible');
+        }
+    } catch (e) {}
+})();
+</script>

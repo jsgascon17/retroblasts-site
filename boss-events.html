@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -337,6 +345,69 @@
             0% { opacity: 1; transform: translateY(0) scale(1); }
             100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
         }
+
+        /* Admin Panel */
+        .admin-panel {
+            background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(0,0,0,0.4));
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .admin-panel h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .admin-panel h3::before { content: '👑'; }
+        .difficulty-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .difficulty-tab {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .difficulty-tab.easy { background: #22c55e; color: #000; }
+        .difficulty-tab.medium { background: #f59e0b; color: #000; }
+        .difficulty-tab.hard { background: #ef4444; color: #fff; }
+        .difficulty-tab.impossible { background: linear-gradient(135deg, #8b00ff, #ff0080); color: #fff; }
+        .difficulty-tab:hover { transform: scale(1.05); }
+        .difficulty-tab.active { box-shadow: 0 0 15px currentColor; }
+        .boss-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .boss-spawn-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .boss-spawn-card:hover {
+            transform: translateY(-3px);
+            border-color: #ffd700;
+        }
+        .boss-spawn-card .icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .boss-spawn-card .name { font-weight: bold; margin-bottom: 5px; }
+        .boss-spawn-card .hp { color: #ef4444; font-size: 0.9rem; }
+        .boss-spawn-card .duration { color: #888; font-size: 0.8rem; }
+        .boss-spawn-card.easy { border-left: 4px solid #22c55e; }
+        .boss-spawn-card.medium { border-left: 4px solid #f59e0b; }
+        .boss-spawn-card.hard { border-left: 4px solid #ef4444; }
+        .boss-spawn-card.impossible { border-left: 4px solid #8b00ff; }
     </style>
 </head>
 <body>
@@ -353,6 +424,18 @@
             <h2>🔐 Login Required</h2>
             <p>Sign in to participate in boss events!</p>
             <a href="login.html?redirect=boss-events.html" class="btn-login">Login / Register</a>
+        </div>
+
+        <!-- Admin Panel (only visible to admins) -->
+        <div id="adminPanel" class="admin-panel" style="display: none;">
+            <h3>Admin Controls - Spawn Boss</h3>
+            <div class="difficulty-tabs">
+                <button class="difficulty-tab easy active" onclick="filterBosses('easy')">🟢 Easy</button>
+                <button class="difficulty-tab medium" onclick="filterBosses('medium')">🟡 Medium</button>
+                <button class="difficulty-tab hard" onclick="filterBosses('hard')">🔴 Hard</button>
+                <button class="difficulty-tab impossible" onclick="filterBosses('impossible')">💀 IMPOSSIBLE</button>
+            </div>
+            <div class="boss-grid" id="bossGrid"></div>
         </div>
 
         <div id="noEvent" class="no-event" style="display: none;">
@@ -400,8 +483,8 @@
                 </div>
 
                 <div class="attack-section">
-                    <button class="attack-btn" onclick="attack()">⚔️ ATTACK!</button>
-                    <p class="attack-hint">Play games to deal damage! Your score = damage dealt</p>
+                    <a href="index.html" class="attack-btn" style="text-decoration: none; display: inline-block;">🎮 PLAY GAMES TO ATTACK!</a>
+                    <p class="attack-hint">Your game scores deal damage to the boss!<br>10% of your score = boss damage</p>
                 </div>
             </div>
 
@@ -448,6 +531,9 @@
         let currentUser = null;
         let eventData = null;
         let timerInterval = null;
+        let isAdmin = false;
+        let allBosses = null;
+        let currentDifficulty = 'easy';
 
         async function init() {
             try {
@@ -460,12 +546,103 @@
                 }
 
                 currentUser = data.user;
+
+                // Check if admin
+                await checkAdmin();
+
                 await loadEvent();
 
                 // Refresh every 30 seconds
                 setInterval(loadEvent, 30000);
             } catch (e) {
                 console.error(e);
+            }
+        }
+
+        async function checkAdmin() {
+            try {
+                const resp = await fetch('api/boss-events.php?action=isAdmin', { credentials: 'include' });
+                const data = await resp.json();
+                isAdmin = data.isAdmin;
+
+                if (isAdmin) {
+                    document.getElementById('adminPanel').style.display = 'block';
+                    await loadBosses();
+                }
+            } catch (e) {
+                console.error('Admin check failed:', e);
+            }
+        }
+
+        async function loadBosses() {
+            try {
+                const resp = await fetch('api/boss-events.php?action=bosses', { credentials: 'include' });
+                const data = await resp.json();
+
+                if (data.success) {
+                    allBosses = data.byDifficulty;
+                    renderBossGrid(currentDifficulty);
+                }
+            } catch (e) {
+                console.error('Failed to load bosses:', e);
+            }
+        }
+
+        function filterBosses(difficulty) {
+            currentDifficulty = difficulty;
+
+            // Update active tab
+            document.querySelectorAll('.difficulty-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.classList.contains(difficulty)) {
+                    tab.classList.add('active');
+                }
+            });
+
+            renderBossGrid(difficulty);
+        }
+
+        function renderBossGrid(difficulty) {
+            const grid = document.getElementById('bossGrid');
+            const bosses = allBosses[difficulty] || [];
+
+            grid.innerHTML = bosses.map(boss => `
+                <div class="boss-spawn-card ${boss.difficulty}" onclick="spawnBoss('${boss.id}')">
+                    <div class="icon">${boss.icon}</div>
+                    <div class="name">${boss.name}</div>
+                    <div class="hp">❤️ ${formatNumber(boss.hp)} HP</div>
+                    <div class="duration">⏱️ ${formatDuration(boss.duration)}</div>
+                </div>
+            `).join('');
+        }
+
+        function formatDuration(seconds) {
+            if (seconds >= 86400) return Math.floor(seconds / 86400) + ' days';
+            if (seconds >= 3600) return Math.floor(seconds / 3600) + ' hours';
+            return Math.floor(seconds / 60) + ' mins';
+        }
+
+        async function spawnBoss(bossId) {
+            if (!confirm('Spawn this boss? This will end any current boss event.')) return;
+
+            try {
+                const resp = await fetch('api/boss-events.php?action=start', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bossId })
+                });
+
+                const data = await resp.json();
+
+                if (data.success) {
+                    showToast('Boss spawned! ' + data.event.name + ' has appeared!', 'success');
+                    loadEvent();
+                } else {
+                    showToast(data.error || 'Failed to spawn boss', 'error');
+                }
+            } catch (e) {
+                showToast('Error spawning boss', 'error');
             }
         }
 

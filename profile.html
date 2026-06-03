@@ -1,10 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="View and customize your RetroBlasts profile!">
+    <meta name="keywords" content="profile, account, player profile, stats, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/profile.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/profile.html">
+    <meta property="og:title" content="Profile - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="View and customize your RetroBlasts profile!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Profile - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="View and customize your RetroBlasts profile!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Player Profile - RetroBlasts</title>
+    <title>Profile - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -13,6 +41,53 @@
             color: #fff;
             min-height: 100vh;
             padding: 20px;
+        }
+
+        /* Loading Animation */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+        .loading-overlay.hidden { opacity: 0; visibility: hidden; }
+        .loading-avatar {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem;
+            animation: pulse 1s ease-in-out infinite;
+            border: 4px solid #fff;
+        }
+        .loading-text {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #ffd700;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .loading-bar {
+            width: 200px; height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        .loading-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ff8c00);
+            width: 30%;
+            animation: loadingBar 1.5s ease-in-out infinite;
+        }
+        @keyframes loadingBar {
+            0% { width: 0%; margin-left: 0%; }
+            50% { width: 40%; margin-left: 30%; }
+            100% { width: 0%; margin-left: 100%; }
         }
         .container { max-width: 900px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 30px; }
@@ -28,6 +103,31 @@
         .player-name { font-size: 2rem; color: #ffd700; margin-bottom: 5px; }
         .player-title { color: #98FB98; font-size: 1rem; margin-bottom: 10px; }
         .shop-title { color: #ffd700; font-size: 1.1rem; margin-bottom: 5px; }
+
+        /* Rank Badge */
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1rem;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .rank-badge:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .rank-badge .rank-icon { font-size: 1.3rem; }
+        .rank-badge.bronze { background: linear-gradient(135deg, #cd7f32, #b87333); color: #fff; border: 2px solid #cd7f32; }
+        .rank-badge.silver { background: linear-gradient(135deg, #c0c0c0, #a8a8a8); color: #333; border: 2px solid #c0c0c0; }
+        .rank-badge.gold { background: linear-gradient(135deg, #ffd700, #ffb700); color: #333; border: 2px solid #ffd700; }
+        .rank-badge.platinum { background: linear-gradient(135deg, #e5e4e2, #c9c9c9); color: #333; border: 2px solid #e5e4e2; box-shadow: 0 0 10px rgba(229,228,226,0.5); }
+        .rank-badge.diamond { background: linear-gradient(135deg, #b9f2ff, #7dd3fc); color: #1a1a2e; border: 2px solid #b9f2ff; box-shadow: 0 0 15px rgba(185,242,255,0.6); }
+        .rank-badge.champion { background: linear-gradient(135deg, #ff6b6b, #ee5a5a); color: #fff; border: 2px solid #ff6b6b; box-shadow: 0 0 15px rgba(255,107,107,0.5); }
+        .rank-badge.legend { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: #fff; border: 2px solid #9b59b6; box-shadow: 0 0 20px rgba(155,89,182,0.6); animation: legend-glow 2s ease-in-out infinite; }
+        @keyframes legend-glow { 0%, 100% { box-shadow: 0 0 20px rgba(155,89,182,0.6); } 50% { box-shadow: 0 0 30px rgba(155,89,182,0.9); } }
         .name-gold { color: #ffd700; text-shadow: 0 0 5px rgba(255,215,0,0.5); }
         .name-rainbow { background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .name-neon_green { color: #39ff14; text-shadow: 0 0 10px #39ff14; }
@@ -138,14 +238,216 @@
         .avatar-option:hover { background: rgba(255,215,0,0.2); border-color: #ffd700; transform: scale(1.1); }
         .avatar-option.selected { border-color: #ffd700; background: rgba(255,215,0,0.3); }
 
+        /* Cursor Trail Effects */
+        .cursor-trail {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .trail-fire { background: radial-gradient(circle, #ff6600, #ff0000); box-shadow: 0 0 10px #ff4500; }
+        .trail-rainbow { background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #8f00ff); }
+        .trail-stars { background: #ffd700; box-shadow: 0 0 10px #ffd700, 0 0 20px #fff; }
+        .trail-snow { background: #fff; box-shadow: 0 0 5px #87ceeb; }
+        .trail-sparkle { background: #ffd700; box-shadow: 0 0 15px #ffd700; }
+        .trail-laser { background: #ff0000; box-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000; width: 5px; height: 5px; }
+        .trail-ghost { background: rgba(255,255,255,0.5); box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+
+        /* Music Player */
+        .music-player {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+        .music-player.hidden { display: none; }
+        .music-icon { font-size: 1.5rem; }
+        .music-info { flex: 1; min-width: 100px; }
+        .music-title { font-size: 0.85rem; font-weight: bold; color: #ffd700; }
+        .music-artist { font-size: 0.7rem; color: #98FB98; }
+        .music-controls { display: flex; gap: 8px; }
+        .music-btn {
+            background: rgba(255,215,0,0.2);
+            border: none;
+            color: #ffd700;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .music-btn:hover { background: rgba(255,215,0,0.4); transform: scale(1.1); }
+        .music-btn.playing { background: #ffd700; color: #000; }
+        .music-visualizer {
+            display: flex;
+            gap: 2px;
+            align-items: flex-end;
+            height: 20px;
+        }
+        .music-bar {
+            width: 3px;
+            background: #ffd700;
+            border-radius: 2px;
+            animation: musicBounce 0.5s ease-in-out infinite;
+        }
+        .music-bar:nth-child(1) { animation-delay: 0s; height: 8px; }
+        .music-bar:nth-child(2) { animation-delay: 0.1s; height: 15px; }
+        .music-bar:nth-child(3) { animation-delay: 0.2s; height: 10px; }
+        .music-bar:nth-child(4) { animation-delay: 0.15s; height: 18px; }
+        .music-bar:nth-child(5) { animation-delay: 0.05s; height: 12px; }
+        @keyframes musicBounce {
+            0%, 100% { transform: scaleY(0.5); }
+            50% { transform: scaleY(1); }
+        }
+        .music-visualizer.paused .music-bar { animation-play-state: paused; }
+
+        /* Pet Display */
+        .profile-pet {
+            position: fixed;
+            bottom: 100px;
+            left: 30px;
+            font-size: 3rem;
+            z-index: 100;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .profile-pet:hover { transform: scale(1.2); }
+        .pet-common { animation: petBounce 1s ease-in-out infinite; }
+        .pet-uncommon { animation: petFloat 2s ease-in-out infinite; }
+        .pet-rare { animation: petGlow 1.5s ease-in-out infinite; filter: drop-shadow(0 0 10px #3b82f6); }
+        .pet-epic { animation: petSpin 3s linear infinite; filter: drop-shadow(0 0 15px #a855f7); }
+        .pet-legendary { animation: petLegendary 2s ease-in-out infinite; filter: drop-shadow(0 0 20px #fbbf24); }
+        .pet-mythic { animation: petMythic 1.5s ease-in-out infinite; filter: drop-shadow(0 0 25px #f472b6) drop-shadow(0 0 40px #a855f7); }
+        @keyframes petBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes petFloat { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-15px) rotate(5deg); } }
+        @keyframes petGlow { 0%, 100% { filter: drop-shadow(0 0 10px #3b82f6); } 50% { filter: drop-shadow(0 0 20px #60a5fa); } }
+        @keyframes petSpin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+        @keyframes petLegendary { 0%, 100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 20px #fbbf24); } 50% { transform: scale(1.1) translateY(-10px); filter: drop-shadow(0 0 30px #fbbf24); } }
+        @keyframes petMythic { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 25px #f472b6); } 50% { transform: scale(1.15); filter: drop-shadow(0 0 35px #a855f7); } }
+        .pet-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .profile-pet:hover .pet-tooltip { opacity: 1; }
+
+        /* Achievement Showcase */
+        .achievement-showcase { background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(0,0,0,0.4)); border: 2px solid #ffd700; border-radius: 20px; padding: 25px; margin-bottom: 25px; }
+        .showcase-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .showcase-header h3 { color: #ffd700; font-size: 1.3rem; }
+        .showcase-header .showcase-count { background: #ffd700; color: #000; padding: 5px 12px; border-radius: 15px; font-weight: bold; }
+        .showcase-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .showcase-item { background: rgba(0,0,0,0.4); border: 2px solid rgba(255,215,0,0.5); border-radius: 15px; padding: 20px; display: flex; align-items: center; gap: 15px; transition: all 0.3s; }
+        .showcase-item:hover { transform: translateY(-3px); border-color: #ffd700; box-shadow: 0 5px 20px rgba(255,215,0,0.2); }
+        .showcase-item .icon { font-size: 2.5rem; }
+        .showcase-item .info { flex: 1; }
+        .showcase-item .name { font-weight: bold; color: #ffd700; margin-bottom: 3px; }
+        .showcase-item .desc { font-size: 0.85rem; color: #98FB98; }
+        .showcase-item .date { font-size: 0.75rem; color: #888; margin-top: 5px; }
+
+        /* Stats Graph */
+        .stats-graph-section { background: rgba(0,0,0,0.4); border: 2px solid rgba(255,215,0,0.3); border-radius: 20px; padding: 25px; margin-bottom: 25px; }
+        .stats-graph-section h3 { color: #ffd700; margin-bottom: 20px; text-align: center; }
+        .graph-tabs { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .graph-tab { padding: 8px 20px; background: rgba(255,255,255,0.1); border: none; border-radius: 20px; color: #fff; cursor: pointer; transition: all 0.2s; }
+        .graph-tab:hover { background: rgba(255,255,255,0.2); }
+        .graph-tab.active { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; }
+        .graph-container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .graph-box { flex: 1; min-width: 280px; background: rgba(0,0,0,0.3); border-radius: 15px; padding: 20px; }
+        .graph-title { color: #98FB98; font-size: 0.9rem; margin-bottom: 10px; text-align: center; }
+        .bar-graph { display: flex; align-items: flex-end; justify-content: space-around; height: 150px; gap: 8px; }
+        .bar-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+        .bar { width: 100%; max-width: 40px; background: linear-gradient(to top, #ffd700, #ff8c00); border-radius: 5px 5px 0 0; transition: height 0.5s ease; min-height: 5px; }
+        .bar-label { font-size: 0.7rem; color: #888; margin-top: 5px; text-align: center; max-width: 50px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .bar-value { font-size: 0.75rem; color: #ffd700; margin-bottom: 3px; }
+
+        /* Donut Chart */
+        .donut-container { display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        .donut-chart { width: 150px; height: 150px; position: relative; }
+        .donut-chart canvas { width: 100%; height: 100%; }
+        .donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .donut-center .value { font-size: 1.5rem; font-weight: bold; color: #ffd700; }
+        .donut-center .label { font-size: 0.75rem; color: #888; }
+        .donut-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; }
+        .legend-color { width: 12px; height: 12px; border-radius: 3px; }
+
         @media (max-width: 600px) {
+            body { padding: 10px; }
             h1 { font-size: 1.8rem; }
             .avatar { width: 80px; height: 80px; font-size: 2.5rem; }
             .player-name { font-size: 1.5rem; }
+            .showcase-grid { grid-template-columns: 1fr; }
+            .bar-graph { height: 120px; }
+            .nav-links { flex-direction: column; gap: 8px; }
+            .nav-link { padding: 8px 15px; font-size: 0.85rem; }
+            .profile-header { padding: 15px; gap: 15px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-card { padding: 12px; }
+            .stat-icon { font-size: 1.8rem; }
+            .stat-value { font-size: 1.3rem; }
+            .section-title { font-size: 1.2rem; margin: 15px 0 10px; }
+            .game-row { padding: 10px 12px; flex-wrap: wrap; }
+            .game-icon { font-size: 1.5rem; margin-right: 10px; }
+            .achievements-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+            .achievement { padding: 10px; }
+            .achievement-icon { font-size: 1.8rem; }
+            .achievement-showcase { padding: 15px; }
+            .showcase-item { padding: 12px; }
+            .stats-graphs { padding: 15px; }
+            .graphs-container { flex-direction: column; }
+            .graph-section { min-width: 100%; }
+
+            /* Mobile music player */
+            .music-player { bottom: 10px; right: 10px; left: 10px; padding: 10px; }
+            .music-title { font-size: 0.75rem; }
+            .music-btn { width: 30px; height: 30px; font-size: 0.9rem; }
+
+            /* Mobile pet */
+            .profile-pet { bottom: 80px; left: 15px; font-size: 2.5rem; }
+
+            /* Disable cursor trails on mobile (touch) */
+            .cursor-trail { display: none; }
+        }
+
+        @media (max-width: 400px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .achievements-grid { grid-template-columns: repeat(3, 1fr); }
         }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-avatar">😎</div>
+        <div class="loading-text">Loading Profile...</div>
+        <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+    </div>
+
     <div class="container">
         <header>
             <h1>&#127942; Player Profile &#127942;</h1>
@@ -153,7 +455,8 @@
             <div class="nav-links">
                 <a href="index.html" class="nav-link">&#127968; Home</a>
                 <a href="leaderboards.html" class="nav-link">&#127942; Leaderboards</a>
-                <a href="tournaments.html" class="nav-link">&#127942; Tournaments</a>
+                <a href="tournaments.html" class="nav-link">🏆 Tournaments</a>
+                <a href="referrals.html" class="nav-link">🎁 Referrals</a>
             </div>
         </header>
 
@@ -163,6 +466,10 @@
                 <div class="player-name" id="playerName">Player</div>
                 <div class="shop-title" id="shopTitle" style="display: none;"></div>
                 <div class="player-title" id="playerTitle">Arcade Newbie</div>
+                <a href="ranks.html" class="rank-badge bronze" id="rankBadge" title="Click to view all ranks">
+                    <span class="rank-icon">🥉</span>
+                    <span class="rank-name">Bronze</span>
+                </a>
                 <div>Level <span id="playerLevel">1</span></div>
                 <div class="level-bar">
                     <div class="level-progress" id="levelProgress" style="width: 0%">0%</div>
@@ -196,10 +503,43 @@
             </div>
         </div>
 
+        <!-- Stats Graphs Section -->
+        <div class="stats-graph-section">
+            <h3>📊 Your Stats Overview</h3>
+            <div class="graph-container">
+                <div class="graph-box">
+                    <div class="graph-title">🎮 Top Games Played</div>
+                    <div class="bar-graph" id="gamesBarGraph"></div>
+                </div>
+                <div class="graph-box">
+                    <div class="graph-title">⏱️ Time Distribution</div>
+                    <div class="donut-container">
+                        <div class="donut-chart">
+                            <canvas id="timeDonutChart" width="150" height="150"></canvas>
+                            <div class="donut-center">
+                                <div class="value" id="totalTimeValue">0h</div>
+                                <div class="label">Total Time</div>
+                            </div>
+                        </div>
+                        <div class="donut-legend" id="timeLegend"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <h2 class="section-title">&#127918; Game Statistics</h2>
         <div class="games-list" id="gamesList"></div>
 
-        <h2 class="section-title">&#127942; Achievements</h2>
+        <!-- Achievement Showcase -->
+        <div class="achievement-showcase" id="achievementShowcase" style="display: none;">
+            <div class="showcase-header">
+                <h3>🏆 Achievement Showcase</h3>
+                <span class="showcase-count" id="showcaseCount">0 Unlocked</span>
+            </div>
+            <div class="showcase-grid" id="showcaseGrid"></div>
+        </div>
+
+        <h2 class="section-title">&#127942; All Achievements</h2>
         <div class="achievements-grid" id="achievementsGrid"></div>
     </div>
 
@@ -241,6 +581,24 @@
             'tetris': { name: 'Tetris', icon: '&#129513;' },
             'minesweeper': { name: 'Minesweeper', icon: '&#128163;' }
         };
+
+        // Rank system (same as ranks.html)
+        const RANKS = [
+            { id: 'bronze', name: 'Bronze', icon: '🥉', minXP: 0, maxXP: 999, color: '#cd7f32' },
+            { id: 'silver', name: 'Silver', icon: '🥈', minXP: 1000, maxXP: 4999, color: '#c0c0c0' },
+            { id: 'gold', name: 'Gold', icon: '🥇', minXP: 5000, maxXP: 14999, color: '#ffd700' },
+            { id: 'platinum', name: 'Platinum', icon: '💎', minXP: 15000, maxXP: 34999, color: '#e5e4e2' },
+            { id: 'diamond', name: 'Diamond', icon: '💠', minXP: 35000, maxXP: 74999, color: '#b9f2ff' },
+            { id: 'champion', name: 'Champion', icon: '🏆', minXP: 75000, maxXP: 149999, color: '#ff6b6b' },
+            { id: 'legend', name: 'Legend', icon: '👑', minXP: 150000, maxXP: Infinity, color: '#9b59b6' }
+        ];
+
+        function getRank(xp) {
+            for (let i = RANKS.length - 1; i >= 0; i--) {
+                if (xp >= RANKS[i].minXP) return RANKS[i];
+            }
+            return RANKS[0];
+        }
 
         const ACHIEVEMENTS = [
             { id: 'first_game', name: 'First Steps', icon: '&#128095;', desc: 'Play your first game', check: s => s.totalGamesPlayed >= 1 },
@@ -339,6 +697,18 @@
             loadCosmetics();
             loadAvatar();
             checkAdmin();
+
+            // Hide loading overlay after profile loads
+            hideLoading();
+        }
+
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.add('hidden');
+                // Remove from DOM after fade animation
+                setTimeout(() => overlay.remove(), 500);
+            }
         }
 
         function calculateLevel() {
@@ -466,10 +836,184 @@
                     if (data.equipped.avatar_ring) {
                         applyRing(data.equipped.avatar_ring);
                     }
+
+                    // Apply cursor trail
+                    if (data.equipped.cursor) {
+                        initCursorTrail(data.equipped.cursor);
+                    }
+
+                    // Apply profile music
+                    if (data.equipped.profile_music && data.equipped.profile_music !== 'none') {
+                        initProfileMusic(data.equipped.profile_music);
+                    }
+
+                    // Apply pet
+                    if (data.equipped.pet) {
+                        initProfilePet(data.equipped.pet);
+                    }
                 }
             } catch (err) {
                 console.error('Error loading cosmetics:', err);
             }
+        }
+
+        // Cursor Trail System
+        let cursorTrails = [];
+        let trailType = null;
+
+        function initCursorTrail(cursorId) {
+            const trailTypes = {
+                'fire_trail': 'fire',
+                'rainbow_trail': 'rainbow',
+                'star_trail': 'stars',
+                'snow_trail': 'snow',
+                'wand': 'sparkle',
+                'laser': 'laser',
+                'ghost_trail': 'ghost'
+            };
+
+            trailType = trailTypes[cursorId];
+            if (!trailType) return;
+
+            document.addEventListener('mousemove', createTrail);
+        }
+
+        function createTrail(e) {
+            if (!trailType) return;
+
+            const trail = document.createElement('div');
+            trail.className = 'cursor-trail trail-' + trailType;
+            trail.style.left = e.clientX + 'px';
+            trail.style.top = e.clientY + 'px';
+            document.body.appendChild(trail);
+
+            cursorTrails.push(trail);
+
+            // Remove after animation
+            setTimeout(() => {
+                trail.style.opacity = '0';
+                setTimeout(() => {
+                    trail.remove();
+                    cursorTrails = cursorTrails.filter(t => t !== trail);
+                }, 300);
+            }, 100);
+
+            // Limit trails
+            if (cursorTrails.length > 20) {
+                const old = cursorTrails.shift();
+                old.remove();
+            }
+        }
+
+        // Profile Music System
+        let musicPlaying = false;
+
+        const MUSIC_TRACKS = {
+            'retro_arcade': { name: 'Retro Arcade', file: 'music/retro_arcade.mp3' },
+            'chiptune_hero': { name: 'Chiptune Hero', file: 'music/chiptune_hero.mp3' },
+            'synthwave': { name: 'Synthwave Dreams', file: 'music/synthwave.mp3' },
+            'lofi_chill': { name: 'Lo-Fi Chill', file: 'music/lofi_chill.mp3' },
+            'epic_boss': { name: 'Epic Boss Battle', file: 'music/epic_boss.mp3' },
+            'pixel_adventure': { name: 'Pixel Adventure', file: 'music/pixel_adventure.mp3' },
+            'space_journey': { name: 'Space Journey', file: 'music/space_journey.mp3' },
+            'victory_fanfare': { name: 'Victory Fanfare', file: 'music/victory_fanfare.mp3' },
+            'mystery_dungeon': { name: 'Mystery Dungeon', file: 'music/mystery_dungeon.mp3' },
+            'racing_pulse': { name: 'Racing Pulse', file: 'music/racing_pulse.mp3' },
+            'peaceful_meadow': { name: 'Peaceful Meadow', file: 'music/peaceful_meadow.mp3' }
+        };
+
+        function initProfileMusic(musicId) {
+            const track = MUSIC_TRACKS[musicId];
+            if (!track) return;
+
+            const player = document.getElementById('musicPlayer');
+            const audio = document.getElementById('profileAudio');
+            const title = document.getElementById('musicTitle');
+
+            title.textContent = track.name;
+            audio.src = track.file;
+            audio.onerror = () => { player.classList.add('hidden'); console.log('Music file not found'); };
+            player.classList.remove('hidden');
+
+            // Auto-play with user interaction fallback
+            audio.volume = 0.3;
+        }
+
+        function toggleMusic() {
+            const audio = document.getElementById('profileAudio');
+            const btn = document.getElementById('musicPlayBtn');
+            const visualizer = document.getElementById('musicVisualizer');
+
+            if (musicPlaying) {
+                audio.pause();
+                btn.textContent = '▶';
+                btn.classList.remove('playing');
+                visualizer.classList.add('paused');
+            } else {
+                audio.play().catch(e => console.log('Autoplay blocked'));
+                btn.textContent = '⏸';
+                btn.classList.add('playing');
+                visualizer.classList.remove('paused');
+            }
+            musicPlaying = !musicPlaying;
+        }
+
+        function closeMusic() {
+            const audio = document.getElementById('profileAudio');
+            const player = document.getElementById('musicPlayer');
+            audio.pause();
+            player.classList.add('hidden');
+            musicPlaying = false;
+        }
+
+        // Pet System
+        const PET_DATA = {
+            'pixel_cat': { emoji: '🐱', name: 'Pixel Cat', rarity: 'common' },
+            'pixel_dog': { emoji: '🐕', name: 'Pixel Dog', rarity: 'common' },
+            'pixel_bunny': { emoji: '🐰', name: 'Pixel Bunny', rarity: 'common' },
+            'pixel_bird': { emoji: '🐦', name: 'Pixel Bird', rarity: 'common' },
+            'pixel_fish': { emoji: '🐠', name: 'Pixel Fish', rarity: 'common' },
+            'ghost_pet': { emoji: '👻', name: 'Friendly Ghost', rarity: 'uncommon' },
+            'slime_pet': { emoji: '🟢', name: 'Slime Buddy', rarity: 'uncommon' },
+            'robot_pet': { emoji: '🤖', name: 'Mini Robot', rarity: 'uncommon' },
+            'bat_pet': { emoji: '🦇', name: 'Pixel Bat', rarity: 'uncommon' },
+            'fox_pet': { emoji: '🦊', name: 'Pixel Fox', rarity: 'uncommon' },
+            'dragon_baby': { emoji: '🐲', name: 'Baby Dragon', rarity: 'rare' },
+            'unicorn_pet': { emoji: '🦄', name: 'Mini Unicorn', rarity: 'rare' },
+            'phoenix_pet': { emoji: '🔥', name: 'Phoenix Chick', rarity: 'rare' },
+            'alien_pet': { emoji: '👽', name: 'Alien Buddy', rarity: 'rare' },
+            'wizard_cat': { emoji: '🧙', name: 'Wizard Cat', rarity: 'rare' },
+            'shadow_wolf': { emoji: '🐺', name: 'Shadow Wolf', rarity: 'epic' },
+            'crystal_golem': { emoji: '💎', name: 'Crystal Golem', rarity: 'epic' },
+            'thunder_tiger': { emoji: '🐯', name: 'Thunder Tiger', rarity: 'epic' },
+            'ice_dragon': { emoji: '❄️', name: 'Ice Dragon', rarity: 'epic' },
+            'golden_dragon': { emoji: '🌟', name: 'Golden Dragon', rarity: 'legendary' },
+            'void_cat': { emoji: '🌌', name: 'Void Cat', rarity: 'legendary' },
+            'celestial_owl': { emoji: '🦉', name: 'Celestial Owl', rarity: 'legendary' },
+            'rainbow_serpent': { emoji: '🌈', name: 'Rainbow Serpent', rarity: 'mythic' },
+            'omega_pet': { emoji: '💀', name: 'OMEGA Entity', rarity: 'mythic' }
+        };
+
+        function initProfilePet(petId) {
+            const pet = PET_DATA[petId];
+            if (!pet) return;
+
+            const petEl = document.getElementById('profilePet');
+            const emoji = document.getElementById('petEmoji');
+            const tooltip = document.getElementById('petTooltip');
+
+            emoji.textContent = pet.emoji;
+            tooltip.textContent = pet.name;
+            petEl.className = 'profile-pet pet-' + pet.rarity;
+            petEl.classList.remove('hidden');
+        }
+
+        function petInteraction() {
+            const petEl = document.getElementById('profilePet');
+            petEl.style.transform = 'scale(1.5) rotate(360deg)';
+            setTimeout(() => {
+                petEl.style.transform = '';
+            }, 500);
         }
 
         function updateProfile() {
@@ -481,6 +1025,16 @@
             document.getElementById('playerTitle').textContent = getTitle(level);
             document.getElementById('levelProgress').style.width = progress + '%';
             document.getElementById('levelProgress').textContent = progress + '%';
+
+            // Update rank badge
+            const xp = serverXP || (stats.totalGamesPlayed * 10 + Math.floor(stats.totalTimePlayed / 60) + Math.floor(stats.totalCoinsEarned / 100));
+            const rank = getRank(xp);
+            const rankBadge = document.getElementById('rankBadge');
+            if (rankBadge) {
+                rankBadge.className = 'rank-badge ' + rank.id;
+                rankBadge.querySelector('.rank-icon').textContent = rank.icon;
+                rankBadge.querySelector('.rank-name').textContent = rank.name;
+            }
 
             document.getElementById('totalGames').textContent = stats.totalGamesPlayed || 0;
             document.getElementById('totalTime').textContent = formatTime(stats.totalTimePlayed || 0);
@@ -547,6 +1101,144 @@
                 `;
                 div.title = a.desc;
                 container.appendChild(div);
+            }
+
+            // Also render the achievement showcase
+            renderAchievementShowcase();
+            // And the stats graphs
+            renderStatsGraphs();
+        }
+
+        function renderAchievementShowcase() {
+            const showcase = document.getElementById('achievementShowcase');
+            const grid = document.getElementById('showcaseGrid');
+            const countEl = document.getElementById('showcaseCount');
+            const achieved = stats.achievements || [];
+
+            // Get unlocked achievements
+            const unlocked = ACHIEVEMENTS.filter(a => achieved.includes(a.id));
+
+            if (unlocked.length === 0) {
+                showcase.style.display = 'none';
+                return;
+            }
+
+            showcase.style.display = 'block';
+            countEl.textContent = unlocked.length + ' Unlocked';
+            grid.innerHTML = '';
+
+            // Show up to 6 most recent/best achievements
+            const featured = unlocked.slice(0, 6);
+
+            for (const a of featured) {
+                const item = document.createElement('div');
+                item.className = 'showcase-item';
+                item.innerHTML = `
+                    <div class="icon">${a.icon}</div>
+                    <div class="info">
+                        <div class="name">${a.name}</div>
+                        <div class="desc">${a.desc}</div>
+                    </div>
+                `;
+                grid.appendChild(item);
+            }
+        }
+
+        function renderStatsGraphs() {
+            renderGamesBarGraph();
+            renderTimeDonutChart();
+        }
+
+        function renderGamesBarGraph() {
+            const container = document.getElementById('gamesBarGraph');
+            container.innerHTML = '';
+
+            // Get top 5 games by games played
+            const gamesArray = Object.entries(stats.games || {})
+                .map(([id, data]) => ({ id, ...data, name: GAME_INFO[id]?.name || id }))
+                .filter(g => g.gamesPlayed > 0)
+                .sort((a, b) => b.gamesPlayed - a.gamesPlayed)
+                .slice(0, 5);
+
+            if (gamesArray.length === 0) {
+                container.innerHTML = '<div style="color: #888; text-align: center; width: 100%;">No games played yet</div>';
+                return;
+            }
+
+            const maxGames = Math.max(...gamesArray.map(g => g.gamesPlayed));
+
+            for (const game of gamesArray) {
+                const height = (game.gamesPlayed / maxGames) * 120;
+                const item = document.createElement('div');
+                item.className = 'bar-item';
+                item.innerHTML = `
+                    <div class="bar-value">${game.gamesPlayed}</div>
+                    <div class="bar" style="height: ${height}px;"></div>
+                    <div class="bar-label">${game.name}</div>
+                `;
+                container.appendChild(item);
+            }
+        }
+
+        function renderTimeDonutChart() {
+            const canvas = document.getElementById('timeDonutChart');
+            const ctx = canvas.getContext('2d');
+            const legend = document.getElementById('timeLegend');
+            const totalTimeEl = document.getElementById('totalTimeValue');
+
+            // Get top 5 games by time played
+            const gamesArray = Object.entries(stats.games || {})
+                .map(([id, data]) => ({ id, ...data, name: GAME_INFO[id]?.name || id }))
+                .filter(g => g.timePlayed > 0)
+                .sort((a, b) => b.timePlayed - a.timePlayed)
+                .slice(0, 5);
+
+            const totalTime = gamesArray.reduce((sum, g) => sum + g.timePlayed, 0);
+            totalTimeEl.textContent = formatTime(stats.totalTimePlayed || 0);
+
+            if (gamesArray.length === 0 || totalTime === 0) {
+                // Draw empty circle
+                ctx.beginPath();
+                ctx.arc(75, 75, 55, 0, Math.PI * 2);
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 20;
+                ctx.stroke();
+                legend.innerHTML = '<div style="color: #888;">No time data</div>';
+                return;
+            }
+
+            const colors = ['#ffd700', '#ff6b6b', '#4ade80', '#60a5fa', '#a855f7'];
+            let startAngle = -Math.PI / 2;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, 150, 150);
+
+            // Draw donut segments
+            for (let i = 0; i < gamesArray.length; i++) {
+                const game = gamesArray[i];
+                const sliceAngle = (game.timePlayed / totalTime) * Math.PI * 2;
+
+                ctx.beginPath();
+                ctx.arc(75, 75, 55, startAngle, startAngle + sliceAngle);
+                ctx.strokeStyle = colors[i % colors.length];
+                ctx.lineWidth = 20;
+                ctx.stroke();
+
+                startAngle += sliceAngle;
+            }
+
+            // Render legend
+            legend.innerHTML = '';
+            for (let i = 0; i < gamesArray.length; i++) {
+                const game = gamesArray[i];
+                const percent = Math.round((game.timePlayed / totalTime) * 100);
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                legendItem.innerHTML = `
+                    <div class="legend-color" style="background: ${colors[i % colors.length]};"></div>
+                    <span>${game.name} (${percent}%)</span>
+                `;
+                legend.appendChild(legendItem);
             }
         }
 
@@ -742,6 +1434,33 @@
                 <button class="btn" onclick="hideCustomizeModal()">Close</button>
             </div>
         </div>
+    </div>
+
+    <!-- Music Player -->
+    <div class="music-player hidden" id="musicPlayer">
+        <div class="music-icon">🎵</div>
+        <div class="music-info">
+            <div class="music-title" id="musicTitle">Now Playing</div>
+            <div class="music-artist" id="musicArtist">Profile Music</div>
+        </div>
+        <div class="music-visualizer" id="musicVisualizer">
+            <div class="music-bar"></div>
+            <div class="music-bar"></div>
+            <div class="music-bar"></div>
+            <div class="music-bar"></div>
+            <div class="music-bar"></div>
+        </div>
+        <div class="music-controls">
+            <button class="music-btn" id="musicPlayBtn" onclick="toggleMusic()">▶</button>
+            <button class="music-btn" onclick="closeMusic()">✕</button>
+        </div>
+        <audio id="profileAudio" loop></audio>
+    </div>
+
+    <!-- Pet Display -->
+    <div class="profile-pet hidden" id="profilePet" onclick="petInteraction()">
+        <span id="petEmoji">🐱</span>
+        <div class="pet-tooltip" id="petTooltip">My Pet</div>
     </div>
 
 </body>

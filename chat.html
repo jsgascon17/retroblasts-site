@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +23,7 @@
             display: flex;
             flex-direction: column;
         }
-        
+
         .header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 15px 20px; background: rgba(0,0,0,0.3);
@@ -29,17 +37,17 @@
             text-decoration: none; font-size: 0.9rem;
         }
         .nav-link:hover { background: rgba(255,255,255,0.2); }
-        
+
         .chat-container {
             flex: 1; display: flex; overflow: hidden;
         }
-        
+
         .sidebar {
             width: 280px; background: rgba(0,0,0,0.3);
             border-right: 1px solid rgba(255,255,255,0.1);
             display: flex; flex-direction: column;
         }
-        
+
         .sidebar-tabs {
             display: flex; border-bottom: 1px solid rgba(255,255,255,0.1);
         }
@@ -49,11 +57,11 @@
             cursor: pointer; font-weight: bold;
         }
         .sidebar-tab.active { color: #e94560; border-bottom: 2px solid #e94560; }
-        
+
         .conversations {
             flex: 1; overflow-y: auto; padding: 10px;
         }
-        
+
         .conversation-item {
             display: flex; align-items: center; gap: 12px;
             padding: 12px; border-radius: 12px; cursor: pointer;
@@ -61,7 +69,7 @@
         }
         .conversation-item:hover { background: rgba(255,255,255,0.05); }
         .conversation-item.active { background: rgba(233,69,96,0.2); }
-        
+
         .conv-avatar {
             width: 45px; height: 45px; background: rgba(255,255,255,0.1);
             border-radius: 50%; display: flex; align-items: center;
@@ -77,11 +85,11 @@
             background: #e94560; color: #fff; padding: 3px 8px;
             border-radius: 10px; font-size: 0.75rem; font-weight: bold;
         }
-        
+
         .chat-main {
             flex: 1; display: flex; flex-direction: column;
         }
-        
+
         .chat-header {
             padding: 15px 20px; background: rgba(0,0,0,0.2);
             border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -94,12 +102,12 @@
         }
         .chat-header-info h2 { font-size: 1.1rem; }
         .chat-header-info p { color: #888; font-size: 0.85rem; }
-        
+
         .messages-container {
             flex: 1; overflow-y: auto; padding: 20px;
             display: flex; flex-direction: column; gap: 10px;
         }
-        
+
         .message {
             max-width: 70%; padding: 12px 16px;
             border-radius: 18px; position: relative;
@@ -134,33 +142,299 @@
             font-size: 0.7rem; color: rgba(255,255,255,0.5);
             margin-top: 4px; text-align: right;
         }
-        
+
+        /* Reply styling */
+        .message-reply {
+            background: rgba(0,0,0,0.2);
+            border-left: 3px solid #e94560;
+            padding: 6px 10px;
+            margin-bottom: 8px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.8rem;
+        }
+        .message-reply-author {
+            color: #e94560;
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
+        .message-reply-text {
+            color: rgba(255,255,255,0.7);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Reactions styling */
+        .message-reactions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 6px;
+        }
+        .reaction {
+            background: rgba(255,255,255,0.1);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .reaction:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+        .reaction.active {
+            background: rgba(233,69,96,0.3);
+            border: 1px solid #e94560;
+        }
+        .reaction-count {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* Reaction picker */
+        .reaction-picker {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: rgba(20,20,40,0.95);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 8px 10px;
+            display: none;
+            gap: 5px;
+            z-index: 100;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+        .message:hover .reaction-picker-trigger { opacity: 1; }
+        .reaction-picker.show { display: flex; }
+        .reaction-picker button {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .reaction-picker button:hover {
+            background: rgba(255,255,255,0.1);
+            transform: scale(1.2);
+        }
+        .reaction-picker-trigger {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: #fff;
+            font-size: 0.9rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .message.sent .reaction-picker-trigger { right: auto; left: 5px; }
+        .message.sent .reaction-picker { right: auto; left: 0; }
+
+        /* Reply indicator */
+        .reply-indicator {
+            display: none;
+            background: rgba(233,69,96,0.2);
+            border-left: 3px solid #e94560;
+            padding: 10px 15px;
+            margin: 0 20px;
+            border-radius: 0 8px 8px 0;
+            align-items: center;
+            gap: 10px;
+        }
+        .reply-indicator.show { display: flex; }
+        .reply-indicator-content { flex: 1; }
+        .reply-indicator-author { font-weight: bold; color: #e94560; font-size: 0.85rem; }
+        .reply-indicator-text { font-size: 0.85rem; color: rgba(255,255,255,0.7); }
+        .reply-indicator-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            padding: 5px 20px;
+            font-size: 0.8rem;
+            color: #888;
+            font-style: italic;
+            min-height: 24px;
+        }
+        .typing-dots {
+            display: inline-flex;
+            gap: 3px;
+            margin-left: 5px;
+        }
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background: #888;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+        .typing-dots span:nth-child(1) { animation-delay: 0s; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-5px); }
+        }
+
+        /* Mention styling */
+        .mention {
+            background: rgba(233,69,96,0.3);
+            color: #ff8fa3;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .mention:hover {
+            background: rgba(233,69,96,0.5);
+        }
+        .mention.self {
+            background: rgba(255,193,7,0.3);
+            color: #ffd54f;
+        }
+
+        /* Mention autocomplete */
+        .mention-autocomplete {
+            position: absolute;
+            bottom: 100%;
+            left: 20px;
+            right: 20px;
+            background: rgba(20,20,40,0.98);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+        }
+        .mention-autocomplete.show { display: block; }
+        .mention-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .mention-item:hover, .mention-item.selected {
+            background: rgba(233,69,96,0.2);
+        }
+        .mention-item-avatar {
+            width: 30px;
+            height: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mention-item-name { font-weight: bold; }
+        .mention-item-username { color: #888; font-size: 0.85rem; }
+
+        /* Emote picker */
+        .emote-picker {
+            position: absolute;
+            bottom: 100%;
+            left: 20px;
+            background: rgba(20,20,40,0.98);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+            width: 300px;
+        }
+        .emote-picker.show { display: block; }
+        .emote-picker-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #e94560;
+        }
+        .emote-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .emote-btn {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            padding: 10px 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .emote-btn:hover {
+            background: rgba(233,69,96,0.2);
+            transform: scale(1.05);
+        }
+        .emote-btn-emoji { font-size: 1.3rem; }
+        .emote-btn-code { font-size: 0.65rem; color: #888; }
+
+        .chat-input-wrapper {
+            position: relative;
+        }
+
         .chat-input {
             padding: 15px 20px; background: rgba(0,0,0,0.3);
             border-top: 1px solid rgba(255,255,255,0.1);
             display: flex; gap: 10px;
         }
+        .emote-toggle-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            font-size: 1.3rem;
+            padding: 10px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .emote-toggle-btn:hover { background: rgba(255,255,255,0.2); }
+        .emote-toggle-btn.active { background: rgba(233,69,96,0.3); }
         .chat-input input {
             flex: 1; padding: 12px 18px; border: 2px solid rgba(255,255,255,0.1);
             border-radius: 25px; background: rgba(0,0,0,0.3);
             color: #fff; font-size: 1rem;
         }
         .chat-input input:focus { outline: none; border-color: #e94560; }
-        .chat-input button {
+        .chat-input button.send-btn {
             padding: 12px 25px; background: linear-gradient(135deg, #e94560, #ff6b6b);
             border: none; border-radius: 25px; color: #fff;
             font-weight: bold; cursor: pointer; transition: transform 0.2s;
         }
-        .chat-input button:hover { transform: scale(1.05); }
-        .chat-input button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        
+        .chat-input button.send-btn:hover { transform: scale(1.05); }
+        .chat-input button.send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
         .empty-chat {
             flex: 1; display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             color: #666;
         }
         .empty-chat .icon { font-size: 4rem; margin-bottom: 15px; }
-        
+
         .login-prompt {
             flex: 1; display: flex; flex-direction: column;
             align-items: center; justify-content: center;
@@ -172,12 +446,14 @@
             color: #fff; text-decoration: none; border-radius: 25px;
             font-weight: bold;
         }
-        
+
         @media (max-width: 700px) {
             .sidebar { width: 100%; position: absolute; left: -100%; transition: left 0.3s; z-index: 100; height: calc(100vh - 60px); }
             .sidebar.open { left: 0; }
             .chat-main { width: 100%; }
             .mobile-menu-btn { display: block !important; }
+            .message { max-width: 85%; }
+            .emote-picker { width: calc(100% - 40px); left: 20px; right: 20px; }
         }
         .mobile-menu-btn { display: none; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
     </style>
@@ -185,69 +461,116 @@
 <body>
     <div class="header">
         <div style="display: flex; align-items: center; gap: 15px;">
-            <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
-            <h1>💬 Chat</h1>
+            <button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
+            <h1>&#128172; Chat</h1>
         </div>
         <div class="nav-links">
-            <a href="index.html" class="nav-link">🏠 Home</a>
-            <a href="friends.html" class="nav-link">👥 Friends</a>
+            <a href="index.html" class="nav-link">&#127968; Home</a>
+            <a href="friends.html" class="nav-link">&#128101; Friends</a>
         </div>
     </div>
-    
+
     <div id="loginPrompt" class="login-prompt" style="display: none;">
-        <h2>🔐 Login Required</h2>
+        <h2>&#128274; Login Required</h2>
         <p>Sign in to chat with your friends!</p>
         <a href="login.html?redirect=chat.html" class="btn">Login / Register</a>
     </div>
-    
+
     <div id="chatContainer" class="chat-container" style="display: none;">
         <div class="sidebar" id="sidebar">
             <div class="sidebar-tabs">
-                <button class="sidebar-tab active" onclick="switchChatMode('global')">🌐 Global</button>
-                <button class="sidebar-tab" onclick="switchChatMode('dm')">👤 DMs</button>
+                <button class="sidebar-tab active" onclick="switchChatMode('global')">&#127760; Global</button>
+                <button class="sidebar-tab" onclick="switchChatMode('dm')">&#128100; DMs</button>
             </div>
             <div class="conversations" id="conversations"></div>
         </div>
-        
+
         <div class="chat-main">
             <div class="chat-header" id="chatHeader">
-                <div class="chat-header-avatar" id="chatAvatar">🌐</div>
+                <div class="chat-header-avatar" id="chatAvatar">&#127760;</div>
                 <div class="chat-header-info">
                     <h2 id="chatTitle">Global Chat</h2>
                     <p id="chatSubtitle">Chat with everyone</p>
                 </div>
             </div>
-            
+
             <div class="messages-container" id="messagesContainer"></div>
-            
-            <div class="chat-input">
-                <input type="text" id="messageInput" placeholder="Type a message..." maxlength="500">
-                <button onclick="sendMessage()" id="sendBtn">Send</button>
+
+            <div class="typing-indicator" id="typingIndicator"></div>
+
+            <div class="reply-indicator" id="replyIndicator">
+                <div class="reply-indicator-content">
+                    <div class="reply-indicator-author" id="replyAuthor"></div>
+                    <div class="reply-indicator-text" id="replyText"></div>
+                </div>
+                <button class="reply-indicator-close" onclick="cancelReply()">&#10005;</button>
+            </div>
+
+            <div class="chat-input-wrapper">
+                <div class="mention-autocomplete" id="mentionAutocomplete"></div>
+                <div class="emote-picker" id="emotePicker">
+                    <div class="emote-picker-header">Emotes</div>
+                    <div class="emote-grid" id="emoteGrid"></div>
+                </div>
+                <div class="chat-input">
+                    <button class="emote-toggle-btn" onclick="toggleEmotePicker()" title="Emotes">&#128515;</button>
+                    <input type="text" id="messageInput" placeholder="Type a message... (@ to mention)" maxlength="500">
+                    <button class="send-btn" onclick="sendMessage()" id="sendBtn">Send</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         let currentUser = null;
-        let chatMode = 'global'; // 'global' or 'dm'
+        let chatMode = 'global';
         let currentDM = null;
         let lastTimestamp = '1970-01-01T00:00:00Z';
         let pollInterval = null;
+        let typingInterval = null;
         let friends = [];
-        
+        let onlineUsers = [];
+        let replyingTo = null;
+        let mentionIndex = -1;
+        let filteredMentions = [];
+        let allMessages = [];
+
+        // Reaction emojis
+        const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🔥', '💀', '👏'];
+
+        // Emote definitions
+        const EMOTES = {
+            ':gg:': { emoji: '🎮', display: 'GG' },
+            ':nice:': { emoji: '👍', display: 'Nice!' },
+            ':rip:': { emoji: '💀', display: 'RIP' },
+            ':pog:': { emoji: '😲', display: 'POG' },
+            ':ez:': { emoji: '😎', display: 'EZ' },
+            ':sad:': { emoji: '😢', display: 'Sad' },
+            ':hype:': { emoji: '🔥', display: 'HYPE' },
+            ':love:': { emoji: '❤️', display: 'Love' },
+            ':laugh:': { emoji: '😂', display: 'LOL' },
+            ':think:': { emoji: '🤔', display: 'Hmm' },
+            ':wow:': { emoji: '😮', display: 'WOW' },
+            ':angry:': { emoji: '😡', display: 'Angry' },
+            ':clap:': { emoji: '👏', display: 'GG WP' },
+            ':skull:': { emoji: '💀', display: 'Dead' }
+        };
+
         // Check login
         async function checkAuth() {
             try {
                 const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
                 const data = await resp.json();
-                
+
                 if (data.loggedIn) {
                     currentUser = data.user;
                     document.getElementById('loginPrompt').style.display = 'none';
                     document.getElementById('chatContainer').style.display = 'flex';
                     loadFriends();
+                    loadOnlineUsers();
                     startPolling();
-                    
+                    buildEmotePicker();
+
                     // Check for DM param
                     const params = new URLSearchParams(window.location.search);
                     if (params.get('dm')) {
@@ -262,7 +585,7 @@
                 console.error('Auth check failed:', err);
             }
         }
-        
+
         async function loadFriends() {
             try {
                 const resp = await fetch('api/friends.php?action=list', { credentials: 'include' });
@@ -273,13 +596,24 @@
                 }
             } catch (err) {}
         }
-        
+
+        async function loadOnlineUsers() {
+            try {
+                const resp = await fetch('api/chat.php?action=online', { credentials: 'include' });
+                const data = await resp.json();
+                if (data.success) {
+                    onlineUsers = data.users;
+                }
+            } catch (err) {}
+        }
+
         function switchChatMode(mode) {
             chatMode = mode;
             lastTimestamp = '1970-01-01T00:00:00Z';
+            allMessages = [];
             document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
             document.querySelector(`.sidebar-tab:${mode === 'global' ? 'first' : 'last'}-child`).classList.add('active');
-            
+
             if (mode === 'global') {
                 currentDM = null;
                 document.getElementById('chatAvatar').textContent = '🌐';
@@ -293,11 +627,12 @@
                     openDM(currentDM);
                 }
             }
+            cancelReply();
         }
-        
+
         function renderConversations() {
             const container = document.getElementById('conversations');
-            
+
             if (chatMode === 'global') {
                 container.innerHTML = `
                     <div class="conversation-item active" onclick="switchChatMode('global')">
@@ -318,7 +653,7 @@
                     `;
                 } else {
                     container.innerHTML = friends.map(f => `
-                        <div class="conversation-item ${currentDM === f.username ? 'active' : ''}" 
+                        <div class="conversation-item ${currentDM === f.username ? 'active' : ''}"
                              onclick="openDM('${f.username}')">
                             <div class="conv-avatar">${f.avatar}</div>
                             <div class="conv-info">
@@ -330,11 +665,12 @@
                 }
             }
         }
-        
+
         function openDM(username) {
             currentDM = username;
             lastTimestamp = '1970-01-01T00:00:00Z';
-            
+            allMessages = [];
+
             const friend = friends.find(f => f.username === username);
             if (friend) {
                 document.getElementById('chatAvatar').textContent = friend.avatar;
@@ -345,14 +681,15 @@
                 document.getElementById('chatTitle').textContent = username;
                 document.getElementById('chatSubtitle').textContent = '';
             }
-            
+
             document.getElementById('messagesContainer').innerHTML = '';
             renderConversations();
-            
+            cancelReply();
+
             // Close sidebar on mobile
             document.getElementById('sidebar').classList.remove('open');
         }
-        
+
         async function loadMessages() {
             try {
                 let url;
@@ -363,127 +700,436 @@
                 } else {
                     return;
                 }
-                
+
                 const resp = await fetch(url, { credentials: 'include' });
                 const data = await resp.json();
-                
+
                 if (data.success && data.messages.length > 0) {
-                    appendMessages(data.messages);
+                    // Check for updated messages (reactions)
+                    data.messages.forEach(newMsg => {
+                        const existingIdx = allMessages.findIndex(m => m.id === newMsg.id);
+                        if (existingIdx >= 0) {
+                            allMessages[existingIdx] = newMsg;
+                            updateMessageReactions(newMsg);
+                        } else {
+                            allMessages.push(newMsg);
+                            appendMessages([newMsg]);
+                        }
+                    });
                     lastTimestamp = data.messages[data.messages.length - 1].timestamp;
                 }
+
+                // Load typing indicators
+                loadTypingIndicators();
             } catch (err) {
                 console.error('Failed to load messages:', err);
             }
         }
-        
+
+        async function loadTypingIndicators() {
+            try {
+                const channel = chatMode === 'global' ? 'global' : `dm:${currentDM}`;
+                const resp = await fetch(`api/chat.php?action=typing&channel=${encodeURIComponent(channel)}`, { credentials: 'include' });
+                const data = await resp.json();
+
+                const indicator = document.getElementById('typingIndicator');
+                if (data.success && data.typing.length > 0) {
+                    const names = data.typing.map(u => u.displayName).join(', ');
+                    indicator.innerHTML = `${names} ${data.typing.length === 1 ? 'is' : 'are'} typing<span class="typing-dots"><span></span><span></span><span></span></span>`;
+                } else {
+                    indicator.innerHTML = '';
+                }
+            } catch (err) {}
+        }
+
+        function updateMessageReactions(msg) {
+            const msgEl = document.querySelector(`[data-message-id="${msg.id}"]`);
+            if (msgEl) {
+                const reactionsContainer = msgEl.querySelector('.message-reactions');
+                if (reactionsContainer) {
+                    reactionsContainer.innerHTML = renderReactionsHTML(msg);
+                }
+            }
+        }
+
+        function renderReactionsHTML(msg) {
+            if (!msg.reactions || Object.keys(msg.reactions).length === 0) return '';
+
+            return Object.entries(msg.reactions).map(([emoji, users]) => {
+                const isActive = users.includes(currentUser.username);
+                return `<span class="reaction ${isActive ? 'active' : ''}" onclick="toggleReaction('${msg.id}', '${emoji}')">${emoji}<span class="reaction-count">${users.length}</span></span>`;
+            }).join('');
+        }
+
         function appendMessages(messages) {
             const container = document.getElementById('messagesContainer');
             const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
-            
+
             messages.forEach(msg => {
                 const isSent = msg.from === currentUser.username;
                 const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                
+
                 const msgEl = document.createElement('div');
                 msgEl.className = 'message ' + (isSent ? 'sent' : 'received');
+                msgEl.setAttribute('data-message-id', msg.id);
+
+                let replyHTML = '';
+                if (msg.replyTo) {
+                    replyHTML = `
+                        <div class="message-reply">
+                            <div class="message-reply-author">${escapeHtml(msg.replyTo.fromName)}</div>
+                            <div class="message-reply-text">${escapeHtml(msg.replyTo.message)}</div>
+                        </div>
+                    `;
+                }
+
                 msgEl.innerHTML = `
+                    ${replyHTML}
                     ${chatMode === 'global' && !isSent ? `<div class="message-sender">${msg.avatar || '😎'} ${escapeHtml(msg.fromName || msg.from)}</div>` : ''}
-                    <div class="message-text">${processEmotes(msg.message)}</div>
+                    <div class="message-text">${processMessage(msg.message)}</div>
                     <div class="message-time">${time}</div>
+                    <div class="message-reactions">${renderReactionsHTML(msg)}</div>
+                    <button class="reaction-picker-trigger" onclick="showReactionPicker(event, '${msg.id}')">😀+</button>
+                    <div class="reaction-picker" id="picker-${msg.id}">
+                        ${REACTION_EMOJIS.map(e => `<button onclick="toggleReaction('${msg.id}', '${e}')">${e}</button>`).join('')}
+                        <button onclick="startReply('${msg.id}')" title="Reply">↩️</button>
+                    </div>
                 `;
                 container.appendChild(msgEl);
             });
-            
+
             if (wasAtBottom) {
                 container.scrollTop = container.scrollHeight;
             }
         }
-        
+
+        function showReactionPicker(event, msgId) {
+            event.stopPropagation();
+            // Close all other pickers
+            document.querySelectorAll('.reaction-picker.show').forEach(p => p.classList.remove('show'));
+            document.getElementById(`picker-${msgId}`).classList.toggle('show');
+        }
+
+        async function toggleReaction(msgId, emoji) {
+            try {
+                const channel = chatMode === 'global' ? 'global' : `dm:${currentDM}`;
+                await fetch('api/chat.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ action: 'react', messageId: msgId, emoji, channel })
+                });
+
+                // Update local message state
+                const msg = allMessages.find(m => m.id === msgId);
+                if (msg) {
+                    if (!msg.reactions) msg.reactions = {};
+                    if (!msg.reactions[emoji]) msg.reactions[emoji] = [];
+
+                    const idx = msg.reactions[emoji].indexOf(currentUser.username);
+                    if (idx >= 0) {
+                        msg.reactions[emoji].splice(idx, 1);
+                        if (msg.reactions[emoji].length === 0) delete msg.reactions[emoji];
+                    } else {
+                        msg.reactions[emoji].push(currentUser.username);
+                    }
+                    updateMessageReactions(msg);
+                }
+
+                // Close picker
+                document.querySelectorAll('.reaction-picker.show').forEach(p => p.classList.remove('show'));
+            } catch (err) {
+                console.error('Failed to react:', err);
+            }
+        }
+
+        function startReply(msgId) {
+            const msg = allMessages.find(m => m.id === msgId);
+            if (!msg) return;
+
+            replyingTo = msg;
+            document.getElementById('replyAuthor').textContent = msg.fromName || msg.from;
+            document.getElementById('replyText').textContent = msg.message.substring(0, 100);
+            document.getElementById('replyIndicator').classList.add('show');
+            document.getElementById('messageInput').focus();
+
+            // Close reaction picker
+            document.querySelectorAll('.reaction-picker.show').forEach(p => p.classList.remove('show'));
+        }
+
+        function cancelReply() {
+            replyingTo = null;
+            document.getElementById('replyIndicator').classList.remove('show');
+        }
+
         async function sendMessage() {
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
-            
+
             if (!message) return;
-            
+
             const btn = document.getElementById('sendBtn');
             btn.disabled = true;
-            
+
             try {
                 const body = chatMode === 'global'
                     ? { action: 'send-global', message }
                     : { action: 'send-dm', to: currentDM, message };
-                
+
+                if (replyingTo) {
+                    body.replyTo = replyingTo.id;
+                }
+
                 const resp = await fetch('api/chat.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
                     body: JSON.stringify(body)
                 });
-                
+
                 const data = await resp.json();
-                
+
                 if (data.success) {
                     input.value = '';
+                    allMessages.push(data.message);
                     appendMessages([data.message]);
+                    cancelReply();
                 } else {
                     alert(data.error || 'Failed to send message');
                 }
             } catch (err) {
                 console.error('Failed to send:', err);
             }
-            
+
             btn.disabled = false;
             input.focus();
         }
-        
+
         function startPolling() {
             loadMessages();
             pollInterval = setInterval(loadMessages, 2500);
+
+            // Refresh online users every 30 seconds
+            setInterval(loadOnlineUsers, 30000);
         }
-        
+
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
         }
-        
+
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
-        
-        // Emote definitions
-        const EMOTES = {
-            ':gg:': { emoji: '🎮', display: 'GG' },
-            ':nice:': { emoji: '👍', display: 'Nice!' },
-            ':rip:': { emoji: '💀', display: 'RIP' },
-            ':pog:': { emoji: '😲', display: 'POG' },
-            ':ez:': { emoji: '😎', display: 'EZ' },
-            ':sad:': { emoji: '😢', display: 'Sad' },
-            ':hype:': { emoji: '🔥', display: 'HYPE' },
-            ':love:': { emoji: '❤️', display: 'Love' },
-            ':laugh:': { emoji: '😂', display: 'LOL' },
-            ':think:': { emoji: '🤔', display: 'Hmm' },
-            ':wow:': { emoji: '😮', display: 'WOW' },
-            ':angry:': { emoji: '😡', display: 'Angry' },
-            ':clap:': { emoji: '👏', display: 'GG WP' },
-            ':skull:': { emoji: '💀', display: 'Dead' }
-        };
-        
-        function processEmotes(text) {
+
+        function processMessage(text) {
             let result = escapeHtml(text);
+
+            // Process @mentions
+            result = result.replace(/@(\w+)/g, (match, username) => {
+                const isSelf = username.toLowerCase() === currentUser.username.toLowerCase();
+                return `<span class="mention ${isSelf ? 'self' : ''}" onclick="viewProfile('${username}')">${match}</span>`;
+            });
+
+            // Process emotes
             for (const [code, data] of Object.entries(EMOTES)) {
                 const escaped = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const regex = new RegExp(escaped, 'gi');
                 result = result.replace(regex, `<span class="emote">${data.emoji} ${data.display}</span>`);
             }
+
             return result;
         }
-        
-        // Enter to send
-        document.getElementById('messageInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
+
+        function viewProfile(username) {
+            window.location.href = `profile.html?user=${username}`;
+        }
+
+        // Emote picker
+        function buildEmotePicker() {
+            const grid = document.getElementById('emoteGrid');
+            grid.innerHTML = Object.entries(EMOTES).map(([code, data]) => `
+                <button class="emote-btn" onclick="insertEmote('${code}')">
+                    <span class="emote-btn-emoji">${data.emoji}</span>
+                    <span class="emote-btn-code">${code}</span>
+                </button>
+            `).join('');
+        }
+
+        function toggleEmotePicker() {
+            const picker = document.getElementById('emotePicker');
+            const btn = document.querySelector('.emote-toggle-btn');
+            picker.classList.toggle('show');
+            btn.classList.toggle('active');
+
+            // Close mention autocomplete
+            document.getElementById('mentionAutocomplete').classList.remove('show');
+        }
+
+        function insertEmote(code) {
+            const input = document.getElementById('messageInput');
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            const text = input.value;
+
+            input.value = text.substring(0, start) + code + ' ' + text.substring(end);
+            input.focus();
+            input.selectionStart = input.selectionEnd = start + code.length + 1;
+
+            toggleEmotePicker();
+        }
+
+        // Mention autocomplete
+        function showMentionAutocomplete(query) {
+            const container = document.getElementById('mentionAutocomplete');
+
+            // Filter users by query
+            filteredMentions = onlineUsers.filter(u =>
+                u.username.toLowerCase().includes(query.toLowerCase()) ||
+                u.displayName.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, 5);
+
+            // Also include friends
+            friends.forEach(f => {
+                if (!filteredMentions.find(u => u.username === f.username)) {
+                    if (f.username.toLowerCase().includes(query.toLowerCase()) ||
+                        f.displayName.toLowerCase().includes(query.toLowerCase())) {
+                        filteredMentions.push({
+                            username: f.username,
+                            displayName: f.displayName,
+                            avatar: f.avatar
+                        });
+                    }
+                }
+            });
+
+            filteredMentions = filteredMentions.slice(0, 5);
+
+            if (filteredMentions.length === 0) {
+                container.classList.remove('show');
+                return;
+            }
+
+            mentionIndex = 0;
+
+            container.innerHTML = filteredMentions.map((u, i) => `
+                <div class="mention-item ${i === 0 ? 'selected' : ''}" onclick="selectMention('${u.username}')">
+                    <div class="mention-item-avatar">${u.avatar}</div>
+                    <div>
+                        <div class="mention-item-name">${escapeHtml(u.displayName)}</div>
+                        <div class="mention-item-username">@${u.username}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.classList.add('show');
+        }
+
+        function selectMention(username) {
+            const input = document.getElementById('messageInput');
+            const text = input.value;
+            const cursorPos = input.selectionStart;
+
+            // Find the @ position
+            let atPos = text.lastIndexOf('@', cursorPos - 1);
+            if (atPos >= 0) {
+                input.value = text.substring(0, atPos) + '@' + username + ' ' + text.substring(cursorPos);
+                input.focus();
+                input.selectionStart = input.selectionEnd = atPos + username.length + 2;
+            }
+
+            document.getElementById('mentionAutocomplete').classList.remove('show');
+        }
+
+        // Typing indicator
+        let typingTimeout = null;
+        async function sendTyping() {
+            const channel = chatMode === 'global' ? 'global' : `dm:${currentDM}`;
+            try {
+                await fetch('api/chat.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ action: 'typing', channel })
+                });
+            } catch (err) {}
+        }
+
+        // Input handling
+        const messageInput = document.getElementById('messageInput');
+
+        messageInput.addEventListener('keydown', (e) => {
+            const autocomplete = document.getElementById('mentionAutocomplete');
+
+            if (autocomplete.classList.contains('show')) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    mentionIndex = Math.min(mentionIndex + 1, filteredMentions.length - 1);
+                    updateMentionSelection();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    mentionIndex = Math.max(mentionIndex - 1, 0);
+                    updateMentionSelection();
+                } else if (e.key === 'Enter' || e.key === 'Tab') {
+                    if (filteredMentions[mentionIndex]) {
+                        e.preventDefault();
+                        selectMention(filteredMentions[mentionIndex].username);
+                    }
+                } else if (e.key === 'Escape') {
+                    autocomplete.classList.remove('show');
+                }
+            } else if (e.key === 'Enter') {
+                sendMessage();
+            }
         });
-        
+
+        messageInput.addEventListener('input', (e) => {
+            const text = e.target.value;
+            const cursorPos = e.target.selectionStart;
+
+            // Check for @mention
+            const textBeforeCursor = text.substring(0, cursorPos);
+            const atMatch = textBeforeCursor.match(/@(\w*)$/);
+
+            if (atMatch) {
+                showMentionAutocomplete(atMatch[1]);
+            } else {
+                document.getElementById('mentionAutocomplete').classList.remove('show');
+            }
+
+            // Close emote picker when typing
+            document.getElementById('emotePicker').classList.remove('show');
+            document.querySelector('.emote-toggle-btn').classList.remove('active');
+
+            // Send typing indicator (debounced)
+            clearTimeout(typingTimeout);
+            if (text.length > 0) {
+                typingTimeout = setTimeout(sendTyping, 500);
+            }
+        });
+
+        function updateMentionSelection() {
+            const items = document.querySelectorAll('.mention-item');
+            items.forEach((item, i) => {
+                item.classList.toggle('selected', i === mentionIndex);
+            });
+        }
+
+        // Close pickers when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.reaction-picker') && !e.target.closest('.reaction-picker-trigger')) {
+                document.querySelectorAll('.reaction-picker.show').forEach(p => p.classList.remove('show'));
+            }
+            if (!e.target.closest('.emote-picker') && !e.target.closest('.emote-toggle-btn')) {
+                document.getElementById('emotePicker').classList.remove('show');
+                document.querySelector('.emote-toggle-btn').classList.remove('active');
+            }
+            if (!e.target.closest('.mention-autocomplete') && !e.target.closest('#messageInput')) {
+                document.getElementById('mentionAutocomplete').classList.remove('show');
+            }
+        });
+
         // Init
         checkAuth();
     </script>

@@ -1,10 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Geometry Dash online free! Jump and fly through obstacles. Rhythm-based platformer!">
+    <meta name="keywords" content="geometry dash, rhythm game, platformer, obstacle game, jump game, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/geometry-dash.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/geometry-dash.html">
+    <meta property="og:title" content="Geometry Dash - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Geometry Dash online free! Jump and fly through obstacles. Rhythm-based platformer!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Geometry Dash - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Geometry Dash online free! Jump and fly through obstacles. Rhythm-based platformer!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Geometry Dash",
+        "description": "Play Geometry Dash online free! Jump and fly through obstacles. Rhythm-based platformer!",
+        "url": "https://retroblasts.com/geometry-dash.html",
+        "genre": "Rhythm",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geometry Dash - RetroBlasts</title>
+    <title>Geometry Dash - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -497,12 +545,11 @@
                 x += 250;
             }
 
-            // Jump pads
+            // Jump pad section - platform close enough to reach at jump peak
             objects.push({ type: 'jumppad', x: x, y: GROUND_Y });
-            x += 150;
-            objects.push({ type: 'block', x: x, y: GROUND_Y - BLOCK_SIZE * 3, w: 2 });
-            objects.push({ type: 'spike', x: x + BLOCK_SIZE * 2, y: GROUND_Y - BLOCK_SIZE * 3 });
-            x += 300;
+            x += 120;  // Closer platform so player reaches it near peak
+            objects.push({ type: 'block', x: x, y: GROUND_Y - BLOCK_SIZE, w: 4 });  // 1 block high, wide landing
+            x += BLOCK_SIZE * 4 + 100;  // Continue past platform
 
             // Ship portal section
             objects.push({ type: 'portal', x: x, portalType: 'ship' });
@@ -523,10 +570,10 @@
             objects.push({ type: 'gap', x: x, w: 4 });
             x += 300;
 
-            // Coins
-            objects.push({ type: 'coin', x: 900, y: GROUND_Y - 120 });
-            objects.push({ type: 'coin', x: 1800, y: 200 });
-            objects.push({ type: 'coin', x: 2800, y: GROUND_Y - 80 });
+            // Coins - positioned for collection
+            objects.push({ type: 'coin', x: 900, y: GROUND_Y - 80 });  // First coin - normal jump
+            objects.push({ type: 'coin', x: 1820, y: GROUND_Y - 100 });  // Second coin - at jump pad peak
+            objects.push({ type: 'coin', x: 2800, y: GROUND_Y - 80 });  // Third coin
 
             objects.push({ type: 'end', x: x + 300 });
             return objects;
@@ -536,49 +583,45 @@
             const objects = [];
             let x = 600;
 
-            // Tighter spike patterns
+            // Spike patterns - more spaced out
             for (let i = 0; i < 5; i++) {
                 objects.push({ type: 'spike', x: x, y: GROUND_Y });
-                if (i % 2 === 0) {
-                    objects.push({ type: 'spike', x: x + 40, y: GROUND_Y });
-                }
-                x += 200;
+                x += 280;  // More spacing between spikes
             }
 
-            // Gravity portal section
+            // Gravity portal section - more time to react
             objects.push({ type: 'portal', x: x, portalType: 'gravity' });
-            x += 100;
-            objects.push({ type: 'spike', x: x + 100, y: 80, inverted: true });
-            objects.push({ type: 'spike', x: x + 300, y: 80, inverted: true });
-            x += 500;
+            x += 150;  // More space after portal
+            objects.push({ type: 'spike', x: x + 200, y: 80, inverted: true });
+            objects.push({ type: 'spike', x: x + 450, y: 80, inverted: true });  // More space between
+            x += 650;
             objects.push({ type: 'portal', x: x, portalType: 'gravity' });
+            x += 250;
+
+            // Platform jumping - easier progression
+            for (let i = 0; i < 3; i++) {
+                objects.push({ type: 'block', x: x, y: GROUND_Y - BLOCK_SIZE * (i + 1), w: 3 });  // Wider platforms
+                objects.push({ type: 'spike', x: x + BLOCK_SIZE * 3 + 50, y: GROUND_Y });  // More gap after platform
+                x += 380;  // More spacing
+            }
+
+            // Ball mode section - easier timing
+            objects.push({ type: 'portal', x: x, portalType: 'ball' });
+            x += 150;
+            objects.push({ type: 'spike', x: x + 200, y: GROUND_Y });
+            objects.push({ type: 'spike', x: x + 450, y: 80, inverted: true });  // More spacing
+            objects.push({ type: 'spike', x: x + 700, y: GROUND_Y });
+            x += 900;
+            objects.push({ type: 'portal', x: x, portalType: 'cube' });
             x += 200;
 
-            // Platform jumping
-            for (let i = 0; i < 3; i++) {
-                objects.push({ type: 'block', x: x, y: GROUND_Y - BLOCK_SIZE * (i + 1), w: 2 });
-                objects.push({ type: 'spike', x: x + BLOCK_SIZE * 2 + 20, y: GROUND_Y });
-                x += 300;
-            }
-
-            // Ball mode section
-            objects.push({ type: 'portal', x: x, portalType: 'ball' });
-            x += 100;
-            objects.push({ type: 'spike', x: x + 150, y: GROUND_Y });
-            objects.push({ type: 'spike', x: x + 300, y: 80, inverted: true });
-            objects.push({ type: 'spike', x: x + 450, y: GROUND_Y });
-            x += 600;
-            objects.push({ type: 'portal', x: x, portalType: 'cube' });
-            x += 150;
-
             objects.push({ type: 'spike', x: x, y: GROUND_Y });
-            objects.push({ type: 'spike', x: x + 40, y: GROUND_Y });
-            x += 300;
+            x += 350;
 
-            // Coins
-            objects.push({ type: 'coin', x: 800, y: GROUND_Y - 100 });
-            objects.push({ type: 'coin', x: 1600, y: 150 });
-            objects.push({ type: 'coin', x: 2600, y: GROUND_Y - 80 });
+            // Coins - adjusted positions
+            objects.push({ type: 'coin', x: 900, y: GROUND_Y - 100 });
+            objects.push({ type: 'coin', x: 2000, y: 150 });
+            objects.push({ type: 'coin', x: 3200, y: GROUND_Y - 80 });
 
             objects.push({ type: 'end', x: x + 200 });
             return objects;
@@ -588,44 +631,44 @@
             const objects = [];
             let x = 500;
 
-            // Fast-paced section
-            for (let i = 0; i < 6; i++) {
+            // Spike section - more spacing
+            for (let i = 0; i < 5; i++) {
                 objects.push({ type: 'spike', x: x, y: GROUND_Y });
-                x += 180;
+                x += 250;  // More spacing
             }
 
-            // Jump pad chains
+            // Jump pad section - platforms close enough to reach
             objects.push({ type: 'jumppad', x: x, y: GROUND_Y });
-            objects.push({ type: 'spike', x: x + 250, y: GROUND_Y - BLOCK_SIZE * 2 });
-            x += 400;
+            x += 130;  // Close so player lands near peak
+            objects.push({ type: 'block', x: x, y: GROUND_Y - BLOCK_SIZE, w: 4 });  // Low wide platform
+            x += BLOCK_SIZE * 4 + 150;
             objects.push({ type: 'jumppad', x: x, y: GROUND_Y });
-            x += 350;
+            x += 300;
 
-            // UFO section
+            // UFO section - easier pattern
             objects.push({ type: 'portal', x: x, portalType: 'ufo' });
-            x += 100;
-            for (let i = 0; i < 4; i++) {
-                objects.push({ type: 'spike', x: x + i * 200, y: i % 2 === 0 ? GROUND_Y : 100, inverted: i % 2 !== 0 });
-            }
-            x += 900;
-            objects.push({ type: 'portal', x: x, portalType: 'cube' });
             x += 150;
+            for (let i = 0; i < 3; i++) {
+                objects.push({ type: 'spike', x: x + i * 300, y: i % 2 === 0 ? GROUND_Y : 100, inverted: i % 2 !== 0 });
+            }
+            x += 1000;
+            objects.push({ type: 'portal', x: x, portalType: 'cube' });
+            x += 200;
 
-            // Triple spikes
+            // Double spikes - easier than triple
             for (let i = 0; i < 2; i++) {
                 objects.push({ type: 'spike', x: x, y: GROUND_Y });
                 objects.push({ type: 'spike', x: x + 40, y: GROUND_Y });
-                objects.push({ type: 'spike', x: x + 80, y: GROUND_Y });
-                x += 350;
+                x += 400;
             }
 
-            objects.push({ type: 'gap', x: x, w: 5 });
-            x += 350;
+            objects.push({ type: 'gap', x: x, w: 4 });  // Smaller gap
+            x += 300;
 
-            // Coins
-            objects.push({ type: 'coin', x: 600, y: GROUND_Y - 100 });
-            objects.push({ type: 'coin', x: 1800, y: 250 });
-            objects.push({ type: 'coin', x: 2700, y: GROUND_Y - 80 });
+            // Coins - adjusted positions
+            objects.push({ type: 'coin', x: 700, y: GROUND_Y - 100 });
+            objects.push({ type: 'coin', x: 2000, y: 250 });
+            objects.push({ type: 'coin', x: 3000, y: GROUND_Y - 80 });
 
             objects.push({ type: 'end', x: x + 200 });
             return objects;
@@ -633,50 +676,52 @@
 
         function generateLevel5() {
             const objects = [];
-            let x = 400;
+            let x = 500;
 
-            // Intense opening
-            for (let i = 0; i < 8; i++) {
+            // Opening - single spikes with good spacing
+            for (let i = 0; i < 6; i++) {
                 objects.push({ type: 'spike', x: x, y: GROUND_Y });
-                if (i > 3) objects.push({ type: 'spike', x: x + 40, y: GROUND_Y });
-                x += 160;
+                x += 250;  // Comfortable spacing
             }
 
-            // Gravity flip chaos
-            objects.push({ type: 'portal', x: x, portalType: 'gravity' });
-            x += 80;
-            objects.push({ type: 'spike', x: x + 100, y: 80, inverted: true });
-            objects.push({ type: 'portal', x: x + 200, portalType: 'gravity' });
-            objects.push({ type: 'spike', x: x + 350, y: GROUND_Y });
-            objects.push({ type: 'portal', x: x + 450, portalType: 'gravity' });
-            objects.push({ type: 'spike', x: x + 600, y: 80, inverted: true });
-            x += 800;
+            // Gravity flip section - more time between flips
             objects.push({ type: 'portal', x: x, portalType: 'gravity' });
             x += 150;
+            objects.push({ type: 'spike', x: x + 200, y: 80, inverted: true });
+            x += 450;
+            objects.push({ type: 'portal', x: x, portalType: 'gravity' });
+            x += 150;
+            objects.push({ type: 'spike', x: x + 200, y: GROUND_Y });
+            x += 450;
+            objects.push({ type: 'portal', x: x, portalType: 'gravity' });
+            x += 150;
+            objects.push({ type: 'spike', x: x + 200, y: 80, inverted: true });
+            x += 450;
+            objects.push({ type: 'portal', x: x, portalType: 'gravity' });
+            x += 200;
 
-            // Ship gauntlet
+            // Ship section - easier navigation
             objects.push({ type: 'portal', x: x, portalType: 'ship' });
-            x += 100;
-            objects.push({ type: 'ceiling', x: x, y: 150, w: 20 });
-            for (let i = 0; i < 5; i++) {
-                const y = i % 2 === 0 ? GROUND_Y : 150;
-                objects.push({ type: 'spike', x: x + 150 + i * 180, y: y, inverted: i % 2 !== 0 });
-            }
-            x += 1100;
-            objects.push({ type: 'portal', x: x, portalType: 'cube' });
             x += 150;
-
-            // Final spike run
+            objects.push({ type: 'ceiling', x: x, y: 150, w: 15 });
             for (let i = 0; i < 4; i++) {
+                const y = i % 2 === 0 ? GROUND_Y : 150;
+                objects.push({ type: 'spike', x: x + 200 + i * 250, y: y, inverted: i % 2 !== 0 });
+            }
+            x += 1200;
+            objects.push({ type: 'portal', x: x, portalType: 'cube' });
+            x += 200;
+
+            // Final section - single spikes
+            for (let i = 0; i < 3; i++) {
                 objects.push({ type: 'spike', x: x, y: GROUND_Y });
-                objects.push({ type: 'spike', x: x + 40, y: GROUND_Y });
-                x += 250;
+                x += 300;
             }
 
-            // Coins
-            objects.push({ type: 'coin', x: 700, y: GROUND_Y - 100 });
-            objects.push({ type: 'coin', x: 2000, y: 200 });
-            objects.push({ type: 'coin', x: 3200, y: GROUND_Y - 80 });
+            // Coins - adjusted positions
+            objects.push({ type: 'coin', x: 800, y: GROUND_Y - 100 });
+            objects.push({ type: 'coin', x: 2500, y: 200 });
+            objects.push({ type: 'coin', x: 4000, y: GROUND_Y - 80 });
 
             objects.push({ type: 'end', x: x + 200 });
             return objects;
@@ -692,6 +737,39 @@
         let selectedIcon = 0;
         let selectedColor = 0;
         let levelProgress = JSON.parse(localStorage.getItem('gdProgress')) || {};
+        let isLoggedIn = false;
+
+        // Server sync for per-user saves
+        async function loadServerStats() {
+            try {
+                const authRes = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const auth = await authRes.json();
+                if (auth.loggedIn) {
+                    isLoggedIn = true;
+                    const statsRes = await fetch('api/game-stats.php?action=load&game=geometry-dash', { credentials: 'include' });
+                    const stats = await statsRes.json();
+                    if (stats.success && stats.data && stats.data.levelProgress) {
+                        const serverProgress = stats.data.levelProgress;
+                        // Merge - keep highest progress for each level
+                        Object.keys(serverProgress).forEach(lvl => {
+                            if (!levelProgress[lvl] || serverProgress[lvl] > levelProgress[lvl]) {
+                                levelProgress[lvl] = serverProgress[lvl];
+                            }
+                        });
+                        localStorage.setItem('gdProgress', JSON.stringify(levelProgress));
+                    }
+                }
+            } catch (e) { console.log('Stats sync failed'); }
+        }
+
+        function saveServerStats() {
+            if (!isLoggedIn) return;
+            fetch('api/game-stats.php', {
+                method: 'POST', credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'save', game: 'geometry-dash', data: { levelProgress } })
+            }).catch(() => {});
+        }
 
         // ============================================
         // ARCADE STATS TRACKING
@@ -711,6 +789,16 @@
             if (levelsCompleted > gameStats.levelsCompleted) gameStats.levelsCompleted = levelsCompleted;
             stats.totalGamesPlayed++; stats.totalTimePlayed += sessionTime;
             saveArcadeStats(stats);
+
+            // Contribute damage to boss event
+            if (finalScore > 0) {
+                fetch("api/boss-events.php?action=contribute", {
+                    method: "POST",
+                    credentials: "include",
+                    keepalive: true, headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ score: finalScore, game: "geometry-dash" })
+                }).catch(e => console.log("Boss damage:", e));
+            }
         }
 
         // Player
@@ -1071,7 +1159,7 @@
                     case 'jumppad':
                         if (playerRight > obj.x - 20 && playerLeft < obj.x + 20 &&
                             playerBottom > obj.y - 20 && playerTop < obj.y) {
-                            player.vy = -18;
+                            player.vy = -14;  // Reduced from -18 for better control
                             player.onGround = false;
                             playSound('jump');
                         }
@@ -1173,6 +1261,7 @@
                     coins: coinsCollected.length
                 };
                 localStorage.setItem('gdProgress', JSON.stringify(levelProgress));
+                saveServerStats();
             }
 
             document.getElementById('victoryAttempts').textContent = attempts;
@@ -1465,6 +1554,7 @@
         }
 
         // Initialize UI
+        loadServerStats();
         renderLevelSelect();
         renderIconSelect();
         renderColorSelect();
@@ -1573,5 +1663,13 @@
             renderLevelSelect();
         });
     </script>
+
+<!-- More Games Section -->
+<div style="background:rgba(0,0,0,0.3);padding:20px;margin-top:20px;border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto">
+    <h3 style="color:#ffd700;margin-bottom:15px;text-align:center">🎮 More Games</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
+        <a href="flappy-bird.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🐦 Flappy Bird</a><a href="snake.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🐍 Snake</a><a href="tetris.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🧱 Tetris</a><a href="pacman.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">👻 Pac-Man</a><a href="2048.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🔢 2048</a><a href="chess.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">♟️ Chess</a>
+    </div>
+</div>
 </body>
 </html>

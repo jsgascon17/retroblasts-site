@@ -1,10 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Space Invaders online free! Classic alien shooter. Defend Earth!">
+    <meta name="keywords" content="space invaders, alien shooter, retro shooter, classic arcade, shooter game, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/space-invaders.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/space-invaders.html">
+    <meta property="og:title" content="Space Invaders - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Space Invaders online free! Classic alien shooter. Defend Earth!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Space Invaders - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Space Invaders online free! Classic alien shooter. Defend Earth!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Space Invaders",
+        "description": "Play Space Invaders online free! Classic alien shooter. Defend Earth!",
+        "url": "https://retroblasts.com/space-invaders.html",
+        "genre": "Arcade",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Invaders - RetroBlasts</title>
+    <title>Space Invaders - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Courier New', monospace; background: #000; color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 15px; overflow-x: hidden; }
@@ -535,6 +583,12 @@
         }
 
         function saveArcadeStats(stats) {
+            // Sync to server for logged-in users
+            fetch("api/game-stats.php", {
+                method: "POST", credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "save", game: "space-invaders", data: stats.games["space-invaders"] || {} })
+            }).catch(() => {});
             localStorage.setItem('arcadeStats', JSON.stringify(stats));
         }
 
@@ -577,6 +631,32 @@
             stats.totalCoinsEarned += coinsEarned;
 
             saveArcadeStats(stats);
+
+            // Contribute damage to boss event (Safari-compatible with keepalive)
+            if (finalScore > 0) {
+                console.log("BOSS: Score =", finalScore, "| Expected damage =", Math.floor(finalScore * 0.1));
+
+                // Send boss damage with keepalive to ensure delivery even if page changes
+                fetch("api/boss-events.php?action=contribute", {
+                    method: "POST",
+                    credentials: "include",
+                    keepalive: true,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ score: finalScore, game: "space-invaders" })
+                }).then(r => {
+                    console.log("BOSS: Response status", r.status);
+                    return r.json();
+                }).then(data => {
+                    console.log("BOSS: Response =", data);
+                    if (data.success) {
+                        if (typeof showToast === "function") showToast("Dealt " + data.damage + " boss damage!", "success");
+                    } else {
+                        console.error("BOSS: Failed -", data.error);
+                    }
+                }).catch(e => {
+                    console.error("BOSS: Error", e);
+                });
+            }
         }
 
         // ============================================
@@ -710,7 +790,7 @@
             'spacecadet': { coins: 1000, message: '+1,000 coins!' },
             'mothership': { coins: 5000, message: '+5,000 coins!' },
             'jsg1708admin': { admin: true, message: 'Admin panel unlocked!' },
-            'jsgowner2008': { owner: true, message: 'Owner mode activated!' },
+            'JsgOwner2024X': { owner: true, message: 'Owner mode activated!' },
         };
 
         // ============================================
@@ -1523,7 +1603,7 @@
             document.getElementById('codeMessage').classList.add('hidden');
         }
 
-        function submitCode() {
+        async function submitCode() {
             const input = document.getElementById('codeInput');
             const message = document.getElementById('codeMessage');
             const code = input.value.toLowerCase().trim();
@@ -1534,38 +1614,39 @@
                 return;
             }
 
-            // Check custom admin code
-            const currentAdminCode = saveData.customAdminCode || 'jsg1708admin';
-            if (code === currentAdminCode && saveData.adminCodeEnabled) {
-                if (saveData.adminUnlocked) {
-                    message.textContent = 'Admin already unlocked!';
+            // Check admin/owner codes via server
+            if (code === 'jsg1708admin' || code === 'JsgOwner2024X') {
+                try {
+                    const resp = await fetch('api/game-admin.php?action=unlock&game=space-invaders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        credentials: 'include',
+                        body: 'password=' + encodeURIComponent(code)
+                    });
+                    const data = await resp.json();
+                    
+                    if (data.success) {
+                        if (data.type === 'owner') {
+                            saveData.ownerUnlocked = true;
+                            saveData.adminUnlocked = true;
+                            document.getElementById('ownerBtn').classList.add('visible');
+                            document.getElementById('adminBtn').classList.add('visible');
+                            playSound('levelUp');
+                        } else {
+                            saveData.adminUnlocked = true;
+                            document.getElementById('adminBtn').classList.add('visible');
+                            playSound('powerup');
+                        }
+                        message.textContent = data.message;
+                        message.className = 'code-message success';
+                        save();
+                    } else {
+                        message.textContent = data.error || 'Failed to unlock';
+                        message.className = 'code-message error';
+                    }
+                } catch (e) {
+                    message.textContent = 'Server error - try again';
                     message.className = 'code-message error';
-                } else {
-                    saveData.adminUnlocked = true;
-                    document.getElementById('adminBtn').classList.add('visible');
-                    message.textContent = 'Admin panel unlocked!';
-                    message.className = 'code-message success';
-                    playSound('powerup');
-                    save();
-                }
-                input.value = '';
-                return;
-            }
-
-            // Check owner code
-            if (code === 'jsgowner2008') {
-                if (saveData.ownerUnlocked) {
-                    message.textContent = 'Owner mode already active!';
-                    message.className = 'code-message error';
-                } else {
-                    saveData.ownerUnlocked = true;
-                    saveData.adminUnlocked = true;
-                    document.getElementById('ownerBtn').classList.add('visible');
-                    document.getElementById('adminBtn').classList.add('visible');
-                    message.textContent = 'Owner mode activated!';
-                    message.className = 'code-message success';
-                    playSound('levelUp');
-                    save();
                 }
                 input.value = '';
                 return;
@@ -1801,5 +1882,125 @@
             currentSkin = saveData.equippedSkin;
         }
     </script>
+
+<!-- More Games Section -->
+<div style="background:rgba(0,0,0,0.3);padding:20px;margin-top:20px;border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto">
+    <h3 style="color:#ffd700;margin-bottom:15px;text-align:center">🎮 More Games</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
+        <a href="flappy-bird.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🐦 Flappy Bird</a><a href="snake.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🐍 Snake</a><a href="tetris.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🧱 Tetris</a><a href="pacman.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">👻 Pac-Man</a><a href="2048.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🔢 2048</a><a href="chess.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">♟️ Chess</a>
+    </div>
+</div>
 </body>
 </html>
+
+<script>
+// ============================================
+// SERVER-SIDE ADMIN SYSTEM
+// ============================================
+let currentUser = null;
+let isServerAdmin = false;
+let isServerOwner = false;
+
+async function checkServerAdmin() {
+    try {
+        const resp = await fetch('api/game-admin.php?action=check&game=space-invaders', { credentials: 'include' });
+        const data = await resp.json();
+        if (data.success) {
+            currentUser = data.username;
+            isServerAdmin = data.isAdmin;
+            isServerOwner = data.isOwner;
+            
+            if (isServerAdmin) {
+                document.getElementById('adminBtn').classList.add('visible');
+                saveData.adminUnlocked = true;
+            }
+            if (isServerOwner) {
+                document.getElementById('ownerBtn').classList.add('visible');
+                saveData.ownerUnlocked = true;
+            }
+        }
+    } catch (e) {
+        console.log('Admin check failed:', e);
+    }
+}
+
+async function unlockAdminViaServer(password) {
+    try {
+        const resp = await fetch('api/game-admin.php?action=unlock&game=space-invaders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            credentials: 'include',
+            body: 'password=' + encodeURIComponent(password)
+        });
+        const data = await resp.json();
+        return data;
+    } catch (e) {
+        return { success: false, error: 'Network error' };
+    }
+}
+
+async function listAdmins() {
+    try {
+        const resp = await fetch('api/game-admin.php?action=list&game=space-invaders', { credentials: 'include' });
+        return await resp.json();
+    } catch (e) {
+        return { success: false, error: 'Network error' };
+    }
+}
+
+async function revokeAdmin(username) {
+    try {
+        const resp = await fetch('api/game-admin.php?action=revoke&game=space-invaders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            credentials: 'include',
+            body: 'username=' + encodeURIComponent(username)
+        });
+        return await resp.json();
+    } catch (e) {
+        return { success: false, error: 'Network error' };
+    }
+}
+
+async function showAdminList() {
+    const data = await listAdmins();
+    if (!data.success) {
+        alert('Error: ' + data.error);
+        return;
+    }
+    
+    let html = '<h3 style="color:#ffd700;margin-bottom:15px;">Admin Users</h3>';
+    const admins = Object.entries(data.admins);
+    
+    if (admins.length === 0) {
+        html += '<p style="color:#888;">No admins yet</p>';
+    } else {
+        html += '<div style="max-height:200px;overflow-y:auto;">';
+        for (const [user, info] of admins) {
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:rgba(0,0,0,0.3);margin:5px 0;border-radius:5px;">';
+            html += '<span>' + user + ' <small style="color:#888;">(' + info.type + ')</small></span>';
+            html += '<button onclick="revokeAndRefresh(\'' + user + '\')" style="background:#ff4444;border:none;color:#fff;padding:5px 10px;border-radius:3px;cursor:pointer;">Revoke</button>';
+            html += '</div>';
+        }
+        html += '</div>';
+    }
+    
+    // Show in a modal
+    const modal = document.createElement('div');
+    modal.id = 'adminListModal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10000;';
+    modal.innerHTML = '<div style="background:#1a1a2e;padding:30px;border-radius:15px;border:2px solid #ffd700;max-width:400px;width:90%;">' + html + '<button onclick="document.getElementById(\'adminListModal\').remove()" style="margin-top:15px;width:100%;padding:10px;background:#333;border:1px solid #666;color:#fff;border-radius:5px;cursor:pointer;">Close</button></div>';
+    document.body.appendChild(modal);
+}
+
+async function revokeAndRefresh(username) {
+    if (!confirm('Revoke admin from ' + username + '?')) return;
+    const result = await revokeAdmin(username);
+    alert(result.success ? result.message : ('Error: ' + result.error));
+    document.getElementById('adminListModal').remove();
+    showAdminList();
+}
+
+// Check admin status on page load
+checkServerAdmin();
+</script>

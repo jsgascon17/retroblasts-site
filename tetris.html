@@ -1,10 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Tetris online free! Classic block-stacking puzzle game. Clear lines and beat high scores!">
+    <meta name="keywords" content="tetris online, free tetris, play tetris, block puzzle game, tetris game, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/tetris.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/tetris.html">
+    <meta property="og:title" content="Tetris - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Tetris online free! Classic block-stacking puzzle game. Clear lines and beat high scores!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Tetris - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Tetris online free! Classic block-stacking puzzle game. Clear lines and beat high scores!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Tetris",
+        "description": "Play Tetris online free! Classic block-stacking puzzle game. Clear lines and beat high scores!",
+        "url": "https://retroblasts.com/tetris.html",
+        "genre": "Puzzle",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tetris - RetroBlasts</title>
+    <title>Tetris - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -130,6 +178,35 @@
             banner.innerHTML = '&#127942; TOURNAMENT MODE <a href="tournaments.html" style="color: #000; margin-left: 15px;">View</a>';
             document.body.prepend(banner);
             document.body.style.paddingTop = '40px';
+        }
+
+        // Current logged-in user (for account-specific saves)
+        let currentUsername = null;
+        let userInitialized = false;
+
+        function getPlayerNameKey() {
+            return currentUsername ? `tetrisPlayerName_${currentUsername}` : 'tetrisPlayerName_guest';
+        }
+        function getCoinsKey() {
+            return currentUsername ? `tetris_coins_${currentUsername}` : 'tetris_coins_guest';
+        }
+
+        async function checkCurrentUser() {
+            try {
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await resp.json();
+                const newUsername = (data.loggedIn && data.user) ? data.user.username : null;
+
+                if (!userInitialized || newUsername !== currentUsername) {
+                    currentUsername = newUsername;
+                    userInitialized = true;
+                }
+            } catch (e) {
+                if (!userInitialized) {
+                    currentUsername = null;
+                    userInitialized = true;
+                }
+            }
         }
 
         const canvas = document.getElementById('gameCanvas');
@@ -405,7 +482,7 @@
             fetch('api/game-rewards.php', {
                 method: 'POST',
                 credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
+                keepalive: true, headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ game: 'tetris', score: score })
             }).then(r => r.json()).then(data => {
                 if (data.success) {
@@ -422,7 +499,7 @@
             submitBtn.disabled = false;
             submitBtn.textContent = 'Submit';
             document.getElementById('leaderboardMsg').textContent = '';
-            const saved = localStorage.getItem('arcadePlayerName');
+            const saved = localStorage.getItem(getPlayerNameKey());
             if (saved) document.getElementById('playerName').value = saved;
         }
 
@@ -434,7 +511,7 @@
             'fast': () => { dropInterval = 200; showCodeMsg('TURBO MODE! Good luck!'); },
             'lines': () => { linesCleared += 10; updateHUD(); showCodeMsg('+10 LINES!'); },
             'lucky': () => { score += 5000; updateHUD(); showCodeMsg('+5000 POINTS!'); },
-            'coins': () => { const c = parseInt(localStorage.getItem('tetris_coins') || '0') + 100; localStorage.setItem('tetris_coins', c); showCodeMsg('+100 COINS!'); },
+            'coins': () => { const c = parseInt(localStorage.getItem(getCoinsKey()) || '0') + 100; localStorage.setItem(getCoinsKey(), c); showCodeMsg('+100 COINS!'); },
             'rainbow': () => { window.rainbowMode = true; showCodeMsg('RAINBOW MODE!'); },
             'easy': () => { window.easyPieces = true; showCodeMsg('EASY PIECES! No S/Z blocks!'); }
         };
@@ -464,6 +541,10 @@
         });
 
         document.getElementById('startBtn').onclick = startGame;
+
+        // Init: load user-specific data
+        checkCurrentUser();
+        window.addEventListener('focus', checkCurrentUser);
 
         // Touch/swipe controls on canvas
         let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
@@ -505,7 +586,7 @@
             const playerScore = score;
             const msgEl = document.getElementById('leaderboardMsg');
 
-            localStorage.setItem('arcadePlayerName', playerName);
+            localStorage.setItem(getPlayerNameKey(), playerName);
             this.disabled = true;
             this.textContent = '...';
 
@@ -525,6 +606,14 @@
                         fetch('tournament.php', { method: 'POST', headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ action: 'submit', tournamentId, name: playerName, score: playerScore })
                         }).then(r => r.json()).then(t => { if (t.success) msgEl.textContent += ' | T#' + t.rank; }).catch(() => {});
+
+            // Contribute score to boss event (score = damage)
+            fetch('api/boss-events.php?action=contribute', {
+                method: 'POST',
+                credentials: 'include',
+                keepalive: true, headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'tetris', score: score })
+            }).catch(() => {});
                     }
                 } else { throw new Error(data.error); }
             } catch (error) {
@@ -547,7 +636,7 @@
                 const resp = await fetch('api/replays.php', {
                     method: 'POST',
                     credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' },
+                    keepalive: true, headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'save',
                         game: 'tetris',
@@ -570,5 +659,13 @@
             }
         }
     </script>
+
+<!-- More Games Section -->
+<div style="background:rgba(0,0,0,0.3);padding:20px;margin-top:20px;border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto">
+    <h3 style="color:#ffd700;margin-bottom:15px;text-align:center">🎮 More Games</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
+        <a href="flappy-bird.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🐦 Flappy Bird</a><a href="snake.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🐍 Snake</a><a href="pacman.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">👻 Pac-Man</a><a href="2048.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🔢 2048</a><a href="chess.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">♟️ Chess</a><a href="space-invaders.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">👾 Space Invaders</a>
+    </div>
+</div>
 </body>
 </html>

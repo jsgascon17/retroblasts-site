@@ -1,10 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Snake online free! Classic Nokia snake game. Eat food, grow longer, beat high scores!">
+    <meta name="keywords" content="snake game, snake online, free snake game, classic snake, nokia snake, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/snake.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/snake.html">
+    <meta property="og:title" content="Snake - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Snake online free! Classic Nokia snake game. Eat food, grow longer, beat high scores!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Snake - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Snake online free! Classic Nokia snake game. Eat food, grow longer, beat high scores!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Snake",
+        "description": "Play Snake online free! Classic Nokia snake game. Eat food, grow longer, beat high scores!",
+        "url": "https://retroblasts.com/snake.html",
+        "genre": "Arcade",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snake - Classic Arcade</title>
+    <title>Snake - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -311,11 +359,19 @@
         }
     </style>
     <script src="js/notifications.js"></script>
+    </script>
 <script src="js/duel.js"></script>
+    </script>
 <script src="js/victory.js"></script>
+    </script>
 <script src="js/wars.js"></script>
+    </script>
 <script src="js/activity.js"></script>
+    </script>
 <script src="js/pets.js"></script>
+    </script>
+<script src="js/vip.js"></script>
+    </script>
 </head>
 <body>
     <h1>SNAKE</h1>
@@ -324,6 +380,7 @@
         <button class="top-btn" id="skinsBtn">Skins</button>
         <button class="top-btn" id="achievementsBtn">Achievements</button>
         <button class="top-btn" id="statsBtn">Stats</button>
+        <button class="top-btn" id="vipBtn" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; border-color: #ffd700;">VIP</button>
     </div>
     <div class="hud">
         <div class="hud-item">Score: <span id="score">0</span></div>
@@ -510,10 +567,60 @@
             }
         };
 
-        let saveData = JSON.parse(localStorage.getItem('snakeSave')) || { ...defaultSave, stats: { ...defaultSave.stats }, skinsOwned: ['classic'], achievements: [] };
+        // Current logged-in user (for account-specific saves)
+        let currentUsername = null;
+        let userInitialized = false;
+
+        // Get storage keys based on logged-in user
+        function getSaveKey() {
+            return currentUsername ? `snakeSave_${currentUsername}` : 'snakeSave_guest';
+        }
+        function getArcadeStatsKey() {
+            return currentUsername ? `arcadeStats_${currentUsername}` : 'arcadeStats_guest';
+        }
+        function getPlayerNameKey() {
+            return currentUsername ? `snakePlayerName_${currentUsername}` : 'snakePlayerName_guest';
+        }
+
+        // Check who is logged in and load their data
+        async function checkCurrentUser() {
+            try {
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await resp.json();
+                const newUsername = (data.loggedIn && data.user) ? data.user.username : null;
+
+                if (!userInitialized || newUsername !== currentUsername) {
+                    currentUsername = newUsername;
+                    saveData = { ...defaultSave, stats: { ...defaultSave.stats }, skinsOwned: ['classic'], achievements: [] };
+                    loadSaveData();
+                    document.getElementById('totalCoins').textContent = saveData.coins;
+                    const savedName = localStorage.getItem(getPlayerNameKey());
+                    if (savedName) document.getElementById('playerName').value = savedName;
+                    userInitialized = true;
+                }
+            } catch (e) {
+                if (!userInitialized) {
+                    currentUsername = null;
+                    loadSaveData();
+                    document.getElementById('totalCoins').textContent = saveData.coins;
+                    userInitialized = true;
+                }
+            }
+        }
+
+        function loadSaveData() {
+            const saved = localStorage.getItem(getSaveKey());
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                saveData = { ...saveData, ...parsed };
+                saveData.stats = { ...saveData.stats, ...parsed.stats };
+            }
+        }
+
+        let saveData = { ...defaultSave, stats: { ...defaultSave.stats }, skinsOwned: ['classic'], achievements: [] };
 
         function save() {
-            localStorage.setItem('snakeSave', JSON.stringify(saveData));
+            localStorage.setItem(getSaveKey(), JSON.stringify(saveData));
             document.getElementById('totalCoins').textContent = saveData.coins;
         }
 
@@ -531,7 +638,7 @@
         let gameStartTime = 0;
 
         function loadArcadeStats() {
-            return JSON.parse(localStorage.getItem('arcadeStats')) || {
+            return JSON.parse(localStorage.getItem(getArcadeStatsKey())) || {
                 totalGamesPlayed: 0,
                 totalTimePlayed: 0,
                 totalCoinsEarned: 0,
@@ -540,7 +647,13 @@
         }
 
         function saveArcadeStats(stats) {
-            localStorage.setItem('arcadeStats', JSON.stringify(stats));
+            // Sync to server for logged-in users
+            fetch("api/game-stats.php", {
+                method: "POST", credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "save", game: "snake", data: stats.games["snake"] || {} })
+            }).catch(() => {});
+            localStorage.setItem(getArcadeStatsKey(), JSON.stringify(stats));
         }
 
         function trackGameStart() {
@@ -577,6 +690,18 @@
             stats.totalCoinsEarned += coinsEarned;
 
             saveArcadeStats(stats);
+
+            // Contribute damage to boss event
+            console.log("BOSS DEBUG: finalScore =", finalScore);
+            if (finalScore > 0) {
+                console.log("BOSS DEBUG: Sending damage to boss...");
+                fetch("api/boss-events.php?action=contribute", {
+                    method: "POST",
+                    credentials: "include",
+                    keepalive: true, headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ score: finalScore, game: "snake" })
+                }).then(r => r.json()).then(data => { if (data.success) { console.log("Boss damage dealt:", data.damage); if (typeof showToast === "function") showToast("⚔️ Dealt " + data.damage + " boss damage!", "success"); } else { console.log("Boss damage failed:", data.error); } }).catch(e => console.log("Boss damage error:", e));
+            }
         }
 
         // ============================================
@@ -1031,7 +1156,8 @@
             gameState = 'gameover';
             playSound('die');
 
-            const coinsEarned = calculateCoins();
+            let coinsEarned = calculateCoins();
+            if (typeof VIPSystem !== "undefined") coinsEarned = VIPSystem.applyMultiplier(coinsEarned);
             saveData.coins += coinsEarned;
             saveData.stats.gamesPlayed++;
             saveData.stats.totalScore += score;
@@ -1067,7 +1193,7 @@
             fetch('api/game-rewards.php', {
                 method: 'POST',
                 credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
+                keepalive: true, headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ game: 'snake', score: score })
             }).then(r => r.json()).then(data => {
                 if (data.success) {
@@ -1515,7 +1641,7 @@
                         }
                     }
                     btn.textContent = 'Submitted!';
-                    localStorage.setItem('snakePlayerName', playerName);
+                    localStorage.setItem(getPlayerNameKey(), playerName);
 
                     // Also submit to tournament if in tournament mode
                     if (tournamentId) {
@@ -1547,11 +1673,9 @@
             }
         };
 
-        // Load saved player name
-        const savedName = localStorage.getItem('snakePlayerName');
-        if (savedName) {
-            document.getElementById('playerName').value = savedName;
-        }
+        // Init: load user-specific data
+        checkCurrentUser();
+        window.addEventListener('focus', checkCurrentUser);
 
         // Mode selection
         document.querySelectorAll('.mode-card').forEach(card => {
@@ -1580,6 +1704,12 @@
             document.getElementById('achievementsModal').classList.remove('hidden');
         };
 
+        document.getElementById('vipBtn').onclick = () => {
+            if (typeof VIPSystem !== 'undefined') {
+                if (VIPSystem.isVIP()) VIPSystem.showStatusModal();
+                else VIPSystem.showActivationModal();
+            }
+        };
         document.getElementById('statsBtn').onclick = () => {
             renderStats();
             document.getElementById('statsModal').classList.remove('hidden');
@@ -1719,7 +1849,7 @@
                 const resp = await fetch("api/replays.php", {
                     method: "POST",
                     credentials: "include",
-                    headers: { "Content-Type": "application/json" },
+                    keepalive: true, headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         action: "save",
                         game: "snake",
@@ -1742,6 +1872,15 @@
                 btn.style.background = "#ef4444";
             }
         }
+    if (typeof VIPSystem !== "undefined") VIPSystem.showIndicator();
     </script>
+
+<!-- More Games Section -->
+<div style="background:rgba(0,0,0,0.3);padding:20px;margin-top:20px;border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto">
+    <h3 style="color:#ffd700;margin-bottom:15px;text-align:center">🎮 More Games</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
+        <a href="flappy-bird.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🐦 Flappy Bird</a><a href="tetris.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🧱 Tetris</a><a href="pacman.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">👻 Pac-Man</a><a href="2048.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">🔢 2048</a><a href="chess.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">♟️ Chess</a><a href="space-invaders.html" style="background:#2d2d4a;padding:8px 15px;border-radius:6px;color:#fff;text-decoration:none;font-size:0.9rem">👾 Space Invaders</a>
+    </div>
+</div>
 </body>
 </html>

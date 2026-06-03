@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Rhythm game online free! Hit notes to the beat. Music-based gameplay!">
+    <meta name="keywords" content="rhythm game, music game, beat game, note hitting, dance game, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/rhythm.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/rhythm.html">
+    <meta property="og:title" content="Rhythm - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Play Rhythm game online free! Hit notes to the beat. Music-based gameplay!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Rhythm - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Play Rhythm game online free! Hit notes to the beat. Music-based gameplay!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Rhythm",
+        "description": "Play Rhythm game online free! Hit notes to the beat. Music-based gameplay!",
+        "url": "https://retroblasts.com/rhythm.html",
+        "genre": "Rhythm",
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhythm - Free Online Game | RetroBlasts</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Press Start 2P', monospace;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a1a2e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 15px;
+            z-index: 100;
+        }
+        h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff, #06ffa5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow 3s ease-in-out infinite;
+        }
+        @keyframes rainbow {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(30deg); }
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 10px 0;
+            font-size: 0.6rem;
+        }
+        .stat {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        .stat span { color: #ffd700; }
+
+        #gameContainer {
+            position: relative;
+            width: 400px;
+            height: 500px;
+            background: rgba(0,0,0,0.5);
+            border: 3px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #gameCanvas {
+            display: block;
+        }
+
+        .hit-zone {
+            position: absolute;
+            bottom: 60px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #fff, transparent);
+            opacity: 0.5;
+        }
+
+        .key-indicators {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .key-indicator {
+            width: 60px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.1s;
+        }
+        .key-indicator.active {
+            background: linear-gradient(135deg, #ff006e, #8338ec);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255,0,110,0.5);
+        }
+        .key-indicator.d { border-color: #ff006e; }
+        .key-indicator.f { border-color: #8338ec; }
+        .key-indicator.j { border-color: #3a86ff; }
+        .key-indicator.k { border-color: #06ffa5; }
+
+        .combo-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ffd700;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .combo-display.show {
+            animation: comboPopup 0.5s ease-out;
+        }
+        @keyframes comboPopup {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .hit-feedback {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            opacity: 0;
+        }
+        .hit-feedback.show { animation: feedbackPop 0.3s ease-out; }
+        .hit-feedback.perfect { color: #ffd700; }
+        .hit-feedback.great { color: #06ffa5; }
+        .hit-feedback.good { color: #3a86ff; }
+        .hit-feedback.miss { color: #ff006e; }
+        @keyframes feedbackPop {
+            0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+        }
+
+        /* Menu Screens */
+        .screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+        .screen.hidden { display: none; }
+
+        .screen h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+        .screen p {
+            font-size: 0.6rem;
+            color: #888;
+            margin-bottom: 20px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 0.8rem;
+            font-family: inherit;
+            background: linear-gradient(135deg, #ff006e, #8338ec);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.2s;
+        }
+        .btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255,0,110,0.5); }
+        .btn-secondary {
+            background: linear-gradient(135deg, #3a86ff, #06ffa5);
+        }
+        .btn-shop {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+        }
+        .btn-vip {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+        }
+
+        .song-list {
+            display: grid;
+            gap: 10px;
+            max-width: 450px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .song-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .song-card:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: #ff006e;
+        }
+        .song-card.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255,215,0,0.3);
+        }
+        .song-card.locked { opacity: 0.5; pointer-events: none; }
+        .song-icon { font-size: 2rem; }
+        .song-info { flex: 1; text-align: left; }
+        .song-title { font-size: 0.7rem; margin-bottom: 5px; }
+        .song-artist { font-size: 0.5rem; color: #888; }
+        .song-difficulty {
+            font-size: 0.5rem;
+            padding: 3px 8px;
+            border-radius: 5px;
+            background: #333;
+        }
+        .song-difficulty.easy { background: #06ffa5; color: #000; }
+        .song-difficulty.medium { background: #ffd700; color: #000; }
+        .song-difficulty.hard { background: #ff006e; }
+        .song-difficulty.extreme { background: #8338ec; }
+
+        .coins-display {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #ffd700, #ffed4a);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            z-index: 150;
+        }
+
+        .results-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .result-stat {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .result-stat .value {
+            font-size: 1.2rem;
+            color: #ffd700;
+        }
+        .result-stat .label {
+            font-size: 0.5rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .grade {
+            font-size: 4rem;
+            margin: 20px 0;
+        }
+        .grade.s { color: #ffd700; text-shadow: 0 0 30px #ffd700; }
+        .grade.a { color: #06ffa5; }
+        .grade.b { color: #3a86ff; }
+        .grade.c { color: #ff006e; }
+        .grade.f { color: #666; }
+
+        /* Admin Panel Styles */
+        .admin-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        .admin-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid #ff6b6b;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 450px;
+            text-align: center;
+        }
+        .admin-content.owner { border-color: #ffd700; }
+        .admin-content h2 { color: #ff6b6b; margin-bottom: 20px; font-size: 0.9rem; }
+        .admin-content.owner h2 { color: #ffd700; }
+        .admin-content input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #ff6b6b;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.6rem;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .admin-content.owner input { border-color: #ffd700; }
+        .admin-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-family: inherit;
+            font-size: 0.55rem;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .admin-btn-primary { background: #ff6b6b; color: #fff; }
+        .admin-btn-owner { background: #ffd700; color: #000; }
+        .admin-btn-close { background: #666; color: #fff; }
+        .admin-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .admin-action-btn {
+            padding: 10px 15px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #fff;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.5rem;
+        }
+        .admin-action-btn:hover { background: rgba(255,255,255,0.2); }
+        .admin-action-btn.danger { border-color: #ff6b6b; color: #ff6b6b; }
+    </style>
+    <script src="js/vip.js"></script>
+</head>
+<body>
+    <div class="coins-display">🪙 <span id="coinsDisplay">0</span></div>
+
+    <div class="header">
+        <h1>RHYTHM BLAST</h1>
+        <div class="stats-bar">
+            <div class="stat">SCORE: <span id="scoreDisplay">0</span></div>
+            <div class="stat">COMBO: <span id="comboDisplay">0</span>x</div>
+            <div class="stat">ACC: <span id="accuracyDisplay">100%</span></div>
+        </div>
+    </div>
+
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="400" height="500"></canvas>
+        <div class="hit-zone"></div>
+        <div class="key-indicators">
+            <div class="key-indicator d" id="keyD">D</div>
+            <div class="key-indicator f" id="keyF">F</div>
+            <div class="key-indicator j" id="keyJ">J</div>
+            <div class="key-indicator k" id="keyK">K</div>
+        </div>
+        <div class="combo-display" id="comboPopup"></div>
+        <div class="hit-feedback" id="hitFeedback"></div>
+    </div>
+
+    <!-- Start Screen -->
+    <div class="screen" id="startScreen">
+        <h2>🎵 RHYTHM BLAST</h2>
+        <p>Press D, F, J, K keys to hit the notes as they reach the line!</p>
+        <div class="song-list" id="songList"></div>
+        <div style="margin-top: 20px;">
+            <button class="btn" id="playBtn">PLAY</button>
+            <button class="btn btn-vip" id="vipBtn">VIP</button>
+        </div>
+        <p style="margin-top: 15px; font-size: 0.5rem;">High Score: <span id="highScoreDisplay">0</span></p>
+    </div>
+
+    <!-- Results Screen -->
+    <div class="screen hidden" id="resultsScreen">
+        <h2>SONG COMPLETE!</h2>
+        <div class="grade" id="gradeDisplay">A</div>
+        <div class="results-stats">
+            <div class="result-stat">
+                <div class="value" id="finalScore">0</div>
+                <div class="label">SCORE</div>
+            </div>
+            <div class="result-stat">
+                <div class="value" id="maxCombo">0</div>
+                <div class="label">MAX COMBO</div>
+            </div>
+            <div class="result-stat">
+                <div class="value" id="finalAccuracy">0%</div>
+                <div class="label">ACCURACY</div>
+            </div>
+            <div class="result-stat">
+                <div class="value" id="coinsEarned">0</div>
+                <div class="label">COINS</div>
+            </div>
+        </div>
+        <div class="results-stats" style="font-size: 0.5rem; color: #888;">
+            <div>Perfect: <span id="perfectCount" style="color: #ffd700;">0</span></div>
+            <div>Great: <span id="greatCount" style="color: #06ffa5;">0</span></div>
+            <div>Good: <span id="goodCount" style="color: #3a86ff;">0</span></div>
+            <div>Miss: <span id="missCount" style="color: #ff006e;">0</span></div>
+        </div>
+        <div>
+            <button class="btn" id="retryBtn">RETRY</button>
+            <button class="btn btn-secondary" id="menuBtn">MENU</button>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const LANE_WIDTH = 100;
+        const NOTE_HEIGHT = 30;
+        const HIT_Y = 440;
+        const PERFECT_WINDOW = 25;
+        const GREAT_WINDOW = 50;
+        const GOOD_WINDOW = 80;
+
+        // Game state
+        let gameRunning = false;
+        let score = 0;
+        let combo = 0;
+        let maxCombo = 0;
+        let hits = { perfect: 0, great: 0, good: 0, miss: 0 };
+        let notes = [];
+        let currentSong = null;
+        let songProgress = 0;
+        let lastTime = 0;
+
+        // Save data
+        const SAVE_KEY = 'rhythmBlastSave';
+        let saveData = {
+            coins: 0,
+            highScores: {},
+            unlockedSongs: ['tutorial', 'easy1'],
+            totalPlays: 0,
+            bestGrade: {}
+        };
+
+        // Songs data
+        const SONGS = [
+            {
+                id: 'tutorial',
+                title: 'First Steps',
+                artist: 'RetroBlasts',
+                difficulty: 'easy',
+                bpm: 100,
+                icon: '🎹',
+                notePattern: generatePattern(100, 60, 0.3)
+            },
+            {
+                id: 'easy1',
+                title: 'Neon Dreams',
+                artist: 'SynthWave',
+                difficulty: 'easy',
+                bpm: 120,
+                icon: '🌙',
+                notePattern: generatePattern(120, 60, 0.4)
+            },
+            {
+                id: 'medium1',
+                title: 'Electric Rush',
+                artist: 'ByteBeats',
+                difficulty: 'medium',
+                bpm: 140,
+                icon: '⚡',
+                notePattern: generatePattern(140, 60, 0.5),
+                unlockScore: 5000
+            },
+            {
+                id: 'medium2',
+                title: 'Cyber City',
+                artist: 'PixelPulse',
+                difficulty: 'medium',
+                bpm: 150,
+                icon: '🏙️',
+                notePattern: generatePattern(150, 60, 0.55),
+                unlockScore: 10000
+            },
+            {
+                id: 'hard1',
+                title: 'Digital Storm',
+                artist: 'GlitchCore',
+                difficulty: 'hard',
+                bpm: 170,
+                icon: '🌩️',
+                notePattern: generatePattern(170, 60, 0.65),
+                unlockScore: 20000
+            },
+            {
+                id: 'hard2',
+                title: 'Overdrive',
+                artist: 'NeonNinja',
+                difficulty: 'hard',
+                bpm: 180,
+                icon: '🔥',
+                notePattern: generatePattern(180, 60, 0.7),
+                unlockScore: 35000
+            },
+            {
+                id: 'extreme1',
+                title: 'MAXIMUM',
+                artist: '???',
+                difficulty: 'extreme',
+                bpm: 200,
+                icon: '💀',
+                notePattern: generatePattern(200, 60, 0.8),
+                unlockScore: 50000
+            }
+        ];
+
+        // Generate random note pattern
+        function generatePattern(bpm, durationSec, density) {
+            const pattern = [];
+            const beatInterval = 60000 / bpm;
+            const totalBeats = Math.floor(durationSec * 1000 / beatInterval);
+
+            for (let i = 0; i < totalBeats; i++) {
+                if (Math.random() < density) {
+                    const lane = Math.floor(Math.random() * 4);
+                    pattern.push({
+                        time: i * beatInterval,
+                        lane: lane
+                    });
+                    // Sometimes add double notes
+                    if (Math.random() < density * 0.3) {
+                        let lane2 = (lane + 1 + Math.floor(Math.random() * 3)) % 4;
+                        pattern.push({
+                            time: i * beatInterval,
+                            lane: lane2
+                        });
+                    }
+                }
+            }
+            return pattern;
+        }
+
+        // Lane colors
+        const LANE_COLORS = ['#ff006e', '#8338ec', '#3a86ff', '#06ffa5'];
+
+        // Load/Save
+        function loadSave() {
+            try {
+                const saved = localStorage.getItem(SAVE_KEY);
+                if (saved) saveData = { ...saveData, ...JSON.parse(saved) };
+            } catch (e) { console.error('Load error:', e); }
+            updateCoinsDisplay();
+        }
+
+        function save() {
+            localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+        }
+
+        function updateCoinsDisplay() {
+            document.getElementById('coinsDisplay').textContent = saveData.coins;
+        }
+
+        // Render song list
+        function renderSongList() {
+            const list = document.getElementById('songList');
+            let totalScore = Object.values(saveData.highScores).reduce((a, b) => a + b, 0);
+
+            list.innerHTML = SONGS.map(song => {
+                const isUnlocked = saveData.unlockedSongs.includes(song.id) ||
+                                   (song.unlockScore && totalScore >= song.unlockScore);
+                const highScore = saveData.highScores[song.id] || 0;
+                const grade = saveData.bestGrade[song.id] || '';
+
+                if (isUnlocked && !saveData.unlockedSongs.includes(song.id)) {
+                    saveData.unlockedSongs.push(song.id);
+                    save();
+                }
+
+                return `
+                    <div class="song-card ${isUnlocked ? '' : 'locked'} ${currentSong?.id === song.id ? 'selected' : ''}"
+                         data-song="${song.id}" onclick="selectSong('${song.id}')">
+                        <div class="song-icon">${song.icon}</div>
+                        <div class="song-info">
+                            <div class="song-title">${song.title}</div>
+                            <div class="song-artist">${song.artist}</div>
+                            ${highScore > 0 ? `<div style="font-size: 0.45rem; color: #ffd700; margin-top: 3px;">Best: ${highScore} ${grade}</div>` : ''}
+                        </div>
+                        <div class="song-difficulty ${song.difficulty}">${song.difficulty.toUpperCase()}</div>
+                        ${!isUnlocked ? `<div style="font-size: 0.4rem; color: #ff006e;">🔒 ${song.unlockScore} pts</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectSong(songId) {
+            currentSong = SONGS.find(s => s.id === songId);
+            renderSongList();
+        }
+
+        // Start game
+        function startGame() {
+            if (!currentSong) {
+                currentSong = SONGS[0];
+            }
+
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.add('hidden');
+
+            // Reset state
+            gameRunning = true;
+            score = 0;
+            combo = 0;
+            maxCombo = 0;
+            hits = { perfect: 0, great: 0, good: 0, miss: 0 };
+            songProgress = 0;
+            notes = [];
+
+            // Create notes from pattern
+            currentSong.notePattern.forEach(n => {
+                notes.push({
+                    lane: n.lane,
+                    y: -NOTE_HEIGHT - (n.time / 5), // Convert time to starting Y position
+                    time: n.time,
+                    hit: false,
+                    missed: false
+                });
+            });
+
+            updateDisplay();
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Game loop
+        function gameLoop(timestamp) {
+            if (!gameRunning) return;
+
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+            songProgress += deltaTime;
+
+            // Clear canvas
+            ctx.fillStyle = 'rgba(10, 10, 26, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw lane lines
+            for (let i = 1; i < 4; i++) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.beginPath();
+                ctx.moveTo(i * LANE_WIDTH, 0);
+                ctx.lineTo(i * LANE_WIDTH, canvas.height);
+                ctx.stroke();
+            }
+
+            // Draw hit line glow
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.fillRect(0, HIT_Y - 20, canvas.width, 40);
+
+            // Update and draw notes
+            let activeNotes = 0;
+            notes.forEach(note => {
+                if (note.hit || note.missed) return;
+
+                // Move note down
+                note.y += deltaTime * 0.4; // Speed
+
+                // Check if missed
+                if (note.y > HIT_Y + GOOD_WINDOW) {
+                    note.missed = true;
+                    hits.miss++;
+                    combo = 0;
+                    showFeedback('MISS', 'miss');
+                    updateDisplay();
+                    return;
+                }
+
+                // Draw note
+                const x = note.lane * LANE_WIDTH + 10;
+                const gradient = ctx.createLinearGradient(x, note.y, x + LANE_WIDTH - 20, note.y + NOTE_HEIGHT);
+                gradient.addColorStop(0, LANE_COLORS[note.lane]);
+                gradient.addColorStop(1, LANE_COLORS[note.lane] + '88');
+
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.roundRect(x, note.y, LANE_WIDTH - 20, NOTE_HEIGHT, 8);
+                ctx.fill();
+
+                // Glow effect
+                ctx.shadowColor = LANE_COLORS[note.lane];
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                activeNotes++;
+            });
+
+            // Check if song ended
+            if (activeNotes === 0 && notes.every(n => n.hit || n.missed)) {
+                endGame();
+                return;
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Handle key press
+        function handleKeyPress(lane) {
+            if (!gameRunning) return;
+
+            // Visual feedback
+            const keyIds = ['keyD', 'keyF', 'keyJ', 'keyK'];
+            const keyEl = document.getElementById(keyIds[lane]);
+            keyEl.classList.add('active');
+            setTimeout(() => keyEl.classList.remove('active'), 100);
+
+            // Find closest note in lane
+            let closestNote = null;
+            let closestDist = Infinity;
+
+            notes.forEach(note => {
+                if (note.lane !== lane || note.hit || note.missed) return;
+                const dist = Math.abs(note.y - HIT_Y);
+                if (dist < closestDist && dist < GOOD_WINDOW) {
+                    closestDist = dist;
+                    closestNote = note;
+                }
+            });
+
+            if (closestNote) {
+                closestNote.hit = true;
+
+                // Determine hit quality
+                let quality, points;
+                if (closestDist <= PERFECT_WINDOW) {
+                    quality = 'PERFECT';
+                    points = 300;
+                    hits.perfect++;
+                } else if (closestDist <= GREAT_WINDOW) {
+                    quality = 'GREAT';
+                    points = 200;
+                    hits.great++;
+                } else {
+                    quality = 'GOOD';
+                    points = 100;
+                    hits.good++;
+                }
+
+                combo++;
+                if (combo > maxCombo) maxCombo = combo;
+
+                const comboBonus = Math.floor(combo / 10);
+                score += points * (1 + comboBonus * 0.1);
+
+                showFeedback(quality, quality.toLowerCase());
+                if (combo > 0 && combo % 25 === 0) {
+                    showComboPopup(combo);
+                }
+                updateDisplay();
+            }
+        }
+
+        function showFeedback(text, className) {
+            const el = document.getElementById('hitFeedback');
+            el.textContent = text;
+            el.className = 'hit-feedback show ' + className;
+            setTimeout(() => el.classList.remove('show'), 300);
+        }
+
+        function showComboPopup(combo) {
+            const el = document.getElementById('comboPopup');
+            el.textContent = combo + 'x COMBO!';
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 500);
+        }
+
+        function updateDisplay() {
+            document.getElementById('scoreDisplay').textContent = Math.floor(score);
+            document.getElementById('comboDisplay').textContent = combo;
+
+            const totalHits = hits.perfect + hits.great + hits.good + hits.miss;
+            const accuracy = totalHits > 0 ?
+                Math.round(((hits.perfect * 100 + hits.great * 80 + hits.good * 50) / (totalHits * 100)) * 100) : 100;
+            document.getElementById('accuracyDisplay').textContent = accuracy + '%';
+        }
+
+        function endGame() {
+            gameRunning = false;
+
+            const finalScore = Math.floor(score);
+            const totalHits = hits.perfect + hits.great + hits.good + hits.miss;
+            const accuracy = totalHits > 0 ?
+                Math.round(((hits.perfect * 100 + hits.great * 80 + hits.good * 50) / (totalHits * 100)) * 100) : 0;
+
+            // Calculate grade
+            let grade, gradeClass;
+            if (accuracy >= 95 && hits.miss === 0) { grade = 'S'; gradeClass = 's'; }
+            else if (accuracy >= 90) { grade = 'A'; gradeClass = 'a'; }
+            else if (accuracy >= 80) { grade = 'B'; gradeClass = 'b'; }
+            else if (accuracy >= 60) { grade = 'C'; gradeClass = 'c'; }
+            else { grade = 'F'; gradeClass = 'f'; }
+
+            // Calculate coins (with VIP multiplier)
+            let baseCoins = Math.floor(finalScore / 100);
+            if (grade === 'S') baseCoins *= 2;
+            const earnedCoins = typeof VIPSystem !== 'undefined' ? VIPSystem.applyMultiplier(baseCoins) : baseCoins;
+
+            // Update save data
+            saveData.coins += earnedCoins;
+            saveData.totalPlays++;
+            if (!saveData.highScores[currentSong.id] || finalScore > saveData.highScores[currentSong.id]) {
+                saveData.highScores[currentSong.id] = finalScore;
+                saveData.bestGrade[currentSong.id] = grade;
+            }
+            save();
+            updateCoinsDisplay();
+
+            // Show results
+            document.getElementById('finalScore').textContent = finalScore;
+            document.getElementById('maxCombo').textContent = maxCombo;
+            document.getElementById('finalAccuracy').textContent = accuracy + '%';
+            document.getElementById('coinsEarned').textContent = '+' + earnedCoins;
+            document.getElementById('perfectCount').textContent = hits.perfect;
+            document.getElementById('greatCount').textContent = hits.great;
+            document.getElementById('goodCount').textContent = hits.good;
+            document.getElementById('missCount').textContent = hits.miss;
+
+            const gradeEl = document.getElementById('gradeDisplay');
+            gradeEl.textContent = grade;
+            gradeEl.className = 'grade ' + gradeClass;
+
+            document.getElementById('resultsScreen').classList.remove('hidden');
+        }
+
+        // Key bindings
+        const KEY_MAP = { 'd': 0, 'f': 1, 'j': 2, 'k': 3 };
+
+        document.addEventListener('keydown', (e) => {
+            const tag = document.activeElement?.tagName?.toLowerCase();
+            if (tag === 'input' || tag === 'textarea') return;
+
+            const key = e.key.toLowerCase();
+            if (KEY_MAP.hasOwnProperty(key)) {
+                e.preventDefault();
+                handleKeyPress(KEY_MAP[key]);
+            }
+
+            // Admin/Owner sequence detection
+            adminKeyBuffer += key;
+            ownerKeyBuffer += key;
+            if (adminKeyBuffer.length > 5) adminKeyBuffer = adminKeyBuffer.slice(-5);
+            if (ownerKeyBuffer.length > 5) ownerKeyBuffer = ownerKeyBuffer.slice(-5);
+            if (adminKeyBuffer === 'admin') { showAdminLogin(); adminKeyBuffer = ''; }
+            if (ownerKeyBuffer === 'owner') { showOwnerLogin(); ownerKeyBuffer = ''; }
+        });
+
+        // Button handlers
+        document.getElementById('playBtn').addEventListener('click', startGame);
+        document.getElementById('retryBtn').addEventListener('click', startGame);
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+            renderSongList();
+        });
+
+        // VIP button
+        document.getElementById('vipBtn').addEventListener('click', () => {
+            if (typeof VIPSystem !== 'undefined') {
+                if (VIPSystem.isVIP()) {
+                    VIPSystem.showStatusModal();
+                } else {
+                    VIPSystem.showActivationModal();
+                }
+            }
+        });
+
+        // Admin Panel System
+        const ADMIN_PASSWORD = 'rhythm123';
+        const OWNER_PASSWORD = 'JsgOwner2024X';
+        let adminKeyBuffer = '';
+        let ownerKeyBuffer = '';
+
+        function showAdminLogin() {
+            const modal = document.createElement('div');
+            modal.className = 'admin-modal';
+            modal.id = 'adminLoginModal';
+            modal.innerHTML = `
+                <div class="admin-content">
+                    <h2>ADMIN LOGIN</h2>
+                    <input type="password" id="adminPwInput" placeholder="Enter Password" maxlength="20">
+                    <div>
+                        <button class="admin-btn admin-btn-primary" onclick="verifyAdminPw()">LOGIN</button>
+                        <button class="admin-btn admin-btn-close" onclick="closeAdminModal()">CANCEL</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            document.getElementById('adminPwInput').focus();
+        }
+
+        function showOwnerLogin() {
+            const modal = document.createElement('div');
+            modal.className = 'admin-modal';
+            modal.id = 'ownerLoginModal';
+            modal.innerHTML = `
+                <div class="admin-content owner">
+                    <h2>OWNER LOGIN</h2>
+                    <input type="password" id="ownerPwInput" placeholder="Enter Password" maxlength="20">
+                    <div>
+                        <button class="admin-btn admin-btn-owner" onclick="verifyOwnerPw()">LOGIN</button>
+                        <button class="admin-btn admin-btn-close" onclick="closeAdminModal()">CANCEL</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            document.getElementById('ownerPwInput').focus();
+        }
+
+        function verifyAdminPw() {
+            if (document.getElementById('adminPwInput').value === ADMIN_PASSWORD) {
+                closeAdminModal();
+                showAdminPanel();
+            } else {
+                document.getElementById('adminPwInput').value = '';
+                alert('Wrong password!');
+            }
+        }
+
+        function verifyOwnerPw() {
+            if (document.getElementById('ownerPwInput').value === OWNER_PASSWORD) {
+                closeAdminModal();
+                showOwnerPanel();
+            } else {
+                document.getElementById('ownerPwInput').value = '';
+                alert('Wrong password!');
+            }
+        }
+
+        function closeAdminModal() {
+            ['adminLoginModal', 'ownerLoginModal', 'adminPanelModal', 'ownerPanelModal']
+                .forEach(id => document.getElementById(id)?.remove());
+        }
+
+        function showAdminPanel() {
+            const modal = document.createElement('div');
+            modal.className = 'admin-modal';
+            modal.id = 'adminPanelModal';
+            modal.innerHTML = `
+                <div class="admin-content">
+                    <h2>ADMIN PANEL</h2>
+                    <p style="color:#888;font-size:0.45rem;">Coins: ${saveData.coins}</p>
+                    <div class="admin-actions">
+                        <button class="admin-action-btn" onclick="adminAddCoins(1000)">+1000 Coins</button>
+                        <button class="admin-action-btn" onclick="adminAddCoins(10000)">+10K Coins</button>
+                        <button class="admin-action-btn" onclick="adminUnlockSongs()">Unlock All Songs</button>
+                        <button class="admin-action-btn" onclick="adminPerfectScore()">Perfect Score</button>
+                    </div>
+                    <button class="admin-btn admin-btn-close" style="margin-top:20px;" onclick="closeAdminModal()">CLOSE</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function showOwnerPanel() {
+            const modal = document.createElement('div');
+            modal.className = 'admin-modal';
+            modal.id = 'ownerPanelModal';
+            modal.innerHTML = `
+                <div class="admin-content owner">
+                    <h2>OWNER PANEL</h2>
+                    <p style="color:#888;font-size:0.45rem;">Coins: ${saveData.coins}</p>
+                    <div class="admin-actions">
+                        <button class="admin-action-btn" onclick="ownerSetCoins()">Set Coins</button>
+                        <button class="admin-action-btn" onclick="ownerInfiniteCoins()">Infinite Coins</button>
+                        <button class="admin-action-btn" onclick="adminUnlockSongs()">Unlock Everything</button>
+                        <button class="admin-action-btn" onclick="ownerSetAllS()">All S Ranks</button>
+                        <button class="admin-action-btn danger" onclick="ownerReset()">RESET</button>
+                    </div>
+                    <button class="admin-btn admin-btn-close" style="margin-top:20px;" onclick="closeAdminModal()">CLOSE</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function adminAddCoins(amount) {
+            saveData.coins += amount;
+            save();
+            updateCoinsDisplay();
+            closeAdminModal();
+        }
+
+        function adminUnlockSongs() {
+            SONGS.forEach(s => {
+                if (!saveData.unlockedSongs.includes(s.id)) {
+                    saveData.unlockedSongs.push(s.id);
+                }
+            });
+            save();
+            renderSongList();
+            closeAdminModal();
+        }
+
+        function adminPerfectScore() {
+            if (currentSong) {
+                saveData.highScores[currentSong.id] = 99999;
+                saveData.bestGrade[currentSong.id] = 'S';
+                save();
+                renderSongList();
+            }
+            closeAdminModal();
+        }
+
+        function ownerSetCoins() {
+            const amount = prompt('Enter coin amount:');
+            if (amount && !isNaN(amount)) {
+                saveData.coins = parseInt(amount);
+                save();
+                updateCoinsDisplay();
+            }
+            closeAdminModal();
+        }
+
+        function ownerInfiniteCoins() {
+            saveData.coins = 999999999;
+            save();
+            updateCoinsDisplay();
+            closeAdminModal();
+        }
+
+        function ownerSetAllS() {
+            SONGS.forEach(s => {
+                saveData.highScores[s.id] = 99999;
+                saveData.bestGrade[s.id] = 'S';
+                if (!saveData.unlockedSongs.includes(s.id)) {
+                    saveData.unlockedSongs.push(s.id);
+                }
+            });
+            save();
+            renderSongList();
+            closeAdminModal();
+        }
+
+        function ownerReset() {
+            if (confirm('RESET ALL PROGRESS?')) {
+                localStorage.removeItem(SAVE_KEY);
+                location.reload();
+            }
+        }
+
+        // Initialize
+        loadSave();
+        renderSongList();
+        selectSong('tutorial');
+        document.getElementById('highScoreDisplay').textContent =
+            Math.max(...Object.values(saveData.highScores), 0);
+
+        if (typeof VIPSystem !== 'undefined') {
+            VIPSystem.showIndicator();
+        }
+    </script>
+</body>
+</html>
+
+<script>
+// ============================================
+// CENTRALIZED ADMIN SYSTEM
+// ============================================
+(async function() {
+    try {
+        const resp = await fetch('api/game-admin.php?action=check&game=rhythm', { credentials: 'include' });
+        const data = await resp.json();
+        if (data.success && data.isAdmin) {
+            // Auto-unlock admin if server says so
+            window.serverAdmin = true;
+        }
+        if (data.success && data.isOwner) {
+            window.serverOwner = true;
+        }
+    } catch (e) { console.log('Admin check failed'); }
+})();
+
+// Hook into admin login
+const origAdminLogin = window.adminLogin;
+window.adminLogin = async function() {
+    const pw = document.getElementById('adminPwInput')?.value;
+    try {
+        const resp = await fetch('api/game-admin.php?action=unlock&game=rhythm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            credentials: 'include',
+            body: 'password=' + encodeURIComponent(pw)
+        });
+        const data = await resp.json();
+        if (data.success) {
+            if (origAdminLogin) origAdminLogin();
+            else alert(data.message);
+        } else {
+            alert(data.error || 'Invalid password');
+        }
+    } catch (e) {
+        if (origAdminLogin) origAdminLogin();
+    }
+};
+</script>

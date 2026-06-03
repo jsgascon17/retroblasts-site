@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Egg Farm Tycoon 3D - RetroBlasts</title>
+    <meta name="description" content="Build your 3D egg empire! Hatch chickens, upgrade your farm, unlock rare eggs.">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #1a1a2e;
+            overflow: hidden;
+            color: #fff;
+            user-select: none;
+        }
+        #gameCanvas { position: fixed; top: 0; left: 0; z-index: 1; }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, transparent 100%);
+            z-index: 100;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .title { font-size: 1.6rem; color: #ffd700; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .stats-row { display: flex; gap: 12px; }
+        .stat {
+            background: rgba(0,0,0,0.6);
+            padding: 8px 16px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-val { font-size: 1.1rem; font-weight: bold; color: #4ade80; }
+        .stat-lbl { font-size: 0.65rem; color: #888; }
+
+        /* Side Panel */
+        .side-panel {
+            position: fixed;
+            top: 75px; right: 15px;
+            width: 260px;
+            max-height: calc(100vh - 180px);
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .panel {
+            background: rgba(0,0,0,0.9);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .panel h3 {
+            font-size: 0.9rem;
+            color: #ffd700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Egg Types */
+        .egg-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .egg-item {
+            background: rgba(255,255,255,0.08);
+            padding: 8px 4px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .egg-item:hover { background: rgba(255,255,255,0.12); }
+        .egg-item.active { border-color: #ffd700; background: rgba(255,215,0,0.15); }
+        .egg-item.locked { opacity: 0.35; cursor: not-allowed; }
+        .egg-item .icon { font-size: 1.4rem; }
+        .egg-item .val { font-size: 0.55rem; color: #4ade80; margin-top: 2px; }
+
+        /* Upgrades */
+        .upgrade-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .upgrade-item:hover { border-color: rgba(74,222,128,0.5); }
+        .upgrade-item.can-buy { border-color: #4ade80; background: rgba(74,222,128,0.1); }
+        .upgrade-item.maxed { opacity: 0.4; cursor: default; }
+        .upgrade-item .u-icon { font-size: 1.5rem; }
+        .upgrade-item .u-info { flex: 1; }
+        .upgrade-item .u-name { font-size: 0.8rem; font-weight: bold; }
+        .upgrade-item .u-desc { font-size: 0.6rem; color: #888; }
+        .upgrade-item .u-lvl { font-size: 0.55rem; color: #666; }
+        .upgrade-item .u-cost {
+            background: #4ade80;
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* Bottom HUD */
+        .bottom-hud {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            z-index: 100;
+        }
+        .soul-bar {
+            background: rgba(139,92,246,0.3);
+            padding: 8px 25px;
+            border-radius: 25px;
+            border: 2px solid #8b5cf6;
+            font-size: 0.9rem;
+        }
+        .soul-bar span { color: #c4b5fd; font-weight: bold; }
+        .btn-row { display: flex; gap: 15px; }
+        .hatch-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+            border: none;
+            padding: 20px 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 35px;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(239,68,68,0.5);
+            transition: all 0.15s;
+            position: relative;
+            overflow: hidden;
+        }
+        .hatch-btn:hover { transform: scale(1.03); }
+        .hatch-btn:active, .hatch-btn.holding {
+            transform: scale(0.97);
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+        .hatch-btn .sub { font-size: 0.7rem; opacity: 0.9; display: block; margin-top: 3px; }
+        .hatch-btn .progress {
+            position: absolute;
+            bottom: 0; left: 0;
+            height: 4px;
+            background: #fbbf24;
+            width: 0%;
+            transition: width 0.1s;
+        }
+        .prestige-btn {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 6px 25px rgba(139,92,246,0.4);
+        }
+        .prestige-btn:hover { transform: scale(1.03); }
+        .prestige-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* Shipping indicator */
+        .shipping-indicator {
+            position: fixed;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 100;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .shipping-indicator .truck { margin-right: 8px; }
+        .shipping-indicator .rate { color: #4ade80; font-weight: bold; }
+
+        /* Float text */
+        .float-text {
+            position: fixed;
+            pointer-events: none;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #4ade80;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            animation: floatAnim 1.2s ease-out forwards;
+            z-index: 200;
+        }
+        @keyframes floatAnim {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-60px) scale(1.3); }
+        }
+
+        /* Loading */
+        .loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .loading.hidden { display: none; }
+        .loading h1 { color: #ffd700; margin-bottom: 20px; font-size: 2rem; }
+        .load-bar { width: 200px; height: 8px; background: #333; border-radius: 4px; overflow: hidden; }
+        .load-fill { height: 100%; background: linear-gradient(90deg, #4ade80, #22c55e); width: 0%; animation: loadAnim 1.2s ease-out forwards; }
+        @keyframes loadAnim { to { width: 100%; } }
+
+        @media (max-width: 700px) {
+            .side-panel { width: 200px; right: 10px; }
+            .hatch-btn { padding: 15px 35px; font-size: 1.1rem; }
+        }
+    </style>
+
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"VideoGame","name":"Egg Farm Tycoon","description":"Build your egg empire with chickens","genre":"Idle","gamePlatform":"Web Browser","applicationCategory":"Game","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Organization","name":"RetroBlasts"},"url":"https://retroblasts.com/egg-farm.html","isFamilyFriendly":true}
+    </script>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <h1>🥚 Egg Farm Tycoon</h1>
+        <div class="load-bar"><div class="load-fill"></div></div>
+        <p style="margin-top:15px;color:#666">Building your farm...</p>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="header">
+        <a href="index.html" class="back-btn">← Back</a>
+        <div class="title">🥚 Egg Farm Tycoon</div>
+        <div class="stats-row">
+            <div class="stat">
+                <div class="stat-val" id="moneyDisplay">$0</div>
+                <div class="stat-lbl">Money</div>
+            </div>
+            <div class="stat">
+                <div class="stat-val" id="epsDisplay">$0/s</div>
+                <div class="stat-lbl">Earnings</div>
+            </div>
+            <div class="stat">
+                <div class="stat-val" id="chickenDisplay">0</div>
+                <div class="stat-lbl">Chickens</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="side-panel">
+        <div class="panel">
+            <h3>🥚 Egg Type</h3>
+            <div class="egg-grid" id="eggGrid"></div>
+        </div>
+        <div class="panel">
+            <h3>🔧 Upgrades</h3>
+            <div id="upgradeList"></div>
+        </div>
+    </div>
+
+    <div class="shipping-indicator">
+        <span class="truck">🚚</span>
+        Shipping: <span class="rate" id="shippingRate">$0/s</span>
+    </div>
+
+    <div class="bottom-hud">
+        <div class="soul-bar">
+            🌟 Soul Eggs: <span id="soulCount">0</span> &nbsp;|&nbsp; +<span id="soulBonus">0</span>% bonus
+        </div>
+        <div class="btn-row">
+            <button class="hatch-btn" id="hatchBtn">
+                🐣 HOLD TO HATCH
+                <span class="sub" id="hatchInfo">Cost: $10 | Max: 10</span>
+                <div class="progress" id="hatchProgress"></div>
+            </button>
+            <button class="prestige-btn" id="prestigeBtn" onclick="prestige()">
+                ✨ Prestige<br><span style="font-size:0.7rem" id="prestigeGain">+0 🥚</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== GAME CONFIG ====================
+        const EGG_TYPES = [
+            { id: 'regular', name: 'Regular', icon: '🥚', value: 1, unlock: 0, color: 0xffeedd },
+            { id: 'gold', name: 'Gold', icon: '🥇', value: 8, unlock: 5000, color: 0xffd700 },
+            { id: 'diamond', name: 'Diamond', icon: '💎', value: 50, unlock: 100000, color: 0x00ffff },
+            { id: 'platinum', name: 'Platinum', icon: '⚪', value: 250, unlock: 1000000, color: 0xe8e8e8 },
+            { id: 'cosmic', name: 'Cosmic', icon: '🌟', value: 1500, unlock: 25000000, color: 0xff69b4 },
+            { id: 'quantum', name: 'Quantum', icon: '⚛️', value: 10000, unlock: 500000000, color: 0x9932cc },
+            { id: 'dark', name: 'Dark', icon: '🔮', value: 100000, unlock: 25000000000, color: 0x4b0082 },
+            { id: 'universe', name: 'Universe', icon: '🌌', value: 1000000, unlock: 1000000000000, color: 0x000033 }
+        ];
+
+        const UPGRADES = [
+            { id: 'hatchRate', name: 'Hatch Rate', icon: '🐣', desc: 'Faster hatching', base: 50, mult: 1.6, max: 100 },
+            { id: 'layRate', name: 'Lay Rate', icon: '🥚', desc: 'Chickens lay faster', base: 100, mult: 1.8, max: 50 },
+            { id: 'eggValue', name: 'Egg Value', icon: '💰', desc: '+25% egg value', base: 200, mult: 2, max: 50 },
+            { id: 'truckCap', name: 'Truck Capacity', icon: '🚚', desc: 'Ships more eggs', base: 500, mult: 2.2, max: 30 },
+            { id: 'maxChickens', name: 'Coop Size', icon: '🏠', desc: '+10 max chickens', base: 1000, mult: 1.5, max: 100 },
+            { id: 'offline', name: 'Silos', icon: '🏗️', desc: 'Better offline earn', base: 5000, mult: 2.5, max: 20 }
+        ];
+
+        // ==================== GAME STATE ====================
+        let game = {
+            money: 100,
+            totalEarned: 0,
+            chickens: 0,
+            maxChickens: 10,
+            currentEgg: 0,
+            upgrades: {},
+            soulEggs: 0,
+            eggsInSilo: 0,
+            lastSave: Date.now()
+        };
+
+        // ==================== THREE.JS ====================
+        let scene, camera, renderer, clock;
+        let chickens3D = [], trucks3D = [], eggs3D = [];
+        let isHatching = false;
+        let hatchTimer = 0;
+
+        function initThree() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87ceeb);
+            scene.fog = new THREE.Fog(0x87ceeb, 40, 100);
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
+            camera.position.set(0, 25, 35);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas'), antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            clock = new THREE.Clock();
+
+            // Lighting
+            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+            const sun = new THREE.DirectionalLight(0xffffff, 1);
+            sun.position.set(20, 30, 20);
+            sun.castShadow = true;
+            sun.shadow.mapSize.set(2048, 2048);
+            sun.shadow.camera.left = -30;
+            sun.shadow.camera.right = 30;
+            sun.shadow.camera.top = 30;
+            sun.shadow.camera.bottom = -30;
+            scene.add(sun);
+
+            createFarm();
+            createTrucks();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // Hatch button hold
+            const hatchBtn = document.getElementById('hatchBtn');
+            hatchBtn.addEventListener('mousedown', () => startHatching());
+            hatchBtn.addEventListener('mouseup', () => stopHatching());
+            hatchBtn.addEventListener('mouseleave', () => stopHatching());
+            hatchBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startHatching(); });
+            hatchBtn.addEventListener('touchend', () => stopHatching());
+
+            animate();
+        }
+
+        function createFarm() {
+            // Ground
+            const groundGeo = new THREE.PlaneGeometry(80, 80);
+            const groundMat = new THREE.MeshLambertMaterial({ color: 0x5a8f3a });
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Chicken yard (dirt)
+            const yardGeo = new THREE.CircleGeometry(12, 32);
+            const yardMat = new THREE.MeshLambertMaterial({ color: 0x8b6914 });
+            const yard = new THREE.Mesh(yardGeo, yardMat);
+            yard.rotation.x = -Math.PI / 2;
+            yard.position.y = 0.02;
+            scene.add(yard);
+
+            // Barn
+            const barn = new THREE.Group();
+            const barnBody = new THREE.Mesh(
+                new THREE.BoxGeometry(8, 5, 6),
+                new THREE.MeshLambertMaterial({ color: 0xcc3333 })
+            );
+            barnBody.position.y = 2.5;
+            barnBody.castShadow = true;
+            barn.add(barnBody);
+
+            const roof = new THREE.Mesh(
+                new THREE.ConeGeometry(6, 3, 4),
+                new THREE.MeshLambertMaterial({ color: 0x8b4513 })
+            );
+            roof.position.y = 6.5;
+            roof.rotation.y = Math.PI / 4;
+            roof.castShadow = true;
+            barn.add(roof);
+
+            // Door
+            const door = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 3, 0.2),
+                new THREE.MeshLambertMaterial({ color: 0x5c3317 })
+            );
+            door.position.set(0, 1.5, 3.1);
+            barn.add(door);
+
+            barn.position.set(0, 0, -12);
+            scene.add(barn);
+
+            // Fence posts
+            for (let a = 0; a < Math.PI * 2; a += 0.3) {
+                const post = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.1, 0.12, 1.5, 8),
+                    new THREE.MeshLambertMaterial({ color: 0x8b4513 })
+                );
+                post.position.set(Math.cos(a) * 13, 0.75, Math.sin(a) * 13);
+                post.castShadow = true;
+                scene.add(post);
+            }
+
+            // Road
+            const roadGeo = new THREE.PlaneGeometry(6, 50);
+            const roadMat = new THREE.MeshLambertMaterial({ color: 0x444444 });
+            const road = new THREE.Mesh(roadGeo, roadMat);
+            road.rotation.x = -Math.PI / 2;
+            road.position.set(20, 0.03, 0);
+            scene.add(road);
+
+            // Trees
+            [[-18, -15], [-20, 10], [30, -18], [28, 15], [-25, 0]].forEach(([x, z]) => {
+                const tree = new THREE.Group();
+                tree.add(new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.4, 0.5, 3, 8),
+                    new THREE.MeshLambertMaterial({ color: 0x8b4513 })
+                ));
+                tree.children[0].position.y = 1.5;
+                const leaves = new THREE.Mesh(
+                    new THREE.ConeGeometry(2, 4, 8),
+                    new THREE.MeshLambertMaterial({ color: 0x228b22 })
+                );
+                leaves.position.y = 4.5;
+                leaves.castShadow = true;
+                tree.add(leaves);
+                tree.position.set(x, 0, z);
+                scene.add(tree);
+            });
+        }
+
+        function createTrucks() {
+            for (let i = 0; i < 3; i++) {
+                const truck = createTruck3D();
+                truck.position.set(20, 0, -20 + i * 20);
+                truck.userData = {
+                    state: 'driving',
+                    targetZ: 20,
+                    loadedEggs: 0,
+                    delay: i * 2
+                };
+                trucks3D.push(truck);
+                scene.add(truck);
+            }
+        }
+
+        function createTruck3D() {
+            const truck = new THREE.Group();
+
+            // Cab
+            const cab = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 2, 2.5),
+                new THREE.MeshLambertMaterial({ color: 0x2255aa })
+            );
+            cab.position.set(0, 1.2, 1.5);
+            cab.castShadow = true;
+            truck.add(cab);
+
+            // Bed
+            const bed = new THREE.Mesh(
+                new THREE.BoxGeometry(2.5, 1.5, 4),
+                new THREE.MeshLambertMaterial({ color: 0x3366cc })
+            );
+            bed.position.set(0, 1, -1.5);
+            bed.castShadow = true;
+            truck.add(bed);
+
+            // Wheels
+            const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
+            const wheelMat = new THREE.MeshLambertMaterial({ color: 0x222222 });
+            [[-0.9, 1.2], [-0.9, -2], [0.9, 1.2], [0.9, -2]].forEach(([x, z]) => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(x, 0.4, z);
+                truck.add(wheel);
+            });
+
+            return truck;
+        }
+
+        // ==================== 3D CHICKEN ====================
+        function createChicken3D() {
+            const chicken = new THREE.Group();
+
+            // Body
+            const body = new THREE.Mesh(
+                new THREE.SphereGeometry(0.5, 12, 10),
+                new THREE.MeshLambertMaterial({ color: 0xffffff })
+            );
+            body.scale.set(1, 0.8, 1.2);
+            body.position.y = 0.5;
+            body.castShadow = true;
+            chicken.add(body);
+
+            // Head
+            const head = new THREE.Mesh(
+                new THREE.SphereGeometry(0.3, 10, 10),
+                new THREE.MeshLambertMaterial({ color: 0xffffff })
+            );
+            head.position.set(0, 0.85, 0.35);
+            chicken.add(head);
+
+            // Beak
+            const beak = new THREE.Mesh(
+                new THREE.ConeGeometry(0.1, 0.25, 8),
+                new THREE.MeshLambertMaterial({ color: 0xffa500 })
+            );
+            beak.rotation.x = Math.PI / 2;
+            beak.position.set(0, 0.8, 0.6);
+            chicken.add(beak);
+
+            // Comb
+            const comb = new THREE.Mesh(
+                new THREE.BoxGeometry(0.08, 0.2, 0.25),
+                new THREE.MeshLambertMaterial({ color: 0xff3333 })
+            );
+            comb.position.set(0, 1.1, 0.3);
+            chicken.add(comb);
+
+            // Tail
+            const tail = new THREE.Mesh(
+                new THREE.ConeGeometry(0.2, 0.5, 6),
+                new THREE.MeshLambertMaterial({ color: 0xffffff })
+            );
+            tail.rotation.x = -0.8;
+            tail.position.set(0, 0.7, -0.5);
+            chicken.add(tail);
+
+            chicken.userData = {
+                vx: (Math.random() - 0.5) * 2,
+                vz: (Math.random() - 0.5) * 2,
+                phase: Math.random() * Math.PI * 2,
+                eggTimer: Math.random() * 2
+            };
+
+            chicken.position.set(
+                (Math.random() - 0.5) * 16,
+                0,
+                (Math.random() - 0.5) * 16
+            );
+
+            scene.add(chicken);
+            chickens3D.push(chicken);
+        }
+
+        // ==================== GAME LOGIC ====================
+        function formatNum(n) {
+            if (n >= 1e15) return (n/1e15).toFixed(2) + 'Q';
+            if (n >= 1e12) return (n/1e12).toFixed(2) + 'T';
+            if (n >= 1e9) return (n/1e9).toFixed(2) + 'B';
+            if (n >= 1e6) return (n/1e6).toFixed(2) + 'M';
+            if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+            return Math.floor(n).toString();
+        }
+
+        function getEggValue() {
+            let val = EGG_TYPES[game.currentEgg].value;
+            val *= 1 + (game.upgrades.eggValue || 0) * 0.25;
+            val *= 1 + game.soulEggs * 0.1;
+            return val;
+        }
+
+        function getLayRate() {
+            return 1 + (game.upgrades.layRate || 0) * 0.3;
+        }
+
+        function getTruckCapacity() {
+            return 10 + (game.upgrades.truckCap || 0) * 5;
+        }
+
+        function getHatchRate() {
+            return 1 + (game.upgrades.hatchRate || 0) * 0.2;
+        }
+
+        function getHatchCost() {
+            return Math.floor(10 * Math.pow(1.08, game.chickens));
+        }
+
+        function getEarningsPerSec() {
+            const eggsPerSec = game.chickens * getLayRate();
+            return eggsPerSec * getEggValue();
+        }
+
+        function startHatching() {
+            isHatching = true;
+            document.getElementById('hatchBtn').classList.add('holding');
+        }
+
+        function stopHatching() {
+            isHatching = false;
+            hatchTimer = 0;
+            document.getElementById('hatchBtn').classList.remove('holding');
+            document.getElementById('hatchProgress').style.width = '0%';
+        }
+
+        function tryHatch(delta) {
+            if (!isHatching) return;
+
+            const cost = getHatchCost();
+            const maxChickens = 10 + (game.upgrades.maxChickens || 0) * 10;
+            game.maxChickens = maxChickens;
+
+            if (game.chickens >= maxChickens || game.money < cost) {
+                return;
+            }
+
+            hatchTimer += delta * getHatchRate();
+            document.getElementById('hatchProgress').style.width = (hatchTimer * 100) + '%';
+
+            if (hatchTimer >= 1) {
+                hatchTimer = 0;
+                game.money -= cost;
+                game.chickens++;
+                createChicken3D();
+                updateUI();
+            }
+        }
+
+        function getSoulEggsGain() {
+            return Math.floor(Math.pow(game.totalEarned / 1e6, 0.45));
+        }
+
+        function prestige() {
+            const gain = getSoulEggsGain();
+            if (gain < 1) return;
+
+            game.soulEggs += gain;
+            game.money = 0;
+            game.totalEarned = 0;
+            game.chickens = 0;
+            game.maxChickens = 10;
+            game.currentEgg = 0;
+            game.upgrades = {};
+            game.eggsInSilo = 0;
+
+            chickens3D.forEach(c => scene.remove(c));
+            chickens3D = [];
+            eggs3D.forEach(e => scene.remove(e));
+            eggs3D = [];
+
+            updateUI();
+            renderEggs();
+            renderUpgrades();
+            saveGame();
+        }
+
+        // ==================== UPGRADES ====================
+        function buyUpgrade(id) {
+            const up = UPGRADES.find(u => u.id === id);
+            const lvl = game.upgrades[id] || 0;
+            if (lvl >= up.max) return;
+            const cost = Math.floor(up.base * Math.pow(up.mult, lvl));
+            if (game.money >= cost) {
+                game.money -= cost;
+                game.upgrades[id] = lvl + 1;
+                updateUI();
+                renderUpgrades();
+            }
+        }
+
+        function selectEgg(i) {
+            if (game.totalEarned >= EGG_TYPES[i].unlock) {
+                game.currentEgg = i;
+                renderEggs();
+            }
+        }
+
+        // ==================== UI ====================
+        function updateUI() {
+            document.getElementById('moneyDisplay').textContent = '$' + formatNum(game.money);
+            document.getElementById('epsDisplay').textContent = '$' + formatNum(getEarningsPerSec()) + '/s';
+            document.getElementById('chickenDisplay').textContent = game.chickens + '/' + game.maxChickens;
+            document.getElementById('shippingRate').textContent = '$' + formatNum(getEarningsPerSec()) + '/s';
+            document.getElementById('hatchInfo').textContent = 'Cost: $' + formatNum(getHatchCost()) + ' | Max: ' + game.maxChickens;
+            document.getElementById('soulCount').textContent = game.soulEggs;
+            document.getElementById('soulBonus').textContent = game.soulEggs * 10;
+            document.getElementById('prestigeGain').textContent = '+' + getSoulEggsGain() + ' 🥚';
+            document.getElementById('prestigeBtn').disabled = getSoulEggsGain() < 1;
+        }
+
+        function renderEggs() {
+            const grid = document.getElementById('eggGrid');
+            grid.innerHTML = '';
+            EGG_TYPES.forEach((egg, i) => {
+                const unlocked = game.totalEarned >= egg.unlock;
+                const div = document.createElement('div');
+                div.className = `egg-item ${game.currentEgg === i ? 'active' : ''} ${!unlocked ? 'locked' : ''}`;
+                div.onclick = () => selectEgg(i);
+                div.innerHTML = `
+                    <div class="icon">${unlocked ? egg.icon : '🔒'}</div>
+                    <div class="val">${unlocked ? '$' + formatNum(egg.value) : ''}</div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function renderUpgrades() {
+            const list = document.getElementById('upgradeList');
+            list.innerHTML = '';
+            UPGRADES.forEach(u => {
+                const lvl = game.upgrades[u.id] || 0;
+                const cost = Math.floor(u.base * Math.pow(u.mult, lvl));
+                const maxed = lvl >= u.max;
+                const canBuy = game.money >= cost && !maxed;
+                const div = document.createElement('div');
+                div.className = `upgrade-item ${canBuy ? 'can-buy' : ''} ${maxed ? 'maxed' : ''}`;
+                div.onclick = () => buyUpgrade(u.id);
+                div.innerHTML = `
+                    <div class="u-icon">${u.icon}</div>
+                    <div class="u-info">
+                        <div class="u-name">${u.name}</div>
+                        <div class="u-desc">${u.desc}</div>
+                        <div class="u-lvl">Lv ${lvl}/${u.max}</div>
+                    </div>
+                    <div class="u-cost">${maxed ? 'MAX' : '$' + formatNum(cost)}</div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function showFloat(text, x, y) {
+            const div = document.createElement('div');
+            div.className = 'float-text';
+            div.textContent = text;
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 1200);
+        }
+
+        // ==================== SAVE/LOAD ====================
+        function saveGame() {
+            // Sync to server for logged-in users
+            fetch("api/game-stats.php", {
+                method: "POST", credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "save", game: "egg-farm", data: {
+                    totalEarned: game.totalEarned,
+                    soulEggs: game.soulEggs,
+                    chickens: game.chickens,
+                    currentEgg: game.currentEgg
+                }})
+            }).catch(() => {});
+            game.lastSave = Date.now();
+            localStorage.setItem('eggFarmV2', JSON.stringify(game));
+        }
+
+        function loadGame() {
+            const save = localStorage.getItem('eggFarmV2');
+            if (save) {
+                game = { ...game, ...JSON.parse(save) };
+                for (let i = 0; i < game.chickens; i++) createChicken3D();
+
+                // Offline earnings
+                const offlineSec = (Date.now() - game.lastSave) / 1000;
+                if (offlineSec > 60) {
+                    const offlineMult = 0.1 + (game.upgrades.offline || 0) * 0.1;
+                    const earnings = getEarningsPerSec() * offlineSec * offlineMult;
+                    if (earnings > 1) {
+                        game.money += earnings;
+                        game.totalEarned += earnings;
+                        setTimeout(() => alert('🌙 Welcome back!\nYou earned $' + formatNum(earnings) + ' while away!'), 500);
+                    }
+                }
+            }
+            // Safety: give starting money if stuck
+            if (game.chickens === 0 && game.money < 100) game.money = 100;
+        }
+
+        // ==================== ANIMATION ====================
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = Math.min(clock.getDelta(), 0.1);
+            const time = clock.getElapsedTime();
+
+            // Camera slight movement
+            camera.position.x = Math.sin(time * 0.1) * 3;
+            camera.lookAt(0, 0, 0);
+
+            // Hatching
+            tryHatch(delta);
+
+            // Update chickens
+            chickens3D.forEach(chicken => {
+                const d = chicken.userData;
+
+                // Random walking
+                if (Math.random() < 0.01) {
+                    d.vx = (Math.random() - 0.5) * 3;
+                    d.vz = (Math.random() - 0.5) * 3;
+                }
+
+                chicken.position.x += d.vx * delta;
+                chicken.position.z += d.vz * delta;
+
+                // Keep in yard
+                const dist = Math.sqrt(chicken.position.x ** 2 + chicken.position.z ** 2);
+                if (dist > 10) {
+                    d.vx = -chicken.position.x * 0.5;
+                    d.vz = -chicken.position.z * 0.5;
+                }
+
+                // Face direction
+                if (Math.abs(d.vx) > 0.1 || Math.abs(d.vz) > 0.1) {
+                    chicken.rotation.y = Math.atan2(d.vx, d.vz);
+                }
+
+                // Bob
+                d.phase += delta * 10;
+                chicken.position.y = Math.abs(Math.sin(d.phase)) * 0.1;
+
+                // Lay eggs (adds to silo)
+                d.eggTimer += delta * getLayRate();
+                if (d.eggTimer > 2) {
+                    d.eggTimer = 0;
+                    game.eggsInSilo += getEggValue();
+                }
+            });
+
+            // Trucks - ship eggs
+            trucks3D.forEach(truck => {
+                const d = truck.userData;
+                d.delay -= delta;
+                if (d.delay > 0) return;
+
+                if (d.state === 'driving') {
+                    truck.position.z += 8 * delta;
+                    truck.rotation.y = 0;
+
+                    if (truck.position.z > 25) {
+                        d.state = 'returning';
+                        // Cash out eggs
+                        const shipped = Math.min(game.eggsInSilo, getTruckCapacity() * getEggValue() * 10);
+                        if (shipped > 0) {
+                            game.eggsInSilo -= shipped;
+                            game.money += shipped;
+                            game.totalEarned += shipped;
+                            showFloat('+$' + formatNum(shipped), window.innerWidth / 2, window.innerHeight / 2 - 50);
+                            updateUI();
+                        }
+                    }
+                } else {
+                    truck.position.z -= 8 * delta;
+                    truck.rotation.y = Math.PI;
+
+                    if (truck.position.z < -25) {
+                        d.state = 'driving';
+                        truck.position.z = -25;
+                    }
+                }
+            });
+
+            // Passive earnings display
+            if (Math.random() < 0.02 && game.chickens > 0) {
+                const earn = getEarningsPerSec() * 0.5;
+                game.money += earn;
+                game.totalEarned += earn;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // ==================== INIT ====================
+        setTimeout(() => {
+            initThree();
+            loadGame();
+            renderEggs();
+            renderUpgrades();
+            updateUI();
+            document.getElementById('loading').classList.add('hidden');
+
+            setInterval(saveGame, 30000);
+            setInterval(() => { renderUpgrades(); updateUI(); }, 1000);
+        }, 1300);
+    </script>
+</body>
+</html>

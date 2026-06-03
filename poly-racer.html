@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poly Racer - RetroBlasts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #1a1a2e;
+            overflow: hidden;
+        }
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        #gameCanvas {
+            display: block;
+        }
+
+        /* HUD */
+        .hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            font-size: 1.2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 100;
+        }
+        .hud-timer {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .hud-speed {
+            font-size: 1.5rem;
+            color: #00ff88;
+        }
+        .hud-checkpoint {
+            font-size: 1rem;
+            color: #88ccff;
+        }
+
+        /* Top right info */
+        .hud-right {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            text-align: right;
+            color: #fff;
+            z-index: 100;
+        }
+        .hud-best {
+            font-size: 1.2rem;
+            color: #ff88ff;
+        }
+        .hud-track {
+            font-size: 1rem;
+            color: #aaa;
+        }
+
+        /* Center messages */
+        .center-msg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .center-msg.show { opacity: 1; }
+
+        /* Controls help */
+        .controls-help {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #888;
+            font-size: 0.9rem;
+            z-index: 100;
+        }
+        .controls-help span { color: #ffd700; }
+
+        /* Menu overlay */
+        .menu-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+        .menu-overlay.hidden { display: none; }
+        .menu-title {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.8);
+            margin-bottom: 10px;
+        }
+        .menu-subtitle {
+            font-size: 1.2rem;
+            color: #888;
+            margin-bottom: 40px;
+        }
+        .menu-btn {
+            padding: 15px 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .menu-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+        .menu-btn.secondary {
+            background: linear-gradient(135deg, #444, #666);
+            color: #fff;
+        }
+
+        /* Track select */
+        .track-select {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .track-card {
+            width: 150px;
+            height: 100px;
+            background: linear-gradient(135deg, #2d2d4a, #1a1a2e);
+            border: 3px solid #444;
+            border-radius: 15px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .track-card:hover, .track-card.selected {
+            border-color: #ffd700;
+            transform: scale(1.05);
+        }
+        .track-card.selected {
+            box-shadow: 0 0 20px rgba(255,215,0,0.3);
+        }
+        .track-name {
+            color: #fff;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .track-difficulty {
+            color: #888;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        .track-difficulty.easy { color: #00ff88; }
+        .track-difficulty.medium { color: #ffaa00; }
+        .track-difficulty.hard { color: #ff4444; }
+
+        /* Finish overlay */
+        .finish-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+        .finish-overlay.hidden { display: none; }
+        .finish-time {
+            font-size: 5rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.8);
+        }
+        .finish-label {
+            font-size: 1.5rem;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        .new-best {
+            font-size: 1.5rem;
+            color: #00ff88;
+            margin: 10px 0;
+        }
+
+        /* Back button */
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 150;
+            transition: background 0.2s;
+        }
+        .back-btn:hover { background: rgba(0,0,0,0.8); }
+        .in-game .back-btn { display: none; }
+
+        /* Loading */
+        .loading {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 1.5rem;
+            z-index: 300;
+        }
+        .loading.hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <a href="index.html" class="back-btn">← Back to Games</a>
+
+        <!-- HUD (shown during gameplay) -->
+        <div class="hud" id="hud" style="display:none;">
+            <div class="hud-timer" id="timer">0:00.000</div>
+            <div class="hud-speed" id="speed">0 km/h</div>
+            <div class="hud-checkpoint" id="checkpoint">Checkpoint: 0/0</div>
+        </div>
+        <div class="hud-right" id="hudRight" style="display:none;">
+            <div class="hud-best" id="bestTime">Best: --:--.---</div>
+            <div class="hud-track" id="trackName">Track 1</div>
+        </div>
+
+        <!-- Center message (countdown, finish, etc) -->
+        <div class="center-msg" id="centerMsg"></div>
+
+        <!-- Controls help -->
+        <div class="controls-help" id="controlsHelp" style="display:none;">
+            <span>W/↑</span> Accelerate | <span>S/↓</span> Brake | <span>A/↑ D/→</span> Steer | <span>R</span> Restart | <span>Esc</span> Menu
+        </div>
+
+        <!-- Main Menu -->
+        <div class="menu-overlay" id="mainMenu">
+            <div class="menu-title">POLY RACER</div>
+            <div class="menu-subtitle">Low-poly racing madness</div>
+
+            <div class="track-select" id="trackSelect">
+                <div class="track-card selected" data-track="0">
+                    <div class="track-name">Beginner</div>
+                    <div class="track-difficulty easy">Easy</div>
+                </div>
+                <div class="track-card" data-track="1">
+                    <div class="track-name">Ramp City</div>
+                    <div class="track-difficulty medium">Medium</div>
+                </div>
+                <div class="track-card" data-track="2">
+                    <div class="track-name">Sky Loop</div>
+                    <div class="track-difficulty hard">Hard</div>
+                </div>
+            </div>
+
+            <button class="menu-btn" id="startBtn">START RACE</button>
+            <button class="menu-btn secondary" id="skinsBtn">CAR SKINS</button>
+        </div>
+
+        <!-- Finish overlay -->
+        <div class="finish-overlay hidden" id="finishOverlay">
+            <div class="finish-label">FINISH!</div>
+            <div class="finish-time" id="finishTime">0:00.000</div>
+            <div class="new-best hidden" id="newBest">NEW BEST TIME!</div>
+            <button class="menu-btn" id="retryBtn">RETRY</button>
+            <button class="menu-btn secondary" id="menuBtn">MENU</button>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">Loading...</div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Cannon.js for physics -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+
+    <script>
+        // ============================================
+        // GAME CONFIG
+        // ============================================
+        const CONFIG = {
+            carAcceleration: 80,
+            carMaxSpeed: 150,
+            carBrakeForce: 60,
+            carSteerSpeed: 2.5,
+            carSteerMax: 0.8,
+            carFriction: 0.98,
+            cameraDistance: 12,
+            cameraHeight: 5,
+            gravity: -30
+        };
+
+        // ============================================
+        // TRACK DEFINITIONS
+        // ============================================
+        const TRACKS = [
+            {
+                name: "Beginner",
+                difficulty: "easy",
+                checkpoints: 3,
+                pieces: [
+                    { type: 'start', pos: [0, 0, 0], rot: 0 },
+                    { type: 'straight', pos: [0, 0, -20], rot: 0, length: 40 },
+                    { type: 'straight', pos: [0, 0, -60], rot: 0, length: 40 },
+                    { type: 'checkpoint', pos: [0, 0, -80], rot: 0 },
+                    { type: 'turn', pos: [20, 0, -100], rot: Math.PI/2, radius: 20 },
+                    { type: 'straight', pos: [40, 0, -80], rot: Math.PI/2, length: 40 },
+                    { type: 'checkpoint', pos: [60, 0, -80], rot: Math.PI/2 },
+                    { type: 'turn', pos: [80, 0, -60], rot: Math.PI, radius: 20 },
+                    { type: 'straight', pos: [80, 0, -40], rot: Math.PI, length: 40 },
+                    { type: 'checkpoint', pos: [80, 0, -20], rot: Math.PI },
+                    { type: 'turn', pos: [60, 0, 0], rot: -Math.PI/2, radius: 20 },
+                    { type: 'straight', pos: [40, 0, 0], rot: -Math.PI/2, length: 40 },
+                    { type: 'finish', pos: [0, 0, 0], rot: 0 }
+                ]
+            },
+            {
+                name: "Ramp City",
+                difficulty: "medium",
+                checkpoints: 4,
+                pieces: [
+                    { type: 'start', pos: [0, 0, 0], rot: 0 },
+                    { type: 'straight', pos: [0, 0, -30], rot: 0, length: 60 },
+                    { type: 'ramp', pos: [0, 0, -70], rot: 0, height: 5 },
+                    { type: 'straight', pos: [0, 5, -90], rot: 0, length: 20 },
+                    { type: 'checkpoint', pos: [0, 5, -100], rot: 0 },
+                    { type: 'ramp', pos: [0, 5, -110], rot: 0, height: -5 },
+                    { type: 'straight', pos: [0, 0, -130], rot: 0, length: 20 },
+                    { type: 'turn', pos: [20, 0, -150], rot: Math.PI/2, radius: 20 },
+                    { type: 'checkpoint', pos: [40, 0, -150], rot: Math.PI/2 },
+                    { type: 'ramp', pos: [60, 0, -150], rot: Math.PI/2, height: 8 },
+                    { type: 'jump', pos: [90, 8, -150], rot: Math.PI/2, length: 30 },
+                    { type: 'ramp', pos: [120, 8, -150], rot: Math.PI/2, height: -8 },
+                    { type: 'checkpoint', pos: [140, 0, -150], rot: Math.PI/2 },
+                    { type: 'turn', pos: [160, 0, -130], rot: Math.PI, radius: 20 },
+                    { type: 'straight', pos: [160, 0, -80], rot: Math.PI, length: 50 },
+                    { type: 'checkpoint', pos: [160, 0, -50], rot: Math.PI },
+                    { type: 'turn', pos: [140, 0, -30], rot: -Math.PI/2, radius: 20 },
+                    { type: 'straight', pos: [80, 0, -30], rot: -Math.PI/2, length: 60 },
+                    { type: 'turn', pos: [60, 0, -10], rot: 0, radius: 20 },
+                    { type: 'straight', pos: [60, 0, 10], rot: 0, length: 20 },
+                    { type: 'finish', pos: [0, 0, 0], rot: 0 }
+                ]
+            },
+            {
+                name: "Sky Loop",
+                difficulty: "hard",
+                checkpoints: 5,
+                pieces: [
+                    { type: 'start', pos: [0, 0, 0], rot: 0 },
+                    { type: 'straight', pos: [0, 0, -40], rot: 0, length: 80 },
+                    { type: 'checkpoint', pos: [0, 0, -60], rot: 0 },
+                    { type: 'ramp', pos: [0, 0, -90], rot: 0, height: 15 },
+                    { type: 'straight', pos: [0, 15, -110], rot: 0, length: 20 },
+                    { type: 'checkpoint', pos: [0, 15, -120], rot: 0 },
+                    { type: 'spiral', pos: [0, 15, -140], rot: 0, loops: 1 },
+                    { type: 'straight', pos: [0, 15, -180], rot: 0, length: 40 },
+                    { type: 'checkpoint', pos: [0, 15, -200], rot: 0 },
+                    { type: 'ramp', pos: [0, 15, -220], rot: 0, height: -15 },
+                    { type: 'turn', pos: [20, 0, -240], rot: Math.PI/2, radius: 20 },
+                    { type: 'straight', pos: [60, 0, -240], rot: Math.PI/2, length: 40 },
+                    { type: 'checkpoint', pos: [80, 0, -240], rot: Math.PI/2 },
+                    { type: 'ramp', pos: [100, 0, -240], rot: Math.PI/2, height: 10 },
+                    { type: 'jump', pos: [130, 10, -240], rot: Math.PI/2, length: 40 },
+                    { type: 'ramp', pos: [170, 10, -240], rot: Math.PI/2, height: -10 },
+                    { type: 'checkpoint', pos: [190, 0, -240], rot: Math.PI/2 },
+                    { type: 'turn', pos: [210, 0, -220], rot: Math.PI, radius: 20 },
+                    { type: 'straight', pos: [210, 0, -120], rot: Math.PI, length: 100 },
+                    { type: 'turn', pos: [190, 0, -100], rot: -Math.PI/2, radius: 20 },
+                    { type: 'straight', pos: [100, 0, -100], rot: -Math.PI/2, length: 90 },
+                    { type: 'turn', pos: [80, 0, -80], rot: 0, radius: 20 },
+                    { type: 'straight', pos: [80, 0, -40], rot: 0, length: 40 },
+                    { type: 'turn', pos: [60, 0, -20], rot: -Math.PI/2, radius: 20 },
+                    { type: 'straight', pos: [30, 0, -20], rot: -Math.PI/2, length: 30 },
+                    { type: 'finish', pos: [0, 0, 0], rot: 0 }
+                ]
+            }
+        ];
+
+        // ============================================
+        // GAME STATE
+        // ============================================
+        let scene, camera, renderer;
+        let world; // Cannon.js physics world
+        let car, carBody; // Three.js mesh and Cannon.js body
+        let trackMeshes = [];
+        let trackBodies = [];
+        let checkpointMeshes = [];
+        let checkpointsPassed = 0;
+        let totalCheckpoints = 0;
+
+        let selectedTrack = 0;
+        let gameState = 'menu'; // menu, countdown, racing, finished
+        let raceStartTime = 0;
+        let currentTime = 0;
+        let bestTimes = {};
+
+        let keys = {
+            forward: false,
+            backward: false,
+            left: false,
+            right: false
+        };
+        let carSpeed = 0;
+        let carSteering = 0;
+
+        // ============================================
+        // INIT
+        // ============================================
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB); // Sky blue
+            scene.fog = new THREE.Fog(0x87CEEB, 100, 500);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, CONFIG.cameraHeight, CONFIG.cameraDistance);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('gameContainer').appendChild(renderer.domElement);
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(50, 100, 50);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 500;
+            directionalLight.shadow.camera.left = -100;
+            directionalLight.shadow.camera.right = 100;
+            directionalLight.shadow.camera.top = 100;
+            directionalLight.shadow.camera.bottom = -100;
+            scene.add(directionalLight);
+
+            // Physics world
+            world = new CANNON.World();
+            world.gravity.set(0, CONFIG.gravity, 0);
+            world.broadphase = new CANNON.NaiveBroadphase();
+            world.solver.iterations = 10;
+
+            // Ground plane (infinite)
+            const groundBody = new CANNON.Body({
+                mass: 0,
+                shape: new CANNON.Plane(),
+                material: new CANNON.Material()
+            });
+            groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+            groundBody.position.y = -1;
+            world.addBody(groundBody);
+
+            // Visual ground
+            const groundGeo = new THREE.PlaneGeometry(1000, 1000);
+            const groundMat = new THREE.MeshStandardMaterial({
+                color: 0x228B22,
+                roughness: 0.8
+            });
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -0.5;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Create car
+            createCar();
+
+            // Load best times from localStorage
+            loadBestTimes();
+
+            // Events
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+
+            // Menu events
+            document.querySelectorAll('.track-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('.track-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    selectedTrack = parseInt(card.dataset.track);
+                });
+            });
+
+            document.getElementById('startBtn').addEventListener('click', startRace);
+            document.getElementById('retryBtn').addEventListener('click', () => {
+                document.getElementById('finishOverlay').classList.add('hidden');
+                startRace();
+            });
+            document.getElementById('menuBtn').addEventListener('click', () => {
+                document.getElementById('finishOverlay').classList.add('hidden');
+                showMenu();
+            });
+
+            // Hide loading
+            document.getElementById('loading').classList.add('hidden');
+
+            // Start render loop
+            animate();
+        }
+
+        // ============================================
+        // CAR
+        // ============================================
+        function createCar() {
+            // Car body (low-poly box)
+            const carGeo = new THREE.BoxGeometry(2, 1, 4);
+            const carMat = new THREE.MeshStandardMaterial({
+                color: 0xff4444,
+                roughness: 0.3,
+                metalness: 0.5
+            });
+            car = new THREE.Mesh(carGeo, carMat);
+            car.castShadow = true;
+            car.position.set(0, 1, 0);
+            scene.add(car);
+
+            // Wheels (simple cylinders)
+            const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 8);
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+
+            const wheelPositions = [
+                [-1, -0.3, 1.2],
+                [1, -0.3, 1.2],
+                [-1, -0.3, -1.2],
+                [1, -0.3, -1.2]
+            ];
+
+            car.wheels = [];
+            wheelPositions.forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(...pos);
+                wheel.castShadow = true;
+                car.add(wheel);
+                car.wheels.push(wheel);
+            });
+
+            // Roof
+            const roofGeo = new THREE.BoxGeometry(1.6, 0.6, 2);
+            const roofMat = new THREE.MeshStandardMaterial({
+                color: 0xcc3333,
+                roughness: 0.3,
+                metalness: 0.5
+            });
+            const roof = new THREE.Mesh(roofGeo, roofMat);
+            roof.position.set(0, 0.8, -0.3);
+            roof.castShadow = true;
+            car.add(roof);
+
+            // Physics body
+            const carShape = new CANNON.Box(new CANNON.Vec3(1, 0.5, 2));
+            carBody = new CANNON.Body({
+                mass: 100,
+                shape: carShape,
+                position: new CANNON.Vec3(0, 2, 0),
+                material: new CANNON.Material()
+            });
+            carBody.linearDamping = 0.3;
+            carBody.angularDamping = 0.5;
+            world.addBody(carBody);
+        }
+
+        function resetCar() {
+            // Reset car position based on track start
+            carBody.position.set(0, 2, 5);
+            carBody.velocity.set(0, 0, 0);
+            carBody.angularVelocity.set(0, 0, 0);
+            carBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), 0);
+            carSpeed = 0;
+            carSteering = 0;
+        }
+
+        // ============================================
+        // TRACK BUILDING
+        // ============================================
+        function buildTrack(trackIndex) {
+            // Clear existing track
+            trackMeshes.forEach(m => scene.remove(m));
+            trackBodies.forEach(b => world.removeBody(b));
+            checkpointMeshes.forEach(m => scene.remove(m));
+            trackMeshes = [];
+            trackBodies = [];
+            checkpointMeshes = [];
+            checkpointsPassed = 0;
+
+            const track = TRACKS[trackIndex];
+            totalCheckpoints = track.checkpoints;
+            let checkpointIndex = 0;
+
+            track.pieces.forEach((piece, i) => {
+                const pos = piece.pos;
+                const rot = piece.rot || 0;
+
+                if (piece.type === 'straight' || piece.type === 'start' || piece.type === 'finish') {
+                    const length = piece.length || 20;
+                    const width = 10;
+
+                    // Visual
+                    const geo = new THREE.BoxGeometry(width, 0.5, length);
+                    let color = 0x444444;
+                    if (piece.type === 'start') color = 0x00aa00;
+                    if (piece.type === 'finish') color = 0xffaa00;
+
+                    const mat = new THREE.MeshStandardMaterial({
+                        color: color,
+                        roughness: 0.7
+                    });
+                    const mesh = new THREE.Mesh(geo, mat);
+                    mesh.position.set(pos[0], pos[1], pos[2]);
+                    mesh.rotation.y = rot;
+                    mesh.receiveShadow = true;
+                    mesh.castShadow = true;
+                    scene.add(mesh);
+                    trackMeshes.push(mesh);
+
+                    // Add lane markings
+                    addLaneMarkings(mesh, length);
+
+                    // Physics
+                    const shape = new CANNON.Box(new CANNON.Vec3(width/2, 0.25, length/2));
+                    const body = new CANNON.Body({ mass: 0, shape });
+                    body.position.set(pos[0], pos[1], pos[2]);
+                    body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), rot);
+                    world.addBody(body);
+                    trackBodies.push(body);
+
+                    // Walls
+                    addWalls(pos, rot, length, width, pos[1]);
+                }
+
+                if (piece.type === 'ramp') {
+                    const length = 20;
+                    const width = 10;
+                    const height = piece.height || 5;
+                    const angle = Math.atan2(height, length);
+                    const rampLength = Math.sqrt(length * length + height * height);
+
+                    // Visual
+                    const geo = new THREE.BoxGeometry(width, 0.5, rampLength);
+                    const mat = new THREE.MeshStandardMaterial({
+                        color: 0x666666,
+                        roughness: 0.6
+                    });
+                    const mesh = new THREE.Mesh(geo, mat);
+                    mesh.position.set(pos[0], pos[1] + height/2, pos[2]);
+                    mesh.rotation.y = rot;
+                    mesh.rotation.x = height > 0 ? -angle : angle;
+                    mesh.receiveShadow = true;
+                    mesh.castShadow = true;
+                    scene.add(mesh);
+                    trackMeshes.push(mesh);
+
+                    // Physics (simplified)
+                    const shape = new CANNON.Box(new CANNON.Vec3(width/2, 0.25, rampLength/2));
+                    const body = new CANNON.Body({ mass: 0, shape });
+                    body.position.set(pos[0], pos[1] + height/2, pos[2]);
+                    const q = new CANNON.Quaternion();
+                    q.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), rot);
+                    const q2 = new CANNON.Quaternion();
+                    q2.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), height > 0 ? -angle : angle);
+                    q.mult(q2, body.quaternion);
+                    world.addBody(body);
+                    trackBodies.push(body);
+                }
+
+                if (piece.type === 'turn') {
+                    const radius = piece.radius || 20;
+                    const segments = 8;
+                    const width = 10;
+
+                    for (let s = 0; s < segments; s++) {
+                        const angle1 = (s / segments) * Math.PI / 2;
+                        const angle2 = ((s + 1) / segments) * Math.PI / 2;
+                        const midAngle = (angle1 + angle2) / 2;
+
+                        const x = pos[0] + Math.sin(rot + midAngle) * radius;
+                        const z = pos[2] - Math.cos(rot + midAngle) * radius;
+
+                        const segLength = (Math.PI * radius / 2) / segments;
+
+                        const geo = new THREE.BoxGeometry(width, 0.5, segLength + 1);
+                        const mat = new THREE.MeshStandardMaterial({
+                            color: 0x444444,
+                            roughness: 0.7
+                        });
+                        const mesh = new THREE.Mesh(geo, mat);
+                        mesh.position.set(x, pos[1], z);
+                        mesh.rotation.y = rot + midAngle;
+                        mesh.receiveShadow = true;
+                        mesh.castShadow = true;
+                        scene.add(mesh);
+                        trackMeshes.push(mesh);
+
+                        const shape = new CANNON.Box(new CANNON.Vec3(width/2, 0.25, (segLength + 1)/2));
+                        const body = new CANNON.Body({ mass: 0, shape });
+                        body.position.set(x, pos[1], z);
+                        body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), rot + midAngle);
+                        world.addBody(body);
+                        trackBodies.push(body);
+                    }
+                }
+
+                if (piece.type === 'checkpoint') {
+                    // Checkpoint gate
+                    const gateGeo = new THREE.BoxGeometry(10, 4, 0.5);
+                    const gateMat = new THREE.MeshStandardMaterial({
+                        color: 0x00aaff,
+                        transparent: true,
+                        opacity: 0.5
+                    });
+                    const gate = new THREE.Mesh(gateGeo, gateMat);
+                    gate.position.set(pos[0], pos[1] + 2, pos[2]);
+                    gate.rotation.y = rot;
+                    gate.userData.checkpointIndex = checkpointIndex++;
+                    gate.userData.passed = false;
+                    scene.add(gate);
+                    checkpointMeshes.push(gate);
+                }
+
+                if (piece.type === 'jump') {
+                    // Jump is just empty space - the car flies through
+                    // Maybe add some visual indicator
+                    const length = piece.length || 20;
+
+                    // Arrow indicators
+                    const arrowGeo = new THREE.ConeGeometry(1, 3, 4);
+                    const arrowMat = new THREE.MeshStandardMaterial({
+                        color: 0xffff00,
+                        emissive: 0xffff00,
+                        emissiveIntensity: 0.3
+                    });
+                    const arrow = new THREE.Mesh(arrowGeo, arrowMat);
+                    arrow.position.set(pos[0], pos[1] - 2, pos[2]);
+                    arrow.rotation.x = -Math.PI / 2;
+                    arrow.rotation.z = rot;
+                    scene.add(arrow);
+                    trackMeshes.push(arrow);
+                }
+            });
+
+            document.getElementById('checkpoint').textContent = `Checkpoint: 0/${totalCheckpoints}`;
+        }
+
+        function addLaneMarkings(trackMesh, length) {
+            // Center dashed line
+            const dashCount = Math.floor(length / 4);
+            for (let i = 0; i < dashCount; i++) {
+                const dashGeo = new THREE.BoxGeometry(0.2, 0.05, 1.5);
+                const dashMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+                const dash = new THREE.Mesh(dashGeo, dashMat);
+                dash.position.set(0, 0.3, -length/2 + 2 + i * 4);
+                trackMesh.add(dash);
+            }
+        }
+
+        function addWalls(pos, rot, length, width, height) {
+            const wallHeight = 1;
+            const wallGeo = new THREE.BoxGeometry(0.5, wallHeight, length);
+            const wallMat = new THREE.MeshStandardMaterial({
+                color: 0x888888,
+                roughness: 0.9
+            });
+
+            // Left wall
+            const leftWall = new THREE.Mesh(wallGeo, wallMat);
+            leftWall.position.set(
+                pos[0] - Math.cos(rot) * (width/2 + 0.25),
+                height + wallHeight/2,
+                pos[2] - Math.sin(rot) * (width/2 + 0.25)
+            );
+            leftWall.rotation.y = rot;
+            leftWall.castShadow = true;
+            scene.add(leftWall);
+            trackMeshes.push(leftWall);
+
+            // Right wall
+            const rightWall = new THREE.Mesh(wallGeo, wallMat);
+            rightWall.position.set(
+                pos[0] + Math.cos(rot) * (width/2 + 0.25),
+                height + wallHeight/2,
+                pos[2] + Math.sin(rot) * (width/2 + 0.25)
+            );
+            rightWall.rotation.y = rot;
+            rightWall.castShadow = true;
+            scene.add(rightWall);
+            trackMeshes.push(rightWall);
+
+            // Physics walls
+            const wallShape = new CANNON.Box(new CANNON.Vec3(0.25, wallHeight/2, length/2));
+
+            const leftBody = new CANNON.Body({ mass: 0, shape: wallShape });
+            leftBody.position.set(
+                pos[0] - Math.cos(rot) * (width/2 + 0.25),
+                height + wallHeight/2,
+                pos[2] - Math.sin(rot) * (width/2 + 0.25)
+            );
+            leftBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), rot);
+            world.addBody(leftBody);
+            trackBodies.push(leftBody);
+
+            const rightBody = new CANNON.Body({ mass: 0, shape: wallShape });
+            rightBody.position.set(
+                pos[0] + Math.cos(rot) * (width/2 + 0.25),
+                height + wallHeight/2,
+                pos[2] + Math.sin(rot) * (width/2 + 0.25)
+            );
+            rightBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), rot);
+            world.addBody(rightBody);
+            trackBodies.push(rightBody);
+        }
+
+        // ============================================
+        // GAME FLOW
+        // ============================================
+        function showMenu() {
+            gameState = 'menu';
+            document.getElementById('mainMenu').classList.remove('hidden');
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('hudRight').style.display = 'none';
+            document.getElementById('controlsHelp').style.display = 'none';
+            document.body.classList.remove('in-game');
+        }
+
+        function startRace() {
+            document.getElementById('mainMenu').classList.add('hidden');
+            document.getElementById('finishOverlay').classList.add('hidden');
+            document.body.classList.add('in-game');
+
+            buildTrack(selectedTrack);
+            resetCar();
+
+            // Update track name display
+            document.getElementById('trackName').textContent = TRACKS[selectedTrack].name;
+            const bestKey = `polyracer_best_${selectedTrack}`;
+            const best = bestTimes[bestKey];
+            document.getElementById('bestTime').textContent = best ? `Best: ${formatTime(best)}` : 'Best: --:--.---';
+
+            // Countdown
+            gameState = 'countdown';
+            let count = 3;
+            const centerMsg = document.getElementById('centerMsg');
+            centerMsg.classList.add('show');
+            centerMsg.textContent = count;
+
+            const countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    centerMsg.textContent = count;
+                } else if (count === 0) {
+                    centerMsg.textContent = 'GO!';
+                    gameState = 'racing';
+                    raceStartTime = performance.now();
+                    document.getElementById('hud').style.display = 'block';
+                    document.getElementById('hudRight').style.display = 'block';
+                    document.getElementById('controlsHelp').style.display = 'block';
+                } else {
+                    clearInterval(countdownInterval);
+                    centerMsg.classList.remove('show');
+                }
+            }, 1000);
+        }
+
+        function finishRace() {
+            gameState = 'finished';
+            const finalTime = currentTime;
+
+            document.getElementById('finishTime').textContent = formatTime(finalTime);
+
+            // Check for best time
+            const bestKey = `polyracer_best_${selectedTrack}`;
+            const previousBest = bestTimes[bestKey];
+            if (!previousBest || finalTime < previousBest) {
+                bestTimes[bestKey] = finalTime;
+                saveBestTimes();
+                document.getElementById('newBest').classList.remove('hidden');
+            } else {
+                document.getElementById('newBest').classList.add('hidden');
+            }
+
+            document.getElementById('finishOverlay').classList.remove('hidden');
+        }
+
+        // ============================================
+        // INPUT
+        // ============================================
+        function onKeyDown(e) {
+            switch(e.code) {
+                case 'KeyW':
+                case 'ArrowUp':
+                    keys.forward = true;
+                    break;
+                case 'KeyS':
+                case 'ArrowDown':
+                    keys.backward = true;
+                    break;
+                case 'KeyA':
+                case 'ArrowLeft':
+                    keys.left = true;
+                    break;
+                case 'KeyD':
+                case 'ArrowRight':
+                    keys.right = true;
+                    break;
+                case 'KeyR':
+                    if (gameState === 'racing') {
+                        resetCar();
+                        raceStartTime = performance.now();
+                        checkpointsPassed = 0;
+                        checkpointMeshes.forEach(cp => {
+                            cp.userData.passed = false;
+                            cp.material.color.setHex(0x00aaff);
+                        });
+                    }
+                    break;
+                case 'Escape':
+                    if (gameState === 'racing' || gameState === 'finished') {
+                        showMenu();
+                    }
+                    break;
+            }
+        }
+
+        function onKeyUp(e) {
+            switch(e.code) {
+                case 'KeyW':
+                case 'ArrowUp':
+                    keys.forward = false;
+                    break;
+                case 'KeyS':
+                case 'ArrowDown':
+                    keys.backward = false;
+                    break;
+                case 'KeyA':
+                case 'ArrowLeft':
+                    keys.left = false;
+                    break;
+                case 'KeyD':
+                case 'ArrowRight':
+                    keys.right = false;
+                    break;
+            }
+        }
+
+        // ============================================
+        // UPDATE
+        // ============================================
+        function updateCar(delta) {
+            if (gameState !== 'racing') return;
+
+            // Get car's forward direction
+            const carQuat = carBody.quaternion;
+            const forward = new CANNON.Vec3(0, 0, -1);
+            carQuat.vmult(forward, forward);
+
+            // Acceleration
+            if (keys.forward) {
+                carSpeed = Math.min(carSpeed + CONFIG.carAcceleration * delta, CONFIG.carMaxSpeed);
+            } else if (keys.backward) {
+                carSpeed = Math.max(carSpeed - CONFIG.carBrakeForce * delta, -CONFIG.carMaxSpeed * 0.3);
+            } else {
+                carSpeed *= CONFIG.carFriction;
+            }
+
+            // Steering (only when moving)
+            if (Math.abs(carSpeed) > 1) {
+                if (keys.left) {
+                    carSteering = Math.min(carSteering + CONFIG.carSteerSpeed * delta, CONFIG.carSteerMax);
+                } else if (keys.right) {
+                    carSteering = Math.max(carSteering - CONFIG.carSteerSpeed * delta, -CONFIG.carSteerMax);
+                } else {
+                    carSteering *= 0.9;
+                }
+
+                // Apply steering as angular velocity
+                carBody.angularVelocity.y = carSteering * (carSpeed / CONFIG.carMaxSpeed) * 3;
+            }
+
+            // Apply velocity
+            const velocity = new CANNON.Vec3(
+                forward.x * carSpeed * 0.5,
+                carBody.velocity.y,
+                forward.z * carSpeed * 0.5
+            );
+            carBody.velocity.x = velocity.x;
+            carBody.velocity.z = velocity.z;
+
+            // Spin wheels
+            car.wheels.forEach((wheel, i) => {
+                wheel.rotation.x += carSpeed * delta * 0.5;
+            });
+        }
+
+        function updateCamera() {
+            // Chase camera
+            const carPos = car.position.clone();
+            const carRot = car.rotation.y;
+
+            const idealOffset = new THREE.Vector3(
+                Math.sin(carRot) * CONFIG.cameraDistance,
+                CONFIG.cameraHeight,
+                Math.cos(carRot) * CONFIG.cameraDistance
+            );
+
+            const idealPosition = carPos.clone().add(idealOffset);
+
+            camera.position.lerp(idealPosition, 0.1);
+            camera.lookAt(carPos.x, carPos.y + 1, carPos.z);
+        }
+
+        function checkCheckpoints() {
+            if (gameState !== 'racing') return;
+
+            const carPos = new THREE.Vector3(carBody.position.x, carBody.position.y, carBody.position.z);
+
+            checkpointMeshes.forEach(cp => {
+                if (!cp.userData.passed) {
+                    const dist = carPos.distanceTo(cp.position);
+                    if (dist < 8) {
+                        cp.userData.passed = true;
+                        cp.material.color.setHex(0x00ff00);
+                        checkpointsPassed++;
+                        document.getElementById('checkpoint').textContent = `Checkpoint: ${checkpointsPassed}/${totalCheckpoints}`;
+                    }
+                }
+            });
+
+            // Check finish (all checkpoints passed and near start)
+            if (checkpointsPassed >= totalCheckpoints) {
+                const startDist = carPos.distanceTo(new THREE.Vector3(0, 0, 0));
+                if (startDist < 10) {
+                    finishRace();
+                }
+            }
+        }
+
+        function updateHUD() {
+            if (gameState === 'racing') {
+                currentTime = performance.now() - raceStartTime;
+                document.getElementById('timer').textContent = formatTime(currentTime);
+                document.getElementById('speed').textContent = Math.abs(Math.round(carSpeed * 2)) + ' km/h';
+            }
+        }
+
+        // ============================================
+        // UTILS
+        // ============================================
+        function formatTime(ms) {
+            const totalSeconds = ms / 1000;
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = Math.floor(totalSeconds % 60);
+            const milliseconds = Math.floor((ms % 1000));
+            return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+        }
+
+        function loadBestTimes() {
+            const saved = localStorage.getItem('polyracer_bestTimes');
+            if (saved) {
+                bestTimes = JSON.parse(saved);
+            }
+        }
+
+        function saveBestTimes() {
+            localStorage.setItem('polyracer_bestTimes', JSON.stringify(bestTimes));
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // ============================================
+        // MAIN LOOP
+        // ============================================
+        let lastTime = performance.now();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const now = performance.now();
+            const delta = (now - lastTime) / 1000;
+            lastTime = now;
+
+            // Physics step
+            world.step(1/60, delta, 3);
+
+            // Update car controls
+            updateCar(delta);
+
+            // Sync Three.js with Cannon.js
+            car.position.copy(carBody.position);
+            car.quaternion.copy(carBody.quaternion);
+
+            // Camera follow
+            updateCamera();
+
+            // Check checkpoints
+            checkCheckpoints();
+
+            // Update HUD
+            updateHUD();
+
+            // Render
+            renderer.render(scene, camera);
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

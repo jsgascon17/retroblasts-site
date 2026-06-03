@@ -1,10 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Trade items with other players!">
+    <meta name="keywords" content="trading, item trading, trade system, exchange, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/trading.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/trading.html">
+    <meta property="og:title" content="Trading - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Trade items with other players!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Trading - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Trade items with other players!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading - RetroBlasts</title>
+    <title>Trading - Free Online Game | RetroBlasts</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -106,7 +134,7 @@
             <div class="login-prompt">
                 <h2>🔒 Login Required</h2>
                 <p>Log in to trade with friends!</p>
-                <a href="login.html" class="btn">Login / Register</a>
+                <a href="login.html?redirect=trading.html" class="btn">Login / Register</a>
             </div>
         </div>
     </div>
@@ -321,6 +349,20 @@
             document.getElementById("tradeModal").classList.remove("active");
         }
 
+        // Cosmetic item display names and icons
+        const COSMETIC_INFO = {
+            name_colors: { icon: '🎨', label: 'Name Color' },
+            borders: { icon: '🖼️', label: 'Border' },
+            avatar_effects: { icon: '✨', label: 'Avatar Effect' },
+            avatar_rings: { icon: '💍', label: 'Ring' },
+            titles: { icon: '🏷️', label: 'Title' },
+            banners: { icon: '🎌', label: 'Banner' },
+            cursors: { icon: '🖱️', label: 'Cursor' },
+            profile_music: { icon: '🎵', label: 'Music' },
+            pets: { icon: '🐾', label: 'Pet' },
+            emotes: { icon: '😀', label: 'Emote' }
+        };
+
         function renderMyItems() {
             const grid = document.getElementById("myItemsGrid");
             let html = "";
@@ -353,6 +395,17 @@
                 html += '<button class="item-btn ' + (available <= 0 ? 'disabled' : '') + '" onclick="toggleOfferItem(\'tradingCards\',\'' + name + '\')" ' + (available <= 0 ? 'disabled' : '') + '>🎴 ' + name + ' (x' + available + ')</button>';
             }
 
+            // Cosmetic items (unique, not stackable)
+            const cosmeticTypes = ['name_colors', 'borders', 'avatar_effects', 'avatar_rings', 'titles', 'banners', 'cursors', 'profile_music', 'pets', 'emotes'];
+            for (const type of cosmeticTypes) {
+                const items = myInventory[type] || [];
+                const info = COSMETIC_INFO[type];
+                for (const name of items) {
+                    const isSelected = offerItems.some(i => i.type === type && i.name === name);
+                    html += '<button class="item-btn ' + (isSelected ? 'selected disabled' : '') + '" onclick="toggleOfferItem(\'' + type + '\',\'' + name + '\')" ' + (isSelected ? 'disabled' : '') + '>' + info.icon + ' ' + name.replace(/_/g, ' ') + '</button>';
+                }
+            }
+
             if (!html) html = '<span style="color:#666;">No items to trade</span>';
             grid.innerHTML = html;
         }
@@ -371,13 +424,28 @@
 
         function addRequestItem() {
             const input = document.getElementById("requestItemInput");
-            const name = input.value.trim().toLowerCase();
-            if (!name) return;
+            const val = input.value.trim();
+            if (!val) return;
 
-            // Guess type
+            // Parse "type:name" or just "name"
             let type = "tradingCards";
-            if (["basic", "premium", "legendary"].includes(name)) type = "lootboxes";
-            if (["coin_boost", "xp_boost", "luck_boost"].includes(name)) type = "boosters";
+            let name = val.toLowerCase().replace(/ /g, '_');
+
+            if (val.includes(':')) {
+                const parts = val.split(':');
+                type = parts[0].trim().toLowerCase();
+                name = parts[1].trim().toLowerCase().replace(/ /g, '_');
+            } else {
+                // Guess type based on common names
+                if (["basic", "premium", "legendary"].includes(name)) type = "lootboxes";
+                else if (["xp_2x", "coins_2x"].includes(name)) type = "boosters";
+                else if (name.includes('color') || ['gold', 'rainbow', 'neon_green', 'fire', 'ice'].includes(name)) type = "name_colors";
+                else if (name.includes('border') || ['bronze', 'silver', 'diamond'].includes(name)) type = "borders";
+                else if (name.includes('pet') || name.includes('dragon') || name.includes('cat') || name.includes('dog')) type = "pets";
+                else if (name.includes('title') || ['champion', 'legend', 'whale', 'og', 'goat'].includes(name)) type = "titles";
+                else if (name.includes('cursor') || name.includes('trail')) type = "cursors";
+                else if (name.includes('music') || name.includes('retro') || name.includes('synth')) type = "profile_music";
+            }
 
             requestItems.push({ type, name });
             input.value = "";

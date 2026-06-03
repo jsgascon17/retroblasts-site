@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bounty Board - RetroBlasts</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .header {
+            background: rgba(0,0,0,0.4);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ff6b35;
+        }
+        .header h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.2rem;
+            color: #ff6b35;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #666;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+        .stat-label { font-size: 0.8rem; color: #888; }
+        .stat-value { font-size: 1.5rem; color: #ffd700; font-weight: bold; }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 12px 25px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #333;
+            color: #888;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab:hover { border-color: #ff6b35; color: #fff; }
+        .tab.active { background: #ff6b35; color: #fff; border-color: #ff6b35; }
+        
+        .bounty-grid {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .bounty-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            transition: all 0.2s;
+        }
+        .bounty-card:hover { border-color: #ff6b35; transform: translateY(-2px); }
+        
+        .bounty-info { flex: 1; min-width: 200px; }
+        .bounty-game {
+            font-size: 0.8rem;
+            color: #ff6b35;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .bounty-target {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .bounty-meta {
+            font-size: 0.85rem;
+            color: #888;
+        }
+        
+        .bounty-reward {
+            text-align: center;
+            padding: 15px 25px;
+            background: rgba(255,215,0,0.1);
+            border-radius: 10px;
+            border: 1px solid #ffd700;
+        }
+        .reward-label { font-size: 0.7rem; color: #888; }
+        .reward-amount { font-size: 1.5rem; color: #ffd700; font-weight: bold; }
+        
+        .bounty-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .btn-play { background: #4ecdc4; color: #000; }
+        .btn-play:hover { background: #45b7aa; }
+        .btn-cancel { background: #ff4444; color: #fff; }
+        .btn-cancel:hover { background: #ff6666; }
+        
+        .create-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #333;
+            margin-bottom: 30px;
+        }
+        .create-section h2 {
+            color: #ff6b35;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 1rem;
+        }
+        .form-group select option { background: #1a1a2e; }
+        .btn-create {
+            background: #ff6b35;
+            color: #fff;
+            padding: 12px 30px;
+            font-size: 1rem;
+        }
+        .btn-create:hover { background: #ff8555; }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        .empty-state h3 { margin-bottom: 10px; color: #888; }
+        
+        .login-prompt {
+            text-align: center;
+            padding: 30px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .login-prompt a { color: #ff6b35; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 BOUNTY BOARD</h1>
+        <a href="index.html" class="back-btn">← Back to Games</a>
+    </div>
+    
+    <div class="container">
+        <div class="stats-bar">
+            <div class="stat-box">
+                <div class="stat-label">Active Bounties</div>
+                <div class="stat-value" id="activeBounties">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Total Up For Grabs</div>
+                <div class="stat-value" id="totalRewards">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Your Coins</div>
+                <div class="stat-value" id="yourCoins">-</div>
+            </div>
+        </div>
+        
+        <div id="loginPrompt" class="login-prompt" style="display:none;">
+            <p>🔒 <a href="login.html?redirect=bounties.html">Log in</a> to create bounties and claim rewards!</p>
+        </div>
+        
+        <div id="createSection" class="create-section" style="display:none;">
+            <h2>🎯 Create a Bounty</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Game</label>
+                    <select id="gameSelect">
+                        <option value="flappy-bird">Flappy Bird</option>
+                        <option value="space-invaders">Space Invaders</option>
+                        <option value="snake">Snake</option>
+                        <option value="tetris">Tetris</option>
+                        <option value="2048">2048</option>
+                        <option value="doodle-jump">Doodle Jump</option>
+                        <option value="cookie-clicker">Cookie Clicker</option>
+                        <option value="pacman">Pac-Man</option>
+                        <option value="asteroids">Asteroids</option>
+                        <option value="brick-breaker">Brick Breaker</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Target Score</label>
+                    <input type="number" id="targetScore" placeholder="e.g. 100" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Reward (coins)</label>
+                    <input type="number" id="rewardAmount" placeholder="min 100" min="100">
+                </div>
+            </div>
+            <button class="btn btn-create" onclick="createBounty()">Post Bounty</button>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('all')">All Bounties</div>
+            <div class="tab" onclick="switchTab('my')">My Bounties</div>
+        </div>
+        
+        <div id="bountyGrid" class="bounty-grid">
+            <div class="empty-state">
+                <h3>Loading bounties...</h3>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentUser = null;
+        let isOwnerAdmin = false;
+        let currentTab = 'all';
+        let allBounties = [];
+        let myBounties = [];
+        
+        const GAME_NAMES = {
+            'flappy-bird': 'Flappy Bird',
+            'space-invaders': 'Space Invaders',
+            'snake': 'Snake',
+            'tetris': 'Tetris',
+            '2048': '2048',
+            'doodle-jump': 'Doodle Jump',
+            'cookie-clicker': 'Cookie Clicker',
+            'pacman': 'Pac-Man',
+            'asteroids': 'Asteroids',
+            'brick-breaker': 'Brick Breaker'
+        };
+        
+        const GAME_URLS = {
+            'flappy-bird': 'flappy-bird.html',
+            'space-invaders': 'space-invaders.html',
+            'snake': 'snake.html',
+            'tetris': 'tetris.html',
+            '2048': '2048.html',
+            'doodle-jump': 'doodle-jump.html',
+            'cookie-clicker': 'cookie-clicker.html',
+            'pacman': 'pacman.html',
+            'asteroids': 'asteroids.html',
+            'brick-breaker': 'brick-breaker.html'
+        };
+        
+        async function init() {
+            // Check login
+            try {
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await resp.json();
+                if (data.success && data.loggedIn && data.user) {
+                    currentUser = data.user;
+                    document.getElementById('yourCoins').textContent = (data.user.coins || 0).toLocaleString();
+                    document.getElementById('createSection').style.display = 'block';
+                    // Check if owner/admin
+                    try {
+                        const adminResp = await fetch('api/admin.php?action=check', { credentials: 'include' });
+                        const adminData = await adminResp.json();
+                        isOwnerAdmin = adminData.isAdmin === true;
+                    } catch(e) {}
+                    loadMyBounties();
+                } else {
+                    document.getElementById('loginPrompt').style.display = 'block';
+                    document.getElementById('yourCoins').textContent = '-';
+                }
+            } catch (e) {
+                document.getElementById('loginPrompt').style.display = 'block';
+            }
+            
+            loadBounties();
+        }
+        
+        async function loadBounties() {
+            try {
+                const resp = await fetch('api/bounties.php?action=list');
+                const data = await resp.json();
+                if (data.success) {
+                    allBounties = data.bounties;
+                    updateStats();
+                    renderBounties();
+                }
+            } catch (e) {
+                console.error('Failed to load bounties:', e);
+            }
+        }
+        
+        async function loadMyBounties() {
+            try {
+                const resp = await fetch('api/bounties.php?action=my', { credentials: 'include' });
+                const data = await resp.json();
+                if (data.success) {
+                    myBounties = data.bounties;
+                }
+            } catch (e) {}
+        }
+        
+        function updateStats() {
+            document.getElementById('activeBounties').textContent = allBounties.length;
+            const total = allBounties.reduce((sum, b) => sum + b.reward, 0);
+            document.getElementById('totalRewards').textContent = total.toLocaleString();
+        }
+        
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderBounties();
+        }
+        
+        function renderBounties() {
+            const grid = document.getElementById('bountyGrid');
+            const bounties = currentTab === 'my' ? myBounties : allBounties;
+            
+            if (bounties.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><h3>No bounties yet</h3><p>Be the first to create one!</p></div>';
+                return;
+            }
+            
+            let html = '';
+            for (const b of bounties) {
+                const gameName = GAME_NAMES[b.game] || b.game;
+                const gameUrl = GAME_URLS[b.game] || '#';
+                const isOwner = currentUser && currentUser.username.toLowerCase() === b.creator.toLowerCase();
+                
+                html += '<div class="bounty-card">';
+                html += '<div class="bounty-info">';
+                html += '<div class="bounty-game">' + gameName + '</div>';
+                html += '<div class="bounty-target">Score ' + b.targetScore.toLocaleString() + '+</div>';
+                html += '<div class="bounty-meta">Posted by ' + b.creator + '</div>';
+                html += '</div>';
+                html += '<div class="bounty-reward">';
+                html += '<div class="reward-label">REWARD</div>';
+                html += '<div class="reward-amount">🪙 ' + b.reward.toLocaleString() + '</div>';
+                html += '</div>';
+                html += '<div class="bounty-actions">';
+                html += '<a href="' + gameUrl + '" class="btn btn-play">Play Now</a>';
+                if (isOwner && b.status === 'active') {
+                    html += '<button class="btn btn-cancel" onclick="cancelBounty(\'' + b.id + '\')">Cancel</button>';
+                }
+                if (isOwnerAdmin && b.status === 'active') {
+                    html += '<button class="btn" style="background:#dc2626;margin-left:5px" onclick="ownerDeleteBounty(\'' + b.id + '\')">🗑</button>';
+                }
+                html += '</div>';
+                html += '</div>';
+            }
+            
+            grid.innerHTML = html;
+        }
+        
+        async function createBounty() {
+            const game = document.getElementById('gameSelect').value;
+            const targetScore = parseInt(document.getElementById('targetScore').value.replace(/,/g, ''));
+            const reward = parseInt(document.getElementById('rewardAmount').value);
+            
+            if (!targetScore || targetScore <= 0 || isNaN(targetScore)) {
+                alert('Enter a valid target score (numbers only)');
+                return;
+            }
+            console.log('Creating bounty:', { game, targetScore, reward });
+            if (!reward || reward < 100) {
+                alert('Minimum reward is 100 coins');
+                return;
+            }
+            
+            try {
+                const resp = await fetch('api/bounties.php?action=create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    credentials: 'include',
+                    body: 'game=' + game + '&targetScore=' + targetScore + '&reward=' + reward
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    document.getElementById('targetScore').value = '';
+                    document.getElementById('rewardAmount').value = '';
+                    loadBounties();
+                    loadMyBounties();
+                    // Update coins display
+                    const authResp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                    const authData = await authResp.json();
+                    if (authData.user) {
+                        document.getElementById('yourCoins').textContent = (authData.user.coins || 0).toLocaleString();
+                    }
+                } else {
+                    alert(data.error || 'Failed to create bounty');
+                }
+            } catch (e) {
+                alert('Error creating bounty');
+            }
+        }
+        
+        async function cancelBounty(bountyId) {
+            if (!confirm('Cancel this bounty? You will get 90% refund (10% fee).')) return;
+            
+            try {
+                const resp = await fetch('api/bounties.php?action=cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    credentials: 'include',
+                    body: 'bountyId=' + bountyId
+                });
+                const data = await resp.json();
+                alert(data.message || data.error);
+                loadBounties();
+                loadMyBounties();
+            } catch (e) {
+                alert('Error cancelling bounty');
+            }
+        }
+        
+        async function ownerDeleteBounty(bountyId) {
+            if (!confirm("Delete this bounty? (Owner action - no refund)")) return;
+            
+            try {
+                const resp = await fetch("api/bounties.php?action=owner-delete", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    credentials: "include",
+                    body: "bountyId=" + bountyId
+                });
+                const data = await resp.json();
+                alert(data.message || data.error);
+                loadBounties();
+                loadMyBounties();
+            } catch (e) {
+                alert("Error deleting bounty");
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

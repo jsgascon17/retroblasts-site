@@ -1,10 +1,39 @@
+<!-- v3.0 1775672375.0460227 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Buy coins, items, and upgrades in the RetroBlasts shop!">
+    <meta name="keywords" content="game shop, buy coins, upgrades, game items, retroblasts, free games, online games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/shop.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://retroblasts.com/shop.html">
+    <meta property="og:title" content="Shop - Free Online Game | RetroBlasts">
+    <meta property="og:description" content="Buy coins, items, and upgrades in the RetroBlasts shop!">
+    <meta property="og:image" content="https://retroblasts.com/images/og-image.svg">
+    <meta property="og:site_name" content="RetroBlasts">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Shop - Free Online Game | RetroBlasts">
+    <meta name="twitter:description" content="Buy coins, items, and upgrades in the RetroBlasts shop!">
+    <meta name="twitter:image" content="https://retroblasts.com/images/og-image.svg">
+
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coin Shop - RetroBlasts</title>
+    <title>Shop - Free Online Game | RetroBlasts</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -14,6 +43,69 @@
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
             min-height: 100vh;
             color: #fff;
+        }
+
+        /* Loading Animation */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+        .loading-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,215,0,0.2);
+            border-top-color: #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .loading-text {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #ffd700;
+            font-weight: bold;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .loading-coins {
+            margin-top: 15px;
+            font-size: 2rem;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Skeleton loading for items */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 10px;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
         .header {
             background: rgba(0,0,0,0.3);
@@ -59,32 +151,72 @@
             padding: 30px;
         }
         
-        .tabs {
+        .shop-nav {
+            margin-bottom: 25px;
+        }
+        .category-groups {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
+            gap: 8px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
         }
-        .tab {
-            padding: 12px 24px;
-            background: rgba(255,255,255,0.1);
-            border: 2px solid transparent;
-            border-radius: 10px;
+        .category-group {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 25px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .category-group:hover { background: rgba(255,255,255,0.15); }
+        .category-group.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: rgba(255,255,255,0.3);
+        }
+        .category-group.featured {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        .category-group.featured.active {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-color: #fff;
+        }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+        }
+        .tab {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
             transition: all 0.2s;
         }
         .tab:hover { background: rgba(255,255,255,0.2); }
         .tab.active {
             background: linear-gradient(135deg, #667eea, #764ba2);
-            border-color: #fff;
+            color: #fff;
         }
         .tab.lootbox-tab {
             background: linear-gradient(135deg, #f59e0b, #d97706);
-            animation: pulse 2s ease-in-out infinite;
         }
         .tab.lootbox-tab.active {
             background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+        .tab .inventory-count {
+            margin-left: 5px;
+            background: rgba(255,255,255,0.2);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.75rem;
         }
         
         .shop-grid {
@@ -266,7 +398,8 @@
         @keyframes rainbow-trail { 0% { filter: drop-shadow(2px 0 0 red) drop-shadow(-2px 0 0 blue); } 33% { filter: drop-shadow(2px 0 0 yellow) drop-shadow(-2px 0 0 green); } 66% { filter: drop-shadow(2px 0 0 blue) drop-shadow(-2px 0 0 orange); } 100% { filter: drop-shadow(2px 0 0 red) drop-shadow(-2px 0 0 blue); } }
         .anim-glitch { animation: glitch 0.5s ease-in-out infinite; }
         @keyframes glitch { 0%, 100% { transform: translate(0); filter: none; } 20% { transform: translate(-2px, 2px); filter: hue-rotate(90deg); } 40% { transform: translate(2px, -2px); filter: hue-rotate(180deg); } 60% { transform: translate(-2px, -2px); filter: hue-rotate(270deg); } 80% { transform: translate(2px, 2px); filter: none; } }
-        .limited-badge { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; padding: 4px 12px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; }
+        .limited-badge { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; padding: 4px 12px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; animation: limitedPulse 2s ease-in-out infinite; box-shadow: 0 0 10px rgba(239,68,68,0.5); }
+        @keyframes limitedPulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(239,68,68,0.5); } 50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(239,68,68,0.8); } }
         .banner-preview {
             width: 100%;
             height: 60px;
@@ -281,6 +414,48 @@
             50% { background-position: 100% 50%; }
         }
         .soldout-badge { background: #555; color: #888; padding: 4px 12px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; }
+
+        /* Rarity badges */
+        .rarity-common { border-color: #94a3b8 !important; }
+        .rarity-uncommon { border-color: #4ade80 !important; }
+        .rarity-rare { border-color: #60a5fa !important; }
+        .rarity-epic { border-color: #a855f7 !important; }
+        .rarity-legendary { border-color: #fbbf24 !important; box-shadow: 0 0 15px rgba(251,191,36,0.3); }
+        .rarity-mythic { border-color: #f472b6 !important; box-shadow: 0 0 20px rgba(244,114,182,0.4); animation: mythicGlow 2s ease-in-out infinite; }
+        @keyframes mythicGlow { 0%, 100% { box-shadow: 0 0 20px rgba(244,114,182,0.4); } 50% { box-shadow: 0 0 30px rgba(244,114,182,0.6), 0 0 40px rgba(168,85,247,0.4); } }
+
+        .rarity-badge { padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; margin-right: 5px; }
+        .rarity-badge.common { background: #64748b; color: #fff; }
+        .rarity-badge.uncommon { background: #22c55e; color: #000; }
+        .rarity-badge.rare { background: #3b82f6; color: #fff; }
+        .rarity-badge.epic { background: #8b5cf6; color: #fff; }
+        .rarity-badge.legendary { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
+        .rarity-badge.mythic { background: linear-gradient(135deg, #f472b6, #a855f7); color: #fff; animation: mythicPulse 2s infinite; }
+        @keyframes mythicPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+        /* Pet preview animations */
+        .pet-preview { font-size: 3rem; animation: petFloat 2s ease-in-out infinite; }
+        @keyframes petFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .pet-preview.legendary { animation: petFloat 2s ease-in-out infinite, petGlow 1.5s ease-in-out infinite; }
+        @keyframes petGlow { 0%, 100% { filter: drop-shadow(0 0 5px #fbbf24); } 50% { filter: drop-shadow(0 0 15px #fbbf24); } }
+        .pet-preview.mythic { animation: petFloat 2s ease-in-out infinite, petMythic 2s ease-in-out infinite; }
+        @keyframes petMythic { 0%, 100% { filter: drop-shadow(0 0 10px #f472b6); } 50% { filter: drop-shadow(0 0 20px #a855f7); } }
+
+        /* Cursor preview */
+        .cursor-preview { width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 2rem; }
+        .cursor-preview.has-trail { position: relative; }
+        .cursor-preview.has-trail::after { content: '✨'; position: absolute; opacity: 0.5; animation: trailFade 1s infinite; }
+        @keyframes trailFade { 0% { opacity: 0.8; transform: translate(-10px, 10px); } 100% { opacity: 0; transform: translate(-20px, 20px); } }
+
+        /* Music preview */
+        .music-preview { display: flex; align-items: center; justify-content: center; gap: 3px; height: 40px; }
+        .music-bar { width: 4px; background: linear-gradient(to top, #fbbf24, #f59e0b); border-radius: 2px; animation: musicBounce 0.8s ease-in-out infinite; }
+        .music-bar:nth-child(1) { animation-delay: 0s; height: 15px; }
+        .music-bar:nth-child(2) { animation-delay: 0.1s; height: 25px; }
+        .music-bar:nth-child(3) { animation-delay: 0.2s; height: 20px; }
+        .music-bar:nth-child(4) { animation-delay: 0.3s; height: 30px; }
+        .music-bar:nth-child(5) { animation-delay: 0.4s; height: 18px; }
+        @keyframes musicBounce { 0%, 100% { transform: scaleY(0.5); } 50% { transform: scaleY(1); } }
 
         
         /* Avatar animations */
@@ -360,18 +535,33 @@
             -webkit-mask-composite: xor;
             mask-composite: exclude;
         }
+        .lootbox-card.starter { --box-color1: #4ade80; --box-color2: #22c55e; }
         .lootbox-card.basic { --box-color1: #60a5fa; --box-color2: #3b82f6; }
         .lootbox-card.premium { --box-color1: #a855f7; --box-color2: #7c3aed; }
         .lootbox-card.legendary { --box-color1: #fbbf24; --box-color2: #f59e0b; }
-        
+        .lootbox-card.mythic { --box-color1: #f472b6; --box-color2: #ec4899; }
+        .lootbox-card.mega { --box-color1: #67e8f9; --box-color2: #06b6d4; }
+
         .lootbox-icon {
             font-size: 5rem;
             margin-bottom: 15px;
             display: inline-block;
         }
+        .lootbox-card.starter .lootbox-icon { animation: float 3.5s ease-in-out infinite; }
         .lootbox-card.basic .lootbox-icon { animation: float 3s ease-in-out infinite; }
         .lootbox-card.premium .lootbox-icon { animation: float 2.5s ease-in-out infinite, glow 2s ease-in-out infinite; }
         .lootbox-card.legendary .lootbox-icon { animation: float 2s ease-in-out infinite, shake 0.5s ease-in-out infinite; }
+        .lootbox-card.mythic .lootbox-icon { animation: float 1.5s ease-in-out infinite, mythicPulse 1s ease-in-out infinite; }
+        .lootbox-card.mega .lootbox-icon { animation: megaSpin 3s linear infinite, glow 1s ease-in-out infinite; }
+
+        @keyframes mythicPulse {
+            0%, 100% { filter: drop-shadow(0 0 10px #f472b6); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 25px #ec4899); transform: scale(1.1); }
+        }
+        @keyframes megaSpin {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(360deg); }
+        }
         
         @keyframes float {
             0%, 100% { transform: translateY(0); }
@@ -383,9 +573,12 @@
             font-weight: bold;
             margin-bottom: 10px;
         }
+        .lootbox-card.starter .lootbox-name { color: #4ade80; }
         .lootbox-card.basic .lootbox-name { color: #60a5fa; }
         .lootbox-card.premium .lootbox-name { color: #a855f7; }
         .lootbox-card.legendary .lootbox-name { color: #fbbf24; }
+        .lootbox-card.mythic .lootbox-name { color: #f472b6; text-shadow: 0 0 10px #f472b6; }
+        .lootbox-card.mega .lootbox-name { color: #67e8f9; text-shadow: 0 0 15px #06b6d4; }
         
         .lootbox-desc {
             color: #aaa;
@@ -429,9 +622,12 @@
             font-weight: bold;
             transition: all 0.3s;
         }
+        .lootbox-card.starter .btn-open { background: linear-gradient(135deg, #4ade80, #22c55e); color: #000; }
         .lootbox-card.basic .btn-open { background: linear-gradient(135deg, #60a5fa, #3b82f6); color: #fff; }
         .lootbox-card.premium .btn-open { background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; }
         .lootbox-card.legendary .btn-open { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
+        .lootbox-card.mythic .btn-open { background: linear-gradient(135deg, #f472b6, #ec4899); color: #fff; box-shadow: 0 0 15px rgba(244,114,182,0.5); }
+        .lootbox-card.mega .btn-open { background: linear-gradient(135deg, #67e8f9, #06b6d4); color: #000; box-shadow: 0 0 20px rgba(6,182,212,0.6); }
         .btn-open:hover { transform: scale(1.05); }
         .btn-open:disabled { background: #555; color: #888; transform: none; cursor: not-allowed; }
         .lootbox-buttons { display: flex; gap: 10px; justify-content: center; }
@@ -617,9 +813,377 @@
         .drop-card-icon { font-size: 2rem; margin-bottom: 8px; }
         .drop-card-name { font-size: 0.85rem; color: #fff; }
         .drop-card-time { font-size: 0.75rem; color: #666; margin-top: 5px; }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .header { flex-direction: column; gap: 15px; padding: 15px; }
+            .header h1 { font-size: 1.5rem; }
+            .header-right { width: 100%; justify-content: space-between; }
+            .coins-display { font-size: 1rem; padding: 8px 15px; }
+            .back-btn { padding: 8px 15px; font-size: 0.9rem; }
+
+            .shop-nav { margin-bottom: 15px; }
+            .category-groups { gap: 5px; justify-content: center; }
+            .category-group { padding: 8px 12px; font-size: 0.8rem; }
+            .tabs { padding: 8px; gap: 5px; }
+            .tab { padding: 6px 12px; font-size: 0.75rem; }
+
+            .shop-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+            .item-card { padding: 12px; }
+            .item-preview { font-size: 2rem; }
+            .item-name { font-size: 0.85rem; }
+            .item-actions { flex-direction: column; }
+            .item-actions button { width: 100%; padding: 8px; font-size: 0.85rem; }
+
+            .lootbox-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+            .lootbox-card { padding: 15px; }
+            .lootbox-icon { font-size: 2.5rem; }
+            .lootbox-name { font-size: 1rem; }
+
+            .wheel-container { transform: scale(0.7); margin: -30px 0; }
+            .daily-spin-section h2 { font-size: 1.3rem; }
+
+            .crate-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .crate-card { padding: 15px; }
+
+            .drop-result { padding: 20px; }
+            .drop-icon { font-size: 3rem; }
+            .drop-name { font-size: 1.2rem; }
+
+            .modal-content { padding: 15px; margin: 10px; max-height: 90vh; overflow-y: auto; }
+        }
+
+        @media (max-width: 480px) {
+            .shop-grid { grid-template-columns: 1fr; }
+            .lootbox-grid { grid-template-columns: 1fr; }
+            .category-groups { flex-direction: row; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 5px; }
+            .category-group { white-space: nowrap; flex-shrink: 0; }
+            .tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 5px; }
+            .tab { white-space: nowrap; flex-shrink: 0; }
+            .wheel-container { transform: scale(0.55); margin: -50px 0; }
+        }
+    
+        /* Auto-clicker UI */
+        .autoclicker-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 15px 20px;
+            z-index: 9999;
+        }
+        .autoclicker-panel h4 { color: #ffd700; margin-bottom: 10px; font-size: 0.9rem; }
+        .autoclicker-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .autoclicker-toggle input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        .autoclicker-status { font-size: 0.85rem; color: #4ade80; }
+        .autoclicker-status.off { color: #888; }
+    
+        /* Rewarded Ad System */
+        .free-coins-section {
+            background: linear-gradient(135deg, #1a1a2e, #2d1f4e);
+            border: 2px solid #ffd700;
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .free-coins-section::before {
+            content: '🎬';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 80px;
+            opacity: 0.1;
+        }
+        .free-coins-title {
+            color: #ffd700;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .free-coins-desc {
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+        .watch-ad-btn {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(74, 222, 128, 0.4);
+        }
+        .watch-ad-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(74, 222, 128, 0.5);
+        }
+        .watch-ad-btn:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        .ads-remaining {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+        .ad-reward {
+            display: inline-block;
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        /* Ad Modal */
+        .ad-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .ad-modal.hidden {
+            display: none;
+        }
+        .ad-container {
+            background: #111;
+            width: 90%;
+            max-width: 640px;
+            aspect-ratio: 16/9;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .ad-placeholder {
+            text-align: center;
+            padding: 20px;
+        }
+        .ad-placeholder h2 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .ad-placeholder p {
+            color: #888;
+            margin-bottom: 20px;
+        }
+        .ad-timer {
+            font-size: 4rem;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .ad-skip-timer {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .ad-reward-preview {
+            margin-top: 30px;
+            color: #4ade80;
+            font-size: 1.2rem;
+        }
+        .ad-close-btn {
+            margin-top: 20px;
+            background: #4ade80;
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            display: none;
+        }
+        .ad-close-btn.show {
+            display: block;
+        }
+
+    
+        /* Rewarded Ad System */
+        .free-coins-section {
+            background: linear-gradient(135deg, #1a1a2e, #2d1f4e);
+            border: 2px solid #ffd700;
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .free-coins-section::before {
+            content: '🎬';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 80px;
+            opacity: 0.1;
+        }
+        .free-coins-title {
+            color: #ffd700;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .free-coins-desc {
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+        .watch-ad-btn {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(74, 222, 128, 0.4);
+        }
+        .watch-ad-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(74, 222, 128, 0.5);
+        }
+        .watch-ad-btn:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        .ads-remaining {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+        .ad-reward {
+            display: inline-block;
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        /* Ad Modal */
+        .ad-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .ad-modal.hidden {
+            display: none;
+        }
+        .ad-container {
+            background: #111;
+            width: 90%;
+            max-width: 640px;
+            aspect-ratio: 16/9;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .ad-placeholder {
+            text-align: center;
+            padding: 20px;
+        }
+        .ad-placeholder h2 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .ad-placeholder p {
+            color: #888;
+            margin-bottom: 20px;
+        }
+        .ad-timer {
+            font-size: 4rem;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .ad-skip-timer {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .ad-reward-preview {
+            margin-top: 30px;
+            color: #4ade80;
+            font-size: 1.2rem;
+        }
+        .ad-close-btn {
+            margin-top: 20px;
+            background: #4ade80;
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            display: none;
+        }
+        .ad-close-btn.show {
+            display: block;
+        }
+
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-coins">🛒</div>
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Shop...</div>
+    </div>
+
     <div class="header">
         <h1>🛒 COIN SHOP</h1>
         <div class="header-right">
@@ -629,10 +1193,36 @@
     </div>
     
     <div class="container">
+
+    <!-- Free Coins - Watch Ad Section -->
+    <div class="free-coins-section" id="freeCoinsSection">
+        <div class="free-coins-title">🎬 Free Coins!</div>
+        <div class="free-coins-desc">Watch a short video to earn free coins</div>
+        <button class="watch-ad-btn" id="watchAdBtn" onclick="watchAd()">
+            <span>▶️ Watch Ad</span>
+            <span class="ad-reward">+100 🪙</span>
+        </button>
+        <div class="ads-remaining" id="adsRemaining">5 ads remaining today</div>
+    </div>
+
+
+
+    <!-- Free Coins - Watch Ad Section -->
+    <div class="free-coins-section" id="freeCoinsSection">
+        <div class="free-coins-title">🎬 Free Coins!</div>
+        <div class="free-coins-desc">Watch a short video to earn free coins</div>
+        <button class="watch-ad-btn" id="watchAdBtn" onclick="watchAd()">
+            <span>▶️ Watch Ad</span>
+            <span class="ad-reward">+100 🪙</span>
+        </button>
+        <div class="ads-remaining" id="adsRemaining">5 ads remaining today</div>
+    </div>
+
+
         <div id="loginPrompt" class="login-prompt" style="display: none;">
             <h2>Login Required</h2>
             <p style="margin-bottom: 20px; color: #aaa;">You need to be logged in to access the shop.</p>
-            <a href="login.html">Login / Register</a>
+            <a href="login.html?redirect=shop.html">Login / Register</a>
         </div>
         
         <div id="shopContent" style="display: none;">
@@ -641,7 +1231,10 @@
                 <div id="activeBoostsList"></div>
             </div>
             
-            <div class="tabs" id="categoryTabs"></div>
+            <div class="shop-nav">
+                <div class="category-groups" id="categoryGroups"></div>
+                <div class="tabs" id="categoryTabs"></div>
+            </div>
             
             <!-- Loot Box Section -->
             <!-- Daily Spin Section -->
@@ -673,10 +1266,26 @@
                     </div>
                 </div>
                 <div class="lootbox-section">
+                    <div class="lootbox-card starter">
+                        <div class="lootbox-icon">🎒</div>
+                        <div class="lootbox-name">Starter Box</div>
+                        <div class="lootbox-desc">Perfect for beginners!</div>
+                        <div class="lootbox-drops">
+                            <h4>Possible Drops:</h4>
+                            <div class="drop-item"><span>🪙 Coins (50-150)</span><span class="drop-chance">40%</span></div>
+                            <div class="drop-item"><span>💬 Basic Emote</span><span class="drop-chance">25%</span></div>
+                            <div class="drop-item"><span>🃏 Bronze Card</span><span class="drop-chance">20%</span></div>
+                            <div class="drop-item"><span>🎨 Common Color</span><span class="drop-chance">10%</span></div>
+                            <div class="drop-item"><span>🗝️ Bronze Key</span><span class="drop-chance">5%</span></div>
+                        </div>
+                        <div class="lootbox-price">🪙 <span>200</span> coins</div>
+                        <div class="lootbox-buttons"><button class="btn-open" onclick="openLootbox('starter')">Open 1</button><button class="btn-open btn-bulk" onclick="openLootboxBulk('starter', 10)">Open 10</button></div>
+                    </div>
+
                     <div class="lootbox-card basic">
                         <div class="lootbox-icon">📦</div>
                         <div class="lootbox-name">Basic Box</div>
-                        <div class="lootbox-desc">A starter box with common rewards</div>
+                        <div class="lootbox-desc">Common items with rare chances</div>
                         <div class="lootbox-drops">
                             <h4>Possible Drops:</h4>
                             <div class="drop-item"><span>🪙 Coins (100-300)</span><span class="drop-chance">40%</span></div>
@@ -720,8 +1329,42 @@
                         <div class="lootbox-price">🪙 <span>5,000</span> coins</div>
                         <div class="lootbox-buttons"><button class="btn-open" onclick="openLootbox('legendary')">Open 1</button><button class="btn-open btn-bulk" onclick="openLootboxBulk('legendary', 10)">Open 10</button></div>
                     </div>
+
+                    <div class="lootbox-card mythic">
+                        <div class="lootbox-icon">🌟</div>
+                        <div class="lootbox-name">Mythic Box</div>
+                        <div class="lootbox-desc">Exclusive mythic items await!</div>
+                        <div class="lootbox-drops">
+                            <h4>Possible Drops:</h4>
+                            <div class="drop-item"><span>🪙 Coins (3000-8000)</span><span class="drop-chance">12%</span></div>
+                            <div class="drop-item"><span>🌌 Mythic Cards</span><span class="drop-chance">12%</span></div>
+                            <div class="drop-item"><span>🎨 Galaxy/Plasma/Void Colors</span><span class="drop-chance">12%</span></div>
+                            <div class="drop-item"><span>🖼️ Cosmic/Mythic Border</span><span class="drop-chance">12%</span></div>
+                            <div class="drop-item"><span>⚡ Lightning/Flames Effect</span><span class="drop-chance">12%</span></div>
+                            <div class="drop-item"><span>👑 Mythic Emotes</span><span class="drop-chance">5%</span></div>
+                        </div>
+                        <div class="lootbox-price">🪙 <span>15,000</span> coins</div>
+                        <div class="lootbox-buttons"><button class="btn-open" onclick="openLootbox('mythic')">Open 1</button><button class="btn-open btn-bulk" onclick="openLootboxBulk('mythic', 10)">Open 10</button></div>
+                    </div>
+
+                    <div class="lootbox-card mega">
+                        <div class="lootbox-icon">💎</div>
+                        <div class="lootbox-name">Mega Box</div>
+                        <div class="lootbox-desc">ULTIMATE! 3 guaranteed rewards!</div>
+                        <div class="lootbox-drops">
+                            <h4>Possible Drops (x3!):</h4>
+                            <div class="drop-item"><span>🪙 Coins (10000-25000)</span><span class="drop-chance">10%</span></div>
+                            <div class="drop-item"><span>🌌 Mythic/Legendary Cards</span><span class="drop-chance">15%</span></div>
+                            <div class="drop-item"><span>🎨 All Mythic Colors</span><span class="drop-chance">15%</span></div>
+                            <div class="drop-item"><span>🖼️ All Top Borders</span><span class="drop-chance">15%</span></div>
+                            <div class="drop-item"><span>✨ All Premium Effects</span><span class="drop-chance">15%</span></div>
+                            <div class="drop-item"><span>🔐 Gold Keys & Crates</span><span class="drop-chance">20%</span></div>
+                        </div>
+                        <div class="lootbox-price">🪙 <span>50,000</span> coins</div>
+                        <div class="lootbox-buttons"><button class="btn-open" onclick="openLootbox('mega')">Open 1</button></div>
+                    </div>
                 </div>
-                
+
                 <!-- Bundle Packs -->
                 <div class="bundles-section">
                     <h3>💰 Bundle Deals - Save More!</h3>
@@ -770,6 +1413,83 @@
                             </div>
                             <button class="bundle-btn" onclick="buyBundle('legendary', 3, 12000)">Buy Bundle</button>
                         </div>
+                        <div class="bundle-card">
+                            <div class="bundle-icon">🎁x10</div>
+                            <div class="bundle-name">Premium 10-Pack</div>
+                            <div class="bundle-desc">10 Premium Boxes</div>
+                            <div class="bundle-prices">
+                                <span class="bundle-original">15,000</span>
+                                <span class="bundle-sale">🪙 11,250</span>
+                                <span class="bundle-save">SAVE 25%</span>
+                            </div>
+                            <button class="bundle-btn" onclick="buyBundle('premium', 10, 11250)">Buy Bundle</button>
+                        </div>
+                        <div class="bundle-card">
+                            <div class="bundle-icon">👑x10</div>
+                            <div class="bundle-name">Legendary 10-Pack</div>
+                            <div class="bundle-desc">10 Legendary Boxes</div>
+                            <div class="bundle-prices">
+                                <span class="bundle-original">50,000</span>
+                                <span class="bundle-sale">🪙 37,500</span>
+                                <span class="bundle-save">SAVE 25%</span>
+                            </div>
+                            <button class="bundle-btn" onclick="buyBundle('legendary', 10, 37500)">Buy Bundle</button>
+                        </div>
+                        <div class="bundle-card" style="border-color: #4ade80;">
+                            <div class="bundle-icon">🎒🎒🎒</div>
+                            <div class="bundle-name">Starter 3-Pack</div>
+                            <div class="bundle-desc">3 Starter Boxes</div>
+                            <div class="bundle-prices">
+                                <span class="bundle-original">600</span>
+                                <span class="bundle-sale">🪙 500</span>
+                                <span class="bundle-save">SAVE 17%</span>
+                            </div>
+                            <button class="bundle-btn" onclick="buyBundle('starter', 3, 500)">Buy Bundle</button>
+                        </div>
+                        <div class="bundle-card" style="border-color: #4ade80;">
+                            <div class="bundle-icon">🎒x10</div>
+                            <div class="bundle-name">Starter 10-Pack</div>
+                            <div class="bundle-desc">10 Starter Boxes</div>
+                            <div class="bundle-prices">
+                                <span class="bundle-original">2,000</span>
+                                <span class="bundle-sale">🪙 1,500</span>
+                                <span class="bundle-save">SAVE 25%</span>
+                            </div>
+                            <button class="bundle-btn" onclick="buyBundle('starter', 10, 1500)">Buy Bundle</button>
+                        </div>
+                        <div class="bundle-card" style="border-color: #f472b6; box-shadow: 0 0 15px rgba(244,114,182,0.3);">
+                            <div class="bundle-icon">🌟🌟🌟</div>
+                            <div class="bundle-name">Mythic 3-Pack</div>
+                            <div class="bundle-desc">3 Mythic Boxes</div>
+                            <div class="bundle-prices">
+                                <span class="bundle-original">45,000</span>
+                                <span class="bundle-sale">🪙 37,500</span>
+                                <span class="bundle-save">SAVE 17%</span>
+                            </div>
+                            <button class="bundle-btn" onclick="buyBundle('mythic', 3, 37500)">Buy Bundle</button>
+                        </div>
+                        <div class="bundle-card" style="border-color: #f472b6; box-shadow: 0 0 15px rgba(244,114,182,0.3);">
+                            <div class="bundle-icon">🌟x10</div>
+                            <div class="bundle-name">Mythic 10-Pack</div>
+                            <div class="bundle-desc">10 Mythic Boxes</div>
+                            <div class="bundle-prices">
+                                <span class="bundle-original">150,000</span>
+                                <span class="bundle-sale">🪙 112,500</span>
+                                <span class="bundle-save">SAVE 25%</span>
+                            </div>
+                            <button class="bundle-btn" onclick="buyBundle('mythic', 10, 112500)">Buy Bundle</button>
+                        </div>
+                        <div class="bundle-card" style="border-color: #67e8f9; box-shadow: 0 0 20px rgba(6,182,212,0.4);">
+                            <div class="bundle-icon">💎💎💎</div>
+                            <div class="bundle-name">Mega 3-Pack</div>
+                            <div class="bundle-desc">3 Mega Boxes (9 rewards!)</div>
+                            <div class="bundle-prices">
+                                <span class="bundle-original">150,000</span>
+                                <span class="bundle-sale">🪙 125,000</span>
+                                <span class="bundle-save">SAVE 17%</span>
+                            </div>
+                            <button class="bundle-btn" onclick="buyBundle('mega', 3, 125000)">Buy Bundle</button>
+                        </div>
                     </div>
                 </div>
 
@@ -804,31 +1524,41 @@
         let currentCategory = 'name_colors';
         let recentDrops = [];
         
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.classList.add('hidden');
+        }
+
         async function init() {
             try {
                 const authResp = await fetch('api/auth.php?action=check', { credentials: 'include' });
                 const authData = await authResp.json();
-                
+
                 if (!authData.success || !authData.user) {
                     document.getElementById('loginPrompt').style.display = 'block';
+                    hideLoading();
                     return;
                 }
-                
+
                 document.getElementById('shopContent').style.display = 'block';
-                
+
                 const shopResp = await fetch('api/shop.php?action=items', { credentials: 'include' });
                 shopData = await shopResp.json();
-                
+
                 const invResp = await fetch('api/shop.php?action=inventory', { credentials: 'include' });
                 userData = await invResp.json();
-                
+
                 updateCoinDisplay();
                 renderTabs();
                 renderShop();
                 updateActiveBoosts();
+
+                // Hide loading overlay
+                hideLoading();
             } catch (e) {
                 console.error('Failed to load shop:', e);
                 showToast('Failed to load shop', 'error');
+                hideLoading();
             }
         }
         
@@ -836,44 +1566,86 @@
             document.getElementById('coinCount').textContent = (userData.coins || 0).toLocaleString();
         }
         
-        function renderTabs() {
-            const tabs = document.getElementById('categoryTabs');
-            tabs.innerHTML = '';
-            
-            // Add daily spin tab
-            const spinTab = document.createElement("div");
-            spinTab.className = "tab lootbox-tab" + (currentCategory === "dailyspin" ? " active" : "");
-            spinTab.innerHTML = "🎡 Daily Spin";
-            spinTab.onclick = () => {
-                currentCategory = "dailyspin";
-                renderTabs();
-                renderShop();
-            };
-            tabs.appendChild(spinTab);
+        // Category groupings
+        const CATEGORY_GROUPS = {
+            'featured': {
+                name: '🎁 Featured',
+                categories: ['dailyspin', 'lootboxes'],
+                featured: true
+            },
+            'appearance': {
+                name: '✨ Appearance',
+                categories: ['name_colors', 'borders', 'avatar_effects', 'avatar_rings']
+            },
+            'profile': {
+                name: '👤 Profile',
+                categories: ['titles', 'banners', 'profile_music', 'cursors', 'pets']
+            },
+            'extras': {
+                name: '🎮 Extras',
+                categories: ['emotes', 'boosters', 'social']
+            }
+        };
 
-            // Add loot boxes tab first
-            const lootTab = document.createElement('div');
-            lootTab.className = 'tab lootbox-tab' + (currentCategory === 'lootboxes' ? ' active' : '');
-            lootTab.innerHTML = '🎁 Loot Boxes';
-            lootTab.onclick = () => {
-                currentCategory = 'lootboxes';
-                renderTabs();
-                renderShop();
-            };
-            tabs.appendChild(lootTab);
-            
-            for (const [key, cat] of Object.entries(shopData.shop)) {
+        let currentGroup = 'featured';
+
+        function getGroupForCategory(cat) {
+            for (const [groupKey, group] of Object.entries(CATEGORY_GROUPS)) {
+                if (group.categories.includes(cat)) return groupKey;
+            }
+            return 'extras';
+        }
+
+        function renderTabs() {
+            const groupsContainer = document.getElementById('categoryGroups');
+            const tabs = document.getElementById('categoryTabs');
+            groupsContainer.innerHTML = '';
+            tabs.innerHTML = '';
+
+            // Find which group the current category belongs to
+            currentGroup = getGroupForCategory(currentCategory);
+
+            // Render category groups
+            for (const [groupKey, group] of Object.entries(CATEGORY_GROUPS)) {
+                const groupBtn = document.createElement('div');
+                groupBtn.className = 'category-group' + (groupKey === currentGroup ? ' active' : '') + (group.featured ? ' featured' : '');
+                groupBtn.textContent = group.name;
+                groupBtn.onclick = () => {
+                    currentGroup = groupKey;
+                    // Set to first category in group
+                    currentCategory = group.categories[0];
+                    renderTabs();
+                    renderShop();
+                };
+                groupsContainer.appendChild(groupBtn);
+            }
+
+            // Render tabs for current group
+            const groupData = CATEGORY_GROUPS[currentGroup];
+            for (const catKey of groupData.categories) {
                 const tab = document.createElement('div');
-                tab.className = 'tab' + (key === currentCategory ? ' active' : '');
-                tab.innerHTML = cat.icon + ' ' + cat.name;
-                
-                const owned = (userData.inventory[key] || []).length;
-                if (owned > 0) {
-                    tab.innerHTML += '<span class="inventory-count">' + owned + '</span>';
+
+                if (catKey === 'dailyspin') {
+                    tab.className = 'tab lootbox-tab' + (currentCategory === 'dailyspin' ? ' active' : '');
+                    tab.innerHTML = '🎡 Daily Spin';
+                } else if (catKey === 'lootboxes') {
+                    tab.className = 'tab lootbox-tab' + (currentCategory === 'lootboxes' ? ' active' : '');
+                    tab.innerHTML = '🎁 Loot Boxes';
+                } else if (shopData.shop[catKey]) {
+                    const cat = shopData.shop[catKey];
+                    tab.className = 'tab' + (catKey === currentCategory ? ' active' : '');
+                    tab.innerHTML = cat.icon + ' ' + cat.name;
+
+                    const owned = (userData.inventory[catKey] || []).length;
+                    if (owned > 0) {
+                        tab.innerHTML += '<span class="inventory-count">' + owned + '</span>';
+                    }
+                } else {
+                    continue;
                 }
-                
+
                 tab.onclick = () => {
-                    currentCategory = key;
+                    currentCategory = catKey;
                     renderTabs();
                     renderShop();
                 };
@@ -917,16 +1689,22 @@
                 // Skip sold-out limited items unless user owns it
                 if (item.soldOut && !owned) continue;
                 
-                const equipKey = currentCategory === 'borders' ? 'border' : 
+                const equipKey = currentCategory === 'borders' ? 'border' :
                                 currentCategory === 'avatar_effects' ? 'avatar_effect' :
                                 currentCategory === 'titles' ? 'title' :
+                                currentCategory === 'cursors' ? 'cursor' :
+                                currentCategory === 'profile_music' ? 'profile_music' :
+                                currentCategory === 'pets' ? 'pet' :
+                                currentCategory === 'avatar_rings' ? 'avatar_ring' :
                                 currentCategory.replace('s', '');
-                const equipped = userData.equipped[equipKey] === item.id;
+                const equipped = userData.equipped && userData.equipped[equipKey] === item.id;
                 
                 const card = document.createElement('div');
-                card.className = 'item-card' + (owned ? ' owned' : '') + (equipped ? ' equipped' : '');
+                const rarityClass = item.rarity ? ' rarity-' + item.rarity : '';
+                card.className = 'item-card' + (owned ? ' owned' : '') + (equipped ? ' equipped' : '') + rarityClass;
                 
                 let preview = '';
+
                 if (currentCategory === 'name_colors') {
                     preview = '<div class="item-preview preview-' + item.id + '">Player Name</div>';
                 } else if (currentCategory === 'borders') {
@@ -939,17 +1717,32 @@
                     const animClass = item.animated ? ' banner-animated' : '';
                     preview = '<div class="item-preview"><div class="banner-preview' + animClass + '" style="background: ' + item.gradient + ';"></div></div>';
                 } else if (currentCategory === 'titles') {
-                    preview = '<div class="item-preview" style="font-size: 1.5rem;">' + item.display + '</div>';
+                    preview = '<div class="item-preview" style="font-size: 1.5rem;">' + (item.display || item.name) + '</div>';
                 } else if (currentCategory === 'boosters') {
                     preview = '<div class="item-preview">⚡</div>';
                 } else if (currentCategory === 'social') {
                     preview = '<div class="item-preview">🏆</div>';
+                } else if (currentCategory === 'avatar_rings') {
+                    preview = '<div class="item-preview"><div class="border-preview ring-' + item.id + '">😎</div></div>';
+                } else if (currentCategory === 'pets') {
+                    const petClass = item.rarity === 'legendary' || item.rarity === 'mythic' ? ' ' + item.rarity : '';
+                    preview = '<div class="item-preview"><div class="pet-preview' + petClass + '">' + (item.emoji || '🐾') + '</div></div>';
+                } else if (currentCategory === 'cursors') {
+                    const trailClass = item.trail ? ' has-trail' : '';
+                    const cursorIcon = item.image || '🖱️';
+                    preview = '<div class="item-preview"><div class="cursor-preview' + trailClass + '">' + cursorIcon + '</div></div>';
+                } else if (currentCategory === 'profile_music') {
+                    preview = '<div class="item-preview"><div class="music-preview"><div class="music-bar"></div><div class="music-bar"></div><div class="music-bar"></div><div class="music-bar"></div><div class="music-bar"></div></div></div>';
                 }
                 
                 let badges = '';
+                // Show rarity badge
+                if (item.rarity) {
+                    badges += '<span class="rarity-badge ' + item.rarity + '">' + item.rarity.toUpperCase() + '</span> ';
+                }
                 if (equipped) badges += '<span class="equipped-badge">EQUIPPED</span> ';
                 else if (owned && currentCategory !== 'boosters') badges += '<span class="owned-badge">OWNED</span> ';
-                
+
                 // Show limited badge for limited items
                 if (item.limited) {
                     if (item.soldOut) {
@@ -976,7 +1769,7 @@
                 } else if (owned) {
                     if (equipped) {
                         actions = '<button class="btn btn-unequip" onclick="unequipItem(\'' + currentCategory + '\')">Unequip</button>';
-                    } else if (['name_colors', 'borders', 'avatar_effects', 'titles', 'banners'].includes(currentCategory)) {
+                    } else if (['name_colors', 'borders', 'avatar_effects', 'titles', 'banners', 'avatar_rings', 'cursors', 'profile_music', 'pets'].includes(currentCategory)) {
                         actions = '<button class="btn btn-equip" onclick="equipItem(\'' + currentCategory + '\', \'' + item.id + '\')">Equip</button>';
                     }
                 } else {
@@ -1007,23 +1800,23 @@
         }
         
         async function openLootbox(type) {
-            const costs = { basic: 500, premium: 1500, legendary: 5000 };
+            const costs = { starter: 200, basic: 500, premium: 1500, legendary: 5000, mythic: 15000, mega: 50000 };
             if (userData.coins < costs[type]) {
                 showToast('Not enough coins!', 'error');
                 return;
             }
-            
+
             // Show modal with opening animation
             const modal = document.getElementById('lootboxModal');
             const openingAnim = document.getElementById('openingAnimation');
             const result = document.getElementById('lootboxResult');
-            
+
             modal.classList.add('active');
             openingAnim.style.display = 'block';
             result.style.display = 'none';
-            
+
             // Set box icon based on type
-            const icons = { basic: '📦', premium: '🎁', legendary: '👑' };
+            const icons = { starter: '🎒', basic: '📦', premium: '🎁', legendary: '👑', mythic: '🌟', mega: '💎' };
             openingAnim.querySelector('.opening-box').textContent = icons[type];
             
             try {
@@ -1042,29 +1835,47 @@
                     userData.coins = data.coins;
                     if (data.inventory) userData.inventory = data.inventory;
                     updateCoinDisplay();
-                    
+
                     // Show result
                     openingAnim.style.display = 'none';
                     result.style.display = 'block';
-                    
-                    const drop = data.reward;
-                    document.getElementById('resultIcon').textContent = getDropIcon(drop);
-                    document.getElementById('resultName').textContent = drop.name;
-                    document.getElementById('resultName').className = 'result-name ' + (drop.rarity || 'common');
-                    document.getElementById('resultType').textContent = formatDropType(drop.type);
-                    
-                    const dupElem = document.getElementById('resultDuplicate');
-                    if (drop.duplicate) {
-                        dupElem.style.display = 'block';
-                        dupElem.textContent = 'Already owned! +' + drop.amount + ' coins refund';
+
+                    // Handle multi-reward (Mega Box)
+                    if (data.multiReward && data.rewards) {
+                        let html = '<div style="text-align:center;margin-bottom:15px;"><span style="font-size:1.5rem;color:#67e8f9;">🎉 MEGA REWARDS! 🎉</span></div>';
+                        html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:15px;">';
+                        data.rewards.forEach(drop => {
+                            html += `<div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:15px;text-align:center;" class="rarity-${drop.rarity || 'common'}">
+                                <div style="font-size:3rem;">${getDropIcon(drop)}</div>
+                                <div class="result-name ${drop.rarity || 'common'}" style="font-size:1rem;margin:5px 0;">${drop.name}</div>
+                                <div style="font-size:0.8rem;color:#888;">${formatDropType(drop.type)}</div>
+                            </div>`;
+                            recentDrops.unshift({ ...drop, time: Date.now() });
+                        });
+                        html += '</div>';
+                        result.innerHTML = html + '<button class="btn-open" onclick="closeLootboxModal()" style="margin-top:20px;">Awesome!</button>';
+                        if (recentDrops.length > 10) recentDrops.splice(10);
+                        renderRecentDrops();
                     } else {
-                        dupElem.style.display = 'none';
+                        const drop = data.reward;
+                        document.getElementById('resultIcon').textContent = getDropIcon(drop);
+                        document.getElementById('resultName').textContent = drop.name;
+                        document.getElementById('resultName').className = 'result-name ' + (drop.rarity || 'common');
+                        document.getElementById('resultType').textContent = formatDropType(drop.type);
+
+                        const dupElem = document.getElementById('resultDuplicate');
+                        if (drop.duplicate) {
+                            dupElem.style.display = 'block';
+                            dupElem.textContent = 'Already owned! +' + drop.amount + ' coins refund';
+                        } else {
+                            dupElem.style.display = 'none';
+                        }
+
+                        // Add to recent drops
+                        recentDrops.unshift({ ...drop, time: Date.now() });
+                        if (recentDrops.length > 10) recentDrops.pop();
+                        renderRecentDrops();
                     }
-                    
-                    // Add to recent drops
-                    recentDrops.unshift({ ...drop, time: Date.now() });
-                    if (recentDrops.length > 10) recentDrops.pop();
-                    renderRecentDrops();
                 } else {
                     closeLootboxModal();
                     showToast(data.error, 'error');
@@ -1303,7 +2114,7 @@
             
             for (const [type, count] of Object.entries(counts)) {
                 if (count > 0) {
-                    html += "<div class=\"inventory-box " + type + "\"><div class=\"icon\">" + icons[type] + "</div><div class=\"count\">" + count + "</div><div class=\"label\">" + type + "</div><button onclick=\"openFromInventory(\"" + type + "\")\" >Open 1</button></div>";
+                    html += "<div class=\"inventory-box " + type + "\"><div class=\"icon\">" + icons[type] + "</div><div class=\"count\">" + count + "</div><div class=\"label\">" + type + "</div><button onclick=\"openFromInventory('" + type + "')\">Open 1</button></div>";
                 }
             }
             container.innerHTML = html || "<span class=\"inventory-empty\">No boxes in inventory</span>";
@@ -1364,7 +2175,9 @@
                 
                 if (data.success) {
                     userData.coins = data.coins;
+                    if (data.inventory) userData.inventory = data.inventory;
                     updateCoinDisplay();
+                    renderInventory();
                     showToast("Bought " + count + " " + boxType + " boxes!", "success");
                 } else {
                     showToast(data.error, "error");
@@ -1505,11 +2318,19 @@
                     body: JSON.stringify({ action: 'purchase', category, itemId })
                 });
                 const data = await resp.json();
-                
+
                 if (data.success) {
                     userData.coins = data.coins;
                     userData.inventory = data.inventory;
                     updateCoinDisplay();
+
+                    // Reload shop data to get updated limited item counts
+                    const shopResp = await fetch('api/shop.php?action=items');
+                    const shopResult = await shopResp.json();
+                    if (shopResult.success) {
+                        shopData = shopResult.shop;
+                    }
+
                     renderTabs();
                     renderShop();
                     showToast(data.message, 'success');
@@ -1600,7 +2421,360 @@
         
         setInterval(updateActiveBoosts, 1000);
         
+        // Space key to buy lootboxes
+        let hoveredLootbox = null;
+        let spaceHeld = false;
+        let spaceInterval = null;
+        
+        // Use event delegation for hover detection
+        document.addEventListener("mouseover", (e) => {
+            const card = e.target.closest(".lootbox-card");
+            if (card) {
+                if (card.classList.contains("basic")) hoveredLootbox = "basic";
+                else if (card.classList.contains("premium")) hoveredLootbox = "premium";
+                else if (card.classList.contains("legendary")) hoveredLootbox = "legendary";
+            }
+        });
+        
+        document.addEventListener("mouseout", (e) => {
+            const card = e.target.closest(".lootbox-card");
+            if (card && !card.contains(e.relatedTarget)) {
+                hoveredLootbox = null;
+            }
+        });
+        
+        document.addEventListener("keydown", (e) => {
+            if (e.code === "Space" && hoveredLootbox && !spaceHeld) {
+                e.preventDefault();
+                spaceHeld = true;
+                openLootbox(hoveredLootbox);
+                spaceInterval = setInterval(() => {
+                    if (hoveredLootbox) openLootbox(hoveredLootbox);
+                }, 400);
+            }
+        });
+        
+        document.addEventListener("keyup", (e) => {
+            if (e.code === "Space") {
+                spaceHeld = false;
+                if (spaceInterval) { clearInterval(spaceInterval); spaceInterval = null; }
+            }
+        });
+        
         init();
     </script>
+
+    <!-- Auto-clicker panel -->
+    <div class="autoclicker-panel" id="autoclickerPanel">
+        <h4>⚡ Auto-Clicker</h4>
+        <div class="autoclicker-toggle">
+            <input type="checkbox" id="autoclickerEnabled" onchange="toggleAutoclicker()">
+            <label for="autoclickerEnabled">Enable</label>
+        </div>
+        <div class="autoclicker-status off" id="autoclickerStatus">OFF</div>
+        <small style="color:#666">Hover + enable to auto-buy</small>
+    </div>
+    
+    <script>
+        // Auto-clicker feature
+        let autoclickerEnabled = false;
+        let autoclickerInterval = null;
+        let acHoveredBtn = null;
+        
+        // Track button hover
+        document.addEventListener('mouseover', (e) => {
+            const btn = e.target.closest('.btn-open, .bundle-btn, .btn-buy, button');
+            if (btn && !btn.disabled) acHoveredBtn = btn;
+        });
+        document.addEventListener('mouseout', (e) => {
+            const btn = e.target.closest('.btn-open, .bundle-btn, .btn-buy, button');
+            if (btn) acHoveredBtn = null;
+        });
+        
+        function toggleAutoclicker() {
+            autoclickerEnabled = document.getElementById('autoclickerEnabled').checked;
+            const status = document.getElementById('autoclickerStatus');
+            if (autoclickerEnabled) {
+                status.textContent = 'ON - Hover over button';
+                status.classList.remove('off');
+                if (autoclickerInterval) clearInterval(autoclickerInterval);
+                autoclickerInterval = setInterval(() => {
+                    if (autoclickerEnabled && acHoveredBtn && !acHoveredBtn.disabled) {
+                        acHoveredBtn.click();
+                    }
+                }, 50);
+            } else {
+                status.textContent = 'OFF';
+                status.classList.add('off');
+                if (autoclickerInterval) { clearInterval(autoclickerInterval); autoclickerInterval = null; }
+            }
+        }
+    </script>
+
+    <!-- Ad Modal -->
+    <div class="ad-modal hidden" id="adModal">
+        <div class="ad-container">
+            <div class="ad-skip-timer" id="adSkipTimer">Skip in 5s</div>
+            <div class="ad-placeholder">
+                <h2>📺 Advertisement</h2>
+                <p>Thank you for supporting RetroBlasts!</p>
+                <div class="ad-timer" id="adTimer">5</div>
+                <div class="ad-reward-preview">🪙 +100 coins after this ad</div>
+            </div>
+        </div>
+        <button class="ad-close-btn" id="adCloseBtn" onclick="closeAd()">✓ Collect 100 Coins!</button>
+    </div>
+
+
+    <script>
+        // ==================== REWARDED AD SYSTEM ====================
+        const AD_REWARD = 100;
+        const MAX_ADS_PER_DAY = 5;
+        const AD_DURATION = 5; // seconds
+        
+        function getAdsWatchedToday() {
+            const data = localStorage.getItem('retroblasts_ads');
+            if (!data) return { count: 0, date: '' };
+            const parsed = JSON.parse(data);
+            const today = new Date().toDateString();
+            if (parsed.date !== today) {
+                return { count: 0, date: today };
+            }
+            return parsed;
+        }
+        
+        function saveAdsWatched(count) {
+            const today = new Date().toDateString();
+            localStorage.setItem('retroblasts_ads', JSON.stringify({ count, date: today }));
+        }
+        
+        function updateAdsRemaining() {
+            const data = getAdsWatchedToday();
+            const remaining = MAX_ADS_PER_DAY - data.count;
+            const el = document.getElementById('adsRemaining');
+            const btn = document.getElementById('watchAdBtn');
+            
+            if (remaining <= 0) {
+                el.textContent = 'Come back tomorrow for more free coins!';
+                el.style.color = '#ff6b6b';
+                btn.disabled = true;
+                btn.innerHTML = '<span>✓ Daily Limit Reached</span>';
+            } else {
+                el.textContent = remaining + ' ad' + (remaining !== 1 ? 's' : '') + ' remaining today';
+                el.style.color = '#888';
+                btn.disabled = false;
+                btn.innerHTML = '<span>▶️ Watch Ad</span><span class="ad-reward">+' + AD_REWARD + ' 🪙</span>';
+            }
+        }
+        
+        function watchAd() {
+            const data = getAdsWatchedToday();
+            if (data.count >= MAX_ADS_PER_DAY) {
+                alert('You\'ve watched all available ads today. Come back tomorrow!');
+                return;
+            }
+            
+            // Show ad modal
+            document.getElementById('adModal').classList.remove('hidden');
+            document.getElementById('adCloseBtn').classList.remove('show');
+            
+            // Start countdown
+            let timeLeft = AD_DURATION;
+            const timerEl = document.getElementById('adTimer');
+            const skipEl = document.getElementById('adSkipTimer');
+            
+            timerEl.textContent = timeLeft;
+            skipEl.textContent = 'Skip in ' + timeLeft + 's';
+            
+            const countdown = setInterval(() => {
+                timeLeft--;
+                timerEl.textContent = timeLeft;
+                skipEl.textContent = timeLeft > 0 ? 'Skip in ' + timeLeft + 's' : 'Done!';
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    document.getElementById('adCloseBtn').classList.add('show');
+                    skipEl.textContent = '✓ Complete!';
+                }
+            }, 1000);
+        }
+        
+        async function closeAd() {
+            // Hide modal
+            document.getElementById('adModal').classList.add('hidden');
+            
+            // Award coins
+            try {
+                const res = await fetch('api/coins.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'add', amount: AD_REWARD })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    // Update ads watched count
+                    const adsData = getAdsWatchedToday();
+                    saveAdsWatched(adsData.count + 1);
+                    updateAdsRemaining();
+                    
+                    // Show success
+                    alert('🎉 You earned ' + AD_REWARD + ' coins!');
+                    
+                    // Refresh coin display if exists
+                    if (typeof updateCoinDisplay === 'function') {
+                        updateCoinDisplay();
+                    }
+                    if (typeof loadUserData === 'function') {
+                        loadUserData();
+                    }
+                    // Reload page to show new balance
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Could not add coins. Are you logged in?'));
+                }
+            } catch (e) {
+                alert('Error adding coins. Please make sure you\'re logged in!');
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', updateAdsRemaining);
+    </script>
+
+
+    <!-- Ad Modal -->
+    <div class="ad-modal hidden" id="adModal">
+        <div class="ad-container">
+            <div class="ad-skip-timer" id="adSkipTimer">Skip in 5s</div>
+            <div class="ad-placeholder">
+                <h2>📺 Advertisement</h2>
+                <p>Thank you for supporting RetroBlasts!</p>
+                <div class="ad-timer" id="adTimer">5</div>
+                <div class="ad-reward-preview">🪙 +100 coins after this ad</div>
+            </div>
+        </div>
+        <button class="ad-close-btn" id="adCloseBtn" onclick="closeAd()">✓ Collect 100 Coins!</button>
+    </div>
+
+
+    <script>
+        // ==================== REWARDED AD SYSTEM ====================
+        const AD_REWARD = 100;
+        const MAX_ADS_PER_DAY = 5;
+        const AD_DURATION = 5; // seconds
+        
+        function getAdsWatchedToday() {
+            const data = localStorage.getItem('retroblasts_ads');
+            if (!data) return { count: 0, date: '' };
+            const parsed = JSON.parse(data);
+            const today = new Date().toDateString();
+            if (parsed.date !== today) {
+                return { count: 0, date: today };
+            }
+            return parsed;
+        }
+        
+        function saveAdsWatched(count) {
+            const today = new Date().toDateString();
+            localStorage.setItem('retroblasts_ads', JSON.stringify({ count, date: today }));
+        }
+        
+        function updateAdsRemaining() {
+            const data = getAdsWatchedToday();
+            const remaining = MAX_ADS_PER_DAY - data.count;
+            const el = document.getElementById('adsRemaining');
+            const btn = document.getElementById('watchAdBtn');
+            
+            if (remaining <= 0) {
+                el.textContent = 'Come back tomorrow for more free coins!';
+                el.style.color = '#ff6b6b';
+                btn.disabled = true;
+                btn.innerHTML = '<span>✓ Daily Limit Reached</span>';
+            } else {
+                el.textContent = remaining + ' ad' + (remaining !== 1 ? 's' : '') + ' remaining today';
+                el.style.color = '#888';
+                btn.disabled = false;
+                btn.innerHTML = '<span>▶️ Watch Ad</span><span class="ad-reward">+' + AD_REWARD + ' 🪙</span>';
+            }
+        }
+        
+        function watchAd() {
+            const data = getAdsWatchedToday();
+            if (data.count >= MAX_ADS_PER_DAY) {
+                alert('You\'ve watched all available ads today. Come back tomorrow!');
+                return;
+            }
+            
+            // Show ad modal
+            document.getElementById('adModal').classList.remove('hidden');
+            document.getElementById('adCloseBtn').classList.remove('show');
+            
+            // Start countdown
+            let timeLeft = AD_DURATION;
+            const timerEl = document.getElementById('adTimer');
+            const skipEl = document.getElementById('adSkipTimer');
+            
+            timerEl.textContent = timeLeft;
+            skipEl.textContent = 'Skip in ' + timeLeft + 's';
+            
+            const countdown = setInterval(() => {
+                timeLeft--;
+                timerEl.textContent = timeLeft;
+                skipEl.textContent = timeLeft > 0 ? 'Skip in ' + timeLeft + 's' : 'Done!';
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    document.getElementById('adCloseBtn').classList.add('show');
+                    skipEl.textContent = '✓ Complete!';
+                }
+            }, 1000);
+        }
+        
+        async function closeAd() {
+            // Hide modal
+            document.getElementById('adModal').classList.add('hidden');
+            
+            // Award coins
+            try {
+                const res = await fetch('api/coins.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'add', amount: AD_REWARD })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    // Update ads watched count
+                    const adsData = getAdsWatchedToday();
+                    saveAdsWatched(adsData.count + 1);
+                    updateAdsRemaining();
+                    
+                    // Show success
+                    alert('🎉 You earned ' + AD_REWARD + ' coins!');
+                    
+                    // Refresh coin display if exists
+                    if (typeof updateCoinDisplay === 'function') {
+                        updateCoinDisplay();
+                    }
+                    if (typeof loadUserData === 'function') {
+                        loadUserData();
+                    }
+                    // Reload page to show new balance
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Could not add coins. Are you logged in?'));
+                }
+            } catch (e) {
+                alert('Error adding coins. Please make sure you\'re logged in!');
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', updateAdsRemaining);
+    </script>
+
 </body>
 </html>
