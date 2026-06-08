@@ -252,7 +252,8 @@
             'fishing': { name: 'Gone Fishing', icon: '🎣', url: 'fishing.html', color: '#4A90A4' },
             'asteroids': { name: 'Asteroids', icon: '☄️', url: 'asteroids.html', color: '#fff' },
             'geometry-dash': { name: 'Geometry Dash', icon: '◆', url: 'geometry-dash.html', color: '#00ffff' },
-            'crossy-road': { name: 'Crossy Road', icon: '🐔', url: 'crossy-road.html', color: '#4CAF50' }
+            'crossy-road': { name: 'Crossy Road', icon: '🐔', url: 'crossy-road.html', color: '#4CAF50' },
+            'jeopardy': { name: 'Jeopardy!', icon: '🎓', url: 'jeopardy.html', color: '#060ce9' }
         };
 
         // Load stats from localStorage
@@ -435,6 +436,46 @@
                         <div class="game-stat-row">
                             <span class="label">Levels Completed</span>
                             <span class="value green">${gameStats.levelsCompleted}</span>
+                        </div>`;
+                }
+
+                if (gameStats.questionsAnswered !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Questions Answered</span>
+                            <span class="value green">${formatNumber(gameStats.questionsAnswered)}</span>
+                        </div>`;
+                }
+
+                if (gameStats.correctAnswers !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Correct Answers</span>
+                            <span class="value green">${formatNumber(gameStats.correctAnswers)}</span>
+                        </div>`;
+                }
+
+                if (gameStats.gamesWon !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Games Won</span>
+                            <span class="value gold">${gameStats.gamesWon}</span>
+                        </div>`;
+                }
+
+                if (gameStats.dailyDoublesHit !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Daily Doubles Hit</span>
+                            <span class="value green">${gameStats.dailyDoublesHit}</span>
+                        </div>`;
+                }
+
+                if (gameStats.finalJeopardyWins !== undefined) {
+                    statsHTML += `
+                        <div class="game-stat-row">
+                            <span class="label">Final Jeopardy Wins</span>
+                            <span class="value gold">${gameStats.finalJeopardyWins}</span>
                         </div>`;
                 }
 

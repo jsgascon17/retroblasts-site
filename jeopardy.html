@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeopardy! - RetroBlasts</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #060ce9 0%, #1a0a3e 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .home-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 16px;
+            z-index: 1000;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .home-link:hover {
+            opacity: 1;
+        }
+
+        .coins-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 18px;
+            z-index: 1000;
+        }
+
+        .coins-display span {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Start Screen */
+        #startScreen {
+            text-align: center;
+        }
+
+        .game-title {
+            font-size: 72px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 4px 4px 0 #000, 0 0 30px rgba(255, 215, 0, 0.5);
+            margin-bottom: 10px;
+            letter-spacing: 4px;
+        }
+
+        .game-subtitle {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .difficulty-select {
+            margin-bottom: 30px;
+        }
+
+        .difficulty-select h3 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .difficulty-btn {
+            padding: 12px 30px;
+            font-size: 18px;
+            border: 3px solid #ffd700;
+            background: transparent;
+            color: #ffd700;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .difficulty-btn:hover, .difficulty-btn.selected {
+            background: #ffd700;
+            color: #060ce9;
+        }
+
+        .start-btn {
+            padding: 20px 60px;
+            font-size: 28px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-top: 20px;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+        }
+
+        .stats-preview {
+            margin-top: 40px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px 40px;
+            border-radius: 12px;
+        }
+
+        .stats-preview h4 {
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .stats-preview p {
+            margin: 5px 0;
+            opacity: 0.8;
+        }
+
+        /* Game Board Screen */
+        #gameScreen {
+            padding-top: 60px;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 20px;
+        }
+
+        .round-indicator {
+            font-size: 24px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            max-width: 1000px;
+            width: 100%;
+            background: #000;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .category-header {
+            background: linear-gradient(180deg, #060ce9 0%, #0a1a5e 100%);
+            padding: 15px 10px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            text-transform: uppercase;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .question-tile {
+            background: linear-gradient(180deg, #060ce9 0%, #0a1a5e 100%);
+            padding: 20px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffd700;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .question-tile:hover:not(.answered) {
+            background: linear-gradient(180deg, #1a2ce9 0%, #1a3a8e 100%);
+            transform: scale(1.02);
+        }
+
+        .question-tile.answered {
+            background: #1a1a3e;
+            color: #333;
+            cursor: default;
+        }
+
+        .question-tile.daily-double {
+            animation: glow 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 10px #ffd700; }
+            to { box-shadow: 0 0 30px #ffd700; }
+        }
+
+        /* Player Podiums */
+        .podiums {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .podium {
+            background: linear-gradient(180deg, #1a1a5e 0%, #0a0a3e 100%);
+            padding: 20px 30px;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 200px;
+            border: 3px solid #333;
+            transition: all 0.3s;
+        }
+
+        .podium.active {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .podium.player {
+            border-color: #00ff88;
+        }
+
+        .podium-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .podium-score {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .podium-score.negative {
+            color: #ff4444;
+        }
+
+        /* Question Screen */
+        #questionScreen {
+            text-align: center;
+        }
+
+        .question-category {
+            font-size: 24px;
+            color: #ffd700;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .question-value {
+            font-size: 48px;
+            color: #ffd700;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .question-text {
+            font-size: 32px;
+            max-width: 800px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+        }
+
+        .timer-bar {
+            width: 100%;
+            max-width: 600px;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88 0%, #ffaa00 50%, #ff4444 100%);
+            transition: width 0.1s linear;
+        }
+
+        .timer-text {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .buzz-btn {
+            padding: 20px 60px;
+            font-size: 28px;
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: transform 0.1s;
+            margin-bottom: 20px;
+        }
+
+        .buzz-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .buzz-btn:active {
+            transform: scale(0.95);
+        }
+
+        .buzz-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .answer-input-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .answer-input-container.active {
+            display: flex;
+        }
+
+        .answer-input {
+            padding: 15px 30px;
+            font-size: 24px;
+            width: 400px;
+            max-width: 90vw;
+            border: 3px solid #ffd700;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            text-align: center;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .submit-btn {
+            padding: 15px 40px;
+            font-size: 20px;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .who-buzzed {
+            font-size: 24px;
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+
+        /* Answer Reveal */
+        .answer-reveal {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .answer-reveal.active {
+            display: flex;
+        }
+
+        .answer-result {
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .answer-result.correct {
+            color: #00ff88;
+        }
+
+        .answer-result.incorrect {
+            color: #ff4444;
+        }
+
+        .correct-answer {
+            font-size: 28px;
+            color: #ffd700;
+        }
+
+        .continue-btn {
+            padding: 15px 40px;
+            font-size: 20px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        /* Daily Double Screen */
+        #dailyDoubleScreen {
+            text-align: center;
+        }
+
+        .daily-double-title {
+            font-size: 72px;
+            color: #ffd700;
+            text-shadow: 4px 4px 0 #000;
+            margin-bottom: 30px;
+            animation: pulse 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        .wager-container {
+            margin: 30px 0;
+        }
+
+        .wager-container h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .wager-input {
+            padding: 15px 30px;
+            font-size: 32px;
+            width: 200px;
+            border: 3px solid #ffd700;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #ffd700;
+            text-align: center;
+        }
+
+        .wager-info {
+            margin-top: 15px;
+            font-size: 18px;
+            opacity: 0.8;
+        }
+
+        .wager-btn {
+            padding: 15px 50px;
+            font-size: 24px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        /* Final Jeopardy */
+        #finalJeopardyScreen {
+            text-align: center;
+        }
+
+        .final-title {
+            font-size: 56px;
+            color: #ffd700;
+            text-shadow: 4px 4px 0 #000;
+            margin-bottom: 20px;
+        }
+
+        .final-category {
+            font-size: 32px;
+            margin-bottom: 30px;
+            padding: 20px 40px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+        }
+
+        .final-scores {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .final-player {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 30px;
+            border-radius: 8px;
+        }
+
+        .final-player-name {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .final-player-score {
+            font-size: 28px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        /* Game Over Screen */
+        #gameOverScreen {
+            text-align: center;
+        }
+
+        .game-over-title {
+            font-size: 48px;
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+
+        .winner-announcement {
+            font-size: 36px;
+            margin-bottom: 30px;
+        }
+
+        .winner-announcement .winner-name {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .final-standings {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .standing {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 30px;
+            border-radius: 8px;
+            min-width: 300px;
+        }
+
+        .standing.first {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 170, 0, 0.3) 100%);
+            border: 2px solid #ffd700;
+        }
+
+        .standing-place {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .standing-name {
+            font-size: 20px;
+        }
+
+        .standing-score {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .coins-earned {
+            font-size: 28px;
+            color: #ffd700;
+            margin-bottom: 30px;
+        }
+
+        .game-over-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .play-again-btn, .home-btn {
+            padding: 15px 40px;
+            font-size: 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .play-again-btn {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+            color: #000;
+        }
+
+        .home-btn {
+            background: linear-gradient(135deg, #666 0%, #444 100%);
+            color: #fff;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 48px;
+            }
+
+            .game-board {
+                gap: 2px;
+                padding: 2px;
+            }
+
+            .category-header {
+                font-size: 10px;
+                padding: 10px 5px;
+                min-height: 60px;
+            }
+
+            .question-tile {
+                font-size: 18px;
+                padding: 10px;
+                min-height: 60px;
+            }
+
+            .podiums {
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+
+            .podium {
+                min-width: 120px;
+                padding: 15px;
+            }
+
+            .question-text {
+                font-size: 22px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-link">< Back to Games</a>
+    <div class="coins-display">Coins: <span id="totalCoins">0</span></div>
+
+    <!-- Start Screen -->
+    <div class="screen active" id="startScreen">
+        <h1 class="game-title">JEOPARDY!</h1>
+        <p class="game-subtitle">Test Your Knowledge</p>
+
+        <div class="difficulty-select">
+            <h3>Select Difficulty</h3>
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn" data-difficulty="easy">Easy</button>
+                <button class="difficulty-btn selected" data-difficulty="medium">Medium</button>
+                <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+            </div>
+        </div>
+
+        <button class="start-btn" onclick="startGame()">Start Game</button>
+
+        <div class="stats-preview">
+            <h4>Your Stats</h4>
+            <p>Games Played: <span id="statsGamesPlayed">0</span></p>
+            <p>Games Won: <span id="statsGamesWon">0</span></p>
+            <p>Correct Answers: <span id="statsCorrect">0</span></p>
+            <p>High Score: $<span id="statsHighScore">0</span></p>
+        </div>
+    </div>
+
+    <!-- Game Board Screen -->
+    <div class="screen" id="gameScreen">
+        <div class="game-header">
+            <div class="round-indicator" id="roundIndicator">Round 1</div>
+            <div id="questionsRemaining">30 questions remaining</div>
+        </div>
+
+        <div class="game-board" id="gameBoard">
+            <!-- Generated by JS -->
+        </div>
+
+        <div class="podiums" id="podiums">
+            <!-- Generated by JS -->
+        </div>
+    </div>
+
+    <!-- Question Screen -->
+    <div class="screen" id="questionScreen">
+        <div class="question-category" id="qCategory">Category</div>
+        <div class="question-value" id="qValue">$200</div>
+        <div class="question-text" id="qText">Question goes here?</div>
+
+        <div class="timer-bar">
+            <div class="timer-fill" id="timerFill"></div>
+        </div>
+        <div class="timer-text" id="timerText">15</div>
+
+        <div class="who-buzzed" id="whoBuzzed"></div>
+
+        <button class="buzz-btn" id="buzzBtn" onclick="playerBuzz()">BUZZ IN!</button>
+
+        <div class="answer-input-container" id="answerContainer">
+            <input type="text" class="answer-input" id="answerInput" placeholder="What is...?" autocomplete="off">
+            <button class="submit-btn" onclick="submitAnswer()">Submit</button>
+        </div>
+
+        <div class="answer-reveal" id="answerReveal">
+            <div class="answer-result" id="answerResult">Correct!</div>
+            <div class="correct-answer" id="correctAnswer">The answer was: Answer</div>
+            <button class="continue-btn" onclick="continueGame()">Continue</button>
+        </div>
+    </div>
+
+    <!-- Daily Double Screen -->
+    <div class="screen" id="dailyDoubleScreen">
+        <h1 class="daily-double-title">DAILY DOUBLE!</h1>
+        <div class="question-category" id="ddCategory">Category</div>
+
+        <div class="wager-container">
+            <h3>Enter Your Wager</h3>
+            <input type="number" class="wager-input" id="wagerInput" min="0" value="500">
+            <p class="wager-info" id="wagerInfo">You can wager up to $1000</p>
+        </div>
+
+        <button class="wager-btn" onclick="submitWager()">Make It So!</button>
+    </div>
+
+    <!-- Final Jeopardy Screen -->
+    <div class="screen" id="finalJeopardyScreen">
+        <h1 class="final-title">FINAL JEOPARDY!</h1>
+        <div class="final-category" id="finalCategory">Category</div>
+
+        <div class="final-scores" id="finalScores">
+            <!-- Generated by JS -->
+        </div>
+
+        <div id="finalWagerSection">
+            <div class="wager-container">
+                <h3>Enter Your Final Wager</h3>
+                <input type="number" class="wager-input" id="finalWagerInput" min="0" value="0">
+                <p class="wager-info" id="finalWagerInfo">You can wager up to your current score</p>
+            </div>
+            <button class="wager-btn" onclick="submitFinalWager()">Lock In Wager</button>
+        </div>
+
+        <div id="finalQuestionSection" style="display: none;">
+            <div class="question-text" id="finalQText">Final question here</div>
+            <div class="answer-input-container active">
+                <input type="text" class="answer-input" id="finalAnswerInput" placeholder="What is...?" autocomplete="off">
+                <button class="submit-btn" onclick="submitFinalAnswer()">Submit Final Answer</button>
+            </div>
+        </div>
+
+        <div id="finalRevealSection" style="display: none;">
+            <div class="answer-result" id="finalResult">Correct!</div>
+            <div class="correct-answer" id="finalCorrectAnswer">The answer was: Answer</div>
+            <button class="continue-btn" onclick="showGameOver()">See Results</button>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div class="screen" id="gameOverScreen">
+        <h1 class="game-over-title">GAME OVER!</h1>
+        <div class="winner-announcement">
+            Winner: <span class="winner-name" id="winnerName">Player</span>
+        </div>
+
+        <div class="final-standings" id="finalStandings">
+            <!-- Generated by JS -->
+        </div>
+
+        <div class="coins-earned" id="coinsEarned">
+            You earned: 0 coins!
+        </div>
+
+        <div class="game-over-buttons">
+            <button class="play-again-btn" onclick="startGame()">Play Again</button>
+            <button class="home-btn" onclick="location.href='index.html'">Home</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== QUESTION DATABASE ====================
+        const QUESTIONS = {
+            'Video Games': [
+                { q: "This plumber's brother wears green and is taller", a: "Luigi", value: 200 },
+                { q: "The block-building game bought by Microsoft in 2014 for $2.5 billion", a: "Minecraft", value: 200 },
+                { q: "This battle royale game features a shrinking storm and building mechanics", a: "Fortnite", value: 200 },
+                { q: "The yellow maze-runner who eats pellets and avoids ghosts", a: "Pac-Man", value: 200 },
+                { q: "Link is the hero of this legendary Nintendo series", a: "Zelda", value: 200 },
+                { q: "This 2020 indie game has you finding an impostor Among Us", a: "Among Us", value: 400 },
+                { q: "The company behind Pokemon, founded in Kyoto, Japan", a: "Nintendo", value: 400 },
+                { q: "This blue hedgehog is SEGA's mascot", a: "Sonic", value: 400 },
+                { q: "The Last of Us takes place after an outbreak of this fungal infection", a: "Cordyceps", value: 400 },
+                { q: "GTA stands for this", a: "Grand Theft Auto", value: 400 },
+                { q: "The final boss in most Mario games", a: "Bowser", value: 600 },
+                { q: "This game has you catching creatures in Poke Balls", a: "Pokemon", value: 600 },
+                { q: "Call of Duty's zombie mode first appeared in this 2008 game", a: "World at War", value: 600 },
+                { q: "Minecraft's final dimension accessed through End Portals", a: "The End", value: 600 },
+                { q: "The currency in Roblox", a: "Robux", value: 600 },
+                { q: "This Riot Games shooter features agents with unique abilities", a: "Valorant", value: 800 },
+                { q: "The protagonist of God of War (2018) and Ragnarok", a: "Kratos", value: 800 },
+                { q: "Elden Ring was co-created by FromSoftware and this author", a: "George R.R. Martin", value: 800 },
+                { q: "The creeper in Minecraft was accidentally created from this mob", a: "Pig", value: 800 },
+                { q: "This 1972 Atari game is considered the first commercially successful video game", a: "Pong", value: 800 },
+                { q: "The Wither in Minecraft requires these skull items to summon", a: "Wither Skeleton Skulls", value: 1000 },
+                { q: "Super Smash Bros. Ultimate has this many playable fighters", a: "89", value: 1000 },
+                { q: "The original name for Xbox Live's achievement points", a: "Gamerscore", value: 1000 },
+                { q: "This speedrunning term means completing a game as fast as possible with no restrictions", a: "Any%", value: 1000 },
+                { q: "The Konami Code starts with Up, Up, Down, Down, then these four directions", a: "Left Right Left Right", value: 1000 }
+            ],
+            'Memes & Internet': [
+                { q: "This 2010s meme features a shiba inu with colorful Comic Sans text", a: "Doge", value: 200 },
+                { q: "Rick Astley's famous song used for Rickrolling", a: "Never Gonna Give You Up", value: 200 },
+                { q: "The name of the surprised Pikachu meme format", a: "Surprised Pikachu", value: 200 },
+                { q: "This cat meme shows a confused woman yelling at a cat at dinner", a: "Woman Yelling at Cat", value: 200 },
+                { q: "The color of the upvote arrow on Reddit", a: "Orange", value: 200 },
+                { q: "This 2016 gorilla became a massive meme after being shot at the Cincinnati Zoo", a: "Harambe", value: 400 },
+                { q: "The dancing baby GIF from the 90s is considered one of the first viral what?", a: "Memes", value: 400 },
+                { q: "Grumpy Cat's real name was this", a: "Tardar Sauce", value: 400 },
+                { q: "This green frog meme became controversial in the 2016 election", a: "Pepe", value: 400 },
+                { q: "The button you press to pay respects in Call of Duty Advanced Warfare", a: "F", value: 400 },
+                { q: "This 2021 sea shanty went viral on TikTok", a: "Wellerman", value: 600 },
+                { q: "The name of the stick figure rage comic with bulging eyes and clenched teeth", a: "Rage Guy", value: 600 },
+                { q: "This phrase means something is legitimate or high quality in internet slang", a: "Bussin", value: 600 },
+                { q: "The original video sharing site where Keyboard Cat became famous", a: "YouTube", value: 600 },
+                { q: "This 4chan board is known for its chaotic and anonymous meme culture", a: "/b/", value: 600 },
+                { q: "The name for when you realize you've been outplayed, often shown with sunglasses", a: "Deal With It", value: 800 },
+                { q: "This AI chatbot released in late 2022 sparked memes about replacing jobs", a: "ChatGPT", value: 800 },
+                { q: "The dancing coffin meme originated from this African country", a: "Ghana", value: 800 },
+                { q: "This website lets you share text that disappears after being read", a: "Pastebin", value: 800 },
+                { q: "The name for images where you spot something unexpected, making you do a double-take", a: "Cursed Images", value: 800 },
+                { q: "This 2017 meme format shows a distracted boyfriend looking at another woman", a: "Distracted Boyfriend", value: 1000 },
+                { q: "The term for when a viral trend causes real-world shortages or events", a: "The Reddit Effect", value: 1000 },
+                { q: "This 2020 meme format shows someone looking at a butterfly asking 'Is this a pigeon?'", a: "Is This a Pigeon", value: 1000 },
+                { q: "The keyboard shortcut meme showing how to close a program forcefully", a: "Alt F4", value: 1000 },
+                { q: "This site, founded in 2003, is an encyclopedia of memes and internet culture", a: "Know Your Meme", value: 1000 }
+            ],
+            'YouTube & Streaming': [
+                { q: "This Swedish YouTuber held the most subscribed title for years", a: "PewDiePie", value: 200 },
+                { q: "The gaming platform owned by Amazon where streamers broadcast live", a: "Twitch", value: 200 },
+                { q: "MrBeast is known for giving away large amounts of this", a: "Money", value: 200 },
+                { q: "This children's song is the most viewed YouTube video ever", a: "Baby Shark", value: 200 },
+                { q: "The subscribe button on YouTube is this color", a: "Red", value: 200 },
+                { q: "This group of Minecraft YouTubers includes Dream, GeorgeNotFound, and Sapnap", a: "Dream SMP", value: 400 },
+                { q: "The Sidemen are a group of British YouTubers led by this member", a: "KSI", value: 400 },
+                { q: "This purple-haired streamer is known for playing variety games and loud reactions", a: "Ninja", value: 400 },
+                { q: "YouTube Premium removes these interruptions from videos", a: "Ads", value: 400 },
+                { q: "The first YouTube video ever uploaded is titled 'Me at the' this", a: "Zoo", value: 400 },
+                { q: "This creator's Minecraft hardcore series has over 100 episodes", a: "Ph1LzA", value: 600 },
+                { q: "The YouTube play button award given at 100,000 subscribers", a: "Silver", value: 600 },
+                { q: "This gaming YouTuber's green character is known for speedrunning Minecraft", a: "Dream", value: 600 },
+                { q: "Ludwig moved from Twitch to this platform in 2021", a: "YouTube", value: 600 },
+                { q: "The challenge where MrBeast spent 50 hours in this was a viral hit", a: "Solitary Confinement", value: 600 },
+                { q: "This is the term for watching a streamer without chatting or subscribing", a: "Lurking", value: 800 },
+                { q: "Corpse Husband is known for having this distinctive voice quality", a: "Deep", value: 800 },
+                { q: "The Twitch emote showing a man laughing with his eyes closed", a: "LUL", value: 800 },
+                { q: "This YouTube channel teaches science with flashy experiments", a: "Mark Rober", value: 800 },
+                { q: "The maximum length of a YouTube Short in seconds", a: "60", value: 800 },
+                { q: "This YouTuber created Team 10 and was in a famous boxing match vs KSI", a: "Jake Paul", value: 1000 },
+                { q: "The term for exclusive emotes Twitch subscribers can use", a: "Sub Emotes", value: 1000 },
+                { q: "YouTube was founded in this year", a: "2005", value: 1000 },
+                { q: "This Twitch streamer is known for 'Just Chatting' and hot tub streams controversy", a: "Amouranth", value: 1000 },
+                { q: "The original Gangnam Style video was the first to reach this many views", a: "1 Billion", value: 1000 }
+            ],
+            'Anime & Manga': [
+                { q: "The main character of Naruto who wants to become Hokage", a: "Naruto", value: 200 },
+                { q: "This anime features pirates searching for the One Piece treasure", a: "One Piece", value: 200 },
+                { q: "The protagonist of Dragon Ball Z", a: "Goku", value: 200 },
+                { q: "This anime studio made Spirited Away and My Neighbor Totoro", a: "Studio Ghibli", value: 200 },
+                { q: "The main character of Attack on Titan", a: "Eren", value: 200 },
+                { q: "In Demon Slayer, Tanjiro's sister is turned into this", a: "Demon", value: 400 },
+                { q: "The name of the notebook that kills anyone whose name is written in it", a: "Death Note", value: 400 },
+                { q: "My Hero Academia's main character who was born without a Quirk", a: "Deku", value: 400 },
+                { q: "This anime features alchemist brothers Edward and Alphonse Elric", a: "Fullmetal Alchemist", value: 400 },
+                { q: "The virtual reality game in Sword Art Online", a: "SAO", value: 400 },
+                { q: "Jujutsu Kaisen's protagonist who swallows this cursed object", a: "Sukuna's Finger", value: 600 },
+                { q: "The sport played in Haikyuu", a: "Volleyball", value: 600 },
+                { q: "This Cowboy Bebop character's catchphrase is 'See you, Space Cowboy'", a: "Spike", value: 600 },
+                { q: "The creator of Naruto and Boruto", a: "Masashi Kishimoto", value: 600 },
+                { q: "In Hunter x Hunter, this is the name of the assassin family", a: "Zoldyck", value: 600 },
+                { q: "The 9th Titan in Attack on Titan that Eren inherits", a: "Attack Titan", value: 800 },
+                { q: "Chainsaw Man's protagonist transforms when he pulls this body part", a: "Ripcord", value: 800 },
+                { q: "This 2019 anime features demon slayers and was animated by Ufotable", a: "Demon Slayer", value: 800 },
+                { q: "The Stand ability in JoJo's Bizarre Adventure that can stop time", a: "The World", value: 800 },
+                { q: "One Piece's creator Eiichiro Oda started the manga in this year", a: "1997", value: 800 },
+                { q: "This Studio Ghibli film won the Academy Award for Best Animated Feature in 2003", a: "Spirited Away", value: 1000 },
+                { q: "The maximum number of episodes in the original Naruto series", a: "220", value: 1000 },
+                { q: "Evangelion's protagonist who pilots Unit-01", a: "Shinji", value: 1000 },
+                { q: "The name of the island where the Survey Corps discovers truth in Attack on Titan", a: "Paradis", value: 1000 },
+                { q: "This manga magazine publishes One Piece, Naruto, and Dragon Ball", a: "Shonen Jump", value: 1000 }
+            ],
+            'Movies & TV': [
+                { q: "The superhero team featuring Iron Man, Thor, and Captain America", a: "Avengers", value: 200 },
+                { q: "Baby Yoda appears in this Disney+ Star Wars series", a: "The Mandalorian", value: 200 },
+                { q: "This Netflix show features Eleven and the Upside Down", a: "Stranger Things", value: 200 },
+                { q: "The movie franchise where Chris Pratt trains velociraptors", a: "Jurassic World", value: 200 },
+                { q: "This 2019 film is the highest-grossing movie of all time", a: "Avengers Endgame", value: 200 },
+                { q: "The streaming service that released Squid Game", a: "Netflix", value: 400 },
+                { q: "This Marvel villain snapped away half the universe", a: "Thanos", value: 400 },
+                { q: "The main character of John Wick, played by Keanu Reeves", a: "John Wick", value: 400 },
+                { q: "This HBO series is based on a video game about a fungal outbreak", a: "The Last of Us", value: 400 },
+                { q: "The name of the dragon in How to Train Your Dragon", a: "Toothless", value: 400 },
+                { q: "The Korean survival drama where players compete for money in deadly games", a: "Squid Game", value: 600 },
+                { q: "This director made Oppenheimer and The Dark Knight trilogy", a: "Christopher Nolan", value: 600 },
+                { q: "Wednesday Addams attends this school in the Netflix series", a: "Nevermore Academy", value: 600 },
+                { q: "The MCU's Phase 4 introduced this multiverse concept", a: "Multiverse of Madness", value: 600 },
+                { q: "This 2022 film features Batman played by Robert Pattinson", a: "The Batman", value: 600 },
+                { q: "The name of the fictional metal in Black Panther", a: "Vibranium", value: 800 },
+                { q: "This Pixar film features emotions as characters: Joy, Sadness, Anger, Fear, and Disgust", a: "Inside Out", value: 800 },
+                { q: "The Witcher on Netflix stars this actor as Geralt", a: "Henry Cavill", value: 800 },
+                { q: "Spider-Man: No Way Home featured how many Spider-Men", a: "3", value: 800 },
+                { q: "The number of seasons of Game of Thrones", a: "8", value: 800 },
+                { q: "This 2024 film is the sequel to Dune", a: "Dune Part Two", value: 1000 },
+                { q: "The year the original Star Wars film was released", a: "1977", value: 1000 },
+                { q: "This show's 'Red Wedding' episode shocked viewers in 2013", a: "Game of Thrones", value: 1000 },
+                { q: "The Infinity Stones are: Space, Mind, Reality, Power, Time, and this", a: "Soul", value: 1000 },
+                { q: "This 1994 film held the record for longest theatrical run before Titanic", a: "The Lion King", value: 1000 }
+            ],
+            'Music & Pop': [
+                { q: "This artist's Blinding Lights was the #1 song of 2020", a: "The Weeknd", value: 200 },
+                { q: "Taylor Swift's re-recorded albums have this word in parentheses", a: "Taylor's Version", value: 200 },
+                { q: "The K-pop group with members like RM, Jin, Suga, and Jungkook", a: "BTS", value: 200 },
+                { q: "This app popularized short music clips and dances", a: "TikTok", value: 200 },
+                { q: "Billie Eilish's breakout hit about being a 'Bad' this", a: "Guy", value: 200 },
+                { q: "This Puerto Rican artist performed at the 2020 Super Bowl with J.Lo", a: "Bad Bunny", value: 400 },
+                { q: "Drake is from this Canadian city", a: "Toronto", value: 400 },
+                { q: "The Eras Tour is this artist's record-breaking concert tour", a: "Taylor Swift", value: 400 },
+                { q: "This music platform is known for its green logo and Wrapped feature", a: "Spotify", value: 400 },
+                { q: "Post Malone's face is covered in these", a: "Tattoos", value: 400 },
+                { q: "This 2017 song by Luis Fonsi and Daddy Yankee became the most-viewed YouTube video", a: "Despacito", value: 600 },
+                { q: "Doja Cat's viral hit was about this dairy product", a: "Milk (Moo)", value: 600 },
+                { q: "The artist behind Starboy, Can't Feel My Face, and Save Your Tears", a: "The Weeknd", value: 600 },
+                { q: "This K-pop group has members named Lisa, Jennie, Rose, and Jisoo", a: "Blackpink", value: 600 },
+                { q: "Lil Nas X's Old Town Road features this legendary country singer", a: "Billy Ray Cyrus", value: 600 },
+                { q: "This artist's 'Anti' album includes the hit 'Work' featuring Drake", a: "Rihanna", value: 800 },
+                { q: "Kendrick Lamar won the Pulitzer Prize for this album", a: "DAMN", value: 800 },
+                { q: "The band Queen performed this song at Live Aid in 1985", a: "Bohemian Rhapsody", value: 800 },
+                { q: "This social media challenge had people dancing to Doja Cat's Say So", a: "Say So Challenge", value: 800 },
+                { q: "The Grammys' biggest award category", a: "Album of the Year", value: 800 },
+                { q: "This late rapper's real name was Jahseh Onfroy", a: "XXXTentacion", value: 1000 },
+                { q: "The original members of One Direction minus this Irish member", a: "Niall Horan", value: 1000 },
+                { q: "This 1982 Michael Jackson album is the best-selling album of all time", a: "Thriller", value: 1000 },
+                { q: "BTS performed this song at the UN General Assembly about self-love", a: "Permission to Dance", value: 1000 },
+                { q: "SZA's 2022 album title that references a Quentin Tarantino film", a: "SOS", value: 1000 }
+            ]
+        };
+
+        const FINAL_JEOPARDY_QUESTIONS = [
+            { category: "Gaming Legends", q: "This 1985 NES game is credited with saving the video game industry after the crash of 1983", a: "Super Mario Bros" },
+            { category: "Viral Moments", q: "This 2012 video by Korean artist PSY became the first YouTube video to hit 1 billion views", a: "Gangnam Style" },
+            { category: "Streaming History", q: "Before Amazon bought Twitch in 2014, it was known by this name", a: "Justin.tv" },
+            { category: "Anime Classics", q: "This 1988 film is considered the greatest anime movie ever made and influenced The Matrix", a: "Akira" },
+            { category: "Blockbusters", q: "This 2009 James Cameron film held the box office record until Avengers: Endgame", a: "Avatar" },
+            { category: "Music Icons", q: "This artist has won the most Grammy Awards in history with 32 wins", a: "Beyonce" }
+        ];
+
+        const AI_NAMES = [
+            "RoboQuiz", "TriviaBot", "BrainiacAI", "QuizMaster3000", "KnowledgeBot",
+            "SmartAlec", "Factoid", "WikiWiz", "AnswerDroid", "IQ9000"
+        ];
+
+        // ==================== GAME STATE ====================
+        let gameState = {
+            currentScreen: 'start',
+            difficulty: 'medium',
+            players: [],
+            currentPlayer: 0,
+            categories: [],
+            board: [],
+            dailyDoubles: [],
+            questionsAnswered: 0,
+            totalQuestions: 30,
+            currentQuestion: null,
+            currentWager: 0,
+            timer: null,
+            timeLeft: 15,
+            buzzedIn: false,
+            round: 1,
+            finalJeopardy: null
+        };
+
+        let saveData = {
+            coins: 0,
+            highScore: 0,
+            stats: {
+                gamesPlayed: 0,
+                gamesWon: 0,
+                questionsAnswered: 0,
+                correctAnswers: 0,
+                dailyDoublesHit: 0,
+                finalJeopardyWins: 0
+            },
+            settings: {
+                difficulty: 'medium',
+                soundEnabled: true
+            }
+        };
+
+        // ==================== SOUND EFFECTS ====================
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            switch(type) {
+                case 'correct':
+                    oscillator.frequency.setValueAtTime(523, audioCtx.currentTime);
+                    oscillator.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gainNode.gain.exponentialDecayTo(0.01, audioCtx.currentTime + 0.4);
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + 0.4);
+                    break;
+                case 'incorrect':
+                    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    oscillator.frequency.setValueAtTime(150, audioCtx.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gainNode.gain.exponentialDecayTo(0.01, audioCtx.currentTime + 0.4);
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + 0.4);
+                    break;
+                case 'buzz':
+                    oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gainNode.gain.exponentialDecayTo(0.01, audioCtx.currentTime + 0.1);
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + 0.1);
+                    break;
+                case 'dailyDouble':
+                    for (let i = 0; i < 3; i++) {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.frequency.setValueAtTime(440 + (i * 220), audioCtx.currentTime + (i * 0.15));
+                        gain.gain.setValueAtTime(0.2, audioCtx.currentTime + (i * 0.15));
+                        gain.gain.exponentialDecayTo(0.01, audioCtx.currentTime + (i * 0.15) + 0.15);
+                        osc.start(audioCtx.currentTime + (i * 0.15));
+                        osc.stop(audioCtx.currentTime + (i * 0.15) + 0.15);
+                    }
+                    break;
+                case 'tick':
+                    oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gainNode.gain.exponentialDecayTo(0.01, audioCtx.currentTime + 0.05);
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + 0.05);
+                    break;
+            }
+        }
+
+        // Polyfill for exponentialDecayTo
+        GainNode.prototype.exponentialDecayTo = function(value, endTime) {
+            this.gain.exponentialRampToValueAtTime(Math.max(value, 0.0001), endTime);
+        };
+
+        // ==================== INITIALIZATION ====================
+        function init() {
+            loadSaveData();
+            updateCoinsDisplay();
+            updateStatsDisplay();
+            setupDifficultyButtons();
+        }
+
+        function loadSaveData() {
+            const saved = localStorage.getItem('jeopardySave');
+            if (saved) {
+                saveData = JSON.parse(saved);
+            }
+        }
+
+        function saveSaveData() {
+            localStorage.setItem('jeopardySave', JSON.stringify(saveData));
+        }
+
+        function updateCoinsDisplay() {
+            document.getElementById('totalCoins').textContent = saveData.coins;
+        }
+
+        function updateStatsDisplay() {
+            document.getElementById('statsGamesPlayed').textContent = saveData.stats.gamesPlayed;
+            document.getElementById('statsGamesWon').textContent = saveData.stats.gamesWon;
+            document.getElementById('statsCorrect').textContent = saveData.stats.correctAnswers;
+            document.getElementById('statsHighScore').textContent = saveData.highScore;
+        }
+
+        function setupDifficultyButtons() {
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    gameState.difficulty = btn.dataset.difficulty;
+                });
+            });
+        }
+
+        // ==================== GAME SETUP ====================
+        function startGame() {
+            // Reset game state
+            gameState = {
+                currentScreen: 'game',
+                difficulty: gameState.difficulty,
+                players: [],
+                currentPlayer: 0,
+                categories: [],
+                board: [],
+                dailyDoubles: [],
+                questionsAnswered: 0,
+                totalQuestions: 30,
+                currentQuestion: null,
+                currentWager: 0,
+                timer: null,
+                timeLeft: 15,
+                buzzedIn: false,
+                round: 1,
+                finalJeopardy: null
+            };
+
+            // Create players
+            gameState.players = [
+                { name: 'You', score: 0, isAI: false, isActive: true },
+                { name: AI_NAMES[Math.floor(Math.random() * AI_NAMES.length)], score: 0, isAI: true, isActive: false },
+                { name: AI_NAMES[Math.floor(Math.random() * AI_NAMES.length)], score: 0, isAI: true, isActive: false }
+            ];
+
+            // Make sure AI names are unique
+            while (gameState.players[1].name === gameState.players[2].name) {
+                gameState.players[2].name = AI_NAMES[Math.floor(Math.random() * AI_NAMES.length)];
+            }
+
+            // Select 6 random categories
+            const categoryNames = Object.keys(QUESTIONS);
+            gameState.categories = shuffleArray([...categoryNames]).slice(0, 6);
+
+            // Build the board
+            buildBoard();
+
+            // Place Daily Doubles
+            placeDailyDoubles();
+
+            // Show game screen
+            showScreen('gameScreen');
+            renderBoard();
+            renderPodiums();
+            updateQuestionsRemaining();
+        }
+
+        function buildBoard() {
+            gameState.board = [];
+            for (let cat of gameState.categories) {
+                const categoryQuestions = [...QUESTIONS[cat]];
+                const selected = [];
+                const values = [200, 400, 600, 800, 1000];
+
+                for (let val of values) {
+                    const matching = categoryQuestions.filter(q => q.value === val);
+                    if (matching.length > 0) {
+                        const q = matching[Math.floor(Math.random() * matching.length)];
+                        selected.push({ ...q, category: cat, answered: false, isDailyDouble: false });
+                        categoryQuestions.splice(categoryQuestions.indexOf(q), 1);
+                    }
+                }
+                gameState.board.push(selected);
+            }
+        }
+
+        function placeDailyDoubles() {
+            // Place 2 Daily Doubles randomly
+            const positions = [];
+            for (let i = 0; i < 6; i++) {
+                for (let j = 2; j < 5; j++) { // Only in $600, $800, $1000 rows
+                    positions.push({ col: i, row: j });
+                }
+            }
+
+            const shuffled = shuffleArray(positions);
+            for (let i = 0; i < 2; i++) {
+                const pos = shuffled[i];
+                gameState.board[pos.col][pos.row].isDailyDouble = true;
+                gameState.dailyDoubles.push(pos);
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // ==================== RENDERING ====================
+        function renderBoard() {
+            const boardEl = document.getElementById('gameBoard');
+            boardEl.innerHTML = '';
+
+            // Category headers
+            for (let cat of gameState.categories) {
+                const header = document.createElement('div');
+                header.className = 'category-header';
+                header.textContent = cat;
+                boardEl.appendChild(header);
+            }
+
+            // Questions
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 6; col++) {
+                    const q = gameState.board[col][row];
+                    const tile = document.createElement('div');
+                    tile.className = 'question-tile' + (q.answered ? ' answered' : '');
+                    tile.textContent = q.answered ? '' : '$' + q.value;
+                    tile.dataset.col = col;
+                    tile.dataset.row = row;
+
+                    if (!q.answered) {
+                        tile.addEventListener('click', () => selectQuestion(col, row));
+                    }
+
+                    boardEl.appendChild(tile);
+                }
+            }
+        }
+
+        function renderPodiums() {
+            const podiumsEl = document.getElementById('podiums');
+            podiumsEl.innerHTML = '';
+
+            for (let i = 0; i < gameState.players.length; i++) {
+                const p = gameState.players[i];
+                const podium = document.createElement('div');
+                podium.className = 'podium' + (p.isActive ? ' active' : '') + (!p.isAI ? ' player' : '');
+                podium.innerHTML = `
+                    <div class="podium-name">${p.name}</div>
+                    <div class="podium-score ${p.score < 0 ? 'negative' : ''}">$${p.score}</div>
+                `;
+                podiumsEl.appendChild(podium);
+            }
+        }
+
+        function updateQuestionsRemaining() {
+            const remaining = gameState.totalQuestions - gameState.questionsAnswered;
+            document.getElementById('questionsRemaining').textContent = `${remaining} questions remaining`;
+        }
+
+        // ==================== QUESTION HANDLING ====================
+        function selectQuestion(col, row) {
+            const q = gameState.board[col][row];
+            if (q.answered) return;
+
+            gameState.currentQuestion = { col, row, ...q };
+
+            if (q.isDailyDouble) {
+                playSound('dailyDouble');
+                showDailyDouble();
+            } else {
+                gameState.currentWager = q.value;
+                showQuestion();
+            }
+        }
+
+        function showDailyDouble() {
+            const q = gameState.currentQuestion;
+            document.getElementById('ddCategory').textContent = q.category;
+
+            const playerScore = Math.max(gameState.players[0].score, 1000);
+            document.getElementById('wagerInfo').textContent = `You can wager up to $${playerScore}`;
+            document.getElementById('wagerInput').max = playerScore;
+            document.getElementById('wagerInput').value = Math.min(500, playerScore);
+
+            showScreen('dailyDoubleScreen');
+        }
+
+        function submitWager() {
+            const wager = parseInt(document.getElementById('wagerInput').value) || 0;
+            const maxWager = Math.max(gameState.players[0].score, 1000);
+            gameState.currentWager = Math.min(Math.max(0, wager), maxWager);
+            saveData.stats.dailyDoublesHit++;
+
+            // For Daily Double, player automatically buzzes in
+            gameState.buzzedIn = true;
+            gameState.players.forEach(p => p.isActive = false);
+            gameState.players[0].isActive = true;
+
+            showQuestion(true);
+        }
+
+        function showQuestion(skipBuzz = false) {
+            const q = gameState.currentQuestion;
+
+            document.getElementById('qCategory').textContent = q.category;
+            document.getElementById('qValue').textContent = '$' + gameState.currentWager;
+            document.getElementById('qText').textContent = q.q;
+
+            // Reset UI
+            document.getElementById('buzzBtn').style.display = skipBuzz ? 'none' : 'block';
+            document.getElementById('buzzBtn').disabled = false;
+            document.getElementById('answerContainer').classList.remove('active');
+            document.getElementById('answerReveal').classList.remove('active');
+            document.getElementById('answerInput').value = '';
+            document.getElementById('whoBuzzed').textContent = '';
+
+            if (skipBuzz) {
+                // Daily Double - go straight to answer input
+                document.getElementById('answerContainer').classList.add('active');
+                document.getElementById('answerInput').focus();
+            }
+
+            gameState.buzzedIn = skipBuzz;
+            gameState.timeLeft = 15;
+            updateTimerDisplay();
+
+            showScreen('questionScreen');
+            startTimer();
+
+            // AI buzz-in logic
+            if (!skipBuzz) {
+                scheduleAIBuzz();
+            }
+        }
+
+        function startTimer() {
+            clearInterval(gameState.timer);
+            gameState.timer = setInterval(() => {
+                gameState.timeLeft -= 0.1;
+                updateTimerDisplay();
+
+                if (gameState.timeLeft <= 5 && gameState.timeLeft > 4.9) {
+                    playSound('tick');
+                }
+                if (gameState.timeLeft <= 4 && gameState.timeLeft > 3.9) {
+                    playSound('tick');
+                }
+                if (gameState.timeLeft <= 3 && gameState.timeLeft > 2.9) {
+                    playSound('tick');
+                }
+                if (gameState.timeLeft <= 2 && gameState.timeLeft > 1.9) {
+                    playSound('tick');
+                }
+                if (gameState.timeLeft <= 1 && gameState.timeLeft > 0.9) {
+                    playSound('tick');
+                }
+
+                if (gameState.timeLeft <= 0) {
+                    clearInterval(gameState.timer);
+                    timeUp();
+                }
+            }, 100);
+        }
+
+        function updateTimerDisplay() {
+            const percent = (gameState.timeLeft / 15) * 100;
+            document.getElementById('timerFill').style.width = percent + '%';
+            document.getElementById('timerText').textContent = Math.ceil(gameState.timeLeft);
+        }
+
+        function timeUp() {
+            if (gameState.buzzedIn) {
+                // Player buzzed but didn't answer in time
+                handleAnswer('', true);
+            } else {
+                // No one buzzed - show answer and continue
+                showAnswerReveal(false, true);
+            }
+        }
+
+        function scheduleAIBuzz() {
+            const difficultySettings = {
+                easy: { minDelay: 3000, maxDelay: 8000, accuracy: 0.4 },
+                medium: { minDelay: 1500, maxDelay: 5000, accuracy: 0.6 },
+                hard: { minDelay: 500, maxDelay: 2500, accuracy: 0.85 }
+            };
+
+            const settings = difficultySettings[gameState.difficulty];
+
+            for (let i = 1; i <= 2; i++) {
+                const delay = settings.minDelay + Math.random() * (settings.maxDelay - settings.minDelay);
+
+                setTimeout(() => {
+                    if (!gameState.buzzedIn && gameState.currentScreen === 'questionScreen') {
+                        // AI decides to buzz
+                        if (Math.random() < 0.7) { // 70% chance AI tries to buzz
+                            aiBuzz(i, settings.accuracy);
+                        }
+                    }
+                }, delay);
+            }
+        }
+
+        function aiBuzz(playerIndex, accuracy) {
+            if (gameState.buzzedIn) return;
+
+            gameState.buzzedIn = true;
+            playSound('buzz');
+
+            gameState.players.forEach(p => p.isActive = false);
+            gameState.players[playerIndex].isActive = true;
+            renderPodiums();
+
+            document.getElementById('buzzBtn').disabled = true;
+            document.getElementById('whoBuzzed').textContent = gameState.players[playerIndex].name + ' buzzed in!';
+
+            // AI answers after a short delay
+            setTimeout(() => {
+                const isCorrect = Math.random() < accuracy;
+                handleAIAnswer(playerIndex, isCorrect);
+            }, 1500);
+        }
+
+        function playerBuzz() {
+            if (gameState.buzzedIn) return;
+
+            gameState.buzzedIn = true;
+            playSound('buzz');
+
+            gameState.players.forEach(p => p.isActive = false);
+            gameState.players[0].isActive = true;
+            renderPodiums();
+
+            document.getElementById('buzzBtn').style.display = 'none';
+            document.getElementById('answerContainer').classList.add('active');
+            document.getElementById('answerInput').focus();
+            document.getElementById('whoBuzzed').textContent = 'You buzzed in!';
+        }
+
+        function submitAnswer() {
+            const answer = document.getElementById('answerInput').value.trim();
+            handleAnswer(answer, false);
+        }
+
+        function handleAnswer(answer, timedOut) {
+            clearInterval(gameState.timer);
+
+            const q = gameState.currentQuestion;
+            const isCorrect = !timedOut && checkAnswer(answer, q.a);
+
+            if (isCorrect) {
+                gameState.players[0].score += gameState.currentWager;
+                saveData.stats.correctAnswers++;
+                playSound('correct');
+            } else {
+                gameState.players[0].score -= gameState.currentWager;
+                playSound('incorrect');
+            }
+
+            saveData.stats.questionsAnswered++;
+            showAnswerReveal(isCorrect, false);
+        }
+
+        function handleAIAnswer(playerIndex, isCorrect) {
+            clearInterval(gameState.timer);
+
+            if (isCorrect) {
+                gameState.players[playerIndex].score += gameState.currentWager;
+                playSound('correct');
+            } else {
+                gameState.players[playerIndex].score -= gameState.currentWager;
+                playSound('incorrect');
+            }
+
+            showAnswerReveal(isCorrect, false, playerIndex);
+        }
+
+        function checkAnswer(given, correct) {
+            // Normalize both strings
+            const normalize = (str) => str.toLowerCase()
+                .replace(/^(what|who|where|when|why|how)\s+(is|are|was|were)\s+/i, '')
+                .replace(/^(the|a|an)\s+/i, '')
+                .replace(/[^a-z0-9]/g, '')
+                .trim();
+
+            const givenNorm = normalize(given);
+            const correctNorm = normalize(correct);
+
+            // Exact match
+            if (givenNorm === correctNorm) return true;
+
+            // Contains match (for partial answers)
+            if (givenNorm.includes(correctNorm) || correctNorm.includes(givenNorm)) {
+                if (givenNorm.length >= correctNorm.length * 0.5) return true;
+            }
+
+            // Levenshtein distance for typo tolerance
+            const distance = levenshtein(givenNorm, correctNorm);
+            const maxLen = Math.max(givenNorm.length, correctNorm.length);
+            if (distance / maxLen < 0.3) return true; // Allow ~30% errors
+
+            return false;
+        }
+
+        function levenshtein(a, b) {
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) {
+                matrix[i] = [i];
+            }
+            for (let j = 0; j <= a.length; j++) {
+                matrix[0][j] = j;
+            }
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        function showAnswerReveal(isCorrect, noOneAnswered, aiPlayerIndex = null) {
+            const q = gameState.currentQuestion;
+
+            document.getElementById('buzzBtn').style.display = 'none';
+            document.getElementById('answerContainer').classList.remove('active');
+            document.getElementById('answerReveal').classList.add('active');
+
+            if (noOneAnswered) {
+                document.getElementById('answerResult').textContent = "Time's Up!";
+                document.getElementById('answerResult').className = 'answer-result incorrect';
+            } else if (aiPlayerIndex !== null) {
+                const aiName = gameState.players[aiPlayerIndex].name;
+                document.getElementById('answerResult').textContent = isCorrect ? `${aiName} is Correct!` : `${aiName} is Wrong!`;
+                document.getElementById('answerResult').className = 'answer-result ' + (isCorrect ? 'correct' : 'incorrect');
+            } else {
+                document.getElementById('answerResult').textContent = isCorrect ? 'Correct!' : 'Incorrect!';
+                document.getElementById('answerResult').className = 'answer-result ' + (isCorrect ? 'correct' : 'incorrect');
+            }
+
+            document.getElementById('correctAnswer').textContent = 'The answer was: ' + q.a;
+
+            renderPodiums();
+        }
+
+        function continueGame() {
+            // Mark question as answered
+            const q = gameState.currentQuestion;
+            gameState.board[q.col][q.row].answered = true;
+            gameState.questionsAnswered++;
+
+            // Check if board is complete
+            if (gameState.questionsAnswered >= gameState.totalQuestions) {
+                startFinalJeopardy();
+            } else {
+                showScreen('gameScreen');
+                renderBoard();
+                updateQuestionsRemaining();
+            }
+        }
+
+        // ==================== FINAL JEOPARDY ====================
+        function startFinalJeopardy() {
+            // Select random Final Jeopardy question
+            gameState.finalJeopardy = FINAL_JEOPARDY_QUESTIONS[Math.floor(Math.random() * FINAL_JEOPARDY_QUESTIONS.length)];
+
+            document.getElementById('finalCategory').textContent = gameState.finalJeopardy.category;
+
+            // Show scores
+            const scoresEl = document.getElementById('finalScores');
+            scoresEl.innerHTML = '';
+            for (let p of gameState.players) {
+                const div = document.createElement('div');
+                div.className = 'final-player';
+                div.innerHTML = `
+                    <div class="final-player-name">${p.name}</div>
+                    <div class="final-player-score">$${p.score}</div>
+                `;
+                scoresEl.appendChild(div);
+            }
+
+            // Set max wager
+            const maxWager = Math.max(gameState.players[0].score, 0);
+            document.getElementById('finalWagerInfo').textContent = `You can wager up to $${maxWager}`;
+            document.getElementById('finalWagerInput').max = maxWager;
+            document.getElementById('finalWagerInput').value = Math.min(500, maxWager);
+
+            // Reset sections
+            document.getElementById('finalWagerSection').style.display = 'block';
+            document.getElementById('finalQuestionSection').style.display = 'none';
+            document.getElementById('finalRevealSection').style.display = 'none';
+
+            showScreen('finalJeopardyScreen');
+        }
+
+        function submitFinalWager() {
+            const wager = parseInt(document.getElementById('finalWagerInput').value) || 0;
+            const maxWager = Math.max(gameState.players[0].score, 0);
+            gameState.currentWager = Math.min(Math.max(0, wager), maxWager);
+
+            // AI wagers
+            for (let i = 1; i <= 2; i++) {
+                const aiScore = gameState.players[i].score;
+                // AI wagers conservatively on easy, aggressively on hard
+                const wagerPercent = gameState.difficulty === 'easy' ? 0.3 :
+                                    gameState.difficulty === 'medium' ? 0.5 : 0.8;
+                gameState.players[i].wager = Math.floor(Math.max(aiScore, 0) * wagerPercent);
+            }
+
+            // Show question
+            document.getElementById('finalWagerSection').style.display = 'none';
+            document.getElementById('finalQuestionSection').style.display = 'block';
+            document.getElementById('finalQText').textContent = gameState.finalJeopardy.q;
+            document.getElementById('finalAnswerInput').value = '';
+            document.getElementById('finalAnswerInput').focus();
+        }
+
+        function submitFinalAnswer() {
+            const answer = document.getElementById('finalAnswerInput').value.trim();
+            const isCorrect = checkAnswer(answer, gameState.finalJeopardy.a);
+
+            // Player result
+            if (isCorrect) {
+                gameState.players[0].score += gameState.currentWager;
+                saveData.stats.correctAnswers++;
+                saveData.stats.finalJeopardyWins++;
+                playSound('correct');
+            } else {
+                gameState.players[0].score -= gameState.currentWager;
+                playSound('incorrect');
+            }
+
+            // AI results
+            const difficultySettings = {
+                easy: 0.3,
+                medium: 0.5,
+                hard: 0.75
+            };
+            const aiAccuracy = difficultySettings[gameState.difficulty];
+
+            for (let i = 1; i <= 2; i++) {
+                const aiCorrect = Math.random() < aiAccuracy;
+                if (aiCorrect) {
+                    gameState.players[i].score += gameState.players[i].wager;
+                } else {
+                    gameState.players[i].score -= gameState.players[i].wager;
+                }
+            }
+
+            // Show reveal
+            document.getElementById('finalQuestionSection').style.display = 'none';
+            document.getElementById('finalRevealSection').style.display = 'block';
+            document.getElementById('finalResult').textContent = isCorrect ? 'You got it right!' : 'Sorry, that\'s incorrect!';
+            document.getElementById('finalResult').className = 'answer-result ' + (isCorrect ? 'correct' : 'incorrect');
+            document.getElementById('finalCorrectAnswer').textContent = 'The answer was: ' + gameState.finalJeopardy.a;
+        }
+
+        // ==================== GAME OVER ====================
+        function showGameOver() {
+            // Sort players by score
+            const sorted = [...gameState.players].sort((a, b) => b.score - a.score);
+            const winner = sorted[0];
+            const playerWon = winner.name === 'You';
+
+            document.getElementById('winnerName').textContent = winner.name;
+
+            // Render standings
+            const standingsEl = document.getElementById('finalStandings');
+            standingsEl.innerHTML = '';
+            sorted.forEach((p, i) => {
+                const div = document.createElement('div');
+                div.className = 'standing' + (i === 0 ? ' first' : '');
+                div.innerHTML = `
+                    <span class="standing-place">${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : 'rd'}</span>
+                    <span class="standing-name">${p.name}</span>
+                    <span class="standing-score">$${p.score}</span>
+                `;
+                standingsEl.appendChild(div);
+            });
+
+            // Calculate coins
+            const playerScore = gameState.players[0].score;
+            let coinsEarned = Math.max(0, Math.floor(playerScore / 100));
+            if (playerWon) coinsEarned += 50; // Bonus for winning
+
+            saveData.coins += coinsEarned;
+            saveData.stats.gamesPlayed++;
+            if (playerWon) saveData.stats.gamesWon++;
+            if (playerScore > saveData.highScore) saveData.highScore = playerScore;
+
+            document.getElementById('coinsEarned').textContent = `You earned: ${coinsEarned} coins!`;
+
+            saveSaveData();
+            updateCoinsDisplay();
+            trackArcadeStats();
+
+            showScreen('gameOverScreen');
+        }
+
+        function trackArcadeStats() {
+            try {
+                const arcadeStats = JSON.parse(localStorage.getItem('arcadeStats') || '{}');
+                if (!arcadeStats.games) arcadeStats.games = {};
+                if (!arcadeStats.games.jeopardy) {
+                    arcadeStats.games.jeopardy = { gamesPlayed: 0, highScore: 0 };
+                }
+                arcadeStats.games.jeopardy.gamesPlayed++;
+                arcadeStats.games.jeopardy.highScore = Math.max(
+                    arcadeStats.games.jeopardy.highScore || 0,
+                    gameState.players[0].score
+                );
+                arcadeStats.totalGamesPlayed = (arcadeStats.totalGamesPlayed || 0) + 1;
+                localStorage.setItem('arcadeStats', JSON.stringify(arcadeStats));
+            } catch (e) {
+                console.log('Could not save arcade stats');
+            }
+        }
+
+        // ==================== SCREEN MANAGEMENT ====================
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            gameState.currentScreen = screenId.replace('Screen', '');
+        }
+
+        // ==================== KEYBOARD CONTROLS ====================
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && gameState.currentScreen === 'question' && !gameState.buzzedIn) {
+                e.preventDefault();
+                playerBuzz();
+            }
+            if (e.code === 'Enter') {
+                if (gameState.currentScreen === 'question' && gameState.buzzedIn) {
+                    submitAnswer();
+                } else if (document.getElementById('finalQuestionSection').style.display === 'block') {
+                    submitFinalAnswer();
+                }
+            }
+        });
+
+        // Initialize game
+        init();
+    </script>
+</body>
+</html>
