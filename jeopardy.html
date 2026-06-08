@@ -1136,6 +1136,11 @@
 
         // ==================== GAME SETUP ====================
         function startGame() {
+            // Resume audio context on user interaction
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
             // Reset game state
             gameState = {
                 currentScreen: 'game',
@@ -1290,7 +1295,7 @@
             gameState.currentQuestion = { col, row, ...q };
 
             if (q.isDailyDouble) {
-                playSound('dailyDouble');
+                try { playSound('dailyDouble'); } catch (e) {}
                 showDailyDouble();
             } else {
                 gameState.currentWager = q.value;
@@ -1364,21 +1369,13 @@
                 gameState.timeLeft -= 0.1;
                 updateTimerDisplay();
 
-                if (gameState.timeLeft <= 5 && gameState.timeLeft > 4.9) {
-                    playSound('tick');
-                }
-                if (gameState.timeLeft <= 4 && gameState.timeLeft > 3.9) {
-                    playSound('tick');
-                }
-                if (gameState.timeLeft <= 3 && gameState.timeLeft > 2.9) {
-                    playSound('tick');
-                }
-                if (gameState.timeLeft <= 2 && gameState.timeLeft > 1.9) {
-                    playSound('tick');
-                }
-                if (gameState.timeLeft <= 1 && gameState.timeLeft > 0.9) {
-                    playSound('tick');
-                }
+                try {
+                    if (gameState.timeLeft <= 5 && gameState.timeLeft > 4.9) playSound('tick');
+                    if (gameState.timeLeft <= 4 && gameState.timeLeft > 3.9) playSound('tick');
+                    if (gameState.timeLeft <= 3 && gameState.timeLeft > 2.9) playSound('tick');
+                    if (gameState.timeLeft <= 2 && gameState.timeLeft > 1.9) playSound('tick');
+                    if (gameState.timeLeft <= 1 && gameState.timeLeft > 0.9) playSound('tick');
+                } catch (e) {}
 
                 if (gameState.timeLeft <= 0) {
                     clearInterval(gameState.timer);
@@ -1416,7 +1413,7 @@
                 const delay = settings.minDelay + Math.random() * (settings.maxDelay - settings.minDelay);
 
                 setTimeout(() => {
-                    if (!gameState.buzzedIn && gameState.currentScreen === 'questionScreen') {
+                    if (!gameState.buzzedIn && gameState.currentScreen === 'question') {
                         // AI decides to buzz
                         if (Math.random() < 0.7) { // 70% chance AI tries to buzz
                             aiBuzz(i, settings.accuracy);
@@ -1430,7 +1427,7 @@
             if (gameState.buzzedIn) return;
 
             gameState.buzzedIn = true;
-            playSound('buzz');
+            try { playSound('buzz'); } catch (e) {}
 
             gameState.players.forEach(p => p.isActive = false);
             gameState.players[playerIndex].isActive = true;
@@ -1449,8 +1446,18 @@
         function playerBuzz() {
             if (gameState.buzzedIn) return;
 
+            // Resume audio context if suspended
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
             gameState.buzzedIn = true;
-            playSound('buzz');
+
+            try {
+                playSound('buzz');
+            } catch (e) {
+                console.log('Sound error:', e);
+            }
 
             gameState.players.forEach(p => p.isActive = false);
             gameState.players[0].isActive = true;
@@ -1476,10 +1483,10 @@
             if (isCorrect) {
                 gameState.players[0].score += gameState.currentWager;
                 saveData.stats.correctAnswers++;
-                playSound('correct');
+                try { playSound('correct'); } catch (e) {}
             } else {
                 gameState.players[0].score -= gameState.currentWager;
-                playSound('incorrect');
+                try { playSound('incorrect'); } catch (e) {}
             }
 
             saveData.stats.questionsAnswered++;
@@ -1491,10 +1498,10 @@
 
             if (isCorrect) {
                 gameState.players[playerIndex].score += gameState.currentWager;
-                playSound('correct');
+                try { playSound('correct'); } catch (e) {}
             } else {
                 gameState.players[playerIndex].score -= gameState.currentWager;
-                playSound('incorrect');
+                try { playSound('incorrect'); } catch (e) {}
             }
 
             showAnswerReveal(isCorrect, false, playerIndex);
@@ -1656,10 +1663,10 @@
                 gameState.players[0].score += gameState.currentWager;
                 saveData.stats.correctAnswers++;
                 saveData.stats.finalJeopardyWins++;
-                playSound('correct');
+                try { playSound('correct'); } catch (e) {}
             } else {
                 gameState.players[0].score -= gameState.currentWager;
-                playSound('incorrect');
+                try { playSound('incorrect'); } catch (e) {}
             }
 
             // AI results
