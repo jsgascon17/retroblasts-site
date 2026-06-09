@@ -619,6 +619,51 @@
             display: block;
         }
 
+        /* Pause Screen */
+        .pause-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+        .pause-screen.show {
+            display: flex;
+        }
+        .pause-screen h1 {
+            font-size: 4rem;
+            color: #fff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+        .pause-screen p {
+            color: #888;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+        .pause-stats {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .pause-stats div {
+            color: #fff;
+            font-size: 1.1rem;
+            margin: 8px 0;
+        }
+        .pause-stats span {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body>
@@ -731,6 +776,18 @@
     <div class="wave-complete" id="waveComplete"></div>
     <button class="shop-btn-hud" id="shopBtnHud" onclick="openShop()">🛒 Shop (<span id="hudPoints">0</span>)</button>
 
+    <!-- Pause Screen -->
+    <div class="pause-screen" id="pauseScreen">
+        <h1>⏸️ PAUSED</h1>
+        <p>Press P to resume</p>
+        <div class="pause-stats">
+            <div>Kills: <span id="pauseKills">0</span></div>
+            <div>Score: <span id="pauseScore">0</span></div>
+            <div>Wave: <span id="pauseWave">1</span></div>
+        </div>
+        <button class="start-btn" onclick="togglePause()">RESUME</button>
+    </div>
+
     <canvas id="gameCanvas"></canvas>
 
     <!-- Three.js -->
@@ -779,6 +836,7 @@
         let comboTimer = null;
         let wave = 1;
         let gameRunning = false;
+        let isPaused = false;
         let lastSpawnTime = 0;
 
         // Audio context for sounds
@@ -1170,7 +1228,7 @@
 
         // ==================== COMBAT SYSTEM ====================
         function attack() {
-            if (!canAttack || isAttacking || !gameRunning) return;
+            if (!canAttack || isAttacking || !gameRunning || isPaused) return;
 
             isAttacking = true;
             canAttack = false;
@@ -1445,8 +1503,13 @@
             document.addEventListener('keydown', (e) => {
                 keys[e.code] = true;
 
-                if (e.code === 'Space' && canDash && !isDashing && gameRunning) {
+                if (e.code === 'Space' && canDash && !isDashing && gameRunning && !isPaused) {
                     dash();
+                }
+
+                // Pause with P key
+                if (e.code === 'KeyP' && gameRunning) {
+                    togglePause();
                 }
             });
 
@@ -1682,7 +1745,7 @@
             const delta = (time - lastTime) / 1000;
             lastTime = time;
 
-            if (gameRunning) {
+            if (gameRunning && !isPaused) {
                 updateMovement();
                 updateEnemies();
                 spawnEnemies();
@@ -1752,6 +1815,23 @@
             document.getElementById('gameOver').classList.remove('show');
             resetRevives();
             startGame();
+        }
+
+        function togglePause() {
+            if (!gameRunning) return;
+
+            isPaused = !isPaused;
+
+            if (isPaused) {
+                document.exitPointerLock();
+                document.getElementById('pauseKills').textContent = kills;
+                document.getElementById('pauseScore').textContent = score;
+                document.getElementById('pauseWave').textContent = wave;
+                document.getElementById('pauseScreen').classList.add('show');
+            } else {
+                document.getElementById('pauseScreen').classList.remove('show');
+                document.getElementById('gameCanvas').requestPointerLock();
+            }
         }
 
         // Initialize
