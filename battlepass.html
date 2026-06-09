@@ -858,8 +858,32 @@
 
         async function loadBattlePassData() {
             try {
-                const res = await fetch('api/battlepass.php?action=get', { credentials: 'include' });
-                battlePassData = await res.json();
+                const res = await fetch('api/battlepass.php?action=status', { credentials: 'include' });
+                const data = await res.json();
+                if (data.success) {
+                    // Map challenges from backend format to frontend format
+                    const challengesMap = {};
+                    ['daily', 'weekly', 'seasonal'].forEach(type => {
+                        if (data.challenges && data.challenges[type]) {
+                            data.challenges[type].forEach(c => {
+                                challengesMap[c.id] = c.progress || 0;
+                                if (c.claimed) challengesMap[c.id + '_claimed'] = true;
+                            });
+                        }
+                    });
+
+                    battlePassData = {
+                        xp: data.xp || 0,
+                        tier: data.level || 1,
+                        premium: data.premium || false,
+                        claimedFree: data.claimed?.free || [],
+                        claimedPremium: data.claimed?.premium || [],
+                        challenges: challengesMap,
+                        coins: currentUser?.coins || 0
+                    };
+                } else {
+                    throw new Error(data.error);
+                }
             } catch (e) {
                 // Initialize default data
                 battlePassData = {
@@ -1037,7 +1061,7 @@
                     method: 'POST',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'buy_premium' })
+                    body: JSON.stringify({ action: 'buyPremium' })
                 });
                 
                 const data = await res.json();
@@ -1060,7 +1084,7 @@
                     method: 'POST',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'claim_reward', tier, type })
+                    body: JSON.stringify({ action: 'claimReward', tier, type })
                 });
                 
                 const data = await res.json();
@@ -1086,27 +1110,14 @@
         }
 
         async function claimChallenge(challengeId, xp) {
+            // Challenges are auto-claimed when completed via gameplay
+            // This function refreshes data from server to sync state
             try {
-                const res = await fetch('api/battlepass.php', {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'claim_challenge', challengeId, xp })
-                });
-                
-                const data = await res.json();
-                if (data.success) {
-                    battlePassData.challenges[challengeId + '_claimed'] = true;
-                    battlePassData.xp = data.xp;
-                    battlePassData.tier = data.tier;
-                    
-                    renderAll();
-                    showToast(`+${xp} XP earned! 🎉`, 'success');
-                } else {
-                    showToast(data.error || 'Failed to claim', 'error');
-                }
+                await loadBattlePassData();
+                renderAll();
+                showToast('Challenge rewards synced!', 'success');
             } catch (e) {
-                showToast('Error claiming challenge', 'error');
+                showToast('Error syncing challenge', 'error');
             }
         }
 

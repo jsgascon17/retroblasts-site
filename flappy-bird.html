@@ -591,6 +591,11 @@
                 const data = await resp.json();
                 const newUsername = (data.loggedIn && data.user) ? data.user.username : null;
 
+                // Cache user data for fallback
+                if (newUsername) {
+                    localStorage.setItem('arcadeUser', JSON.stringify(data.user));
+                }
+
                 // Always load on first run, or when user changes
                 if (!userInitialized || newUsername !== currentUsername) {
                     currentUsername = newUsername;
@@ -601,9 +606,18 @@
                 }
             } catch (e) {
                 console.log('Auth check failed:', e);
-                // Still initialize with guest if auth fails
+                // API failed - use cached user data as fallback to prevent progress loss
                 if (!userInitialized) {
-                    currentUsername = null;
+                    const cachedUser = localStorage.getItem('arcadeUser');
+                    if (cachedUser) {
+                        try {
+                            currentUsername = JSON.parse(cachedUser).username;
+                        } catch (parseErr) {
+                            currentUsername = null;
+                        }
+                    } else {
+                        currentUsername = null;
+                    }
                     resetSaveData();
                     loadSaveData();
                     updateDisplays();

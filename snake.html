@@ -589,6 +589,11 @@
                 const data = await resp.json();
                 const newUsername = (data.loggedIn && data.user) ? data.user.username : null;
 
+                // Update cached user data
+                if (newUsername) {
+                    localStorage.setItem('arcadeUser', JSON.stringify(data.user));
+                }
+
                 if (!userInitialized || newUsername !== currentUsername) {
                     currentUsername = newUsername;
                     saveData = { ...defaultSave, stats: { ...defaultSave.stats }, skinsOwned: ['classic'], achievements: [] };
@@ -599,8 +604,19 @@
                     userInitialized = true;
                 }
             } catch (e) {
+                // API failed - use cached user data as fallback to prevent progress loss
                 if (!userInitialized) {
-                    currentUsername = null;
+                    const cachedUser = localStorage.getItem('arcadeUser');
+                    if (cachedUser) {
+                        try {
+                            const user = JSON.parse(cachedUser);
+                            currentUsername = user.username;
+                        } catch (parseErr) {
+                            currentUsername = null;
+                        }
+                    } else {
+                        currentUsername = null;
+                    }
                     loadSaveData();
                     document.getElementById('totalCoins').textContent = saveData.coins;
                     userInitialized = true;
