@@ -18,7 +18,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Arial Rounded MT Bold', 'Nunito', Arial, sans-serif;
-            background: linear-gradient(180deg, #87CEEB 0%, #E0F4FF 100%);
             overflow: hidden;
             touch-action: manipulation;
             user-select: none;
@@ -27,47 +26,61 @@
 
         .ui {
             position: fixed;
-            top: 20px;
+            top: 15px;
             width: 100%;
             display: flex;
             justify-content: space-between;
-            padding: 0 20px;
+            align-items: flex-start;
+            padding: 0 15px;
             z-index: 100;
             pointer-events: none;
         }
         .back-btn {
             pointer-events: auto;
-            background: rgba(0,0,0,0.3);
+            background: rgba(139, 90, 43, 0.9);
             color: #fff;
             border: none;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
         }
+        .level-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #5D4E37;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+        }
         .score-box {
-            background: rgba(255,255,255,0.95);
-            padding: 12px 30px;
-            border-radius: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: rgba(139, 90, 43, 0.9);
+            padding: 8px 20px;
+            border-radius: 20px;
+            color: #fff;
+            pointer-events: auto;
         }
         .score {
-            font-size: 32px;
+            font-size: 20px;
             font-weight: bold;
-            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .coins {
-            font-size: 16px;
-            color: #FFB800;
-            margin-top: 2px;
+        .score img, .score .coin-icon {
+            width: 22px;
+            height: 22px;
+        }
+        .coin-icon {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border-radius: 50%;
+            display: inline-block;
         }
 
         .screen {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(180deg, #E8B87D 0%, #D4A574 50%, #C4956A 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -76,22 +89,35 @@
         }
         .screen.hidden { display: none; }
 
-        .title {
-            font-size: clamp(48px, 12vw, 80px);
+        .game-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .title-slice {
+            font-size: clamp(50px, 14vw, 90px);
             font-weight: bold;
             color: #fff;
-            text-shadow: 4px 4px 0 rgba(0,0,0,0.2);
-            margin-bottom: 10px;
+            text-shadow:
+                3px 3px 0 #7DD3FC,
+                -1px -1px 0 #7DD3FC,
+                1px -1px 0 #7DD3FC,
+                -1px 1px 0 #7DD3FC;
+            letter-spacing: 4px;
         }
-        .subtitle {
-            font-size: 20px;
-            color: rgba(255,255,255,0.8);
-            margin-bottom: 40px;
+        .title-master {
+            font-size: clamp(40px, 11vw, 70px);
+            font-weight: bold;
+            background: linear-gradient(180deg, #FFD93D 0%, #FF8C00 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 6px;
+            margin-top: -10px;
         }
 
         .btn {
-            padding: 18px 60px;
-            font-size: 22px;
+            padding: 16px 50px;
+            font-size: 20px;
             font-weight: bold;
             border: none;
             border-radius: 50px;
@@ -104,43 +130,49 @@
         .btn-play {
             background: linear-gradient(180deg, #4ADE80 0%, #22C55E 100%);
             color: #fff;
-            box-shadow: 0 6px 0 #16A34A, 0 8px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 0 #16A34A, 0 8px 15px rgba(0,0,0,0.2);
         }
         .btn-shop {
-            background: linear-gradient(180deg, #FBBF24 0%, #F59E0B 100%);
-            color: #fff;
-            box-shadow: 0 6px 0 #D97706, 0 8px 20px rgba(0,0,0,0.2);
-        }
-        .btn-menu {
             background: linear-gradient(180deg, #60A5FA 0%, #3B82F6 100%);
             color: #fff;
-            box-shadow: 0 6px 0 #2563EB, 0 8px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 0 #2563EB, 0 8px 15px rgba(0,0,0,0.2);
+        }
+        .btn-menu {
+            background: linear-gradient(180deg, #A78BFA 0%, #8B5CF6 100%);
+            color: #fff;
+            box-shadow: 0 5px 0 #7C3AED, 0 8px 15px rgba(0,0,0,0.2);
         }
 
         .hint {
-            color: rgba(255,255,255,0.7);
+            color: rgba(93, 78, 55, 0.8);
             font-size: 16px;
             margin-top: 30px;
         }
-        .hint span {
-            display: inline-block;
-            animation: bounce 1s ease-in-out infinite;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+
+        .tap-area {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(93, 78, 55, 0.7);
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 50;
+            background: rgba(255,255,255,0.3);
+            padding: 12px 30px;
+            border-radius: 30px;
         }
 
         .game-over .final-score {
-            font-size: 72px;
+            font-size: 64px;
             font-weight: bold;
             color: #FFD700;
             text-shadow: 3px 3px 0 rgba(0,0,0,0.2);
         }
         .game-over .best {
-            font-size: 20px;
-            color: rgba(255,255,255,0.8);
-            margin: 10px 0 5px;
+            font-size: 18px;
+            color: rgba(93, 78, 55, 0.8);
+            margin: 10px 0;
         }
         .new-best {
             background: #FF6B6B;
@@ -149,25 +181,23 @@
             border-radius: 20px;
             font-weight: bold;
             margin: 10px 0 20px;
-            animation: pulse 0.5s ease-in-out infinite alternate;
         }
-        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
         .coins-earned {
-            font-size: 24px;
-            color: #FFD700;
-            margin-bottom: 30px;
+            font-size: 22px;
+            color: #5D4E37;
+            margin-bottom: 25px;
         }
 
         .shop-grid {
             display: grid;
             grid-template-columns: repeat(4, 70px);
             gap: 12px;
-            margin: 30px 0;
+            margin: 25px 0;
         }
         .knife-item {
             width: 70px;
             height: 85px;
-            background: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.2);
             border-radius: 15px;
             display: flex;
             flex-direction: column;
@@ -177,59 +207,44 @@
             border: 3px solid transparent;
             transition: all 0.2s;
         }
-        .knife-item:hover { background: rgba(255,255,255,0.25); }
+        .knife-item:hover { background: rgba(255,255,255,0.35); }
         .knife-item.selected { border-color: #4ADE80; background: rgba(74,222,128,0.3); }
         .knife-item.locked { opacity: 0.5; }
-        .knife-item .icon { font-size: 28px; }
-        .knife-item .price { font-size: 12px; color: #FFD700; margin-top: 4px; }
-        .knife-item .status { font-size: 10px; color: #4ADE80; margin-top: 2px; }
-
-        .tap-area {
-            position: fixed;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255,255,255,0.6);
-            font-size: 18px;
-            z-index: 50;
-            animation: tapPulse 1.5s ease-in-out infinite;
-        }
-        @keyframes tapPulse {
-            0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
-            50% { opacity: 1; transform: translateX(-50%) scale(1.1); }
-        }
+        .knife-item .icon { font-size: 26px; }
+        .knife-item .price { font-size: 11px; color: #FFB800; margin-top: 4px; }
+        .knife-item .status { font-size: 9px; color: #4ADE80; margin-top: 2px; }
 
         .slice-popup {
             position: fixed;
             pointer-events: none;
-            font-size: 28px;
+            font-size: 26px;
             font-weight: bold;
             color: #FFD700;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             z-index: 100;
-            animation: popFloat 0.6s ease-out forwards;
+            animation: popFloat 0.5s ease-out forwards;
         }
         @keyframes popFloat {
             0% { opacity: 1; transform: scale(0.5); }
             30% { transform: scale(1.2); }
-            100% { opacity: 0; transform: scale(1) translateY(-40px); }
+            100% { opacity: 0; transform: scale(1) translateY(-35px); }
         }
 
         .mult-popup {
             position: fixed;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 80px;
+            font-size: 72px;
             font-weight: bold;
             color: #FFD700;
             text-shadow: 4px 4px 0 rgba(0,0,0,0.3);
             z-index: 150;
-            animation: multBoom 1s ease-out forwards;
+            animation: multBoom 0.8s ease-out forwards;
         }
         @keyframes multBoom {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(1) translateY(-60px); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1) translateY(-50px); }
         }
     </style>
 </head>
@@ -238,9 +253,9 @@
 
     <div class="ui">
         <button class="back-btn" onclick="location.href='index.html'">← Back</button>
+        <div class="level-display" id="levelDisplay">level 1</div>
         <div class="score-box">
-            <div class="score" id="score">0</div>
-            <div class="coins">🪙 <span id="coins">0</span></div>
+            <div class="score"><span class="coin-icon"></span> <span id="coins">0</span></div>
         </div>
     </div>
 
@@ -248,17 +263,18 @@
 
     <!-- Start Screen -->
     <div class="screen" id="startScreen">
-        <div class="title">🔪 SLICE MASTER</div>
-        <div class="subtitle">Flip & Slice Everything!</div>
+        <div class="game-title">
+            <div class="title-slice">SLiCE</div>
+            <div class="title-master">MASTER</div>
+        </div>
         <button class="btn btn-play" onclick="startGame()">▶ PLAY</button>
         <button class="btn btn-shop" onclick="showShop()">🔪 KNIVES</button>
-        <div class="hint"><span>👆</span> Tap to flip the knife</div>
-        <div class="hint" style="color: #FF6B9D; margin-top: 10px;">⚠️ Avoid pink spikes!</div>
+        <div class="hint">Tap to flip • Slice everything • Avoid spikes!</div>
     </div>
 
     <!-- Game Over -->
     <div class="screen hidden game-over" id="gameOver">
-        <div class="subtitle">GAME OVER</div>
+        <div style="font-size:24px;color:#5D4E37;margin-bottom:10px;">GAME OVER</div>
         <div class="final-score" id="finalScore">0</div>
         <div class="best">Best: <span id="bestScore">0</span></div>
         <div class="new-best hidden" id="newBest">🏆 NEW BEST!</div>
@@ -269,8 +285,8 @@
 
     <!-- Shop -->
     <div class="screen hidden" id="shopScreen">
-        <div class="title" style="font-size: 40px;">🔪 KNIVES</div>
-        <div class="subtitle">Your coins: <span id="shopCoins">0</span> 🪙</div>
+        <div style="font-size:36px;font-weight:bold;color:#5D4E37;">🔪 KNIVES</div>
+        <div style="color:#5D4E37;margin:10px 0;">Your coins: <span id="shopCoins">0</span> 🪙</div>
         <div class="shop-grid" id="shopGrid"></div>
         <button class="btn btn-menu" onclick="showMenu()">BACK</button>
     </div>
@@ -278,14 +294,14 @@
     <script>
     // === CONFIG ===
     const KNIVES = [
-        { id: 'basic', name: 'Basic', icon: '🔪', color: 0xC0C0C0, price: 0 },
-        { id: 'chef', name: 'Chef', icon: '🍴', color: 0xE8E8E8, price: 500 },
-        { id: 'cleaver', name: 'Cleaver', icon: '🪓', color: 0x808080, price: 1000 },
-        { id: 'katana', name: 'Katana', icon: '⚔️', color: 0x4FC3F7, price: 2000 },
-        { id: 'golden', name: 'Golden', icon: '🗡️', color: 0xFFD700, price: 5000 },
-        { id: 'flame', name: 'Flame', icon: '🔥', color: 0xFF5722, price: 8000 },
-        { id: 'ice', name: 'Ice', icon: '❄️', color: 0x00BCD4, price: 8000 },
-        { id: 'rainbow', name: 'Rainbow', icon: '🌈', color: 0xFF00FF, price: 15000 }
+        { id: 'basic', name: 'Basic', icon: '🔪', color: 0x7DD3FC, price: 0 },
+        { id: 'silver', name: 'Silver', icon: '🗡️', color: 0xC0C0C0, price: 500 },
+        { id: 'gold', name: 'Gold', icon: '✨', color: 0xFFD700, price: 1500 },
+        { id: 'ruby', name: 'Ruby', icon: '💎', color: 0xE91E63, price: 3000 },
+        { id: 'emerald', name: 'Emerald', icon: '💚', color: 0x4CAF50, price: 5000 },
+        { id: 'ice', name: 'Ice', icon: '❄️', color: 0x00BCD4, price: 7500 },
+        { id: 'flame', name: 'Flame', icon: '🔥', color: 0xFF5722, price: 10000 },
+        { id: 'rainbow', name: 'Rainbow', icon: '🌈', color: 0xFF00FF, price: 20000 }
     ];
 
     // === SAVE SYSTEM ===
@@ -322,6 +338,8 @@
     // === THREE.JS ===
     let scene, camera, renderer, clock;
     let knife, knifeGroup;
+    let trailPoints = [];
+    let trailLine;
     let objects = [];
     let particles = [];
     let running = false;
@@ -331,63 +349,61 @@
     let camX = 0;
     let level = 1;
 
-    const GRAVITY = -0.032;
-    const FLIP = 0.6;
-    const SPEED = 0.22;
-    const SPIN = 0.25;
+    const GRAVITY = -0.028;
+    const FLIP = 0.52;
+    const SPEED = 0.18;
+    const SPIN = 0.22;
 
     function init() {
         const canvas = document.getElementById('game');
 
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB);
 
-        // Side-view orthographic camera
+        // Orthographic side-view camera
         const aspect = window.innerWidth / window.innerHeight;
-        const size = 14;
+        const size = 12;
         camera = new THREE.OrthographicCamera(-size*aspect, size*aspect, size, -size, 0.1, 500);
-        camera.position.set(0, 6, 30);
-        camera.lookAt(0, 6, 0);
+        camera.position.set(0, 5, 30);
+        camera.lookAt(0, 5, 0);
 
         renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.shadowMap.enabled = true;
 
+        // Desert sky gradient background
+        scene.background = new THREE.Color(0xE8B87D);
+
         // Lights
-        scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-        const sun = new THREE.DirectionalLight(0xffffff, 0.6);
-        sun.position.set(10, 20, 15);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+        const sun = new THREE.DirectionalLight(0xffffff, 0.5);
+        sun.position.set(10, 20, 10);
         sun.castShadow = true;
         scene.add(sun);
 
-        // Ground - bright green grass
+        // Create desert environment
+        createDesertBackground();
+
+        // Ground - desert sand
         const ground = new THREE.Mesh(
-            new THREE.PlaneGeometry(2000, 40),
-            new THREE.MeshStandardMaterial({ color: 0x7CFC00 })
+            new THREE.PlaneGeometry(2000, 50),
+            new THREE.MeshStandardMaterial({ color: 0xD4A574 })
         );
         ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.5;
         ground.receiveShadow = true;
         scene.add(ground);
 
-        // Sky backdrop
-        const sky = new THREE.Mesh(
-            new THREE.PlaneGeometry(2000, 60),
-            new THREE.MeshBasicMaterial({ color: 0x87CEEB })
-        );
-        sky.position.set(0, 25, -15);
-        scene.add(sky);
-
-        // Clouds
-        for (let i = 0; i < 20; i++) {
-            const cloud = new THREE.Mesh(
-                new THREE.SphereGeometry(2 + Math.random() * 2, 8, 8),
-                new THREE.MeshBasicMaterial({ color: 0xFFFFFF })
-            );
-            cloud.position.set(Math.random() * 200 - 50, 18 + Math.random() * 8, -10);
-            cloud.scale.set(1.5, 0.6, 1);
-            scene.add(cloud);
-        }
+        // Initialize trail
+        const trailGeo = new THREE.BufferGeometry();
+        const trailMat = new THREE.LineBasicMaterial({
+            color: 0x7DD3FC,
+            linewidth: 3,
+            transparent: true,
+            opacity: 0.6
+        });
+        trailLine = new THREE.Line(trailGeo, trailMat);
+        scene.add(trailLine);
 
         createKnife();
 
@@ -401,219 +417,368 @@
         animate();
     }
 
+    function createDesertBackground() {
+        // Create pyramids in background
+        const pyramidGeo = new THREE.ConeGeometry(8, 12, 4);
+        const pyramidMat = new THREE.MeshStandardMaterial({
+            color: 0xC9A86C,
+            flatShading: true
+        });
+
+        // Large center pyramid
+        const pyramid1 = new THREE.Mesh(pyramidGeo, pyramidMat);
+        pyramid1.position.set(30, 5, -25);
+        pyramid1.rotation.y = Math.PI / 4;
+        scene.add(pyramid1);
+
+        // Left pyramid (smaller)
+        const pyramid2 = new THREE.Mesh(
+            new THREE.ConeGeometry(5, 8, 4),
+            pyramidMat
+        );
+        pyramid2.position.set(-15, 3, -30);
+        pyramid2.rotation.y = Math.PI / 4;
+        scene.add(pyramid2);
+
+        // Right pyramid (medium)
+        const pyramid3 = new THREE.Mesh(
+            new THREE.ConeGeometry(6, 9, 4),
+            pyramidMat
+        );
+        pyramid3.position.set(70, 3.5, -28);
+        pyramid3.rotation.y = Math.PI / 4;
+        scene.add(pyramid3);
+
+        // Far pyramid
+        const pyramid4 = new THREE.Mesh(
+            new THREE.ConeGeometry(4, 6, 4),
+            new THREE.MeshStandardMaterial({ color: 0xBFA06A, flatShading: true })
+        );
+        pyramid4.position.set(120, 2, -35);
+        pyramid4.rotation.y = Math.PI / 4;
+        scene.add(pyramid4);
+    }
+
     function createKnife() {
         if (knifeGroup) scene.remove(knifeGroup);
         knifeGroup = new THREE.Group();
 
         const k = KNIVES.find(x => x.id === save.equipped) || KNIVES[0];
+        const knifeColor = k.color;
 
-        // BLADE - triangular knife shape
-        const bladeShape = new THREE.Shape();
-        bladeShape.moveTo(0, 0);          // Handle joint
-        bladeShape.lineTo(0.5, 0.1);       // Back of blade
-        bladeShape.lineTo(0.5, 2.2);       // Tip back
-        bladeShape.lineTo(0, 2.8);         // Sharp tip
-        bladeShape.lineTo(-0.1, 2.2);      // Edge
-        bladeShape.lineTo(-0.1, 0);        // Back to handle
-        bladeShape.lineTo(0, 0);
-
-        const bladeGeo = new THREE.ExtrudeGeometry(bladeShape, { depth: 0.15, bevelEnabled: false });
-        const bladeMat = new THREE.MeshStandardMaterial({
-            color: k.color,
-            metalness: 0.95,
-            roughness: 0.1
+        // Light blue knife with ring handle (like the original)
+        // Ring at top
+        const ringGeo = new THREE.TorusGeometry(0.35, 0.08, 8, 16);
+        const knifeMat = new THREE.MeshStandardMaterial({
+            color: knifeColor,
+            metalness: 0.7,
+            roughness: 0.2
         });
-        const blade = new THREE.Mesh(bladeGeo, bladeMat);
-        blade.rotation.x = -Math.PI / 2;
-        blade.position.set(-0.2, 0, 0);
-        blade.castShadow = true;
-        knifeGroup.add(blade);
+        const ring = new THREE.Mesh(ringGeo, knifeMat);
+        ring.position.set(0, 2.2, 0);
+        ring.rotation.x = Math.PI / 2;
+        knifeGroup.add(ring);
 
-        // HANDLE - wooden
-        const handleGeo = new THREE.BoxGeometry(0.5, 1.2, 0.25);
-        const handleMat = new THREE.MeshStandardMaterial({ color: 0x5D4037, roughness: 0.8 });
-        const handle = new THREE.Mesh(handleGeo, handleMat);
-        handle.position.set(0, -0.6, 0);
-        handle.castShadow = true;
+        // Handle (thin cylinder)
+        const handleGeo = new THREE.CylinderGeometry(0.1, 0.12, 1.2, 8);
+        const handle = new THREE.Mesh(handleGeo, knifeMat);
+        handle.position.set(0, 1.2, 0);
         knifeGroup.add(handle);
 
-        // Handle rivets
-        const rivetMat = new THREE.MeshStandardMaterial({ color: 0xC0C0C0, metalness: 0.8 });
-        [-0.3, 0, 0.3].forEach(yOff => {
-            const rivet = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.3, 8), rivetMat);
-            rivet.rotation.x = Math.PI / 2;
-            rivet.position.set(0, -0.6 + yOff * 0.8, 0);
-            knifeGroup.add(rivet);
-        });
+        // Blade guard (small disc)
+        const guardGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.1, 8);
+        const guard = new THREE.Mesh(guardGeo, knifeMat);
+        guard.position.set(0, 0.5, 0);
+        knifeGroup.add(guard);
 
-        knifeGroup.position.set(0, 10, 0);
+        // Blade - tapered triangle pointing down
+        const bladeShape = new THREE.Shape();
+        bladeShape.moveTo(0, 0);
+        bladeShape.lineTo(0.15, -0.1);
+        bladeShape.lineTo(0.08, -2.5);
+        bladeShape.lineTo(0, -2.8);  // tip
+        bladeShape.lineTo(-0.08, -2.5);
+        bladeShape.lineTo(-0.15, -0.1);
+        bladeShape.lineTo(0, 0);
+
+        const bladeGeo = new THREE.ExtrudeGeometry(bladeShape, {
+            depth: 0.08,
+            bevelEnabled: false
+        });
+        const blade = new THREE.Mesh(bladeGeo, knifeMat);
+        blade.rotation.x = Math.PI / 2;
+        blade.position.set(0, 0.4, 0.04);
+        knifeGroup.add(blade);
+
+        knifeGroup.position.set(0, 8, 0);
         knifeGroup.rotation.z = Math.PI / 4;
         scene.add(knifeGroup);
         knife = knifeGroup;
     }
 
-    function generateLevel() {
-        objects.forEach(o => scene.remove(o.mesh));
-        objects = [];
+    function updateTrail() {
+        if (!knife || !running) return;
 
-        const len = 100 + level * 20;
-        let x = 8;
+        // Add current knife tip position to trail
+        const tipPos = new THREE.Vector3(0, -2, 0);
+        tipPos.applyQuaternion(knife.quaternion);
+        tipPos.add(knife.position);
+
+        trailPoints.push(tipPos.clone());
+
+        // Keep last 15 points
+        if (trailPoints.length > 15) {
+            trailPoints.shift();
+        }
+
+        // Update trail geometry
+        if (trailPoints.length > 1) {
+            const positions = [];
+            trailPoints.forEach(p => {
+                positions.push(p.x, p.y, p.z);
+            });
+            trailLine.geometry.setAttribute(
+                'position',
+                new THREE.Float32BufferAttribute(positions, 3)
+            );
+        }
+    }
+
+    function generateLevel() {
+        objects.forEach(o => {
+            if (o.mesh) scene.remove(o.mesh);
+            if (o.meshes) o.meshes.forEach(m => scene.remove(m));
+        });
+        objects = [];
+        trailPoints = [];
+
+        const len = 80 + level * 15;
+        let x = 10;
 
         while (x < len) {
             const r = Math.random();
 
-            if (r < 0.25) {
-                // Row of fruits on ground
-                const count = 2 + Math.floor(Math.random() * 3);
-                for (let i = 0; i < count; i++) {
-                    createFruit(x + i * 1.8, 1);
-                }
-                x += count * 1.8 + 2;
+            if (r < 0.3) {
+                // White platform with stacked wooden planks and golden fruit
+                createStackedPlanks(x);
+                x += 5;
             }
-            else if (r < 0.45) {
-                // Stacked blocks
-                const height = 2 + Math.floor(Math.random() * 3);
-                for (let h = 0; h < height; h++) {
-                    createBlock(x, 1 + h * 1.5, 0x8B4513);
-                }
-                x += 3;
+            else if (r < 0.5) {
+                // Colorful rainbow block tower
+                createRainbowTower(x);
+                x += 5;
             }
-            else if (r < 0.6) {
-                // Floating fruits
-                createFruit(x, 5 + Math.random() * 4);
-                if (Math.random() > 0.5) createFruit(x + 1.5, 7 + Math.random() * 3);
+            else if (r < 0.65) {
+                // Simple white platform with fruit
+                createSimplePlatform(x);
                 x += 4;
             }
-            else if (r < 0.75) {
-                // Tower of blocks
-                const h = 3 + Math.floor(Math.random() * 3);
-                for (let i = 0; i < h; i++) {
-                    createBlock(x, 1 + i * 1.2, 0xD2691E);
-                }
-                // Fruit on top
-                createFruit(x, 1.5 + h * 1.2);
-                x += 3;
-            }
-            else if (r < 0.88) {
-                // DANGER - Pink spikes
-                createSpike(x, Math.random() > 0.5 ? 0 : 4 + Math.random() * 4);
-                x += 3;
+            else if (r < 0.8) {
+                // Pink spike base (danger)
+                createSpikeBase(x, Math.random() > 0.6);
+                x += 4;
             }
             else {
-                // Furniture-like object
-                createFurniture(x);
-                x += 4;
+                // Floating golden fruit
+                createGoldenFruit(x, 4 + Math.random() * 4);
+                x += 3;
             }
         }
 
         // End multipliers
-        createMultipliers(len + 5);
+        createMultipliers(len + 8);
     }
 
-    function createFruit(x, y) {
-        const fruits = [
-            { color: 0xFF0000, r: 0.6 },  // Apple
-            { color: 0xFFA500, r: 0.55 }, // Orange
-            { color: 0xFFFF00, r: 0.5 },  // Lemon
-            { color: 0x00FF00, r: 0.45 }, // Lime
-            { color: 0x800080, r: 0.35 }, // Grape
-            { color: 0xFF6B6B, r: 0.65 }  // Watermelon slice
-        ];
-        const f = fruits[Math.floor(Math.random() * fruits.length)];
+    function createStackedPlanks(x) {
+        const meshes = [];
 
-        const mesh = new THREE.Mesh(
-            new THREE.SphereGeometry(f.r, 16, 16),
-            new THREE.MeshStandardMaterial({ color: f.color })
+        // White cube platform base
+        const platform = new THREE.Mesh(
+            new THREE.BoxGeometry(3, 3, 3),
+            new THREE.MeshStandardMaterial({ color: 0xFFFFFF })
         );
-        mesh.position.set(x, y, 0);
-        mesh.castShadow = true;
-        scene.add(mesh);
-        objects.push({ mesh, type: 'slice', pts: 50, r: f.r + 0.3 });
-    }
+        platform.position.set(x, 1, 0);
+        platform.castShadow = true;
+        platform.receiveShadow = true;
+        scene.add(platform);
+        meshes.push(platform);
 
-    function createBlock(x, y, color) {
-        const size = 1 + Math.random() * 0.3;
-        const mesh = new THREE.Mesh(
-            new THREE.BoxGeometry(size, size, size),
-            new THREE.MeshStandardMaterial({ color })
-        );
-        mesh.position.set(x, y, 0);
-        mesh.castShadow = true;
-        scene.add(mesh);
-        objects.push({ mesh, type: 'slice', pts: 75, r: size * 0.6 });
-    }
+        // Pink spiky LEGO base on top
+        const spikeBase = createPinkSpikeBase(x, 2.6, false);
+        meshes.push(...spikeBase);
 
-    function createFurniture(x) {
-        // Table-like structure
-        const top = new THREE.Mesh(
-            new THREE.BoxGeometry(3, 0.3, 1.5),
-            new THREE.MeshStandardMaterial({ color: 0xDEB887 })
-        );
-        top.position.set(x, 3, 0);
-        top.castShadow = true;
-        scene.add(top);
-        objects.push({ mesh: top, type: 'slice', pts: 100, r: 1 });
+        // Stacked tan wooden planks
+        const plankCount = 8 + Math.floor(Math.random() * 4);
+        const plankMat = new THREE.MeshStandardMaterial({ color: 0xDEB887 });
 
-        // Legs
-        [[-1, 1.5], [1, 1.5]].forEach(([ox, oy]) => {
-            const leg = new THREE.Mesh(
-                new THREE.BoxGeometry(0.3, 2.5, 0.3),
-                new THREE.MeshStandardMaterial({ color: 0xA0522D })
+        for (let i = 0; i < plankCount; i++) {
+            const plank = new THREE.Mesh(
+                new THREE.BoxGeometry(2.2, 0.3, 1.5),
+                plankMat
             );
-            leg.position.set(x + ox, oy, 0);
-            leg.castShadow = true;
-            scene.add(leg);
-            objects.push({ mesh: leg, type: 'slice', pts: 50, r: 0.5 });
+            plank.position.set(x, 3.2 + i * 0.35, 0);
+            plank.castShadow = true;
+            scene.add(plank);
+            meshes.push(plank);
+            objects.push({ mesh: plank, type: 'slice', pts: 30, r: 0.8 });
+        }
+
+        // Golden fruit on top
+        const fruitY = 3.2 + plankCount * 0.35 + 0.6;
+        createGoldenFruit(x, fruitY);
+
+        // Platform itself can be sliced for small points
+        objects.push({ mesh: platform, type: 'slice', pts: 50, r: 1.5 });
+    }
+
+    function createPinkSpikeBase(x, y, isDanger = true) {
+        const meshes = [];
+        const baseMat = new THREE.MeshStandardMaterial({
+            color: 0xFF69B4,
+            emissive: isDanger ? 0xFF1493 : 0x000000,
+            emissiveIntensity: isDanger ? 0.3 : 0
         });
 
-        // Items on table
-        createFruit(x - 0.8, 3.8);
-        createFruit(x + 0.8, 3.8);
+        // Base plate
+        const base = new THREE.Mesh(
+            new THREE.BoxGeometry(2.5, 0.3, 1.8),
+            baseMat
+        );
+        base.position.set(x, y, 0);
+        scene.add(base);
+        meshes.push(base);
+
+        // Bumps (LEGO style)
+        for (let bx = -0.8; bx <= 0.8; bx += 0.5) {
+            for (let bz = -0.5; bz <= 0.5; bz += 0.5) {
+                const bump = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.12, 0.12, 0.2, 8),
+                    baseMat
+                );
+                bump.position.set(x + bx, y + 0.25, bz);
+                scene.add(bump);
+                meshes.push(bump);
+            }
+        }
+
+        if (isDanger) {
+            objects.push({ mesh: base, type: 'danger', r: 1.2 });
+        }
+
+        return meshes;
     }
 
-    function createSpike(x, baseY) {
-        const h = 1.5 + Math.random();
-        const mesh = new THREE.Mesh(
-            new THREE.ConeGeometry(0.6, h, 8),
+    function createRainbowTower(x) {
+        const meshes = [];
+
+        // White cube platform base
+        const platform = new THREE.Mesh(
+            new THREE.BoxGeometry(3, 3, 3),
+            new THREE.MeshStandardMaterial({ color: 0xFFFFFF })
+        );
+        platform.position.set(x, 1, 0);
+        platform.castShadow = true;
+        scene.add(platform);
+        meshes.push(platform);
+        objects.push({ mesh: platform, type: 'slice', pts: 50, r: 1.5 });
+
+        // Rainbow colored blocks stacked (Jenga style)
+        const colors = [0xFF6B6B, 0x4ECDC4, 0xFFE66D, 0x95E1D3, 0xF38181, 0xAA96DA, 0xFCBAD3, 0x3DC1D3, 0xF9ED69, 0x6C5CE7];
+        const blockCount = 6 + Math.floor(Math.random() * 4);
+
+        for (let i = 0; i < blockCount; i++) {
+            const color = colors[i % colors.length];
+            const block = new THREE.Mesh(
+                new THREE.BoxGeometry(1.8 + Math.random() * 0.3, 0.6, 1.2),
+                new THREE.MeshStandardMaterial({ color })
+            );
+            // Slight offset for Jenga-like appearance
+            const offset = (Math.random() - 0.5) * 0.4;
+            block.position.set(x + offset, 2.8 + i * 0.65, 0);
+            block.rotation.z = (Math.random() - 0.5) * 0.05;
+            block.castShadow = true;
+            scene.add(block);
+            meshes.push(block);
+            objects.push({ mesh: block, type: 'slice', pts: 40, r: 0.7 });
+        }
+    }
+
+    function createSimplePlatform(x) {
+        // White cube platform
+        const platform = new THREE.Mesh(
+            new THREE.BoxGeometry(2.5, 2.5, 2.5),
+            new THREE.MeshStandardMaterial({ color: 0xFFFFFF })
+        );
+        platform.position.set(x, 0.75, 0);
+        platform.castShadow = true;
+        scene.add(platform);
+        objects.push({ mesh: platform, type: 'slice', pts: 40, r: 1.2 });
+
+        // Fruit on top
+        createGoldenFruit(x, 2.5);
+    }
+
+    function createSpikeBase(x, elevated = false) {
+        const y = elevated ? 5 + Math.random() * 3 : 0;
+
+        if (!elevated) {
+            // Ground spike with white platform
+            const platform = new THREE.Mesh(
+                new THREE.BoxGeometry(2.5, 2, 2.5),
+                new THREE.MeshStandardMaterial({ color: 0xFFFFFF })
+            );
+            platform.position.set(x, 0.5, 0);
+            scene.add(platform);
+            objects.push({ mesh: platform, type: 'slice', pts: 30, r: 1 });
+
+            createPinkSpikeBase(x, 1.7, true);
+        } else {
+            // Floating spike
+            createPinkSpikeBase(x, y, true);
+        }
+    }
+
+    function createGoldenFruit(x, y) {
+        const fruit = new THREE.Mesh(
+            new THREE.SphereGeometry(0.5, 16, 16),
             new THREE.MeshStandardMaterial({
-                color: 0xFF69B4,
-                emissive: 0xFF1493,
-                emissiveIntensity: 0.4
+                color: 0xFFD700,
+                metalness: 0.6,
+                roughness: 0.3
             })
         );
-        mesh.position.set(x, baseY === 0 ? h/2 : baseY, 0);
-        mesh.castShadow = true;
-        scene.add(mesh);
-        objects.push({ mesh, type: 'danger', r: 0.8 });
+        fruit.position.set(x, y, 0);
+        fruit.castShadow = true;
+        scene.add(fruit);
+        objects.push({ mesh: fruit, type: 'slice', pts: 100, r: 0.6 });
     }
 
     function createMultipliers(x) {
         const mults = [
-            { v: 2, y: 2.5, c: 0x4CAF50 },
-            { v: 3, y: 5.5, c: 0x2196F3 },
-            { v: 5, y: 8.5, c: 0x9C27B0 },
-            { v: 10, y: 11.5, c: 0xFFD700 }
+            { v: 2, y: 2, c: 0x4CAF50 },
+            { v: 3, y: 5, c: 0x2196F3 },
+            { v: 5, y: 8, c: 0x9C27B0 },
+            { v: 10, y: 11, c: 0xFFD700 }
         ];
 
         mults.forEach(m => {
-            // Target box
             const mesh = new THREE.Mesh(
-                new THREE.BoxGeometry(5, 2.2, 0.8),
+                new THREE.BoxGeometry(4, 2, 0.6),
                 new THREE.MeshStandardMaterial({
                     color: m.c,
                     emissive: m.c,
-                    emissiveIntensity: 0.3
+                    emissiveIntensity: 0.25
                 })
             );
             mesh.position.set(x, m.y, 0);
             mesh.castShadow = true;
             scene.add(mesh);
-            objects.push({ mesh, type: 'mult', v: m.v, r: 1.5 });
+            objects.push({ mesh, type: 'mult', v: m.v, r: 1.3 });
         });
     }
 
     function spawnParticles(pos, color) {
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 8; i++) {
             const p = new THREE.Mesh(
                 new THREE.BoxGeometry(0.2, 0.2, 0.2),
                 new THREE.MeshBasicMaterial({ color })
@@ -623,11 +788,11 @@
             particles.push({
                 mesh: p,
                 vel: new THREE.Vector3(
-                    (Math.random() - 0.5) * 0.5,
-                    Math.random() * 0.5 + 0.1,
-                    (Math.random() - 0.5) * 0.3
+                    (Math.random() - 0.5) * 0.4,
+                    Math.random() * 0.4 + 0.1,
+                    (Math.random() - 0.5) * 0.25
                 ),
-                life: 50
+                life: 40
             });
         }
     }
@@ -642,7 +807,7 @@
         el.style.top = ((-v.y + 1) / 2 * window.innerHeight) + 'px';
 
         document.body.appendChild(el);
-        setTimeout(() => el.remove(), 600);
+        setTimeout(() => el.remove(), 500);
     }
 
     function showMult(v) {
@@ -650,7 +815,7 @@
         el.className = 'mult-popup';
         el.textContent = 'x' + v + '!';
         document.body.appendChild(el);
-        setTimeout(() => el.remove(), 1000);
+        setTimeout(() => el.remove(), 800);
     }
 
     function playSound(freq, dur = 0.1) {
@@ -661,7 +826,7 @@
             osc.connect(gain);
             gain.connect(ctx.destination);
             osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
             osc.start();
             osc.stop(ctx.currentTime + dur);
@@ -673,7 +838,7 @@
         if (!running) return;
         velY = FLIP;
         rotVel = SPIN;
-        playSound(500, 0.08);
+        playSound(450, 0.08);
     }
 
     function checkHits() {
@@ -681,16 +846,17 @@
 
         for (let i = objects.length - 1; i >= 0; i--) {
             const o = objects[i];
+            if (!o.mesh) continue;
             const dist = kPos.distanceTo(o.mesh.position);
 
-            if (dist < 1.5 + o.r) {
+            if (dist < 1.3 + o.r) {
                 if (o.type === 'slice') {
                     score += o.pts;
-                    document.getElementById('score').textContent = score.toLocaleString();
+                    document.getElementById('coins').textContent = score.toLocaleString();
 
                     spawnParticles(o.mesh.position.clone(), o.mesh.material.color.getHex());
                     showPop(o.pts, o.mesh.position.x, o.mesh.position.y);
-                    playSound(300 + Math.random() * 200, 0.12);
+                    playSound(280 + Math.random() * 180, 0.1);
 
                     scene.remove(o.mesh);
                     objects.splice(i, 1);
@@ -701,9 +867,9 @@
                 }
                 else if (o.type === 'mult') {
                     score = Math.floor(score * o.v);
-                    document.getElementById('score').textContent = score.toLocaleString();
+                    document.getElementById('coins').textContent = score.toLocaleString();
                     showMult(o.v);
-                    playSound(800, 0.2);
+                    playSound(700, 0.2);
 
                     scene.remove(o.mesh);
                     objects.splice(i, 1);
@@ -712,29 +878,30 @@
                     setTimeout(() => {
                         if (running) {
                             level++;
+                            document.getElementById('levelDisplay').textContent = 'level ' + level;
                             camX = 0;
-                            knife.position.set(0, 10, 0);
+                            knife.position.set(0, 8, 0);
                             velY = 0;
                             knife.rotation.z = Math.PI / 4;
                             generateLevel();
                         }
-                    }, 800);
+                    }, 700);
                     return;
                 }
             }
         }
 
         // Ground death
-        if (kPos.y < 0.5) {
+        if (kPos.y < -1) {
             endGame();
         }
     }
 
     function endGame() {
         running = false;
-        playSound(200, 0.4);
+        playSound(180, 0.35);
 
-        const earned = Math.floor(score / 10);
+        const earned = Math.floor(score / 8);
         save.coins += earned;
 
         if (score > save.best) {
@@ -764,11 +931,13 @@
         camX = 0;
         velY = 0;
         rotVel = 0;
+        trailPoints = [];
 
-        document.getElementById('score').textContent = '0';
+        document.getElementById('coins').textContent = '0';
+        document.getElementById('levelDisplay').textContent = 'level 1';
 
         createKnife();
-        knife.position.set(0, 10, 0);
+        knife.position.set(0, 8, 0);
         knife.rotation.z = Math.PI / 4;
 
         // Clear old particles
@@ -840,20 +1009,23 @@
 
             // Rotation
             knife.rotation.z += rotVel;
-            rotVel *= 0.95;
+            rotVel *= 0.96;
 
             // Move forward
             camX += SPEED;
             camera.position.x = camX;
             knife.position.x = camX;
 
+            // Update trail
+            updateTrail();
+
             // Particles
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
                 p.mesh.position.add(p.vel);
-                p.vel.y -= 0.02;
-                p.mesh.rotation.x += 0.15;
-                p.mesh.rotation.z += 0.1;
+                p.vel.y -= 0.018;
+                p.mesh.rotation.x += 0.12;
+                p.mesh.rotation.z += 0.08;
                 p.life--;
 
                 if (p.life <= 0) {
@@ -870,7 +1042,7 @@
 
     function resize() {
         const aspect = window.innerWidth / window.innerHeight;
-        const size = 14;
+        const size = 12;
         camera.left = -size * aspect;
         camera.right = size * aspect;
         camera.top = size;
