@@ -313,22 +313,23 @@
     let ball = { x: 0, y: 0, vx: 0, vy: 0, visible: false, hit: false };
     let ballTrail = [];
 
-    // Pitch types with hat colors (matching original game)
+    // Pitch types with hat colors (matching original Google Doodle game)
     const PITCH_TYPES = {
-        fastball:  { color: '#e63946', speed: 13, curve: 0, drop: 0, name: 'Fastball' },      // Red - fast, straight
-        curveball: { color: '#f4d03f', speed: 8, curve: 0.2, drop: 0.1, name: 'Curveball' },  // Yellow - curves down
-        changeup:  { color: '#3498db', speed: 5, curve: 0, drop: 0.05, name: 'Changeup' },    // Blue - slow
-        slider:    { color: '#2ecc71', speed: 10, curve: -0.15, drop: 0.05, name: 'Slider' }, // Green - slides sideways
-        screwball: { color: '#9b59b6', speed: 7, curve: 0.18, drop: 0.08, name: 'Screwball' },// Purple - opposite curve
-        knuckleball: { color: '#ecf0f1', speed: 6, curve: 0, drop: 0, wobble: true, name: 'Knuckleball' } // White - wobbles unpredictably
+        fastball:  { color: '#e63946', speed: 14, type: 'straight', name: 'Fastball' },    // Red - fast, straight
+        zigzag:    { color: '#f4d03f', speed: 9, type: 'zigzag', name: 'Zigzag' },         // Yellow - zigzag pattern
+        highArc:   { color: '#3498db', speed: 7, type: 'highArc', name: 'High Arc' },      // Blue - goes high, comes down
+        loopdeloop:{ color: '#2ecc71', speed: 8, type: 'loop', name: 'Loop-de-loop' },     // Green - loop-de-loops
+        fadeaway:  { color: '#9b59b6', speed: 10, type: 'fade', name: 'Fadeaway' },        // Purple - fades out near batter
+        slowball:  { color: '#ecf0f1', speed: 6, type: 'straight', name: 'Slow Ball' }    // White - slow, right down middle
     };
     let currentPitch = 'fastball';
+    let pitchTime = 0; // Track time for pitch animations
 
-    // Pitcher state
-    let pitcher = { x: 650, y: 200, windUp: 0, throwing: false };
+    // Pitcher state (in the distance, center of screen)
+    let pitcher = { x: 400, y: 180, windUp: 0, throwing: false };
 
-    // Batter state
-    let batter = { x: 180, y: 320, swinging: false, swingFrame: 0, canSwing: true };
+    // Batter state (foreground - just the bat visible)
+    let batter = { x: 400, y: 450, swinging: false, swingFrame: 0, canSwing: true };
 
     // Hit result
     let hitResult = { text: '', timer: 0, x: 0, y: 0 };
@@ -339,97 +340,96 @@
 
     // ==================== DRAWING ====================
     function drawField() {
-        // Sky gradient
-        const skyGrad = ctx.createLinearGradient(0, 0, 0, 250);
+        // Sky gradient (top half of screen)
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, 200);
         skyGrad.addColorStop(0, '#5BA3D9');
         skyGrad.addColorStop(1, '#87CEEB');
         ctx.fillStyle = skyGrad;
-        ctx.fillRect(0, 0, 800, 250);
+        ctx.fillRect(0, 0, 800, 200);
 
         // Clouds
         ctx.fillStyle = 'rgba(255,255,255,0.8)';
-        drawCloud(100, 60, 40);
-        drawCloud(300, 40, 30);
-        drawCloud(550, 70, 35);
-        drawCloud(700, 30, 25);
+        drawCloud(100, 50, 30);
+        drawCloud(300, 35, 25);
+        drawCloud(550, 55, 28);
+        drawCloud(700, 25, 20);
 
-        // Stadium/crowd background
+        // Stadium/crowd background (distant)
         ctx.fillStyle = '#2d5a27';
-        ctx.fillRect(0, 220, 800, 40);
+        ctx.fillRect(0, 170, 800, 50);
 
-        // Crowd dots
-        for (let i = 0; i < 80; i++) {
+        // Crowd dots (smaller - they're far away)
+        for (let i = 0; i < 100; i++) {
             const colors = ['#e63946', '#f4a261', '#2a9d8f', '#e9c46a', '#264653', '#fff'];
             ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
             ctx.beginPath();
-            ctx.arc(10 + i * 10, 230 + Math.sin(i * 0.5) * 8, 4, 0, Math.PI * 2);
+            ctx.arc(8 + i * 8, 185 + Math.sin(i * 0.5) * 6, 3, 0, Math.PI * 2);
             ctx.fill();
         }
 
-        // Outfield grass
-        const grassGrad = ctx.createLinearGradient(0, 250, 0, 500);
+        // Outfield grass (perspective - horizon to foreground)
+        const grassGrad = ctx.createLinearGradient(0, 200, 0, 500);
         grassGrad.addColorStop(0, '#4a7c23');
         grassGrad.addColorStop(1, '#3d6a1e');
         ctx.fillStyle = grassGrad;
-        ctx.fillRect(0, 250, 800, 250);
+        ctx.fillRect(0, 200, 800, 300);
 
-        // Grass pattern
+        // Grass mowing lines (converging to horizon for perspective)
         ctx.strokeStyle = '#5a8c2a';
-        ctx.lineWidth = 2;
-        for (let i = 0; i < 10; i++) {
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 12; i++) {
             ctx.beginPath();
-            ctx.moveTo(400, 500);
-            ctx.lineTo(i * 100 - 100, 250);
+            ctx.moveTo(400 + (i - 5.5) * 10, 210);  // Horizon point
+            ctx.lineTo(400 + (i - 5.5) * 80, 500);  // Spread out in foreground
             ctx.stroke();
         }
 
-        // Infield dirt
-        ctx.fillStyle = DIRT_COLOR;
+        // Pitcher's mound (in distance, center)
+        ctx.fillStyle = '#b89968';
         ctx.beginPath();
-        ctx.moveTo(100, 450);
-        ctx.lineTo(400, 280);
-        ctx.lineTo(700, 450);
-        ctx.lineTo(400, 500);
-        ctx.closePath();
+        ctx.ellipse(400, 230, 35, 12, 0, 0, Math.PI * 2);
         ctx.fill();
-
-        // Bases
-        ctx.fillStyle = '#fff';
-        // Home plate
-        ctx.beginPath();
-        ctx.moveTo(150, 430);
-        ctx.lineTo(160, 420);
-        ctx.lineTo(180, 420);
-        ctx.lineTo(190, 430);
-        ctx.lineTo(170, 445);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = '#333';
+        ctx.strokeStyle = '#8a7a58';
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // First base
-        drawBase(550, 380);
-        // Second base
-        drawBase(400, 300);
-        // Third base
-        drawBase(250, 380);
+        // Pitcher's rubber
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(390, 225, 20, 4);
 
-        // Pitcher's mound
-        ctx.fillStyle = '#b89968';
+        // Infield dirt (perspective trapezoid)
+        ctx.fillStyle = DIRT_COLOR;
         ctx.beginPath();
-        ctx.ellipse(580, 340, 40, 20, 0, 0, Math.PI * 2);
+        ctx.moveTo(250, 250);   // Left back corner
+        ctx.lineTo(550, 250);   // Right back corner
+        ctx.lineTo(750, 480);   // Right front corner
+        ctx.lineTo(50, 480);    // Left front corner
+        ctx.closePath();
         ctx.fill();
 
-        // Foul lines
+        // Second base (distant)
+        drawBase(400, 260, 0.6);
+
+        // First and third bases (mid-distance)
+        drawBase(520, 330, 0.8);  // First base
+        drawBase(280, 330, 0.8);  // Third base
+
+        // Foul lines (perspective)
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(170, 430);
-        ctx.lineTo(0, 250);
-        ctx.moveTo(170, 430);
-        ctx.lineTo(800, 250);
+        // Left foul line
+        ctx.moveTo(400, 500);
+        ctx.lineTo(0, 200);
+        // Right foul line
+        ctx.moveTo(400, 500);
+        ctx.lineTo(800, 200);
         ctx.stroke();
+
+        // Strike zone indicator (transparent box)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(340, 340, 120, 100);
     }
 
     function drawCloud(x, y, size) {
@@ -440,39 +440,42 @@
         ctx.fill();
     }
 
-    function drawBase(x, y) {
+    function drawBase(x, y, scale = 1) {
+        const size = 12 * scale;
         ctx.fillStyle = '#fff';
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(Math.PI / 4);
-        ctx.fillRect(-12, -12, 24, 24);
+        ctx.fillRect(-size, -size, size * 2, size * 2);
         ctx.restore();
         ctx.strokeStyle = '#333';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2 * scale;
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(Math.PI / 4);
-        ctx.strokeRect(-12, -12, 24, 24);
+        ctx.strokeRect(-size, -size, size * 2, size * 2);
         ctx.restore();
     }
 
     function drawPitcher() {
         const p = pitcher;
-        const wobble = Math.sin(Date.now() * 0.005) * 2;
+        const wobble = Math.sin(Date.now() * 0.005) * 1;
+        const scale = 0.5; // Smaller because pitcher is in the distance
 
         ctx.save();
         ctx.translate(p.x, p.y + wobble);
+        ctx.scale(scale, scale);
 
         // Wind-up animation
         if (p.throwing && p.windUp < 1) {
-            ctx.rotate(Math.sin(p.windUp * Math.PI) * 0.3);
-            ctx.translate(0, -p.windUp * 20);
+            ctx.rotate(Math.sin(p.windUp * Math.PI) * 0.2);
+            ctx.translate(0, -p.windUp * 15);
         }
 
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.2)';
         ctx.beginPath();
-        ctx.ellipse(0, 60, 30, 10, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 50, 25, 8, 0, 0, Math.PI * 2);
         ctx.fill();
 
         // Hat (colored based on pitch type)
@@ -480,37 +483,32 @@
         ctx.fillStyle = hatColor;
         // Hat cap
         ctx.beginPath();
-        ctx.ellipse(0, -28, 22, 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, -24, 18, 6, 0, 0, Math.PI * 2);
         ctx.fill();
         // Hat dome
         ctx.beginPath();
-        ctx.arc(0, -32, 18, Math.PI, 0, false);
+        ctx.arc(0, -28, 15, Math.PI, 0, false);
         ctx.fill();
         // Hat brim
-        ctx.fillStyle = hatColor;
-        ctx.fillRect(-25, -28, 50, 5);
+        ctx.fillRect(-20, -24, 40, 4);
         // Hat outline
         ctx.strokeStyle = '#333';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(0, -32, 18, Math.PI, 0, false);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(-25, -26);
-        ctx.lineTo(25, -26);
+        ctx.arc(0, -28, 15, Math.PI, 0, false);
         ctx.stroke();
 
         // Body (peanut)
-        ctx.font = '60px Arial';
+        ctx.font = '50px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(PITCHER, 0, 0);
 
         // Arm with ball (during wind-up)
         if (p.throwing && p.windUp < 0.8) {
-            ctx.font = '20px Arial';
-            const armX = Math.cos(p.windUp * Math.PI * 2) * 30 - 20;
-            const armY = -Math.sin(p.windUp * Math.PI) * 40 - 20;
+            ctx.font = '18px Arial';
+            const armX = Math.cos(p.windUp * Math.PI * 2) * 25 - 15;
+            const armY = -Math.sin(p.windUp * Math.PI) * 35 - 15;
             ctx.fillText('⚾', armX, armY);
         }
 
@@ -521,74 +519,126 @@
         const b = batter;
 
         ctx.save();
-        ctx.translate(b.x, b.y);
 
-        // Shadow
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        // In batter's eye view, we see the bat from behind/side
+        // Position bat in lower portion of screen
+        ctx.translate(150, 420);
+
+        // Swing animation - bat swings across the screen
+        let batAngle = -0.8; // Ready position (tilted back)
+        if (b.swinging) {
+            // Swing from right to left across screen
+            batAngle = -0.8 + b.swingFrame * 0.25;
+        }
+
+        ctx.rotate(batAngle);
+
+        // Bat (larger since it's in foreground)
+        // Bat barrel (top)
+        ctx.fillStyle = '#D2691E';
         ctx.beginPath();
-        ctx.ellipse(0, 50, 25, 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, -120, 20, 35, 0, 0, Math.PI * 2);
         ctx.fill();
-
-        // Swing animation
-        if (b.swinging) {
-            const swingAngle = Math.sin(b.swingFrame * 0.3) * 0.5;
-            ctx.rotate(swingAngle);
-        }
-
-        // Batter character
-        ctx.font = '55px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(BATTERS[currentBatterIndex % BATTERS.length], 0, 0);
-
-        // Bat
-        ctx.save();
-        if (b.swinging) {
-            const batAngle = -Math.PI / 4 + b.swingFrame * 0.4;
-            ctx.rotate(batAngle);
-        } else {
-            ctx.rotate(-Math.PI / 4);
-        }
+        ctx.strokeStyle = '#5a3010';
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
         // Bat handle
         ctx.fillStyle = '#8B4513';
-        ctx.fillRect(-5, -60, 10, 50);
-        // Bat barrel
-        ctx.fillStyle = '#D2691E';
-        ctx.beginPath();
-        ctx.ellipse(0, -70, 12, 20, 0, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillRect(-8, -90, 16, 100);
+        ctx.strokeStyle = '#5a3010';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-8, -90, 16, 100);
+
+        // Grip tape
+        ctx.fillStyle = '#333';
+        ctx.fillRect(-9, -10, 18, 25);
 
         ctx.restore();
+
+        // Draw batter character icon in corner (shows who's batting)
+        ctx.save();
+        ctx.font = '35px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        // Batter portrait in bottom-left
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.beginPath();
+        ctx.arc(50, 470, 28, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.fillText(BATTERS[currentBatterIndex % BATTERS.length], 50, 470);
         ctx.restore();
     }
 
     function drawBall() {
         if (!ball.visible) return;
 
-        // Ball trail
-        ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
+        // Get opacity (for fadeaway pitch)
+        const opacity = ball.opacity !== undefined ? ball.opacity : 1;
+
+        // Ball size based on depth (z position) - larger as it gets closer
+        // ball.z goes from 0 (pitcher) to 1 (batter)
+        const depth = ball.z || 0;
+        const minSize = 8;
+        const maxSize = 45;
+        const ballSize = minSize + (maxSize - minSize) * depth;
+
+        // Ball trail (smaller circles getting larger)
+        ctx.save();
+        ctx.globalAlpha = opacity * 0.4;
         for (let i = 0; i < ballTrail.length; i++) {
             const t = ballTrail[i];
-            if (i === 0) ctx.moveTo(t.x, t.y);
-            else ctx.lineTo(t.x, t.y);
+            const trailDepth = t.z || 0;
+            const trailSize = (minSize + (maxSize - minSize) * trailDepth) * 0.6;
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, trailSize / 2, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.1 + i * 0.05})`;
+            ctx.fill();
         }
-        ctx.stroke();
+        ctx.restore();
 
-        // Ball shadow
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        // Ball shadow on ground (moves with ball)
+        ctx.save();
+        ctx.globalAlpha = opacity * 0.25;
+        ctx.fillStyle = 'rgba(0,0,0,1)';
+        const shadowY = 460 - (1 - depth) * 200;  // Shadow gets closer to ball as it approaches
+        const shadowSize = ballSize * 0.4;
         ctx.beginPath();
-        ctx.ellipse(ball.x, 450, 10 + ball.y * 0.02, 5, 0, 0, Math.PI * 2);
+        ctx.ellipse(ball.x, shadowY, shadowSize, shadowSize * 0.3, 0, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
 
         // Ball
-        const ballSize = 15 + (500 - ball.y) * 0.02;
-        ctx.font = `${ballSize}px Arial`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('⚾', ball.x, ball.y);
+        ctx.save();
+        ctx.globalAlpha = opacity;
+
+        // Draw actual baseball
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ballSize / 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        ctx.strokeStyle = '#cc0000';
+        ctx.lineWidth = Math.max(1, ballSize / 15);
+        ctx.stroke();
+
+        // Baseball stitching (simplified)
+        if (ballSize > 15) {
+            ctx.strokeStyle = '#cc0000';
+            ctx.lineWidth = Math.max(1, ballSize / 20);
+            // Left curve
+            ctx.beginPath();
+            ctx.arc(ball.x - ballSize * 0.2, ball.y, ballSize * 0.3, -0.5, 0.5);
+            ctx.stroke();
+            // Right curve
+            ctx.beginPath();
+            ctx.arc(ball.x + ballSize * 0.2, ball.y, ballSize * 0.3, Math.PI - 0.5, Math.PI + 0.5);
+            ctx.stroke();
+        }
+
+        ctx.restore();
     }
 
     function drawHitResult() {
@@ -625,27 +675,40 @@
     }
 
     function drawBatterLineup() {
-        const startX = 20;
-        const startY = 470;
+        // On-deck batters shown in top-right corner
+        const startX = 720;
+        const startY = 80;
 
-        for (let i = 0; i < 3; i++) {
+        ctx.save();
+
+        // Background panel
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.beginPath();
+        ctx.roundRect(startX - 70, startY - 35, 140, 75, 10);
+        ctx.fill();
+
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 11px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('ON DECK', startX, startY - 20);
+
+        for (let i = 1; i < 4; i++) {
             const idx = (currentBatterIndex + i) % BATTERS.length;
-            const isActive = i === 0;
 
             ctx.save();
-            ctx.translate(startX + i * 40, startY);
+            ctx.translate(startX - 35 + (i - 1) * 35, startY + 15);
 
             // Circle background
             ctx.beginPath();
-            ctx.arc(0, 0, 18, 0, Math.PI * 2);
-            ctx.fillStyle = isActive ? '#ffd700' : 'rgba(255,255,255,0.7)';
+            ctx.arc(0, 0, 14, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.9)';
             ctx.fill();
             ctx.strokeStyle = '#333';
             ctx.lineWidth = 2;
             ctx.stroke();
 
             // Batter emoji
-            ctx.font = '20px Arial';
+            ctx.font = '16px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(BATTERS[idx], 0, 0);
@@ -653,10 +716,7 @@
             ctx.restore();
         }
 
-        // "On Deck" label
-        ctx.fillStyle = '#333';
-        ctx.font = 'bold 12px Arial';
-        ctx.fillText('ON DECK', startX + 20, startY + 30);
+        ctx.restore();
     }
 
     function draw() {
@@ -674,8 +734,8 @@
     function pitch() {
         if (gameState !== 'playing') return;
 
-        // Randomly select pitch type (weighted - fastballs more common)
-        const pitchTypes = ['fastball', 'fastball', 'curveball', 'curveball', 'changeup', 'slider', 'screwball', 'knuckleball'];
+        // Randomly select pitch type (weighted - fastballs more common early, more variety later)
+        const pitchTypes = ['fastball', 'fastball', 'slowball', 'zigzag', 'highArc', 'loopdeloop', 'fadeaway'];
         currentPitch = pitchTypes[Math.floor(Math.random() * pitchTypes.length)];
 
         gameState = 'pitching';
@@ -694,32 +754,43 @@
     }
 
     function throwBall() {
-        // Ball starts near pitcher
-        ball.x = pitcher.x - 30;
-        ball.y = pitcher.y;
+        // Ball starts at pitcher (center screen, in distance)
+        ball.x = 400;           // Center horizontally
+        ball.y = 230;           // At pitcher's height
+        ball.z = 0;             // Far away (depth: 0 = pitcher, 1 = batter)
         ball.visible = true;
         ball.hit = false;
+        ball.opacity = 1;
         ballTrail = [];
+        pitchTime = 0;
 
         // Get pitch properties
         const pitchData = PITCH_TYPES[currentPitch];
 
-        // Trajectory toward home plate
-        const targetX = 170;
-        const targetY = 380;
-        const distance = Math.sqrt(Math.pow(targetX - ball.x, 2) + Math.pow(targetY - ball.y, 2));
-
-        // Speed varies by pitch type
+        // Speed is how fast the ball comes toward batter (z velocity)
         const speed = pitchData.speed;
+        ball.vz = speed * 0.012;  // Convert to z units
 
-        ball.vx = (targetX - ball.x) / (distance / speed);
-        ball.vy = (targetY - ball.y) / (distance / speed);
+        // Initial trajectory - mostly straight at batter
+        ball.vx = 0;
+        ball.vy = 0;
 
-        // Store pitch data for ball movement
-        ball.curve = pitchData.curve || 0;
-        ball.drop = pitchData.drop || 0;
-        ball.wobble = pitchData.wobble || false;
-        ball.pitchType = currentPitch;
+        // Target position for strike zone (center)
+        ball.targetX = 400;
+        ball.targetY = 390;
+
+        // Store base positions for special pitches
+        ball.baseX = ball.x;
+        ball.baseY = ball.y;
+        ball.startZ = 0;
+
+        // Store pitch type for special movement
+        ball.pitchType = pitchData.type;
+
+        // High arc pitch starts going up
+        if (pitchData.type === 'highArc') {
+            ball.vy = -3;  // Go up first
+        }
 
         gameState = 'batting';
         batter.canSwing = true;
@@ -737,49 +808,52 @@
 
         playSound('swing');
 
-        // Check if ball is in hitting zone
-        const hitZone = {
-            x: 170, y: 350,
-            width: 80, height: 80
-        };
+        // Check if ball is in hitting zone based on z-depth
+        // Sweet spot is when ball is at z between 0.75 and 0.95
+        const zInRange = ball.z >= 0.65 && ball.z <= 0.98;
 
-        const inZone = ball.visible &&
-            ball.x > hitZone.x - hitZone.width / 2 &&
-            ball.x < hitZone.x + hitZone.width / 2 &&
-            ball.y > hitZone.y - hitZone.height / 2 &&
-            ball.y < hitZone.y + hitZone.height / 2;
+        // Also check if ball is within strike zone area (x/y on screen)
+        const xInRange = ball.x > 280 && ball.x < 520;
+        const yInRange = ball.y > 300 && ball.y < 450;
+
+        const inZone = ball.visible && zInRange && xInRange && yInRange;
 
         if (inZone) {
-            // Calculate hit quality based on timing
-            const centerX = hitZone.x;
-            const centerY = hitZone.y;
-            const distFromCenter = Math.sqrt(
-                Math.pow(ball.x - centerX, 2) +
-                Math.pow(ball.y - centerY, 2)
-            );
-            const hitQuality = 1 - (distFromCenter / 50);
+            // Calculate hit quality based on timing (z position)
+            // Perfect hit is around z = 0.85
+            const perfectZ = 0.85;
+            const zDiff = Math.abs(ball.z - perfectZ);
+            const timingQuality = 1 - (zDiff / 0.2);  // 0 to 1 based on timing
 
-            hitBall(hitQuality);
-        } else if (ball.visible) {
-            // Swing and miss
-            setTimeout(() => {
-                strike();
-            }, 200);
+            // Also factor in position (center is better)
+            const centerX = 400;
+            const centerY = 375;
+            const positionQuality = 1 - (Math.sqrt(
+                Math.pow(ball.x - centerX, 2) + Math.pow(ball.y - centerY, 2)
+            ) / 100);
+
+            const hitQuality = (timingQuality * 0.7 + positionQuality * 0.3);
+
+            hitBall(Math.max(0.1, Math.min(1, hitQuality)));
+        } else if (ball.visible && ball.z < 0.98) {
+            // Swing and miss (ball not close enough yet or outside zone)
+            // Don't call strike yet - let the ball pass naturally
         }
 
         // Swing animation
         const swingAnim = setInterval(() => {
             batter.swingFrame++;
-            if (batter.swingFrame > 15) {
+            if (batter.swingFrame > 12) {
                 clearInterval(swingAnim);
                 batter.swinging = false;
                 batter.swingFrame = 0;
             }
-        }, 30);
+        }, 25);
     }
 
     function hitBall(quality) {
         ball.hit = true;
+        ball.opacity = 1;  // Reset opacity in case it was a fadeaway
         gameState = 'hit';
 
         // Determine hit type based on quality
@@ -816,18 +890,21 @@
             outs++;
         }
 
-        // Set ball trajectory
+        // Set ball trajectory - ball flies away (toward outfield)
+        // Randomize direction slightly
+        const hitDirection = (Math.random() - 0.5) * 2;  // -1 to 1
+
         if (hitType === 'homerun') {
-            ball.vx = 15 + Math.random() * 5;
-            ball.vy = -12 - Math.random() * 5;
+            ball.vx = hitDirection * 8;
+            ball.vy = -15 - Math.random() * 5;
             playSound('homerun');
         } else if (hitType !== 'out') {
-            ball.vx = 8 + power * 10;
-            ball.vy = -5 - power * 5;
+            ball.vx = hitDirection * 5;
+            ball.vy = -8 - power * 6;
             playSound('hit');
         } else {
-            ball.vx = 3 + Math.random() * 5;
-            ball.vy = -3 - Math.random() * 3;
+            ball.vx = hitDirection * 3;
+            ball.vy = -3 - Math.random() * 2;
             playSound('out');
         }
 
@@ -902,43 +979,76 @@
     function update() {
         // Update ball
         if (ball.visible) {
-            // Add to trail
-            ballTrail.push({ x: ball.x, y: ball.y });
-            if (ballTrail.length > 10) ballTrail.shift();
+            pitchTime++;
 
-            // Apply pitch physics (only when not hit)
+            // Add to trail with z position
+            ballTrail.push({ x: ball.x, y: ball.y, z: ball.z });
+            if (ballTrail.length > 8) ballTrail.shift();
+
+            // Apply special pitch physics (only when not hit)
             if (!ball.hit) {
-                // Apply curve (horizontal movement)
-                if (ball.curve) {
-                    ball.vy += ball.curve;
+                // Move ball toward batter (increase z)
+                ball.z += ball.vz;
+
+                // Calculate screen position based on z (perspective)
+                // As z increases, ball moves from center toward strike zone
+                const progress = ball.z;  // 0 to 1
+
+                // Base movement toward strike zone
+                ball.x = ball.baseX + (ball.targetX - ball.baseX) * progress * 0.3;
+                ball.y = ball.baseY + (ball.targetY - ball.baseY) * progress;
+
+                // Apply pitch-specific movement
+                switch (ball.pitchType) {
+                    case 'zigzag':
+                        // Yellow - zigzag side to side
+                        const zigzagAmp = 60 * (1 - progress * 0.5); // Less amplitude as it gets closer
+                        ball.x += Math.sin(pitchTime * 0.25) * zigzagAmp;
+                        break;
+
+                    case 'highArc':
+                        // Blue - arcs up then down
+                        ball.vy += 0.4;  // Gravity
+                        ball.y += ball.vy;
+                        break;
+
+                    case 'loop':
+                        // Green - loop-de-loops
+                        const loopRadius = 40 * (1 - progress * 0.6);
+                        const loopSpeed = 0.2;
+                        ball.x += Math.sin(pitchTime * loopSpeed) * loopRadius * 0.15;
+                        ball.y += Math.cos(pitchTime * loopSpeed * 2) * loopRadius * 0.1;
+                        break;
+
+                    case 'fade':
+                        // Purple - fades out as it approaches
+                        if (ball.z > 0.5) {
+                            ball.opacity = Math.max(0.05, 1 - (ball.z - 0.5) * 2);
+                        }
+                        break;
+
+                    case 'straight':
+                    default:
+                        // Red (fast) and White (slow) - straight pitch
+                        // No additional movement
+                        break;
                 }
-                // Apply drop (extra downward movement)
-                if (ball.drop) {
-                    ball.vy += ball.drop;
-                }
-                // Apply wobble (unpredictable movement for knuckleball)
-                if (ball.wobble) {
-                    ball.vx += (Math.random() - 0.5) * 0.8;
-                    ball.vy += (Math.random() - 0.5) * 0.5;
-                }
+            } else {
+                // Ball was hit - flies away from screen (z decreases, y goes up)
+                ball.z -= 0.03;
+                ball.x += ball.vx;
+                ball.y += ball.vy;
+                ball.vy += 0.3;  // Gravity
             }
 
-            ball.x += ball.vx;
-            ball.y += ball.vy;
-
-            if (ball.hit) {
-                // Gravity for hit ball
-                ball.vy += 0.5;
-            }
-
-            // Ball went past batter without being hit
-            if (!ball.hit && ball.x < 100) {
+            // Ball reached batter without being hit
+            if (!ball.hit && ball.z >= 1) {
                 ball.visible = false;
                 strike();
             }
 
-            // Ball off screen
-            if (ball.x > 850 || ball.y > 550 || ball.x < -50) {
+            // Ball off screen (after hit)
+            if (ball.hit && (ball.z < -0.5 || ball.y > 550 || ball.y < -100)) {
                 ball.visible = false;
             }
         }
