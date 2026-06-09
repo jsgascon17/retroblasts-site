@@ -462,6 +462,163 @@
             margin-top: 10px;
         }
 
+        /* Upgrade Shop */
+        .upgrade-shop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 250;
+        }
+        .upgrade-shop.show {
+            display: flex;
+        }
+        .upgrade-shop h1 {
+            font-size: 2.5rem;
+            color: #ffd700;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        .upgrade-shop .shop-subtitle {
+            color: #888;
+            margin-bottom: 20px;
+        }
+        .upgrade-points {
+            background: linear-gradient(135deg, #ffd700, #ff6b35);
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 25px;
+        }
+        .upgrades-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            max-width: 600px;
+        }
+        .upgrade-card {
+            background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+            border: 2px solid #4a4a6a;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .upgrade-card:hover {
+            border-color: #ffd700;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
+        }
+        .upgrade-card.maxed {
+            border-color: #22c55e;
+            opacity: 0.7;
+        }
+        .upgrade-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .upgrade-name {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .upgrade-level {
+            color: #ffd700;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        .upgrade-desc {
+            color: #888;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+        }
+        .upgrade-btn {
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            border: none;
+            padding: 10px 25px;
+            color: #fff;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upgrade-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        }
+        .upgrade-btn:disabled {
+            background: #444;
+            color: #666;
+            cursor: not-allowed;
+        }
+        .shop-close-btn {
+            margin-top: 25px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border: none;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            color: #fff;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .shop-close-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(34, 197, 94, 0.4);
+        }
+        .wave-complete {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: #ffd700;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 150;
+            animation: waveAnim 2s ease forwards;
+        }
+        @keyframes waveAnim {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+        /* Shop button in HUD */
+        .shop-btn-hud {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ffd700, #ff6b35);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            color: #000;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s;
+            display: none;
+        }
+        .shop-btn-hud:hover {
+            transform: scale(1.05);
+        }
+        .shop-btn-hud.show {
+            display: block;
+        }
+
     </style>
 </head>
 <body>
@@ -524,6 +681,55 @@
     <div class="kill-feed" id="killFeed"></div>
     <div class="combo" id="combo">COMBO x1</div>
     <div class="attack-indicator" id="attackIndicator">⚔️ SLASH!</div>
+
+    <!-- Upgrade Shop -->
+    <div class="upgrade-shop" id="upgradeShop">
+        <h1>⚔️ UPGRADE SHOP</h1>
+        <p class="shop-subtitle">Spend your kills to power up!</p>
+        <div class="upgrade-points">🎯 <span id="upgradePoints">0</span> Points</div>
+        <div class="upgrades-grid">
+            <div class="upgrade-card" id="card-damage">
+                <div class="upgrade-icon">💥</div>
+                <div class="upgrade-name">Sword Damage</div>
+                <div class="upgrade-level">Level <span id="dmg-level">1</span>/5</div>
+                <div class="upgrade-desc">+10 damage per level</div>
+                <button class="upgrade-btn" onclick="buyUpgrade('damage')">
+                    <span id="dmg-cost">3</span> Points
+                </button>
+            </div>
+            <div class="upgrade-card" id="card-speed">
+                <div class="upgrade-icon">⚡</div>
+                <div class="upgrade-name">Attack Speed</div>
+                <div class="upgrade-level">Level <span id="speed-level">1</span>/5</div>
+                <div class="upgrade-desc">-50ms cooldown per level</div>
+                <button class="upgrade-btn" onclick="buyUpgrade('speed')">
+                    <span id="speed-cost">3</span> Points
+                </button>
+            </div>
+            <div class="upgrade-card" id="card-range">
+                <div class="upgrade-icon">📏</div>
+                <div class="upgrade-name">Attack Range</div>
+                <div class="upgrade-level">Level <span id="range-level">1</span>/5</div>
+                <div class="upgrade-desc">+0.5 range per level</div>
+                <button class="upgrade-btn" onclick="buyUpgrade('range')">
+                    <span id="range-cost">4</span> Points
+                </button>
+            </div>
+            <div class="upgrade-card" id="card-health">
+                <div class="upgrade-icon">❤️</div>
+                <div class="upgrade-name">Max Health</div>
+                <div class="upgrade-level">Level <span id="health-level">1</span>/5</div>
+                <div class="upgrade-desc">+25 max health per level</div>
+                <button class="upgrade-btn" onclick="buyUpgrade('health')">
+                    <span id="health-cost">4</span> Points
+                </button>
+            </div>
+        </div>
+        <button class="shop-close-btn" onclick="closeShop()">Continue Fighting →</button>
+    </div>
+
+    <div class="wave-complete" id="waveComplete"></div>
+    <button class="shop-btn-hud" id="shopBtnHud" onclick="openShop()">🛒 Shop (<span id="hudPoints">0</span>)</button>
 
     <canvas id="gameCanvas"></canvas>
 
@@ -893,6 +1099,9 @@
             playSound('spawn');
         }
 
+        // Arena boundary (red ring is at radius 15)
+        const ARENA_RADIUS = 15;
+
         function spawnEnemies() {
             if (!gameRunning) return;
 
@@ -901,7 +1110,9 @@
 
             if (now - lastSpawnTime > spawnInterval && enemies.length < CONFIG.maxEnemies) {
                 const angle = Math.random() * Math.PI * 2;
-                const distance = 25 + Math.random() * 10;
+                // Spawn INSIDE the red circle (radius 15), but not too close to center
+                // Distance between 8-14 so they're inside the arena but give player some space
+                const distance = 8 + Math.random() * 6;
                 const x = Math.cos(angle) * distance;
                 const z = Math.sin(angle) * distance;
 
@@ -1517,10 +1728,11 @@
             gameRunning = true;
             lastSpawnTime = 0;
 
-            // Spawn initial enemies
+            // Spawn initial enemies inside the red circle
             for (let i = 0; i < 3; i++) {
                 const angle = (i / 3) * Math.PI * 2;
-                createEnemy(Math.cos(angle) * 15, Math.sin(angle) * 15);
+                const dist = 10 + Math.random() * 3; // 10-13 radius (inside red circle at 15)
+                createEnemy(Math.cos(angle) * dist, Math.sin(angle) * dist);
             }
         }
 
@@ -1662,6 +1874,188 @@
         function resetRevives() {
             revivesUsed = 0;
         }
+
+        // ==================== UPGRADE SYSTEM ====================
+        let upgradePoints = 0;
+        let upgrades = {
+            damage: { level: 1, maxLevel: 5, baseCost: 3, costIncrease: 2, effect: 10 },
+            speed: { level: 1, maxLevel: 5, baseCost: 3, costIncrease: 2, effect: 50 },
+            range: { level: 1, maxLevel: 5, baseCost: 4, costIncrease: 2, effect: 0.5 },
+            health: { level: 1, maxLevel: 5, baseCost: 4, costIncrease: 3, effect: 25 }
+        };
+
+        function getUpgradeCost(type) {
+            const up = upgrades[type];
+            return up.baseCost + (up.level - 1) * up.costIncrease;
+        }
+
+        function applyUpgrades() {
+            // Apply damage upgrade
+            CONFIG.attackDamage = 25 + (upgrades.damage.level - 1) * upgrades.damage.effect;
+
+            // Apply speed upgrade (lower cooldown = faster)
+            CONFIG.attackCooldown = 400 - (upgrades.speed.level - 1) * upgrades.speed.effect;
+
+            // Apply range upgrade
+            CONFIG.attackRange = 3 + (upgrades.range.level - 1) * upgrades.range.effect;
+
+            // Apply health upgrade
+            const oldMax = CONFIG.playerMaxHealth;
+            CONFIG.playerMaxHealth = 100 + (upgrades.health.level - 1) * upgrades.health.effect;
+
+            // If max health increased, heal the difference
+            if (CONFIG.playerMaxHealth > oldMax && gameRunning) {
+                health += (CONFIG.playerMaxHealth - oldMax);
+                updateHealthBar();
+            }
+        }
+
+        function updateShopUI() {
+            document.getElementById('upgradePoints').textContent = upgradePoints;
+            document.getElementById('hudPoints').textContent = upgradePoints;
+
+            ['damage', 'speed', 'range', 'health'].forEach(type => {
+                const up = upgrades[type];
+                const cost = getUpgradeCost(type);
+                const prefix = type === 'damage' ? 'dmg' : type;
+
+                document.getElementById(`${prefix}-level`).textContent = up.level;
+
+                const btn = document.querySelector(`#card-${type} .upgrade-btn`);
+                const card = document.getElementById(`card-${type}`);
+
+                if (up.level >= up.maxLevel) {
+                    btn.textContent = 'MAXED';
+                    btn.disabled = true;
+                    card.classList.add('maxed');
+                } else {
+                    document.getElementById(`${prefix}-cost`).textContent = cost;
+                    btn.disabled = upgradePoints < cost;
+                }
+            });
+        }
+
+        function buyUpgrade(type) {
+            const cost = getUpgradeCost(type);
+            const up = upgrades[type];
+
+            if (upgradePoints < cost || up.level >= up.maxLevel) return;
+
+            upgradePoints -= cost;
+            up.level++;
+
+            applyUpgrades();
+            updateShopUI();
+            saveUpgrades();
+
+            playSound('levelup');
+        }
+
+        function openShop() {
+            if (!gameRunning) return;
+
+            gameRunning = false;
+            document.exitPointerLock();
+            document.getElementById('upgradeShop').classList.add('show');
+            updateShopUI();
+        }
+
+        function closeShop() {
+            document.getElementById('upgradeShop').classList.remove('show');
+            gameRunning = true;
+            document.getElementById('gameCanvas').requestPointerLock();
+        }
+
+        function showWaveComplete(waveNum) {
+            const el = document.getElementById('waveComplete');
+            el.textContent = `⚔️ WAVE ${waveNum} COMPLETE! ⚔️`;
+            el.style.animation = 'none';
+            void el.offsetWidth;
+            el.style.animation = 'waveAnim 2s ease forwards';
+        }
+
+        function saveUpgrades() {
+            const data = {
+                upgradePoints: upgradePoints,
+                upgrades: upgrades
+            };
+            localStorage.setItem('swordArenaUpgrades', JSON.stringify(data));
+        }
+
+        function loadUpgrades() {
+            const saved = localStorage.getItem('swordArenaUpgrades');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    upgradePoints = data.upgradePoints || 0;
+                    if (data.upgrades) {
+                        Object.keys(data.upgrades).forEach(key => {
+                            if (upgrades[key]) {
+                                upgrades[key].level = data.upgrades[key].level || 1;
+                            }
+                        });
+                    }
+                    applyUpgrades();
+                    updateShopUI();
+                } catch (e) {}
+            }
+        }
+
+        // Show shop button when game is running
+        function updateShopButton() {
+            const btn = document.getElementById('shopBtnHud');
+            if (gameRunning && upgradePoints > 0) {
+                btn.classList.add('show');
+            } else {
+                btn.classList.remove('show');
+            }
+        }
+
+        // Award points on kill and check for wave completion
+        const originalKillEnemy = killEnemy;
+        killEnemy = function(enemy, index) {
+            // Death particles
+            createDeathEffect(enemy.position);
+
+            // Remove enemy
+            scene.remove(enemy);
+            enemies.splice(index, 1);
+
+            // Update stats
+            kills++;
+            score += 100 * (combo + 1);
+            document.getElementById('killCount').textContent = kills;
+            document.getElementById('scoreCount').textContent = score;
+
+            // Award upgrade point
+            upgradePoints++;
+            updateShopUI();
+            updateShopButton();
+            saveUpgrades();
+
+            // Kill feed
+            addKillFeed();
+
+            playSound('kill');
+
+            // Wave progression - every 10 kills
+            if (kills % 10 === 0) {
+                wave++;
+                document.getElementById('waveCount').textContent = wave;
+                playSound('levelup');
+                showWaveComplete(wave - 1);
+
+                // Auto-open shop after wave completion
+                setTimeout(() => {
+                    if (gameRunning && upgradePoints > 0) {
+                        openShop();
+                    }
+                }, 2000);
+            }
+        };
+
+        // Load upgrades on init
+        loadUpgrades();
 
         </script>
 </body>
