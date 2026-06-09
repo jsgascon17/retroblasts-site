@@ -1032,6 +1032,49 @@
             }
         };
 
+        // User-specific save system
+        let currentUsername = null;
+        let userInitialized = false;
+
+        function getSaveKey() {
+            return currentUsername ? `jeopardy_${currentUsername}` : 'jeopardy_guest';
+        }
+
+        async function checkCurrentUser() {
+            try {
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await resp.json();
+                const newUsername = (data.loggedIn && data.user) ? data.user.username : null;
+
+                if (newUsername) {
+                    localStorage.setItem('arcadeUser', JSON.stringify(data.user));
+                }
+
+                if (!userInitialized || newUsername !== currentUsername) {
+                    currentUsername = newUsername;
+                    loadSaveData();
+                    updateCoinsDisplay();
+                    updateStatsDisplay();
+                    userInitialized = true;
+                }
+            } catch (e) {
+                if (!userInitialized) {
+                    const cachedUser = localStorage.getItem('arcadeUser');
+                    if (cachedUser) {
+                        try {
+                            currentUsername = JSON.parse(cachedUser).username;
+                        } catch (err) {
+                            currentUsername = null;
+                        }
+                    }
+                    loadSaveData();
+                    updateCoinsDisplay();
+                    updateStatsDisplay();
+                    userInitialized = true;
+                }
+            }
+        }
+
         // ==================== SOUND EFFECTS ====================
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -1095,22 +1138,33 @@
         };
 
         // ==================== INITIALIZATION ====================
-        function init() {
-            loadSaveData();
-            updateCoinsDisplay();
-            updateStatsDisplay();
+        async function init() {
+            await checkCurrentUser();
             setupDifficultyButtons();
+            // Check for user changes periodically
+            setInterval(checkCurrentUser, 30000);
         }
 
         function loadSaveData() {
-            const saved = localStorage.getItem('jeopardySave');
+            const saved = localStorage.getItem(getSaveKey());
             if (saved) {
-                saveData = JSON.parse(saved);
+                const parsed = JSON.parse(saved);
+                saveData = { ...saveData, ...parsed };
+                if (parsed.stats) saveData.stats = { ...saveData.stats, ...parsed.stats };
+                if (parsed.settings) saveData.settings = { ...saveData.settings, ...parsed.settings };
             }
         }
 
         function saveSaveData() {
-            localStorage.setItem('jeopardySave', JSON.stringify(saveData));
+            localStorage.setItem(getSaveKey(), JSON.stringify(saveData));
+            // Sync to server for logged-in users
+            if (currentUsername) {
+                fetch('api/game-stats.php', {
+                    method: 'POST', credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'save', game: 'jeopardy', data: saveData.stats })
+                }).catch(() => {});
+            }
         }
 
         function updateCoinsDisplay() {

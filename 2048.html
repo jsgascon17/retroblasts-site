@@ -200,29 +200,61 @@
         let score = 0;
         let replayFrames = [];
         let gameStartTime = 0;
-        let best = parseInt(localStorage.getItem('2048Best')) || 0;
         let gameOver = false;
         let isLoggedIn = false;
+        let currentUsername = null;
+
+        function getBestKey() {
+            return currentUsername ? `2048Best_${currentUsername}` : '2048Best_guest';
+        }
+
+        let best = 0;
 
         // Server sync for per-user saves
         async function loadServerStats() {
             try {
                 const authRes = await fetch('api/auth.php?action=check', { credentials: 'include' });
                 const auth = await authRes.json();
-                if (auth.loggedIn) {
+                if (auth.loggedIn && auth.user) {
                     isLoggedIn = true;
+                    currentUsername = auth.user.username;
+                    localStorage.setItem('arcadeUser', JSON.stringify(auth.user));
+                } else {
+                    // Try cached user
+                    const cached = localStorage.getItem('arcadeUser');
+                    if (cached) {
+                        try {
+                            currentUsername = JSON.parse(cached).username;
+                        } catch(e) { currentUsername = null; }
+                    }
+                }
+
+                // Load local best for current user
+                best = parseInt(localStorage.getItem(getBestKey())) || 0;
+                bestEl.textContent = best;
+
+                // Try to load from server
+                if (isLoggedIn) {
                     const statsRes = await fetch('api/game-stats.php?action=load&game=2048', { credentials: 'include' });
                     const stats = await statsRes.json();
                     if (stats.success && stats.data && stats.data.bestScore) {
                         const serverBest = stats.data.bestScore;
                         if (serverBest > best) {
                             best = serverBest;
-                            localStorage.setItem('2048Best', best);
+                            localStorage.setItem(getBestKey(), best);
                             bestEl.textContent = best;
                         }
                     }
                 }
-            } catch (e) { console.log('Stats sync failed'); }
+            } catch (e) {
+                // Fallback to local storage
+                const cached = localStorage.getItem('arcadeUser');
+                if (cached) {
+                    try { currentUsername = JSON.parse(cached).username; } catch(e) {}
+                }
+                best = parseInt(localStorage.getItem(getBestKey())) || 0;
+                bestEl.textContent = best;
+            }
         }
 
         function saveServerStats() {
@@ -336,7 +368,7 @@
                     if (typeof VictoryEffects !== "undefined") VictoryEffects.newHighScore();
                     best = score;
                     bestEl.textContent = best;
-                    localStorage.setItem('2048Best', best);
+                    localStorage.setItem(getBestKey(), best);
                     saveServerStats();
                 }
             }

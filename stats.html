@@ -257,9 +257,33 @@
             'slice-master': { name: 'Slice Master 3D', icon: '🔪', url: 'slice-master.html', color: '#ff6b6b' }
         };
 
+        // User-specific save system
+        let currentUsername = null;
+
+        function getStatsKey() {
+            return currentUsername ? `arcadeStats_${currentUsername}` : 'arcadeStats_guest';
+        }
+
+        async function checkCurrentUser() {
+            try {
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await resp.json();
+                if (data.loggedIn && data.user) {
+                    currentUsername = data.user.username;
+                    localStorage.setItem('arcadeUser', JSON.stringify(data.user));
+                }
+            } catch (e) {
+                const cached = localStorage.getItem('arcadeUser');
+                if (cached) {
+                    try { currentUsername = JSON.parse(cached).username; } catch(err) {}
+                }
+            }
+            renderStats();
+        }
+
         // Load stats from localStorage
         function loadStats() {
-            return JSON.parse(localStorage.getItem('arcadeStats')) || {
+            return JSON.parse(localStorage.getItem(getStatsKey())) || {
                 totalGamesPlayed: 0,
                 totalTimePlayed: 0,
                 totalCoinsEarned: 0,
@@ -509,13 +533,13 @@
         // Reset all statistics
         function resetStats() {
             if (confirm('Are you sure you want to reset ALL statistics? This cannot be undone.')) {
-                localStorage.removeItem('arcadeStats');
+                localStorage.removeItem(getStatsKey());
                 renderStats();
             }
         }
 
-        // Initialize
-        renderStats();
+        // Initialize - check user first, then render
+        checkCurrentUser();
     </script>
 </body>
 </html>
