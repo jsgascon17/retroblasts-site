@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSBG7067J2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZSBG7067J2');
+    </script>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play Slice Master 3D online free! Flip your knife through obstacles and slice everything in your path. Addictive arcade action!">
+    <meta name="keywords" content="slice master, knife game, 3d game, slicing game, arcade, retroblasts, free games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://retroblasts.com/slice-master.html">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slice Master 3D - Free Online Game | RetroBlasts</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        canvas { display: block; }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover { background: rgba(0,0,0,0.8); }
+
+        .ui-overlay {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            text-align: right;
+        }
+
+        .score-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .coins-display {
+            font-size: 1.2em;
+            color: #ffd700;
+            margin-top: 5px;
+        }
+
+        .combo-display {
+            font-size: 1.5em;
+            color: #ff6b6b;
+            margin-top: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .combo-display.show { opacity: 1; }
+
+        .start-screen, .game-over-screen, .shop-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .hidden { display: none !important; }
+
+        .title {
+            font-size: 4em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #ffd700, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: none;
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+            color: #888;
+            margin-bottom: 40px;
+        }
+
+        .btn {
+            padding: 15px 50px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: #fff;
+            box-shadow: 0 5px 20px rgba(255,107,107,0.4);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255,107,107,0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #4ecdc4, #3db9b1);
+            color: #fff;
+            box-shadow: 0 5px 20px rgba(78,205,196,0.4);
+        }
+
+        .btn-shop {
+            background: linear-gradient(135deg, #ffd700, #ffb700);
+            color: #000;
+        }
+
+        .instructions {
+            color: #666;
+            margin-top: 30px;
+            font-size: 1.1em;
+        }
+
+        .final-score {
+            font-size: 5em;
+            font-weight: bold;
+            color: #ffd700;
+            margin: 20px 0;
+        }
+
+        .high-score-text {
+            color: #4ecdc4;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+        }
+
+        .new-high-score {
+            color: #ff6b6b;
+            font-size: 1.5em;
+            animation: pulse 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        .knife-select {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 600px;
+            margin: 30px 0;
+        }
+
+        .knife-option {
+            width: 100px;
+            height: 120px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .knife-option:hover { background: rgba(255,255,255,0.2); }
+        .knife-option.selected { border-color: #ffd700; }
+        .knife-option.locked { opacity: 0.5; cursor: not-allowed; }
+        .knife-option.locked:hover { background: rgba(255,255,255,0.1); }
+
+        .knife-icon { font-size: 2.5em; margin-bottom: 10px; }
+        .knife-name { font-size: 0.8em; color: #aaa; }
+        .knife-price { font-size: 0.9em; color: #ffd700; margin-top: 5px; }
+
+        .tap-indicator {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5em;
+            color: rgba(255,255,255,0.5);
+            animation: tapBounce 1s ease-in-out infinite;
+            z-index: 50;
+        }
+
+        @keyframes tapBounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        .level-complete {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            font-weight: bold;
+            color: #4ecdc4;
+            z-index: 150;
+            opacity: 0;
+            transition: opacity 0.5s;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+        }
+        .level-complete.show { opacity: 1; }
+
+        .multiplier-hit {
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            font-weight: bold;
+            color: #ffd700;
+            z-index: 150;
+            opacity: 0;
+            animation: multiplierPop 1s ease-out forwards;
+        }
+
+        @keyframes multiplierPop {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1) translateY(-50px); }
+        }
+
+        .slice-effect {
+            position: fixed;
+            pointer-events: none;
+            z-index: 100;
+            font-size: 2em;
+            animation: sliceFloat 0.8s ease-out forwards;
+        }
+
+        @keyframes sliceFloat {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.5); }
+        }
+
+        .danger-warning {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            color: #ff4757;
+            opacity: 0;
+            z-index: 100;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="location.href='index.html'">← Back</button>
+
+    <div id="gameContainer"></div>
+
+    <div class="ui-overlay">
+        <div class="score-display">Score: <span id="score">0</span></div>
+        <div class="coins-display">Coins: <span id="coins">0</span></div>
+        <div class="combo-display" id="combo">x2 COMBO!</div>
+    </div>
+
+    <div class="tap-indicator hidden" id="tapIndicator">TAP TO FLIP!</div>
+    <div class="level-complete" id="levelComplete">LEVEL COMPLETE!</div>
+
+    <!-- Start Screen -->
+    <div class="start-screen" id="startScreen">
+        <div class="title">SLICE MASTER</div>
+        <div class="subtitle">Flip & Slice Everything!</div>
+        <button class="btn btn-primary" onclick="startGame()">PLAY</button>
+        <button class="btn btn-shop" onclick="showShop()">KNIVES</button>
+        <div class="instructions">Click or tap to flip your knife</div>
+        <div class="instructions" style="margin-top: 10px;">Slice objects, avoid pink obstacles!</div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div class="game-over-screen hidden" id="gameOverScreen">
+        <div class="title" style="font-size: 2.5em;">GAME OVER</div>
+        <div class="final-score" id="finalScore">0</div>
+        <div class="high-score-text" id="highScoreText">High Score: 0</div>
+        <div class="new-high-score hidden" id="newHighScore">NEW HIGH SCORE!</div>
+        <div class="coins-display" style="font-size: 1.5em; margin: 20px 0;">+<span id="coinsEarned">0</span> coins earned</div>
+        <button class="btn btn-primary" onclick="startGame()">PLAY AGAIN</button>
+        <button class="btn btn-secondary" onclick="showStart()">MENU</button>
+    </div>
+
+    <!-- Shop Screen -->
+    <div class="shop-screen hidden" id="shopScreen">
+        <div class="title" style="font-size: 2.5em;">KNIFE SHOP</div>
+        <div class="coins-display" style="font-size: 1.5em;">Your Coins: <span id="shopCoins">0</span></div>
+        <div class="knife-select" id="knifeSelect"></div>
+        <button class="btn btn-secondary" onclick="showStart()">BACK</button>
+    </div>
+
+    <script>
+        // Game Configuration
+        const KNIVES = [
+            { id: 'kitchen', name: 'Kitchen', icon: '🔪', color: 0xcccccc, price: 0 },
+            { id: 'cleaver', name: 'Cleaver', icon: '🪓', color: 0x888888, price: 500 },
+            { id: 'katana', name: 'Katana', icon: '⚔️', color: 0x4ecdc4, price: 1000 },
+            { id: 'golden', name: 'Golden', icon: '🗡️', color: 0xffd700, price: 2500 },
+            { id: 'flame', name: 'Flame', icon: '🔥', color: 0xff6b6b, price: 5000 },
+            { id: 'ice', name: 'Ice', icon: '❄️', color: 0x74b9ff, price: 5000 },
+            { id: 'rainbow', name: 'Rainbow', icon: '🌈', color: 0xff00ff, price: 10000 },
+            { id: 'diamond', name: 'Diamond', icon: '💎', color: 0x00ffff, price: 25000 },
+            { id: 'cosmic', name: 'Cosmic', icon: '🌟', color: 0x9b59b6, price: 50000 }
+        ];
+
+        // Save data
+        let saveData = {
+            coins: 0,
+            highScore: 0,
+            ownedKnives: ['kitchen'],
+            equippedKnife: 'kitchen',
+            stats: {
+                gamesPlayed: 0,
+                totalSlices: 0,
+                levelsCompleted: 0
+            }
+        };
+
+        // User tracking
+        let currentUsername = null;
+        let userInitialized = false;
+
+        function getSaveKey() {
+            return currentUsername ? `sliceMaster_${currentUsername}` : 'sliceMaster_guest';
+        }
+
+        async function checkCurrentUser() {
+            try {
+                const resp = await fetch('api/auth.php?action=check', { credentials: 'include' });
+                const data = await resp.json();
+                const newUsername = (data.loggedIn && data.user) ? data.user.username : null;
+
+                if (newUsername) {
+                    localStorage.setItem('arcadeUser', JSON.stringify(data.user));
+                }
+
+                if (!userInitialized || newUsername !== currentUsername) {
+                    currentUsername = newUsername;
+                    loadSaveData();
+                    userInitialized = true;
+                }
+            } catch (e) {
+                if (!userInitialized) {
+                    const cachedUser = localStorage.getItem('arcadeUser');
+                    if (cachedUser) {
+                        try {
+                            currentUsername = JSON.parse(cachedUser).username;
+                        } catch (parseErr) {
+                            currentUsername = null;
+                        }
+                    } else {
+                        currentUsername = null;
+                    }
+                    loadSaveData();
+                    userInitialized = true;
+                }
+            }
+            updateUI();
+        }
+
+        function loadSaveData() {
+            const saved = localStorage.getItem(getSaveKey());
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                saveData = { ...saveData, ...parsed };
+            }
+        }
+
+        function save() {
+            localStorage.setItem(getSaveKey(), JSON.stringify(saveData));
+        }
+
+        function updateUI() {
+            document.getElementById('coins').textContent = saveData.coins.toLocaleString();
+            document.getElementById('shopCoins').textContent = saveData.coins.toLocaleString();
+        }
+
+        // Three.js setup
+        let scene, camera, renderer;
+        let knife, knifeGroup;
+        let obstacles = [];
+        let sliceables = [];
+        let multiplierTargets = [];
+        let slicedPieces = [];
+        let ground;
+
+        // Game state
+        let gameRunning = false;
+        let score = 0;
+        let combo = 0;
+        let comboTimer = 0;
+        let knifeVelocityY = 0;
+        let knifeRotationSpeed = 0;
+        let levelProgress = 0;
+        let currentLevel = 1;
+        let levelLength = 100;
+        let isLevelEnd = false;
+
+        const GRAVITY = -0.015;
+        const FLIP_FORCE = 0.4;
+        const FORWARD_SPEED = 0.3;
+        const ROTATION_SPEED = 0.15;
+
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87ceeb);
+            scene.fog = new THREE.Fog(0x87ceeb, 50, 150);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 8, 15);
+            camera.lookAt(0, 3, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('gameContainer').appendChild(renderer.domElement);
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 20, 10);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 100;
+            directionalLight.shadow.camera.left = -30;
+            directionalLight.shadow.camera.right = 30;
+            directionalLight.shadow.camera.top = 30;
+            directionalLight.shadow.camera.bottom = -30;
+            scene.add(directionalLight);
+
+            // Ground
+            const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0x90EE90,
+                roughness: 0.8
+            });
+            ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = 0;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Create knife
+            createKnife();
+
+            // Events
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('click', onTap);
+            window.addEventListener('touchstart', onTap);
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') onTap(e);
+            });
+
+            // Start render loop
+            animate();
+        }
+
+        function createKnife() {
+            knifeGroup = new THREE.Group();
+
+            const equippedKnife = KNIVES.find(k => k.id === saveData.equippedKnife) || KNIVES[0];
+
+            // Blade
+            const bladeGeometry = new THREE.BoxGeometry(0.15, 2, 0.5);
+            const bladeMaterial = new THREE.MeshStandardMaterial({
+                color: equippedKnife.color,
+                metalness: 0.8,
+                roughness: 0.2
+            });
+            const blade = new THREE.Mesh(bladeGeometry, bladeMaterial);
+            blade.position.y = 0.5;
+            blade.castShadow = true;
+            knifeGroup.add(blade);
+
+            // Handle
+            const handleGeometry = new THREE.BoxGeometry(0.2, 0.8, 0.6);
+            const handleMaterial = new THREE.MeshStandardMaterial({
+                color: 0x4a3728,
+                roughness: 0.9
+            });
+            const handle = new THREE.Mesh(handleGeometry, handleMaterial);
+            handle.position.y = -0.9;
+            handle.castShadow = true;
+            knifeGroup.add(handle);
+
+            // Edge highlight
+            const edgeGeometry = new THREE.BoxGeometry(0.02, 2, 0.1);
+            const edgeMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                metalness: 1,
+                roughness: 0
+            });
+            const edge = new THREE.Mesh(edgeGeometry, edgeMaterial);
+            edge.position.set(0.08, 0.5, 0);
+            knifeGroup.add(edge);
+
+            knifeGroup.position.set(0, 5, 0);
+            knifeGroup.rotation.z = Math.PI / 4;
+            scene.add(knifeGroup);
+
+            knife = knifeGroup;
+        }
+
+        function createSliceable(z, type = 'random') {
+            const types = ['fruit', 'block', 'tower'];
+            if (type === 'random') type = types[Math.floor(Math.random() * types.length)];
+
+            let mesh;
+            const x = (Math.random() - 0.5) * 6;
+            const y = 1 + Math.random() * 4;
+
+            if (type === 'fruit') {
+                const fruits = [
+                    { color: 0xff0000, scale: 0.8 },  // Apple
+                    { color: 0xffa500, scale: 0.7 },  // Orange
+                    { color: 0x00ff00, scale: 0.6 },  // Lime
+                    { color: 0xffff00, scale: 0.75 }, // Lemon
+                    { color: 0x800080, scale: 0.5 }   // Grape
+                ];
+                const fruit = fruits[Math.floor(Math.random() * fruits.length)];
+                const geometry = new THREE.SphereGeometry(fruit.scale, 16, 16);
+                const material = new THREE.MeshStandardMaterial({ color: fruit.color });
+                mesh = new THREE.Mesh(geometry, material);
+                mesh.userData = { type: 'fruit', points: 100, scale: fruit.scale };
+            } else if (type === 'block') {
+                const size = 0.5 + Math.random() * 1;
+                const geometry = new THREE.BoxGeometry(size, size, size);
+                const material = new THREE.MeshStandardMaterial({
+                    color: Math.random() * 0xffffff
+                });
+                mesh = new THREE.Mesh(geometry, material);
+                mesh.userData = { type: 'block', points: 150, scale: size };
+            } else if (type === 'tower') {
+                const height = 2 + Math.random() * 3;
+                const geometry = new THREE.BoxGeometry(1, height, 1);
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0x8B4513
+                });
+                mesh = new THREE.Mesh(geometry, material);
+                mesh.position.y = height / 2;
+                mesh.userData = { type: 'tower', points: 200, scale: height };
+                // Tower sits on ground
+                mesh.position.set(x, height / 2, z);
+                mesh.castShadow = true;
+                scene.add(mesh);
+                sliceables.push(mesh);
+                return;
+            }
+
+            mesh.position.set(x, y, z);
+            mesh.castShadow = true;
+            scene.add(mesh);
+            sliceables.push(mesh);
+        }
+
+        function createObstacle(z) {
+            const height = 1 + Math.random() * 2;
+            const width = 0.5 + Math.random() * 1;
+            const geometry = new THREE.BoxGeometry(width, height, width);
+            const material = new THREE.MeshStandardMaterial({
+                color: 0xff69b4,  // Pink - danger!
+                emissive: 0xff1493,
+                emissiveIntensity: 0.3
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+
+            const x = (Math.random() - 0.5) * 6;
+            const y = height / 2 + Math.random() * 3;
+            mesh.position.set(x, y, z);
+            mesh.castShadow = true;
+            mesh.userData = { type: 'obstacle' };
+            scene.add(mesh);
+            obstacles.push(mesh);
+        }
+
+        function createMultiplierTargets(z) {
+            const multipliers = [2, 3, 5, 10];
+            const spacing = 2;
+            const startY = 2;
+
+            multipliers.forEach((mult, i) => {
+                const geometry = new THREE.BoxGeometry(3, 1.5, 0.5);
+                const hue = i / multipliers.length;
+                const material = new THREE.MeshStandardMaterial({
+                    color: new THREE.Color().setHSL(hue, 1, 0.5),
+                    emissive: new THREE.Color().setHSL(hue, 1, 0.3),
+                    emissiveIntensity: 0.5
+                });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(0, startY + i * spacing, z);
+                mesh.userData = { type: 'multiplier', value: mult };
+                mesh.castShadow = true;
+                scene.add(mesh);
+                multiplierTargets.push(mesh);
+            });
+        }
+
+        function generateLevel() {
+            // Clear previous
+            sliceables.forEach(s => scene.remove(s));
+            obstacles.forEach(o => scene.remove(o));
+            multiplierTargets.forEach(m => scene.remove(m));
+            slicedPieces.forEach(p => scene.remove(p));
+            sliceables = [];
+            obstacles = [];
+            multiplierTargets = [];
+            slicedPieces = [];
+
+            levelLength = 80 + currentLevel * 20;
+            const density = Math.min(0.3 + currentLevel * 0.05, 0.6);
+
+            // Generate obstacles and sliceables
+            for (let z = -20; z > -levelLength; z -= 5) {
+                if (Math.random() < density) {
+                    if (Math.random() < 0.3) {
+                        createObstacle(z);
+                    } else {
+                        createSliceable(z);
+                    }
+                }
+                // Extra sliceables
+                if (Math.random() < 0.4) {
+                    createSliceable(z - 2);
+                }
+            }
+
+            // End multipliers
+            createMultiplierTargets(-levelLength - 10);
+        }
+
+        function createSliceEffect(position, points) {
+            // Visual slice particles
+            for (let i = 0; i < 5; i++) {
+                const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+                const material = new THREE.MeshStandardMaterial({
+                    color: Math.random() * 0xffffff
+                });
+                const piece = new THREE.Mesh(geometry, material);
+                piece.position.copy(position);
+                piece.userData.velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.3,
+                    Math.random() * 0.3,
+                    (Math.random() - 0.5) * 0.3
+                );
+                piece.userData.lifetime = 60;
+                scene.add(piece);
+                slicedPieces.push(piece);
+            }
+
+            // Score popup
+            const popup = document.createElement('div');
+            popup.className = 'slice-effect';
+            popup.style.left = (window.innerWidth / 2 + (Math.random() - 0.5) * 100) + 'px';
+            popup.style.top = (window.innerHeight / 2 + (Math.random() - 0.5) * 100) + 'px';
+            popup.textContent = '+' + points;
+            popup.style.color = '#ffd700';
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 800);
+        }
+
+        function onTap(e) {
+            e.preventDefault();
+            if (!gameRunning) return;
+
+            // Flip the knife
+            knifeVelocityY = FLIP_FORCE;
+            knifeRotationSpeed = ROTATION_SPEED;
+
+            // Play sound effect
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = 400;
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            } catch (e) {}
+        }
+
+        function checkCollisions() {
+            if (!knife) return;
+
+            const knifeBox = new THREE.Box3().setFromObject(knife);
+
+            // Check sliceables
+            for (let i = sliceables.length - 1; i >= 0; i--) {
+                const sliceable = sliceables[i];
+                const sliceableBox = new THREE.Box3().setFromObject(sliceable);
+
+                if (knifeBox.intersectsBox(sliceableBox)) {
+                    // Sliced!
+                    const points = sliceable.userData.points * (1 + combo * 0.5);
+                    score += Math.floor(points);
+                    combo++;
+                    comboTimer = 60;
+                    saveData.stats.totalSlices++;
+
+                    createSliceEffect(sliceable.position.clone(), Math.floor(points));
+
+                    scene.remove(sliceable);
+                    sliceables.splice(i, 1);
+
+                    // Show combo
+                    if (combo > 1) {
+                        const comboEl = document.getElementById('combo');
+                        comboEl.textContent = `x${combo} COMBO!`;
+                        comboEl.classList.add('show');
+                    }
+
+                    updateScoreDisplay();
+
+                    // Play slice sound
+                    try {
+                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.type = 'sawtooth';
+                        osc.frequency.value = 200 + combo * 50;
+                        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + 0.15);
+                    } catch (e) {}
+                }
+            }
+
+            // Check obstacles
+            for (const obstacle of obstacles) {
+                const obstacleBox = new THREE.Box3().setFromObject(obstacle);
+                if (knifeBox.intersectsBox(obstacleBox)) {
+                    gameOver();
+                    return;
+                }
+            }
+
+            // Check multipliers
+            for (let i = multiplierTargets.length - 1; i >= 0; i--) {
+                const target = multiplierTargets[i];
+                const targetBox = new THREE.Box3().setFromObject(target);
+
+                if (knifeBox.intersectsBox(targetBox)) {
+                    const mult = target.userData.value;
+                    score *= mult;
+
+                    // Show multiplier
+                    const popup = document.createElement('div');
+                    popup.className = 'multiplier-hit';
+                    popup.textContent = `x${mult}!`;
+                    document.body.appendChild(popup);
+                    setTimeout(() => popup.remove(), 1000);
+
+                    scene.remove(target);
+                    multiplierTargets.splice(i, 1);
+
+                    updateScoreDisplay();
+                    levelComplete();
+                    return;
+                }
+            }
+
+            // Check ground collision
+            if (knife.position.y < 0.5) {
+                gameOver();
+            }
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('score').textContent = Math.floor(score).toLocaleString();
+        }
+
+        function levelComplete() {
+            isLevelEnd = true;
+            currentLevel++;
+            saveData.stats.levelsCompleted++;
+
+            document.getElementById('levelComplete').classList.add('show');
+
+            setTimeout(() => {
+                document.getElementById('levelComplete').classList.remove('show');
+                isLevelEnd = false;
+                knife.position.set(0, 5, 0);
+                knife.rotation.z = Math.PI / 4;
+                knifeVelocityY = 0;
+                levelProgress = 0;
+                generateLevel();
+            }, 2000);
+        }
+
+        function gameOver() {
+            gameRunning = false;
+
+            const coinsEarned = Math.floor(score / 10);
+            saveData.coins += coinsEarned;
+            saveData.stats.gamesPlayed++;
+
+            if (score > saveData.highScore) {
+                saveData.highScore = score;
+                document.getElementById('newHighScore').classList.remove('hidden');
+            } else {
+                document.getElementById('newHighScore').classList.add('hidden');
+            }
+
+            save();
+
+            document.getElementById('finalScore').textContent = Math.floor(score).toLocaleString();
+            document.getElementById('highScoreText').textContent = 'High Score: ' + saveData.highScore.toLocaleString();
+            document.getElementById('coinsEarned').textContent = coinsEarned.toLocaleString();
+            document.getElementById('tapIndicator').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+
+            // Game over sound
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.5);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } catch (e) {}
+        }
+
+        function startGame() {
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('shopScreen').classList.add('hidden');
+            document.getElementById('tapIndicator').classList.remove('hidden');
+
+            // Reset
+            score = 0;
+            combo = 0;
+            currentLevel = 1;
+            levelProgress = 0;
+            isLevelEnd = false;
+
+            // Reset knife
+            if (knife) scene.remove(knife);
+            createKnife();
+            knife.position.set(0, 5, 0);
+            knife.rotation.z = Math.PI / 4;
+            knifeVelocityY = 0;
+
+            generateLevel();
+            updateScoreDisplay();
+            updateUI();
+
+            gameRunning = true;
+        }
+
+        function showStart() {
+            document.getElementById('startScreen').classList.remove('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('shopScreen').classList.add('hidden');
+            document.getElementById('tapIndicator').classList.add('hidden');
+            gameRunning = false;
+        }
+
+        function showShop() {
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('shopScreen').classList.remove('hidden');
+            updateUI();
+            renderKnifeSelect();
+        }
+
+        function renderKnifeSelect() {
+            const container = document.getElementById('knifeSelect');
+            container.innerHTML = '';
+
+            KNIVES.forEach(knife => {
+                const owned = saveData.ownedKnives.includes(knife.id);
+                const equipped = saveData.equippedKnife === knife.id;
+                const canAfford = saveData.coins >= knife.price;
+
+                const div = document.createElement('div');
+                div.className = 'knife-option' +
+                    (equipped ? ' selected' : '') +
+                    (!owned && !canAfford ? ' locked' : '');
+
+                div.innerHTML = `
+                    <div class="knife-icon">${knife.icon}</div>
+                    <div class="knife-name">${knife.name}</div>
+                    ${owned ? (equipped ? '<div style="color:#4ecdc4;">Equipped</div>' : '<div style="color:#888;">Owned</div>')
+                           : `<div class="knife-price">${knife.price.toLocaleString()} coins</div>`}
+                `;
+
+                div.onclick = () => {
+                    if (owned) {
+                        saveData.equippedKnife = knife.id;
+                        save();
+                        renderKnifeSelect();
+                    } else if (canAfford) {
+                        saveData.coins -= knife.price;
+                        saveData.ownedKnives.push(knife.id);
+                        saveData.equippedKnife = knife.id;
+                        save();
+                        updateUI();
+                        renderKnifeSelect();
+                    }
+                };
+
+                container.appendChild(div);
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (gameRunning && !isLevelEnd && knife) {
+                // Apply gravity
+                knifeVelocityY += GRAVITY;
+                knife.position.y += knifeVelocityY;
+
+                // Rotate knife
+                knife.rotation.z += knifeRotationSpeed;
+                knifeRotationSpeed *= 0.98;
+
+                // Move forward
+                knife.position.z -= FORWARD_SPEED;
+                levelProgress += FORWARD_SPEED;
+
+                // Move camera to follow
+                camera.position.z = knife.position.z + 15;
+                camera.position.x = knife.position.x * 0.3;
+                ground.position.z = knife.position.z;
+
+                // Update combo
+                if (comboTimer > 0) {
+                    comboTimer--;
+                } else {
+                    combo = 0;
+                    document.getElementById('combo').classList.remove('show');
+                }
+
+                // Check collisions
+                checkCollisions();
+
+                // Update sliced pieces
+                for (let i = slicedPieces.length - 1; i >= 0; i--) {
+                    const piece = slicedPieces[i];
+                    piece.position.add(piece.userData.velocity);
+                    piece.userData.velocity.y -= 0.01;
+                    piece.rotation.x += 0.1;
+                    piece.rotation.y += 0.1;
+                    piece.userData.lifetime--;
+
+                    if (piece.userData.lifetime <= 0 || piece.position.y < -5) {
+                        scene.remove(piece);
+                        slicedPieces.splice(i, 1);
+                    }
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Initialize
+        checkCurrentUser();
+        init();
+    </script>
+</body>
+</html>
