@@ -313,6 +313,17 @@
     let ball = { x: 0, y: 0, vx: 0, vy: 0, visible: false, hit: false };
     let ballTrail = [];
 
+    // Pitch types with hat colors (matching original game)
+    const PITCH_TYPES = {
+        fastball:  { color: '#e63946', speed: 13, curve: 0, drop: 0, name: 'Fastball' },      // Red - fast, straight
+        curveball: { color: '#f4d03f', speed: 8, curve: 0.2, drop: 0.1, name: 'Curveball' },  // Yellow - curves down
+        changeup:  { color: '#3498db', speed: 5, curve: 0, drop: 0.05, name: 'Changeup' },    // Blue - slow
+        slider:    { color: '#2ecc71', speed: 10, curve: -0.15, drop: 0.05, name: 'Slider' }, // Green - slides sideways
+        screwball: { color: '#9b59b6', speed: 7, curve: 0.18, drop: 0.08, name: 'Screwball' },// Purple - opposite curve
+        knuckleball: { color: '#ecf0f1', speed: 6, curve: 0, drop: 0, wobble: true, name: 'Knuckleball' } // White - wobbles unpredictably
+    };
+    let currentPitch = 'fastball';
+
     // Pitcher state
     let pitcher = { x: 650, y: 200, windUp: 0, throwing: false };
 
@@ -464,7 +475,32 @@
         ctx.ellipse(0, 60, 30, 10, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Body
+        // Hat (colored based on pitch type)
+        const hatColor = PITCH_TYPES[currentPitch].color;
+        ctx.fillStyle = hatColor;
+        // Hat cap
+        ctx.beginPath();
+        ctx.ellipse(0, -28, 22, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Hat dome
+        ctx.beginPath();
+        ctx.arc(0, -32, 18, Math.PI, 0, false);
+        ctx.fill();
+        // Hat brim
+        ctx.fillStyle = hatColor;
+        ctx.fillRect(-25, -28, 50, 5);
+        // Hat outline
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, -32, 18, Math.PI, 0, false);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-25, -26);
+        ctx.lineTo(25, -26);
+        ctx.stroke();
+
+        // Body (peanut)
         ctx.font = '60px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -638,6 +674,10 @@
     function pitch() {
         if (gameState !== 'playing') return;
 
+        // Randomly select pitch type (weighted - fastballs more common)
+        const pitchTypes = ['fastball', 'fastball', 'curveball', 'curveball', 'changeup', 'slider', 'screwball', 'knuckleball'];
+        currentPitch = pitchTypes[Math.floor(Math.random() * pitchTypes.length)];
+
         gameState = 'pitching';
         pitcher.throwing = true;
         pitcher.windUp = 0;
@@ -661,14 +701,25 @@
         ball.hit = false;
         ballTrail = [];
 
+        // Get pitch properties
+        const pitchData = PITCH_TYPES[currentPitch];
+
         // Trajectory toward home plate
         const targetX = 170;
         const targetY = 380;
         const distance = Math.sqrt(Math.pow(targetX - ball.x, 2) + Math.pow(targetY - ball.y, 2));
-        const speed = 8 + Math.random() * 3;
+
+        // Speed varies by pitch type
+        const speed = pitchData.speed;
 
         ball.vx = (targetX - ball.x) / (distance / speed);
         ball.vy = (targetY - ball.y) / (distance / speed);
+
+        // Store pitch data for ball movement
+        ball.curve = pitchData.curve || 0;
+        ball.drop = pitchData.drop || 0;
+        ball.wobble = pitchData.wobble || false;
+        ball.pitchType = currentPitch;
 
         gameState = 'batting';
         batter.canSwing = true;
@@ -854,6 +905,23 @@
             // Add to trail
             ballTrail.push({ x: ball.x, y: ball.y });
             if (ballTrail.length > 10) ballTrail.shift();
+
+            // Apply pitch physics (only when not hit)
+            if (!ball.hit) {
+                // Apply curve (horizontal movement)
+                if (ball.curve) {
+                    ball.vy += ball.curve;
+                }
+                // Apply drop (extra downward movement)
+                if (ball.drop) {
+                    ball.vy += ball.drop;
+                }
+                // Apply wobble (unpredictable movement for knuckleball)
+                if (ball.wobble) {
+                    ball.vx += (Math.random() - 0.5) * 0.8;
+                    ball.vy += (Math.random() - 0.5) * 0.5;
+                }
+            }
 
             ball.x += ball.vx;
             ball.y += ball.vy;
