@@ -4635,14 +4635,14 @@
                 playSound('levelup');
                 showWaveComplete(wave - 1);
 
-                // Wave 25: Dragon boss!
-                if (wave === 25 && !dragon && !isDragonWave) {
+                // Wave 5: Dragon boss! (TESTING - change back to 25 later)
+                if (wave === 5 && !dragon && !isDragonWave) {
                     setTimeout(() => {
                         if (gameRunning) startDragonWave();
                     }, 2000);
                 }
-                // Spawn Giant Zombie boss every 5 waves (but not wave 25)
-                else if (wave % 5 === 0 && wave !== 25 && !currentBoss && !isDragonWave) {
+                // Spawn Giant Zombie boss every 5 waves (but not wave 5 during testing)
+                else if (wave % 5 === 0 && wave !== 5 && !currentBoss && !isDragonWave) {
                     setTimeout(() => {
                         if (gameRunning) createBoss();
                     }, 2000);
