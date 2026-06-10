@@ -1004,8 +1004,8 @@
             <div class="skins-preview-icons">
                 <span id="skinDefault">⚔️</span>
                 <span id="skinBoss" class="skin-locked">🗡️</span>
+                <span id="skinDragon" class="skin-locked">🐉</span>
                 <span id="skinFire" class="skin-locked">🔥</span>
-                <span id="skinIce" class="skin-locked">❄️</span>
             </div>
         </div>
 
@@ -1361,6 +1361,14 @@
         let swordSkins = ['default']; // unlocked skins
         let currentSkin = 'default';
 
+        // Dragon boss system (wave 25)
+        let dragon = null;
+        let dragonCrystals = [];
+        let pillarPositions = [];
+        let pillarLadders = [];
+        let isDragonWave = false;
+        let dragonKills = 0;
+
         // Audio context for sounds
         let audioCtx;
 
@@ -1483,6 +1491,9 @@
                 const x = Math.cos(angle) * 30;
                 const z = Math.sin(angle) * 30;
 
+                // Store pillar position for later use
+                pillarPositions.push({ x, z, angle });
+
                 const pillarGeo = new THREE.CylinderGeometry(1.5, 2, 12, 8);
                 const pillarMat = new THREE.MeshStandardMaterial({
                     color: 0x4a4a6a,
@@ -1495,17 +1506,55 @@
                 pillar.receiveShadow = true;
                 scene.add(pillar);
 
+                // Pillar top platform (for standing on)
+                const topGeo = new THREE.CylinderGeometry(2, 1.5, 0.5, 8);
+                const topMat = new THREE.MeshStandardMaterial({ color: 0x5a5a7a, roughness: 0.5 });
+                const top = new THREE.Mesh(topGeo, topMat);
+                top.position.set(x, 12.25, z);
+                scene.add(top);
+
                 // Pillar top light
                 const torch = new THREE.PointLight(0xff6600, 0.8, 15);
                 torch.position.set(x, 12, z);
                 scene.add(torch);
 
-                // Flame particle (simple)
+                // Flame particle (simple) - will be replaced by crystal during dragon wave
                 const flameGeo = new THREE.SphereGeometry(0.3, 8, 8);
                 const flameMat = new THREE.MeshBasicMaterial({ color: 0xff4400 });
                 const flame = new THREE.Mesh(flameGeo, flameMat);
                 flame.position.set(x, 12.5, z);
+                flame.userData = { type: 'flame', pillarIndex: i };
                 scene.add(flame);
+
+                // Ladder on back of pillar (faces away from center)
+                const ladderGroup = new THREE.Group();
+                const ladderBackX = x + Math.cos(angle) * 1.8;
+                const ladderBackZ = z + Math.sin(angle) * 1.8;
+
+                // Ladder rails
+                const railGeo = new THREE.BoxGeometry(0.1, 12, 0.1);
+                const railMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                const leftRail = new THREE.Mesh(railGeo, railMat);
+                leftRail.position.set(-0.3, 6, 0);
+                ladderGroup.add(leftRail);
+                const rightRail = new THREE.Mesh(railGeo, railMat);
+                rightRail.position.set(0.3, 6, 0);
+                ladderGroup.add(rightRail);
+
+                // Ladder rungs
+                for (let r = 0; r < 12; r++) {
+                    const rungGeo = new THREE.BoxGeometry(0.6, 0.08, 0.08);
+                    const rung = new THREE.Mesh(rungGeo, railMat);
+                    rung.position.set(0, r + 0.5, 0);
+                    ladderGroup.add(rung);
+                }
+
+                ladderGroup.position.set(ladderBackX, 0, ladderBackZ);
+                ladderGroup.rotation.y = angle + Math.PI; // Face outward
+                ladderGroup.visible = false; // Hidden until wave 25
+                ladderGroup.userData = { type: 'ladder', pillarIndex: i };
+                scene.add(ladderGroup);
+                pillarLadders.push(ladderGroup);
             }
 
             // Arena boundary walls (invisible but for reference)
@@ -1890,8 +1939,19 @@
 
         function updateBossHealthBar() {
             const container = document.getElementById('bossHealthContainer');
-            if (currentBoss && currentBoss.userData.health > 0) {
+            // Handle dragon boss
+            if (dragon && dragon.userData.health > 0) {
                 container.classList.add('active');
+                document.getElementById('bossName').textContent = '🐉 ENDER DRAGON 🐉';
+                const healthPercent = (dragon.userData.health / dragon.userData.maxHealth) * 100;
+                document.getElementById('bossHealthBar').style.width = healthPercent + '%';
+                document.getElementById('bossHealthText').textContent =
+                    Math.ceil(dragon.userData.health) + ' / ' + dragon.userData.maxHealth;
+            }
+            // Handle regular boss
+            else if (currentBoss && currentBoss.userData.health > 0) {
+                container.classList.add('active');
+                document.getElementById('bossName').textContent = 'GIANT ZOMBIE';
                 const healthPercent = (currentBoss.userData.health / currentBoss.userData.maxHealth) * 100;
                 document.getElementById('bossHealthBar').style.width = healthPercent + '%';
                 document.getElementById('bossHealthText').textContent =
@@ -1899,6 +1959,434 @@
             } else {
                 container.classList.remove('active');
             }
+        }
+
+        // ==================== DRAGON BOSS SYSTEM (WAVE 25) ====================
+        function startDragonWave() {
+            isDragonWave = true;
+
+            // Kill all existing enemies
+            enemies.forEach(e => {
+                createDeathEffect(e.position);
+                scene.remove(e);
+            });
+            enemies = [];
+            currentBoss = null;
+
+            // Show ladders
+            pillarLadders.forEach(ladder => {
+                ladder.visible = true;
+            });
+
+            // Spawn crystals on pillars
+            spawnDragonCrystals();
+
+            // Spawn the dragon
+            setTimeout(() => {
+                createDragon();
+            }, 2000);
+
+            // Epic warning
+            showDragonWarning();
+        }
+
+        function showDragonWarning() {
+            const warning = document.createElement('div');
+            warning.className = 'boss-warning';
+            warning.innerHTML = '🐉 THE DRAGON AWAKENS 🐉';
+            warning.style.color = '#9932CC';
+            warning.style.textShadow = '0 0 30px #9932CC, 0 0 60px #4B0082';
+            document.body.appendChild(warning);
+            setTimeout(() => warning.remove(), 3000);
+        }
+
+        function spawnDragonCrystals() {
+            dragonCrystals = [];
+
+            pillarPositions.forEach((pos, index) => {
+                const crystal = new THREE.Group();
+
+                // Crystal body (like End Crystal)
+                const crystalGeo = new THREE.OctahedronGeometry(1, 0);
+                const crystalMat = new THREE.MeshStandardMaterial({
+                    color: 0xff00ff,
+                    emissive: 0x9900ff,
+                    emissiveIntensity: 0.8,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                const crystalMesh = new THREE.Mesh(crystalGeo, crystalMat);
+                crystal.add(crystalMesh);
+
+                // Outer rotating frame
+                const frameGeo = new THREE.BoxGeometry(2.5, 2.5, 2.5);
+                const frameMat = new THREE.MeshStandardMaterial({
+                    color: 0x4B0082,
+                    wireframe: true
+                });
+                const frame = new THREE.Mesh(frameGeo, frameMat);
+                crystal.add(frame);
+
+                // Bedrock base
+                const baseGeo = new THREE.BoxGeometry(1.5, 0.5, 1.5);
+                const baseMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
+                const base = new THREE.Mesh(baseGeo, baseMat);
+                base.position.y = -1.5;
+                crystal.add(base);
+
+                // Crystal light
+                const light = new THREE.PointLight(0xff00ff, 2, 20);
+                light.position.y = 0;
+                crystal.add(light);
+
+                crystal.position.set(pos.x, 14, pos.z);
+                crystal.userData = {
+                    type: 'crystal',
+                    health: 100,
+                    maxHealth: 100,
+                    pillarIndex: index,
+                    isDestroyed: false
+                };
+
+                scene.add(crystal);
+                dragonCrystals.push(crystal);
+            });
+        }
+
+        function createDragon() {
+            dragon = new THREE.Group();
+
+            // Dragon body
+            const bodyGeo = new THREE.CylinderGeometry(2, 3, 8, 8);
+            const bodyMat = new THREE.MeshStandardMaterial({
+                color: 0x1a1a2e,
+                roughness: 0.4,
+                emissive: 0x110011,
+                emissiveIntensity: 0.3
+            });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.rotation.x = Math.PI / 2;
+            dragon.add(body);
+
+            // Dragon head
+            const headGeo = new THREE.ConeGeometry(1.5, 4, 6);
+            const headMat = new THREE.MeshStandardMaterial({
+                color: 0x2a2a4e,
+                emissive: 0x220022,
+                emissiveIntensity: 0.3
+            });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.rotation.x = -Math.PI / 2;
+            head.position.z = 6;
+            dragon.add(head);
+
+            // Dragon eyes (glowing purple)
+            const eyeGeo = new THREE.SphereGeometry(0.4, 8, 8);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff00ff });
+            const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+            leftEye.position.set(-0.8, 0.5, 5);
+            dragon.add(leftEye);
+            const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+            rightEye.position.set(0.8, 0.5, 5);
+            dragon.add(rightEye);
+
+            // Wings
+            const wingGeo = new THREE.PlaneGeometry(10, 6);
+            const wingMat = new THREE.MeshStandardMaterial({
+                color: 0x2a2a4e,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.8
+            });
+            const leftWing = new THREE.Mesh(wingGeo, wingMat);
+            leftWing.position.set(-6, 1, 0);
+            leftWing.rotation.z = 0.3;
+            dragon.add(leftWing);
+            const rightWing = new THREE.Mesh(wingGeo, wingMat);
+            rightWing.position.set(6, 1, 0);
+            rightWing.rotation.z = -0.3;
+            dragon.add(rightWing);
+
+            // Tail
+            const tailGeo = new THREE.ConeGeometry(1, 6, 6);
+            const tail = new THREE.Mesh(tailGeo, bodyMat);
+            tail.rotation.x = Math.PI / 2;
+            tail.position.z = -7;
+            dragon.add(tail);
+
+            // Position dragon high in sky
+            dragon.position.set(0, 25, 0);
+
+            const dragonHealth = 25000;
+            dragon.userData = {
+                health: dragonHealth,
+                maxHealth: dragonHealth,
+                type: 'dragon',
+                damage: 50,
+                lastAttack: 0,
+                flyAngle: 0,
+                flyRadius: 20,
+                flyHeight: 25,
+                targetY: 25,
+                diveBombing: false,
+                lastHeal: 0
+            };
+
+            scene.add(dragon);
+            updateBossHealthBar();
+            playSound('spawn');
+        }
+
+        function updateDragon() {
+            if (!dragon || !isDragonWave) return;
+
+            const time = Date.now() * 0.001;
+
+            // Rotate crystals
+            dragonCrystals.forEach(crystal => {
+                if (!crystal.userData.isDestroyed) {
+                    crystal.rotation.y += 0.02;
+                    crystal.children[0].rotation.x += 0.01;
+                    crystal.children[0].rotation.z += 0.015;
+                }
+            });
+
+            // Dragon flying pattern
+            dragon.userData.flyAngle += 0.01;
+            const angle = dragon.userData.flyAngle;
+            const radius = dragon.userData.flyRadius;
+
+            // Circular flight path
+            dragon.position.x = Math.cos(angle) * radius;
+            dragon.position.z = Math.sin(angle) * radius;
+
+            // Bobbing height
+            dragon.position.y = dragon.userData.flyHeight + Math.sin(time * 2) * 3;
+
+            // Face direction of movement
+            dragon.rotation.y = -angle + Math.PI / 2;
+
+            // Wing flapping
+            const wingFlap = Math.sin(time * 8) * 0.2;
+            if (dragon.children[4]) dragon.children[4].rotation.z = 0.3 + wingFlap;
+            if (dragon.children[5]) dragon.children[5].rotation.z = -0.3 - wingFlap;
+
+            // Heal from crystals
+            const now = Date.now();
+            if (now - dragon.userData.lastHeal > 500) {
+                const activeCrystals = dragonCrystals.filter(c => !c.userData.isDestroyed);
+                if (activeCrystals.length > 0 && dragon.userData.health < dragon.userData.maxHealth) {
+                    // Heal 50 HP per crystal every 0.5 seconds
+                    const healAmount = activeCrystals.length * 50;
+                    dragon.userData.health = Math.min(dragon.userData.maxHealth, dragon.userData.health + healAmount);
+                    updateBossHealthBar();
+
+                    // Healing beam effect from crystals to dragon
+                    activeCrystals.forEach(crystal => {
+                        createHealBeam(crystal.position, dragon.position);
+                    });
+                }
+                dragon.userData.lastHeal = now;
+            }
+
+            // Dragon attack - fireball at player occasionally
+            if (now - dragon.userData.lastAttack > 3000) {
+                shootFireball();
+                dragon.userData.lastAttack = now;
+            }
+        }
+
+        function createHealBeam(from, to) {
+            const geo = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(from.x, from.y, from.z),
+                new THREE.Vector3(to.x, to.y, to.z)
+            ]);
+            const mat = new THREE.LineBasicMaterial({ color: 0xff00ff, transparent: true, opacity: 0.6 });
+            const line = new THREE.Line(geo, mat);
+            scene.add(line);
+
+            // Remove beam after short time
+            setTimeout(() => scene.remove(line), 200);
+        }
+
+        let fireballs = [];
+
+        function shootFireball() {
+            if (!dragon) return;
+
+            const fireball = new THREE.Mesh(
+                new THREE.SphereGeometry(0.8, 8, 8),
+                new THREE.MeshBasicMaterial({ color: 0x9932CC })
+            );
+
+            fireball.position.copy(dragon.position);
+            fireball.position.y -= 2;
+
+            // Aim at player
+            const playerPos = camera.position.clone();
+            const direction = new THREE.Vector3();
+            direction.subVectors(playerPos, fireball.position).normalize();
+
+            fireball.userData = {
+                velocity: direction.multiplyScalar(0.5),
+                damage: 40
+            };
+
+            scene.add(fireball);
+            fireballs.push(fireball);
+
+            playSound('spawn');
+        }
+
+        function updateFireballs() {
+            fireballs = fireballs.filter(fb => {
+                fb.position.add(fb.userData.velocity);
+
+                // Check if hit player
+                const dist = fb.position.distanceTo(camera.position);
+                if (dist < 2) {
+                    damagePlayer(fb.userData.damage);
+                    scene.remove(fb);
+                    screenShake(0.4, 200);
+                    return false;
+                }
+
+                // Remove if too far or hit ground
+                if (fb.position.y < 0 || fb.position.distanceTo(new THREE.Vector3(0, 0, 0)) > 100) {
+                    scene.remove(fb);
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        function hitCrystal(crystal, damage) {
+            if (crystal.userData.isDestroyed) return;
+
+            crystal.userData.health -= damage;
+
+            // Flash effect
+            crystal.children[0].material.emissiveIntensity = 2;
+            setTimeout(() => {
+                if (crystal.children[0]) crystal.children[0].material.emissiveIntensity = 0.8;
+            }, 100);
+
+            if (crystal.userData.health <= 0) {
+                destroyCrystal(crystal);
+            }
+        }
+
+        function destroyCrystal(crystal) {
+            crystal.userData.isDestroyed = true;
+
+            // Explosion effect
+            for (let i = 0; i < 30; i++) {
+                const geo = new THREE.SphereGeometry(0.2, 4, 4);
+                const mat = new THREE.MeshBasicMaterial({ color: 0xff00ff, transparent: true });
+                const particle = new THREE.Mesh(geo, mat);
+                particle.position.copy(crystal.position);
+                particle.userData = {
+                    velocity: new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.5,
+                        Math.random() * 0.5,
+                        (Math.random() - 0.5) * 0.5
+                    ),
+                    life: 1.5
+                };
+                scene.add(particle);
+                particles.push(particle);
+            }
+
+            // Remove crystal visuals but keep in array for tracking
+            scene.remove(crystal);
+
+            playSound('kill');
+
+            // Check if all crystals destroyed
+            const remaining = dragonCrystals.filter(c => !c.userData.isDestroyed).length;
+            if (remaining === 0) {
+                showAllCrystalsDestroyed();
+            }
+        }
+
+        function showAllCrystalsDestroyed() {
+            const msg = document.createElement('div');
+            msg.className = 'boss-warning';
+            msg.innerHTML = '💎 ALL CRYSTALS DESTROYED! 💎<br><span style="font-size:1.5rem;">The dragon is vulnerable!</span>';
+            msg.style.color = '#ff00ff';
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 3000);
+        }
+
+        function killDragon() {
+            if (!dragon) return;
+
+            // Epic death effect
+            for (let i = 0; i < 100; i++) {
+                const geo = new THREE.SphereGeometry(0.3, 4, 4);
+                const mat = new THREE.MeshBasicMaterial({
+                    color: Math.random() > 0.5 ? 0x9932CC : 0xff00ff,
+                    transparent: true
+                });
+                const particle = new THREE.Mesh(geo, mat);
+                particle.position.copy(dragon.position);
+                particle.userData = {
+                    velocity: new THREE.Vector3(
+                        (Math.random() - 0.5) * 1,
+                        Math.random() * 1,
+                        (Math.random() - 0.5) * 1
+                    ),
+                    life: 3
+                };
+                scene.add(particle);
+                particles.push(particle);
+            }
+
+            scene.remove(dragon);
+            dragon = null;
+            isDragonWave = false;
+            dragonKills++;
+
+            // Hide ladders
+            pillarLadders.forEach(ladder => {
+                ladder.visible = false;
+            });
+
+            // Clear remaining crystals
+            dragonCrystals.forEach(c => {
+                if (!c.userData.isDestroyed) scene.remove(c);
+            });
+            dragonCrystals = [];
+
+            // Clear fireballs
+            fireballs.forEach(fb => scene.remove(fb));
+            fireballs = [];
+
+            // Massive rewards
+            upgradePoints += 100;
+            score += 25000;
+
+            // Unlock dragon slayer skin
+            if (!swordSkins.includes('dragon')) {
+                swordSkins.push('dragon');
+            }
+
+            updateBossHealthBar();
+            saveUpgrades();
+
+            // Victory message
+            showDragonDefeated();
+        }
+
+        function showDragonDefeated() {
+            const msg = document.createElement('div');
+            msg.className = 'boss-warning';
+            msg.innerHTML = '🐉 DRAGON SLAIN! 🐉<br><span style="font-size:1.5rem;">+100 Points | +25,000 Score</span><br><span style="font-size:1.2rem;">Dragon Slayer Skin Unlocked!</span>';
+            msg.style.color = '#ffd700';
+            msg.style.animation = 'bossWarning 5s ease-out forwards';
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 5000);
         }
 
         function createSpawnEffect(x, z) {
@@ -2106,6 +2594,7 @@
             // Check if at jump apex for guaranteed crit
             const apexCrit = isAtJumpApex();
 
+            // Hit enemies
             enemies.forEach((enemy, index) => {
                 const toEnemy = new THREE.Vector3();
                 toEnemy.subVectors(enemy.position, playerPos);
@@ -2125,9 +2614,71 @@
                 }
             });
 
+            // Hit crystals (when on pillars during dragon wave)
+            if (isDragonWave) {
+                dragonCrystals.forEach(crystal => {
+                    if (crystal.userData.isDestroyed) return;
+
+                    const toCrystal = new THREE.Vector3();
+                    toCrystal.subVectors(crystal.position, playerPos);
+
+                    const distance = toCrystal.length();
+                    toCrystal.normalize();
+
+                    const dot = forward.dot(toCrystal);
+                    const angle = Math.acos(dot);
+
+                    const totalRange = weapon.range + (upgrades.range.level - 1) * 0.5;
+                    if (distance < totalRange + 2 && angle < Math.PI / 3) {
+                        hitCrystal(crystal, weapon.damage);
+                        hitSomething = true;
+                    }
+                });
+
+                // Hit dragon if in range
+                if (dragon) {
+                    const toDragon = new THREE.Vector3();
+                    toDragon.subVectors(dragon.position, playerPos);
+
+                    const distance = toDragon.length();
+                    toDragon.normalize();
+
+                    const dot = forward.dot(toDragon);
+                    const angle = Math.acos(dot);
+
+                    const totalRange = weapon.range + (upgrades.range.level - 1) * 0.5;
+                    if (distance < totalRange + 5 && angle < Math.PI / 3) {
+                        hitDragon(weapon.damage, apexCrit);
+                        hitSomething = true;
+                    }
+                }
+            }
+
             if (hitSomething) {
                 playSound('hit');
                 updateCombo();
+            }
+        }
+
+        function hitDragon(baseDamage, forceCrit = false) {
+            if (!dragon) return;
+
+            let damage = baseDamage;
+            let isCrit = forceCrit || Math.random() < critChance;
+            if (isCrit) {
+                damage *= 2;
+                showCritHit();
+            }
+
+            dragon.userData.health -= damage;
+            updateBossHealthBar();
+
+            // Hit effect
+            createHitEffect(dragon.position, isCrit);
+            screenShake(isCrit ? 0.3 : 0.15, isCrit ? 200 : 100);
+
+            if (dragon.userData.health <= 0) {
+                killDragon();
             }
         }
 
@@ -2186,6 +2737,43 @@
                 hitEnemy(enemy, index, damage, false);
                 updateCombo();
             });
+
+            // Hit crystals with ranged weapons during dragon wave
+            if (isDragonWave) {
+                dragonCrystals.forEach(crystal => {
+                    if (crystal.userData.isDestroyed) return;
+
+                    const toCrystal = new THREE.Vector3();
+                    toCrystal.subVectors(crystal.position, playerPos);
+                    const distance = toCrystal.length();
+                    toCrystal.normalize();
+
+                    const dot = forward.dot(toCrystal);
+                    const angle = Math.acos(Math.min(1, Math.max(-1, dot)));
+
+                    if (distance < weapon.range && angle < 0.3) {
+                        hitCrystal(crystal, weapon.damage);
+                        hitCount++;
+                    }
+                });
+
+                // Hit dragon with ranged weapons
+                if (dragon) {
+                    const toDragon = new THREE.Vector3();
+                    toDragon.subVectors(dragon.position, playerPos);
+                    const distance = toDragon.length();
+                    toDragon.normalize();
+
+                    const dot = forward.dot(toDragon);
+                    const angle = Math.acos(Math.min(1, Math.max(-1, dot)));
+
+                    // Dragon is big, more forgiving angle
+                    if (distance < weapon.range && angle < 0.4) {
+                        hitDragon(weapon.damage, false);
+                        hitCount++;
+                    }
+                }
+            }
 
             if (hitCount > 0) {
                 playSound('kill');
@@ -2534,6 +3122,30 @@
             });
         }
 
+        // Ladder climbing state
+        let isOnLadder = false;
+        let currentLadderPillar = -1;
+
+        function checkNearLadder() {
+            if (!isDragonWave) return { near: false, pillarIndex: -1 };
+
+            for (let i = 0; i < pillarPositions.length; i++) {
+                const pos = pillarPositions[i];
+                const ladderX = pos.x + Math.cos(pos.angle) * 1.8;
+                const ladderZ = pos.z + Math.sin(pos.angle) * 1.8;
+
+                const dist = Math.sqrt(
+                    (camera.position.x - ladderX) ** 2 +
+                    (camera.position.z - ladderZ) ** 2
+                );
+
+                if (dist < 2) {
+                    return { near: true, pillarIndex: i, ladderX, ladderZ };
+                }
+            }
+            return { near: false, pillarIndex: -1 };
+        }
+
         function updateMovement() {
             if (!gameRunning || !isPointerLocked) return;
 
@@ -2541,6 +3153,40 @@
             camera.rotation.order = 'YXZ';
             camera.rotation.y = mouseX;
             camera.rotation.x = mouseY;
+
+            // Check for ladder climbing (only during dragon wave)
+            const ladderCheck = checkNearLadder();
+
+            if (ladderCheck.near && isDragonWave) {
+                isOnLadder = true;
+                currentLadderPillar = ladderCheck.pillarIndex;
+
+                // Climbing controls: W to climb up, S to climb down
+                if (keys['KeyW'] && playerY < 14) {
+                    playerY += 0.15;
+                    // Snap to ladder position
+                    camera.position.x = ladderCheck.ladderX;
+                    camera.position.z = ladderCheck.ladderZ;
+                }
+                if (keys['KeyS'] && playerY > 1.6) {
+                    playerY -= 0.15;
+                }
+
+                // At top of pillar, allow stepping onto platform
+                if (playerY >= 13 && (keys['KeyA'] || keys['KeyD'])) {
+                    const pos = pillarPositions[ladderCheck.pillarIndex];
+                    camera.position.x = pos.x;
+                    camera.position.z = pos.z;
+                    playerY = 13;
+                    isOnLadder = false;
+                }
+
+                camera.position.y = playerY;
+                return; // Skip normal movement while on ladder
+            } else {
+                isOnLadder = false;
+                currentLadderPillar = -1;
+            }
 
             // Movement
             const forward = new THREE.Vector3(0, 0, -1);
@@ -2581,6 +3227,25 @@
                 if (dist > 35) {
                     camera.position.x *= 35 / dist;
                     camera.position.z *= 35 / dist;
+                }
+            }
+
+            // Fall off pillar if on one and walk off edge
+            if (playerY > 2 && !isOnLadder && !isJumping) {
+                let onPillar = false;
+                for (const pos of pillarPositions) {
+                    const dist = Math.sqrt(
+                        (camera.position.x - pos.x) ** 2 +
+                        (camera.position.z - pos.z) ** 2
+                    );
+                    if (dist < 2.5) {
+                        onPillar = true;
+                        break;
+                    }
+                }
+                if (!onPillar) {
+                    // Fall back to ground
+                    playerY = Math.max(1.6, playerY - 0.3);
                 }
             }
 
@@ -2959,7 +3624,9 @@
                 updateMovement();
                 updateJump();
                 updateEnemies();
-                spawnEnemies();
+                updateDragon();
+                updateFireballs();
+                if (!isDragonWave) spawnEnemies(); // Don't spawn zombies during dragon wave
                 updateParticles(delta);
 
                 // Animate lights
@@ -2987,6 +3654,17 @@
             combo = 0;
             wave = 1;
             currentBoss = null;
+
+            // Reset dragon wave state
+            if (dragon) scene.remove(dragon);
+            dragon = null;
+            isDragonWave = false;
+            dragonCrystals.forEach(c => scene.remove(c));
+            dragonCrystals = [];
+            fireballs.forEach(fb => scene.remove(fb));
+            fireballs = [];
+            pillarLadders.forEach(ladder => ladder.visible = false);
+
             updateBossHealthBar();
             enemies.forEach(e => scene.remove(e));
             enemies = [];
@@ -3371,6 +4049,7 @@
                 weaponSlots: weaponSlots,
                 unlockedSlots: unlockedSlots,
                 bossKills: bossKills,
+                dragonKills: dragonKills,
                 highScore: highScore,
                 swordSkins: swordSkins,
                 currentSkin: currentSkin
@@ -3399,6 +4078,7 @@
                     if (data.weaponSlots) weaponSlots = data.weaponSlots;
                     if (data.unlockedSlots) unlockedSlots = data.unlockedSlots;
                     if (data.bossKills) bossKills = data.bossKills;
+                    if (data.dragonKills) dragonKills = data.dragonKills;
                     if (data.highScore) highScore = data.highScore;
                     if (data.swordSkins) swordSkins = data.swordSkins;
                     if (data.currentSkin) currentSkin = data.currentSkin;
@@ -3413,13 +4093,17 @@
 
         function updateStartScreenStats() {
             document.getElementById('startHighScore').textContent = highScore;
-            document.getElementById('startBossKills').textContent = bossKills;
+            document.getElementById('startBossKills').textContent = bossKills + dragonKills;
             document.getElementById('startCoins').textContent = upgradePoints;
 
             // Update skin icons based on unlocked skins
             const skinBoss = document.getElementById('skinBoss');
             if (swordSkins.includes('boss')) {
                 skinBoss.classList.remove('skin-locked');
+            }
+            const skinDragon = document.getElementById('skinDragon');
+            if (skinDragon && swordSkins.includes('dragon')) {
+                skinDragon.classList.remove('skin-locked');
             }
         }
 
@@ -3506,8 +4190,14 @@
                 playSound('levelup');
                 showWaveComplete(wave - 1);
 
-                // Spawn boss every 5 waves
-                if (wave % 5 === 0 && !currentBoss) {
+                // Wave 25: Dragon boss!
+                if (wave === 25 && !dragon && !isDragonWave) {
+                    setTimeout(() => {
+                        if (gameRunning) startDragonWave();
+                    }, 2000);
+                }
+                // Spawn Giant Zombie boss every 5 waves (but not wave 25)
+                else if (wave % 5 === 0 && wave !== 25 && !currentBoss && !isDragonWave) {
                     setTimeout(() => {
                         if (gameRunning) createBoss();
                     }, 2000);
