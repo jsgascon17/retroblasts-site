@@ -1260,60 +1260,179 @@
             scene.add(wall);
         }
 
+        // Store all weapon models
+        let weaponModels = {};
+        let currentWeaponModel = null;
+
         function createPlayer() {
             // Player body (invisible - we're in first person)
             player = new THREE.Group();
             player.position.set(0, 1.6, 0);
             scene.add(player);
 
-            // Sword
-            const swordGroup = new THREE.Group();
+            // Create all weapon models
+            createWeaponModels();
 
-            // Blade
+            // Start with sword
+            showWeaponModel('sword');
+
+            scene.add(camera);
+        }
+
+        function createWeaponModels() {
+            // === SWORD ===
+            const swordGroup = new THREE.Group();
             const bladeGeo = new THREE.BoxGeometry(0.08, 1.2, 0.02);
-            const bladeMat = new THREE.MeshStandardMaterial({
-                color: 0xcccccc,
-                roughness: 0.2,
-                metalness: 0.9
-            });
+            const bladeMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.2, metalness: 0.9 });
             const blade = new THREE.Mesh(bladeGeo, bladeMat);
             blade.position.y = 0.6;
             swordGroup.add(blade);
-
-            // Blade edge glow
             const edgeGeo = new THREE.BoxGeometry(0.02, 1.2, 0.005);
             const edgeMat = new THREE.MeshBasicMaterial({ color: 0x88ccff });
             const edge = new THREE.Mesh(edgeGeo, edgeMat);
             edge.position.set(0.04, 0.6, 0);
             swordGroup.add(edge);
-
-            // Handle
             const handleGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.25, 8);
-            const handleMat = new THREE.MeshStandardMaterial({
-                color: 0x4a2810,
-                roughness: 0.8
-            });
+            const handleMat = new THREE.MeshStandardMaterial({ color: 0x4a2810, roughness: 0.8 });
             const handle = new THREE.Mesh(handleGeo, handleMat);
             handle.position.y = -0.12;
             swordGroup.add(handle);
-
-            // Guard
             const guardGeo = new THREE.BoxGeometry(0.25, 0.05, 0.08);
-            const guardMat = new THREE.MeshStandardMaterial({
-                color: 0xffd700,
-                roughness: 0.3,
-                metalness: 0.8
-            });
+            const guardMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3, metalness: 0.8 });
             const guard = new THREE.Mesh(guardGeo, guardMat);
             swordGroup.add(guard);
-
-            // Position sword in view
             swordGroup.position.set(0.4, -0.3, -0.5);
             swordGroup.rotation.set(0, 0, -0.3);
+            weaponModels.sword = swordGroup;
 
-            playerSword = swordGroup;
-            camera.add(playerSword);
-            scene.add(camera);
+            // === KNIFE ===
+            const knifeGroup = new THREE.Group();
+            const knifeBlade = new THREE.Mesh(
+                new THREE.BoxGeometry(0.04, 0.5, 0.01),
+                new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.9 })
+            );
+            knifeBlade.position.y = 0.25;
+            knifeGroup.add(knifeBlade);
+            const knifeHandle = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.025, 0.025, 0.15, 8),
+                new THREE.MeshStandardMaterial({ color: 0x333333 })
+            );
+            knifeHandle.position.y = -0.05;
+            knifeGroup.add(knifeHandle);
+            knifeGroup.position.set(0.35, -0.25, -0.4);
+            knifeGroup.rotation.set(0, 0, -0.2);
+            weaponModels.knife = knifeGroup;
+
+            // === BASEBALL BAT ===
+            const batGroup = new THREE.Group();
+            const batBarrel = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.06, 0.04, 0.8, 12),
+                new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.7 })
+            );
+            batBarrel.position.y = 0.5;
+            batGroup.add(batBarrel);
+            const batHandle = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.025, 0.03, 0.35, 8),
+                new THREE.MeshStandardMaterial({ color: 0x654321 })
+            );
+            batHandle.position.y = -0.05;
+            batGroup.add(batHandle);
+            batGroup.position.set(0.45, -0.35, -0.5);
+            batGroup.rotation.set(0, 0, -0.4);
+            weaponModels.bat = batGroup;
+
+            // === HANDGUN ===
+            const gunGroup = new THREE.Group();
+            const gunBody = new THREE.Mesh(
+                new THREE.BoxGeometry(0.08, 0.15, 0.25),
+                new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8 })
+            );
+            gunGroup.add(gunBody);
+            const gunBarrel = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.02, 0.02, 0.2, 8),
+                new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.9 })
+            );
+            gunBarrel.rotation.x = Math.PI / 2;
+            gunBarrel.position.set(0, 0.02, -0.2);
+            gunGroup.add(gunBarrel);
+            const gunGrip = new THREE.Mesh(
+                new THREE.BoxGeometry(0.06, 0.12, 0.08),
+                new THREE.MeshStandardMaterial({ color: 0x4a3728 })
+            );
+            gunGrip.position.set(0, -0.12, 0.05);
+            gunGrip.rotation.x = 0.2;
+            gunGroup.add(gunGrip);
+            gunGroup.position.set(0.35, -0.25, -0.45);
+            weaponModels.handgun = gunGroup;
+
+            // === SNIPER ===
+            const sniperGroup = new THREE.Group();
+            const sniperBody = new THREE.Mesh(
+                new THREE.BoxGeometry(0.06, 0.1, 0.6),
+                new THREE.MeshStandardMaterial({ color: 0x2a2a2a, metalness: 0.7 })
+            );
+            sniperGroup.add(sniperBody);
+            const sniperBarrel = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.015, 0.02, 0.5, 8),
+                new THREE.MeshStandardMaterial({ color: 0x444444, metalness: 0.9 })
+            );
+            sniperBarrel.rotation.x = Math.PI / 2;
+            sniperBarrel.position.set(0, 0.02, -0.5);
+            sniperGroup.add(sniperBarrel);
+            const sniperScope = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.03, 0.03, 0.15, 8),
+                new THREE.MeshStandardMaterial({ color: 0x111111 })
+            );
+            sniperScope.position.set(0, 0.1, -0.1);
+            sniperGroup.add(sniperScope);
+            const sniperStock = new THREE.Mesh(
+                new THREE.BoxGeometry(0.05, 0.08, 0.25),
+                new THREE.MeshStandardMaterial({ color: 0x5a4a3a })
+            );
+            sniperStock.position.set(0, -0.02, 0.35);
+            sniperGroup.add(sniperStock);
+            sniperGroup.position.set(0.3, -0.2, -0.5);
+            weaponModels.sniper = sniperGroup;
+
+            // === SATCHEL ===
+            const satchelGroup = new THREE.Group();
+            const satchelBody = new THREE.Mesh(
+                new THREE.BoxGeometry(0.2, 0.15, 0.1),
+                new THREE.MeshStandardMaterial({ color: 0x3a5a3a })
+            );
+            satchelGroup.add(satchelBody);
+            const detonator = new THREE.Mesh(
+                new THREE.BoxGeometry(0.06, 0.08, 0.04),
+                new THREE.MeshStandardMaterial({ color: 0x222222 })
+            );
+            detonator.position.set(0.15, 0, 0);
+            satchelGroup.add(detonator);
+            const button = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.015, 0.015, 0.02, 8),
+                new THREE.MeshBasicMaterial({ color: 0xff0000 })
+            );
+            button.position.set(0.15, 0.05, 0);
+            button.rotation.x = Math.PI / 2;
+            satchelGroup.add(button);
+            satchelGroup.position.set(0.3, -0.3, -0.4);
+            weaponModels.satchel = satchelGroup;
+
+            // Set playerSword to sword for animation compatibility
+            playerSword = weaponModels.sword;
+        }
+
+        function showWeaponModel(weaponId) {
+            // Hide current weapon
+            if (currentWeaponModel) {
+                camera.remove(currentWeaponModel);
+            }
+
+            // Show new weapon
+            if (weaponModels[weaponId]) {
+                currentWeaponModel = weaponModels[weaponId];
+                camera.add(currentWeaponModel);
+                playerSword = currentWeaponModel; // For swing animation
+            }
         }
 
         // ==================== ENEMY SYSTEM ====================
@@ -1636,11 +1755,19 @@
                 const distance = toEnemy.length();
                 toEnemy.normalize();
 
-                const dot = forward.dot(toEnemy);
-                const angle = Math.acos(dot);
+                // Account for enemy size - aim at center mass (y+1)
+                const enemyCenter = enemy.position.clone();
+                enemyCenter.y += 1; // Enemy center is about 1 unit up
+                const toEnemyCenter = new THREE.Vector3();
+                toEnemyCenter.subVectors(enemyCenter, playerPos);
+                toEnemyCenter.normalize();
 
-                // Tighter angle for ranged weapons (more accurate)
-                const maxAngle = sniperMode ? 0.05 : 0.15;
+                const dot = forward.dot(toEnemyCenter);
+                const angle = Math.acos(Math.min(1, Math.max(-1, dot))); // Clamp to prevent NaN
+
+                // More forgiving angles - account for enemy hitbox size
+                // Sniper: ~15 degrees, Handgun: ~25 degrees
+                const maxAngle = sniperMode ? 0.25 : 0.45;
 
                 if (distance < weapon.range && angle < maxAngle) {
                     hitIndices.push({ enemy, index, damage: weapon.damage });
@@ -2125,6 +2252,7 @@
             if (sniperMode) toggleSniperMode(); // Exit sniper mode when switching
 
             currentSlot = slot;
+            showWeaponModel(weaponSlots[slot]);
             updateWeaponHUD();
             playSound('swing');
         }
@@ -2214,6 +2342,7 @@
 
             // Auto-equip to current slot (replacing what's there)
             weaponSlots[currentSlot] = weaponId;
+            showWeaponModel(weaponId);
 
             updateWeaponHUD();
             updateShopUI();
@@ -2224,7 +2353,9 @@
         function equipWeaponToCurrentSlot(weaponId) {
             if (!ownedWeapons.includes(weaponId)) return;
             weaponSlots[currentSlot] = weaponId;
+            showWeaponModel(weaponId);
             updateWeaponHUD();
+            updateShopUI();
             saveUpgrades();
             playSound('swing');
         }
@@ -2461,6 +2592,9 @@
 
             // Reset sniper mode
             if (sniperMode) toggleSniperMode();
+
+            // Show correct weapon
+            showWeaponModel(weaponSlots[currentSlot] || 'sword');
 
             updateHealthBar();
             updateWeaponHUD();
@@ -2835,7 +2969,11 @@
                             }
                         });
                     }
-                    if (data.ownedWeapons) ownedWeapons = data.ownedWeapons;
+                    if (data.ownedWeapons) {
+                        ownedWeapons = data.ownedWeapons;
+                        // Ensure sword is always owned
+                        if (!ownedWeapons.includes('sword')) ownedWeapons.push('sword');
+                    }
                     if (data.weaponSlots) weaponSlots = data.weaponSlots;
                     if (data.unlockedSlots) unlockedSlots = data.unlockedSlots;
                     applyUpgrades();
