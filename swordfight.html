@@ -2054,6 +2054,11 @@
                     togglePause();
                 }
 
+                // Debug mode - release cursor with Left Shift
+                if (e.code === 'ShiftLeft') {
+                    document.exitPointerLock();
+                }
+
                 // Open shop with H key
                 if (e.code === 'KeyH') {
                     openShop();
@@ -2091,17 +2096,17 @@
                 }
             });
 
-            // Click to attack
+            // Click to attack (works with or without pointer lock for debug)
             document.addEventListener('mousedown', (e) => {
-                if (e.button === 0 && isPointerLocked) {
+                if (e.button === 0 && gameRunning && !isPaused) {
                     attack();
                 }
             });
 
-            // Pointer lock
+            // Pointer lock (click canvas to re-lock)
             const canvas = document.getElementById('gameCanvas');
             canvas.addEventListener('click', () => {
-                if (gameRunning && !isPointerLocked) {
+                if (gameRunning && !isPointerLocked && !keys['ShiftLeft']) {
                     canvas.requestPointerLock();
                 }
             });
