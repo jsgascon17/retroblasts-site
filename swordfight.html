@@ -622,6 +622,92 @@
             display: block;
         }
 
+        /* Weapon HUD */
+        .weapon-hud {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+            pointer-events: none;
+        }
+        .weapon-slot {
+            width: 70px;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid #444;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .weapon-slot.active {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+        .weapon-slot.locked {
+            background: rgba(50, 50, 50, 0.8);
+            border-color: #333;
+        }
+        .weapon-slot .icon {
+            font-size: 28px;
+        }
+        .weapon-slot .key {
+            font-size: 10px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .weapon-slot .ammo {
+            font-size: 11px;
+            color: #4ade80;
+            margin-top: 2px;
+        }
+        .sniper-scope {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 60;
+            display: none;
+        }
+        .sniper-scope.active {
+            display: block;
+        }
+        .sniper-scope::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 0, 0, 0.5);
+            transform: translateY(-50%);
+        }
+        .sniper-scope::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.5);
+            transform: translateX(-50%);
+        }
+        .scope-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 150px, rgba(0,0,0,0.95) 200px);
+        }
+
         /* Pause Screen */
         .pause-screen {
             position: fixed;
@@ -679,13 +765,10 @@
         <p>Defeat enemies and survive as long as you can!</p>
         <button class="start-btn" onclick="startGame()">PLAY</button>
         <div class="controls-info">
-            <div><span>W A S D</span> Move</div>
-            <div><span>MOUSE</span> Look around</div>
-            <div><span>LEFT CLICK</span> Attack</div>
-            <div><span>SHIFT</span> Sprint</div>
-            <div><span>SPACE</span> Dash</div>
-            <div><span>H</span> Upgrade Shop</div>
-            <div><span>P</span> Pause</div>
+            <div><span>W A S D</span> Move | <span>MOUSE</span> Look</div>
+            <div><span>CLICK</span> Attack | <span>SPACE</span> Jump</div>
+            <div><span>SHIFT</span> Sprint | <span>1-2</span> Weapons</div>
+            <div><span>C</span> Sniper Scope | <span>H</span> Shop | <span>P</span> Pause</div>
         </div>
     </div>
 
@@ -723,8 +806,27 @@
         </div>
     </div>
 
-    <div class="crosshair">
+    <div class="crosshair" id="crosshair">
         <div class="dot"></div>
+    </div>
+
+    <!-- Weapon HUD -->
+    <div class="weapon-hud" id="weaponHud" style="display: none;">
+        <div class="weapon-slot active" id="slot0">
+            <span class="icon">⚔️</span>
+            <span class="key">1</span>
+            <span class="ammo" id="ammo0"></span>
+        </div>
+        <div class="weapon-slot locked" id="slot1">
+            <span class="icon">🔒</span>
+            <span class="key">2</span>
+            <span class="ammo" id="ammo1"></span>
+        </div>
+    </div>
+
+    <!-- Sniper Scope -->
+    <div class="sniper-scope" id="sniperScope">
+        <div class="scope-overlay"></div>
     </div>
 
     <div class="damage-flash" id="damageFlash"></div>
@@ -819,6 +921,60 @@
                     <span id="knockback-cost">3</span> Points
                 </button>
             </div>
+            <div class="upgrade-card" id="card-slot2">
+                <div class="upgrade-icon">🎒</div>
+                <div class="upgrade-name">Weapon Slot 2</div>
+                <div class="upgrade-level"><span id="slot2-status">Locked</span></div>
+                <div class="upgrade-desc">Carry a second weapon</div>
+                <button class="upgrade-btn" onclick="buyWeaponSlot()">
+                    <span id="slot2-cost">15</span> Points
+                </button>
+            </div>
+            <div class="upgrade-card" id="card-knife">
+                <div class="upgrade-icon">🔪</div>
+                <div class="upgrade-name">Knife</div>
+                <div class="upgrade-level"><span id="knife-status">Not Owned</span></div>
+                <div class="upgrade-desc">Fast attacks, short range</div>
+                <button class="upgrade-btn" onclick="buyWeapon('knife')">
+                    <span id="knife-cost">8</span> Points
+                </button>
+            </div>
+            <div class="upgrade-card" id="card-bat">
+                <div class="upgrade-icon">🏏</div>
+                <div class="upgrade-name">Baseball Bat</div>
+                <div class="upgrade-level"><span id="bat-status">Not Owned</span></div>
+                <div class="upgrade-desc">Slow but powerful</div>
+                <button class="upgrade-btn" onclick="buyWeapon('bat')">
+                    <span id="bat-cost">10</span> Points
+                </button>
+            </div>
+            <div class="upgrade-card" id="card-handgun">
+                <div class="upgrade-icon">🔫</div>
+                <div class="upgrade-name">Handgun</div>
+                <div class="upgrade-level"><span id="handgun-status">Not Owned</span></div>
+                <div class="upgrade-desc">Ranged, 12 shots</div>
+                <button class="upgrade-btn" onclick="buyWeapon('handgun')">
+                    <span id="handgun-cost">12</span> Points
+                </button>
+            </div>
+            <div class="upgrade-card" id="card-sniper">
+                <div class="upgrade-icon">🎯</div>
+                <div class="upgrade-name">Sniper</div>
+                <div class="upgrade-level"><span id="sniper-status">Not Owned</span></div>
+                <div class="upgrade-desc">Press C to scope, pierces</div>
+                <button class="upgrade-btn" onclick="buyWeapon('sniper')">
+                    <span id="sniper-cost">20</span> Points
+                </button>
+            </div>
+            <div class="upgrade-card" id="card-satchel">
+                <div class="upgrade-icon">💣</div>
+                <div class="upgrade-name">Satchel Charge</div>
+                <div class="upgrade-level"><span id="satchel-status">Not Owned</span></div>
+                <div class="upgrade-desc">Place & detonate, 3 charges</div>
+                <button class="upgrade-btn" onclick="buyWeapon('satchel')">
+                    <span id="satchel-cost">18</span> Points
+                </button>
+            </div>
         </div>
         <button class="shop-close-btn" onclick="closeShop()">Continue Fighting →</button>
     </div>
@@ -878,6 +1034,54 @@
         let canDash = true;
         let isDashing = false;
         let stamina = 100;
+
+        // Jump system
+        let isJumping = false;
+        let jumpVelocity = 0;
+        let playerY = 1.6;
+        const JUMP_FORCE = 0.25;
+        const GRAVITY = 0.012;
+        const GROUND_Y = 1.6;
+
+        // Weapon system
+        const WEAPONS = {
+            sword: {
+                name: 'Sword', icon: '⚔️',
+                damage: 25, range: 3, cooldown: 400,
+                type: 'melee', desc: 'Balanced melee weapon'
+            },
+            knife: {
+                name: 'Knife', icon: '🔪',
+                damage: 15, range: 2, cooldown: 200,
+                type: 'melee', desc: 'Fast but short range'
+            },
+            bat: {
+                name: 'Baseball Bat', icon: '🏏',
+                damage: 35, range: 3.5, cooldown: 600,
+                type: 'melee', desc: 'Slow but powerful'
+            },
+            handgun: {
+                name: 'Handgun', icon: '🔫',
+                damage: 12, range: 50, cooldown: 300,
+                type: 'ranged', ammo: 12, maxAmmo: 12, desc: 'Ranged, low damage'
+            },
+            sniper: {
+                name: 'Sniper', icon: '🎯',
+                damage: 80, range: 100, cooldown: 1500,
+                type: 'ranged', ammo: 5, maxAmmo: 5, pierce: true, desc: 'Pierces enemies'
+            },
+            satchel: {
+                name: 'Satchel', icon: '💣',
+                damage: 100, range: 8, cooldown: 2000,
+                type: 'explosive', charges: 3, maxCharges: 3, desc: 'Place and detonate'
+            }
+        };
+
+        let weaponSlots = ['sword', null]; // Start with sword, second slot locked
+        let currentSlot = 0;
+        let unlockedSlots = 1;
+        let sniperMode = false;
+        let placedSatchels = [];
 
         let health = CONFIG.playerMaxHealth;
         let kills = 0;
@@ -1280,53 +1484,85 @@
         function attack() {
             if (!canAttack || isAttacking || !gameRunning || isPaused) return;
 
+            const weaponId = getCurrentWeaponId();
+            const weapon = getCurrentWeapon();
+
+            if (!weapon) return;
+
+            // Handle satchel specially
+            if (weaponId === 'satchel') {
+                if (placedSatchels.length > 0) {
+                    detonateSatchels();
+                } else if (weapon.charges > 0) {
+                    placeSatchel();
+                }
+                return;
+            }
+
+            // Check ammo for ranged weapons
+            if (weapon.ammo !== undefined && weapon.ammo <= 0) {
+                playSound('spawn'); // Click sound
+                return;
+            }
+
             isAttacking = true;
             canAttack = false;
 
-            // Sword swing animation
-            const startRot = playerSword.rotation.z;
-            const swingDuration = 200;
-            const startTime = Date.now();
+            // Use ammo
+            if (weapon.ammo !== undefined) {
+                weapon.ammo--;
+                updateWeaponHUD();
+            }
+
+            // Sword swing animation for melee
+            if (weapon.type === 'melee') {
+                const startRot = playerSword.rotation.z;
+                const swingDuration = weapon.cooldown / 2;
+                const startTime = Date.now();
+
+                function animateSwing() {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / swingDuration, 1);
+
+                    const swingAngle = Math.sin(progress * Math.PI) * 1.5;
+                    playerSword.rotation.z = startRot - swingAngle;
+                    playerSword.rotation.x = Math.sin(progress * Math.PI) * 0.5;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animateSwing);
+                    } else {
+                        playerSword.rotation.z = startRot;
+                        playerSword.rotation.x = 0;
+                        isAttacking = false;
+                    }
+                }
+                animateSwing();
+                playSound('swing');
+
+                // Check for melee hits
+                setTimeout(() => {
+                    checkMeleeHits(weapon);
+                }, 50);
+            } else if (weapon.type === 'ranged') {
+                // Ranged attack (handgun or sniper)
+                playSound('hit');
+                shootRanged(weapon, weaponId === 'sniper');
+                isAttacking = false;
+            }
 
             // Show attack indicator
             const indicator = document.getElementById('attackIndicator');
+            indicator.textContent = weapon.type === 'ranged' ? '💥 BANG!' : '⚔️ SLASH!';
             indicator.classList.add('show');
             setTimeout(() => indicator.classList.remove('show'), 300);
 
-            playSound('swing');
-
-            function animateSwing() {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / swingDuration, 1);
-
-                // Swing arc
-                const swingAngle = Math.sin(progress * Math.PI) * 1.5;
-                playerSword.rotation.z = startRot - swingAngle;
-                playerSword.rotation.x = Math.sin(progress * Math.PI) * 0.5;
-
-                if (progress < 1) {
-                    requestAnimationFrame(animateSwing);
-                } else {
-                    playerSword.rotation.z = startRot;
-                    playerSword.rotation.x = 0;
-                    isAttacking = false;
-                }
-            }
-
-            animateSwing();
-
-            // Check for hits
-            setTimeout(() => {
-                checkHits();
-            }, 100);
-
-            // Attack cooldown
+            // Attack cooldown based on weapon
             setTimeout(() => {
                 canAttack = true;
-            }, CONFIG.attackCooldown);
+            }, weapon.cooldown);
         }
 
-        function checkHits() {
+        function checkMeleeHits(weapon) {
             const playerPos = new THREE.Vector3();
             camera.getWorldPosition(playerPos);
 
@@ -1334,6 +1570,9 @@
             forward.applyQuaternion(camera.quaternion);
 
             let hitSomething = false;
+
+            // Check if at jump apex for guaranteed crit
+            const apexCrit = isAtJumpApex();
 
             enemies.forEach((enemy, index) => {
                 const toEnemy = new THREE.Vector3();
@@ -1346,9 +1585,9 @@
                 const dot = forward.dot(toEnemy);
                 const angle = Math.acos(dot);
 
-                // Hit detection: within range and within attack cone
-                if (distance < CONFIG.attackRange && angle < Math.PI / 3) {
-                    hitEnemy(enemy, index);
+                // Hit detection: within weapon range and within attack cone
+                if (distance < weapon.range && angle < Math.PI / 3) {
+                    hitEnemy(enemy, index, weapon.damage, apexCrit);
                     hitSomething = true;
                 }
             });
@@ -1359,10 +1598,96 @@
             }
         }
 
-        function hitEnemy(enemy, index) {
+        function shootRanged(weapon, pierce) {
+            const playerPos = new THREE.Vector3();
+            camera.getWorldPosition(playerPos);
+
+            const forward = new THREE.Vector3(0, 0, -1);
+            forward.applyQuaternion(camera.quaternion);
+
+            // Create bullet trail effect
+            createBulletTrail(playerPos, forward.clone().multiplyScalar(50).add(playerPos));
+
+            // Sort enemies by distance for pierce
+            const sortedEnemies = enemies
+                .map((enemy, index) => ({
+                    enemy,
+                    index,
+                    distance: enemy.position.distanceTo(playerPos)
+                }))
+                .sort((a, b) => a.distance - b.distance);
+
+            let hitCount = 0;
+            const hitIndices = [];
+
+            sortedEnemies.forEach(({ enemy, index }) => {
+                if (!pierce && hitCount > 0) return;
+
+                const toEnemy = new THREE.Vector3();
+                toEnemy.subVectors(enemy.position, playerPos);
+                const distance = toEnemy.length();
+                toEnemy.normalize();
+
+                const dot = forward.dot(toEnemy);
+                const angle = Math.acos(dot);
+
+                // Tighter angle for ranged weapons (more accurate)
+                const maxAngle = sniperMode ? 0.05 : 0.15;
+
+                if (distance < weapon.range && angle < maxAngle) {
+                    hitIndices.push({ enemy, index, damage: weapon.damage });
+                    hitCount++;
+                }
+            });
+
+            // Apply hits (reverse order to avoid index issues)
+            hitIndices.reverse().forEach(({ enemy, index, damage }) => {
+                hitEnemy(enemy, index, damage, false);
+                updateCombo();
+            });
+
+            if (hitCount > 0) {
+                playSound('kill');
+                if (hitCount > 1) {
+                    showMultiKill(hitCount);
+                }
+            }
+
+            screenShake(0.05, 50);
+        }
+
+        function createBulletTrail(start, end) {
+            const points = [start, end];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({
+                color: 0xffff00,
+                transparent: true,
+                opacity: 0.8
+            });
+            const line = new THREE.Line(geometry, material);
+            scene.add(line);
+
+            // Fade out and remove
+            setTimeout(() => scene.remove(line), 100);
+        }
+
+        function showMultiKill(count) {
+            const indicator = document.getElementById('attackIndicator');
+            indicator.textContent = `🎯 ${count}x PIERCE!`;
+            indicator.style.color = '#ff4444';
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+                indicator.style.color = '#fff';
+            }, 500);
+        }
+
+
+        function hitEnemy(enemy, index, weaponDamage = null, forceCrit = false) {
             // Calculate damage with crit
-            let damage = CONFIG.attackDamage;
-            let isCrit = Math.random() < critChance;
+            let baseDamage = weaponDamage || CONFIG.attackDamage;
+            let damage = baseDamage;
+            let isCrit = forceCrit || Math.random() < critChance;
             if (isCrit) {
                 damage *= 2;
                 // Show crit indicator
@@ -1582,18 +1907,39 @@
             document.addEventListener('keydown', (e) => {
                 keys[e.code] = true;
 
-                if (e.code === 'Space' && canDash && !isDashing && gameRunning && !isPaused) {
-                    dash();
+                if (!gameRunning || isPaused) return;
+
+                // Jump with Space
+                if (e.code === 'Space' && !isJumping) {
+                    jump();
                 }
 
                 // Pause with P key
-                if (e.code === 'KeyP' && gameRunning && !isPaused) {
+                if (e.code === 'KeyP') {
                     togglePause();
                 }
 
                 // Open shop with H key
-                if (e.code === 'KeyH' && gameRunning && !isPaused) {
+                if (e.code === 'KeyH') {
                     openShop();
+                }
+
+                // Weapon switching with 1, 2
+                if (e.code === 'Digit1') {
+                    switchWeapon(0);
+                }
+                if (e.code === 'Digit2' && unlockedSlots >= 2) {
+                    switchWeapon(1);
+                }
+
+                // Sniper scope with C
+                if (e.code === 'KeyC') {
+                    toggleSniperMode();
+                }
+
+                // Reload with R
+                if (e.code === 'KeyR') {
+                    reloadWeapon();
                 }
             });
 
@@ -1726,6 +2072,228 @@
             }, CONFIG.dashCooldown);
         }
 
+        // ==================== JUMP SYSTEM ====================
+        function jump() {
+            if (isJumping) return;
+            isJumping = true;
+            jumpVelocity = JUMP_FORCE;
+            playSound('dash');
+        }
+
+        function updateJump() {
+            if (!isJumping) return;
+
+            jumpVelocity -= GRAVITY;
+            playerY += jumpVelocity;
+
+            if (playerY <= GROUND_Y) {
+                playerY = GROUND_Y;
+                isJumping = false;
+                jumpVelocity = 0;
+            }
+
+            camera.position.y = playerY;
+        }
+
+        function isAtJumpApex() {
+            // At apex when velocity is near zero and we're above ground
+            return isJumping && Math.abs(jumpVelocity) < 0.05 && playerY > GROUND_Y + 0.3;
+        }
+
+        // ==================== WEAPON SYSTEM ====================
+        let ownedWeapons = ['sword']; // Start with sword
+
+        function getCurrentWeapon() {
+            const weaponId = weaponSlots[currentSlot];
+            return weaponId ? WEAPONS[weaponId] : null;
+        }
+
+        function getCurrentWeaponId() {
+            return weaponSlots[currentSlot];
+        }
+
+        function switchWeapon(slot) {
+            if (slot >= unlockedSlots || !weaponSlots[slot]) return;
+            if (sniperMode) toggleSniperMode(); // Exit sniper mode when switching
+
+            currentSlot = slot;
+            updateWeaponHUD();
+            playSound('swing');
+        }
+
+        function toggleSniperMode() {
+            const weapon = getCurrentWeapon();
+            if (!weapon || getCurrentWeaponId() !== 'sniper') return;
+
+            sniperMode = !sniperMode;
+            document.getElementById('sniperScope').classList.toggle('active', sniperMode);
+            document.getElementById('crosshair').style.display = sniperMode ? 'none' : 'block';
+
+            // Zoom effect
+            if (sniperMode) {
+                camera.fov = 30;
+            } else {
+                camera.fov = 75;
+            }
+            camera.updateProjectionMatrix();
+        }
+
+        function reloadWeapon() {
+            const weaponId = getCurrentWeaponId();
+            const weapon = WEAPONS[weaponId];
+            if (!weapon || !weapon.ammo) return;
+
+            weapon.ammo = weapon.maxAmmo;
+            updateWeaponHUD();
+            playSound('spawn');
+        }
+
+        function updateWeaponHUD() {
+            for (let i = 0; i < 2; i++) {
+                const slot = document.getElementById(`slot${i}`);
+                const icon = slot.querySelector('.icon');
+                const ammo = document.getElementById(`ammo${i}`);
+
+                slot.classList.toggle('active', i === currentSlot);
+
+                if (i >= unlockedSlots) {
+                    slot.classList.add('locked');
+                    icon.textContent = '🔒';
+                    ammo.textContent = '';
+                } else if (weaponSlots[i]) {
+                    slot.classList.remove('locked');
+                    const w = WEAPONS[weaponSlots[i]];
+                    icon.textContent = w.icon;
+                    if (w.ammo !== undefined) {
+                        ammo.textContent = `${w.ammo}/${w.maxAmmo}`;
+                    } else if (w.charges !== undefined) {
+                        ammo.textContent = `${w.charges}`;
+                    } else {
+                        ammo.textContent = '';
+                    }
+                } else {
+                    slot.classList.remove('locked');
+                    icon.textContent = '➕';
+                    ammo.textContent = '';
+                }
+            }
+        }
+
+        function buyWeaponSlot() {
+            if (unlockedSlots >= 2 || upgradePoints < 15) return;
+            upgradePoints -= 15;
+            unlockedSlots = 2;
+            updateWeaponHUD();
+            updateShopUI();
+            saveUpgrades();
+            playSound('levelup');
+        }
+
+        function buyWeapon(weaponId) {
+            const costs = { knife: 8, bat: 10, handgun: 12, sniper: 20, satchel: 18 };
+            const cost = costs[weaponId];
+
+            if (ownedWeapons.includes(weaponId) || upgradePoints < cost) return;
+
+            upgradePoints -= cost;
+            ownedWeapons.push(weaponId);
+
+            // Auto-equip to empty slot
+            for (let i = 0; i < unlockedSlots; i++) {
+                if (!weaponSlots[i]) {
+                    weaponSlots[i] = weaponId;
+                    break;
+                }
+            }
+
+            updateWeaponHUD();
+            updateShopUI();
+            saveUpgrades();
+            playSound('levelup');
+        }
+
+        function equipWeapon(weaponId, slot) {
+            if (!ownedWeapons.includes(weaponId) || slot >= unlockedSlots) return;
+            weaponSlots[slot] = weaponId;
+            updateWeaponHUD();
+        }
+
+        // ==================== SATCHEL SYSTEM ====================
+        function placeSatchel() {
+            const weapon = WEAPONS.satchel;
+            if (weapon.charges <= 0) return;
+
+            const pos = camera.position.clone();
+            const forward = new THREE.Vector3(0, 0, -1);
+            forward.applyQuaternion(camera.quaternion);
+            forward.y = 0;
+            forward.normalize();
+            pos.add(forward.multiplyScalar(2));
+            pos.y = 0.3;
+
+            // Create satchel mesh
+            const geo = new THREE.BoxGeometry(0.4, 0.2, 0.3);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x444444 });
+            const satchel = new THREE.Mesh(geo, mat);
+            satchel.position.copy(pos);
+            scene.add(satchel);
+
+            placedSatchels.push(satchel);
+            weapon.charges--;
+            updateWeaponHUD();
+            playSound('spawn');
+        }
+
+        function detonateSatchels() {
+            if (placedSatchels.length === 0) return;
+
+            placedSatchels.forEach(satchel => {
+                // Explosion effect
+                createExplosionEffect(satchel.position);
+
+                // Damage nearby enemies
+                enemies.forEach((enemy, index) => {
+                    const dist = enemy.position.distanceTo(satchel.position);
+                    if (dist < WEAPONS.satchel.range) {
+                        const damage = WEAPONS.satchel.damage * (1 - dist / WEAPONS.satchel.range);
+                        enemy.userData.health -= damage;
+                        if (enemy.userData.health <= 0) {
+                            killEnemy(enemy, index);
+                        }
+                    }
+                });
+
+                scene.remove(satchel);
+            });
+
+            placedSatchels = [];
+            playSound('kill');
+            screenShake(0.3, 200);
+        }
+
+        function createExplosionEffect(position) {
+            const particleCount = 40;
+            for (let i = 0; i < particleCount; i++) {
+                const geo = new THREE.SphereGeometry(0.15, 4, 4);
+                const mat = new THREE.MeshBasicMaterial({
+                    color: Math.random() > 0.5 ? 0xff4400 : 0xffaa00,
+                    transparent: true
+                });
+                const particle = new THREE.Mesh(geo, mat);
+                particle.position.copy(position);
+                particle.userData = {
+                    velocity: new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.5,
+                        Math.random() * 0.4,
+                        (Math.random() - 0.5) * 0.5
+                    ),
+                    life: 1.5
+                };
+                scene.add(particle);
+                particles.push(particle);
+            }
+        }
+
         // ==================== SOUND SYSTEM ====================
         function initAudio() {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1831,6 +2399,7 @@
 
             if (gameRunning && !isPaused) {
                 updateMovement();
+                updateJump();
                 updateEnemies();
                 spawnEnemies();
                 updateParticles(delta);
@@ -1848,6 +2417,7 @@
         function startGame() {
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('hud').style.display = 'flex';
+            document.getElementById('weaponHud').style.display = 'flex';
             document.getElementById('gameCanvas').requestPointerLock();
 
             initAudio();
@@ -1863,7 +2433,26 @@
             particles.forEach(p => scene.remove(p));
             particles = [];
 
+            // Reset placed satchels
+            placedSatchels.forEach(s => scene.remove(s));
+            placedSatchels = [];
+
+            // Reset ranged weapon ammo
+            Object.keys(WEAPONS).forEach(w => {
+                if (WEAPONS[w].maxAmmo) WEAPONS[w].ammo = WEAPONS[w].maxAmmo;
+                if (WEAPONS[w].maxCharges) WEAPONS[w].charges = WEAPONS[w].maxCharges;
+            });
+
+            // Reset jump state
+            isJumping = false;
+            jumpVelocity = 0;
+            playerY = GROUND_Y;
+
+            // Reset sniper mode
+            if (sniperMode) toggleSniperMode();
+
             updateHealthBar();
+            updateWeaponHUD();
             document.getElementById('killCount').textContent = '0';
             document.getElementById('scoreCount').textContent = '0';
             document.getElementById('waveCount').textContent = '1';
@@ -2101,6 +2690,7 @@
             document.getElementById('upgradePoints').textContent = upgradePoints;
             document.getElementById('hudPoints').textContent = upgradePoints;
 
+            // Update stat upgrades
             Object.keys(upgrades).forEach(type => {
                 const up = upgrades[type];
                 const cost = getUpgradeCost(type);
@@ -2121,6 +2711,35 @@
                 } else {
                     if (costEl) costEl.textContent = cost;
                     if (btn) btn.disabled = upgradePoints < cost;
+                    if (card) card.classList.remove('maxed');
+                }
+            });
+
+            // Update weapon slot 2
+            const slot2Status = document.getElementById('slot2-status');
+            const slot2Btn = document.querySelector('#card-slot2 .upgrade-btn');
+            const slot2Card = document.getElementById('card-slot2');
+            if (unlockedSlots >= 2) {
+                if (slot2Status) slot2Status.textContent = 'Unlocked';
+                if (slot2Btn) { slot2Btn.textContent = 'OWNED'; slot2Btn.disabled = true; }
+                if (slot2Card) slot2Card.classList.add('maxed');
+            } else {
+                if (slot2Btn) slot2Btn.disabled = upgradePoints < 15;
+            }
+
+            // Update weapons
+            const weaponCosts = { knife: 8, bat: 10, handgun: 12, sniper: 20, satchel: 18 };
+            ['knife', 'bat', 'handgun', 'sniper', 'satchel'].forEach(w => {
+                const status = document.getElementById(`${w}-status`);
+                const btn = document.querySelector(`#card-${w} .upgrade-btn`);
+                const card = document.getElementById(`card-${w}`);
+
+                if (ownedWeapons.includes(w)) {
+                    if (status) status.textContent = 'Owned';
+                    if (btn) { btn.textContent = 'OWNED'; btn.disabled = true; }
+                    if (card) card.classList.add('maxed');
+                } else {
+                    if (btn) btn.disabled = upgradePoints < weaponCosts[w];
                     if (card) card.classList.remove('maxed');
                 }
             });
@@ -2168,7 +2787,10 @@
         function saveUpgrades() {
             const data = {
                 upgradePoints: upgradePoints,
-                upgrades: upgrades
+                upgrades: upgrades,
+                ownedWeapons: ownedWeapons,
+                weaponSlots: weaponSlots,
+                unlockedSlots: unlockedSlots
             };
             localStorage.setItem('swordArenaUpgrades', JSON.stringify(data));
         }
@@ -2182,10 +2804,13 @@
                     if (data.upgrades) {
                         Object.keys(data.upgrades).forEach(key => {
                             if (upgrades[key]) {
-                                upgrades[key].level = data.upgrades[key].level || 1;
+                                upgrades[key].level = data.upgrades[key].level || (key === 'crit' || key === 'lifesteal' ? 0 : 1);
                             }
                         });
                     }
+                    if (data.ownedWeapons) ownedWeapons = data.ownedWeapons;
+                    if (data.weaponSlots) weaponSlots = data.weaponSlots;
+                    if (data.unlockedSlots) unlockedSlots = data.unlockedSlots;
                     applyUpgrades();
                     updateShopUI();
                 } catch (e) {}
