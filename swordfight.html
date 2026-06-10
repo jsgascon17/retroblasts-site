@@ -267,6 +267,117 @@
             100% { opacity: 0; }
         }
 
+        /* Dragon Cutscene */
+        .cutscene-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 500;
+            pointer-events: none;
+            display: none;
+        }
+
+        .cutscene-overlay.active {
+            display: block;
+        }
+
+        .cinematic-bar {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background: #000;
+            transition: height 0.8s ease;
+        }
+
+        .cinematic-bar.top { top: 0; }
+        .cinematic-bar.bottom { bottom: 0; }
+
+        .cutscene-overlay.active .cinematic-bar {
+            height: 12%;
+        }
+
+        .cutscene-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .cutscene-subtitle {
+            bottom: 15%;
+            font-size: 1.2rem;
+            color: #666;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+        }
+
+        .cutscene-title {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            font-weight: bold;
+            color: #9932CC;
+            text-shadow: 0 0 50px #9932CC, 0 0 100px #4B0082, 0 0 150px #9932CC;
+            letter-spacing: 10px;
+            white-space: nowrap;
+        }
+
+        .cutscene-title.show {
+            animation: titleReveal 1.5s ease forwards;
+        }
+
+        @keyframes titleReveal {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(3); letter-spacing: 80px; filter: blur(20px); }
+            50% { opacity: 1; filter: blur(0); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); letter-spacing: 10px; }
+        }
+
+        .cutscene-wave {
+            top: 14%;
+            font-size: 1.3rem;
+            color: #ff4444;
+            letter-spacing: 5px;
+            text-shadow: 0 0 20px #ff4444;
+        }
+
+        .cutscene-hp {
+            bottom: 14%;
+            font-size: 1.1rem;
+            color: #9932CC;
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px #9932CC;
+        }
+
+        .cutscene-vignette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 30%, rgba(75,0,130,0.4) 100%);
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .cutscene-overlay.active .cutscene-vignette {
+            opacity: 1;
+        }
+
+        .cutscene-flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #9932CC;
+            opacity: 0;
+        }
+
         /* Kill Feed */
         .kill-feed {
             position: fixed;
@@ -1074,6 +1185,18 @@
     </div>
 
     <div class="damage-flash" id="damageFlash"></div>
+
+    <!-- Dragon Cutscene Overlay -->
+    <div class="cutscene-overlay" id="cutsceneOverlay">
+        <div class="cutscene-vignette"></div>
+        <div class="cinematic-bar top"></div>
+        <div class="cinematic-bar bottom"></div>
+        <div class="cutscene-text cutscene-wave" id="cutsceneWave">WAVE 25</div>
+        <div class="cutscene-text cutscene-title" id="cutsceneTitle">THE ENDER DRAGON</div>
+        <div class="cutscene-text cutscene-subtitle" id="cutsceneSubtitle">DESTROY THE CRYSTALS</div>
+        <div class="cutscene-text cutscene-hp" id="cutsceneHp">25,000 HP</div>
+        <div class="cutscene-flash" id="cutsceneFlash"></div>
+    </div>
 
     <!-- Boss Health Bar -->
     <div class="boss-health-container" id="bossHealthContainer">
@@ -1962,35 +2085,344 @@
         }
 
         // ==================== DRAGON BOSS SYSTEM (WAVE 25) ====================
-        function startDragonWave() {
-            isDragonWave = true;
+        // Cutscene state
+        let inCutscene = false;
+        let cutsceneCameraOriginal = { x: 0, y: 0, z: 0, rotX: 0, rotY: 0 };
 
-            // Kill all existing enemies
-            enemies.forEach(e => {
-                createDeathEffect(e.position);
-                scene.remove(e);
+        function startDragonWave() {
+            // Start the epic cutscene instead of immediately starting dragon wave
+            playDragonCutscene();
+        }
+
+        function playDragonCutscene() {
+            inCutscene = true;
+            document.exitPointerLock();
+
+            // Save camera position
+            cutsceneCameraOriginal = {
+                x: camera.position.x,
+                y: camera.position.y,
+                z: camera.position.z,
+                rotX: camera.rotation.x,
+                rotY: camera.rotation.y
+            };
+
+            // Kill all existing enemies with dramatic effect
+            enemies.forEach((e, i) => {
+                setTimeout(() => {
+                    createDeathEffect(e.position);
+                    scene.remove(e);
+                }, i * 50);
             });
             enemies = [];
             currentBoss = null;
 
-            // Show ladders
-            pillarLadders.forEach(ladder => {
-                ladder.visible = true;
+            // Show cutscene overlay
+            const overlay = document.getElementById('cutsceneOverlay');
+            overlay.classList.add('active');
+
+            // Hide HUD during cutscene
+            document.getElementById('hud').style.opacity = '0';
+            document.getElementById('crosshair').style.opacity = '0';
+            document.getElementById('weaponHud').style.opacity = '0';
+
+            // Timeline of cutscene events
+            const timeline = [
+                { time: 0, action: 'startCameraPan' },
+                { time: 500, action: 'showWaveText' },
+                { time: 1500, action: 'spawnCrystals' },
+                { time: 2500, action: 'showTitle' },
+                { time: 4000, action: 'showSubtitle' },
+                { time: 4500, action: 'showHp' },
+                { time: 5500, action: 'spawnDragon' },
+                { time: 7000, action: 'cameraLookAtDragon' },
+                { time: 8500, action: 'flash' },
+                { time: 9000, action: 'endCutscene' }
+            ];
+
+            timeline.forEach(({ time, action }) => {
+                setTimeout(() => executeCutsceneAction(action), time);
             });
 
-            // Spawn crystals on pillars
-            spawnDragonCrystals();
+            // Animate camera during cutscene
+            animateCutsceneCamera();
+        }
 
-            // Spawn the dragon
-            setTimeout(() => {
-                createDragon();
-            }, 2000);
+        let cutscenePhase = 0;
+        let cutsceneCameraAngle = 0;
 
-            // Epic warning
-            showDragonWarning();
+        function animateCutsceneCamera() {
+            if (!inCutscene) return;
+
+            cutsceneCameraAngle += 0.008;
+
+            if (cutscenePhase === 0) {
+                // Pan around arena looking at center
+                const radius = 25;
+                camera.position.x = Math.cos(cutsceneCameraAngle) * radius;
+                camera.position.z = Math.sin(cutsceneCameraAngle) * radius;
+                camera.position.y = 8;
+                camera.lookAt(0, 10, 0);
+            } else if (cutscenePhase === 1 && dragon) {
+                // Look at dragon
+                const radius = 30;
+                camera.position.x = Math.cos(cutsceneCameraAngle * 0.5) * radius;
+                camera.position.z = Math.sin(cutsceneCameraAngle * 0.5) * radius;
+                camera.position.y = 15;
+                camera.lookAt(dragon.position);
+            }
+
+            requestAnimationFrame(animateCutsceneCamera);
+        }
+
+        function executeCutsceneAction(action) {
+            const overlay = document.getElementById('cutsceneOverlay');
+
+            switch (action) {
+                case 'startCameraPan':
+                    cutscenePhase = 0;
+                    cutsceneCameraAngle = 0;
+                    break;
+
+                case 'showWaveText':
+                    document.getElementById('cutsceneWave').style.opacity = '1';
+                    break;
+
+                case 'spawnCrystals':
+                    // Show ladders
+                    pillarLadders.forEach(ladder => {
+                        ladder.visible = true;
+                    });
+                    // Spawn crystals with dramatic timing
+                    pillarPositions.forEach((pos, i) => {
+                        setTimeout(() => {
+                            spawnSingleCrystal(pos, i);
+                            screenShake(0.1, 100);
+                        }, i * 200);
+                    });
+                    break;
+
+                case 'showTitle':
+                    const title = document.getElementById('cutsceneTitle');
+                    title.style.opacity = '1';
+                    title.classList.add('show');
+                    screenShake(0.3, 300);
+                    break;
+
+                case 'showSubtitle':
+                    document.getElementById('cutsceneSubtitle').style.opacity = '1';
+                    break;
+
+                case 'showHp':
+                    document.getElementById('cutsceneHp').style.opacity = '1';
+                    break;
+
+                case 'spawnDragon':
+                    createDragonCutscene();
+                    cutscenePhase = 1;
+                    break;
+
+                case 'cameraLookAtDragon':
+                    // Camera is already following dragon in phase 1
+                    break;
+
+                case 'flash':
+                    const flash = document.getElementById('cutsceneFlash');
+                    flash.style.opacity = '0.8';
+                    setTimeout(() => flash.style.opacity = '0', 200);
+                    break;
+
+                case 'endCutscene':
+                    endDragonCutscene();
+                    break;
+            }
+        }
+
+        function spawnSingleCrystal(pos, index) {
+            const crystal = new THREE.Group();
+
+            const crystalGeo = new THREE.OctahedronGeometry(1, 0);
+            const crystalMat = new THREE.MeshStandardMaterial({
+                color: 0xff00ff,
+                emissive: 0x9900ff,
+                emissiveIntensity: 0.8,
+                transparent: true,
+                opacity: 0.9
+            });
+            const crystalMesh = new THREE.Mesh(crystalGeo, crystalMat);
+            crystal.add(crystalMesh);
+
+            const frameGeo = new THREE.BoxGeometry(2.5, 2.5, 2.5);
+            const frameMat = new THREE.MeshStandardMaterial({
+                color: 0x4B0082,
+                wireframe: true
+            });
+            const frame = new THREE.Mesh(frameGeo, frameMat);
+            crystal.add(frame);
+
+            const baseGeo = new THREE.BoxGeometry(1.5, 0.5, 1.5);
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            base.position.y = -1.5;
+            crystal.add(base);
+
+            const light = new THREE.PointLight(0xff00ff, 2, 20);
+            crystal.add(light);
+
+            crystal.position.set(pos.x, 14, pos.z);
+            crystal.userData = {
+                type: 'crystal',
+                health: 100,
+                maxHealth: 100,
+                pillarIndex: index,
+                isDestroyed: false
+            };
+
+            scene.add(crystal);
+            dragonCrystals.push(crystal);
+
+            playSound('spawn');
+        }
+
+        function createDragonCutscene() {
+            dragon = new THREE.Group();
+
+            // Same dragon model but spawns high up
+            const bodyGeo = new THREE.CylinderGeometry(2, 3, 8, 8);
+            const bodyMat = new THREE.MeshStandardMaterial({
+                color: 0x1a1a2e,
+                roughness: 0.4,
+                emissive: 0x110011,
+                emissiveIntensity: 0.3
+            });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.rotation.x = Math.PI / 2;
+            dragon.add(body);
+
+            const headGeo = new THREE.ConeGeometry(1.5, 4, 6);
+            const headMat = new THREE.MeshStandardMaterial({
+                color: 0x2a2a4e,
+                emissive: 0x220022,
+                emissiveIntensity: 0.3
+            });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.rotation.x = -Math.PI / 2;
+            head.position.z = 6;
+            dragon.add(head);
+
+            const eyeGeo = new THREE.SphereGeometry(0.4, 8, 8);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff00ff });
+            const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+            leftEye.position.set(-0.8, 0.5, 5);
+            dragon.add(leftEye);
+            const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+            rightEye.position.set(0.8, 0.5, 5);
+            dragon.add(rightEye);
+
+            const wingGeo = new THREE.PlaneGeometry(10, 6);
+            const wingMat = new THREE.MeshStandardMaterial({
+                color: 0x2a2a4e,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.8
+            });
+            const leftWing = new THREE.Mesh(wingGeo, wingMat);
+            leftWing.position.set(-6, 1, 0);
+            leftWing.rotation.z = 0.3;
+            dragon.add(leftWing);
+            const rightWing = new THREE.Mesh(wingGeo, wingMat);
+            rightWing.position.set(6, 1, 0);
+            rightWing.rotation.z = -0.3;
+            dragon.add(rightWing);
+
+            const tailGeo = new THREE.ConeGeometry(1, 6, 6);
+            const tail = new THREE.Mesh(tailGeo, bodyMat);
+            tail.rotation.x = Math.PI / 2;
+            tail.position.z = -7;
+            dragon.add(tail);
+
+            // Start very high up (descending entrance)
+            dragon.position.set(0, 80, 0);
+
+            const dragonHealth = 25000;
+            dragon.userData = {
+                health: dragonHealth,
+                maxHealth: dragonHealth,
+                type: 'dragon',
+                damage: 50,
+                lastAttack: 0,
+                flyAngle: 0,
+                flyRadius: 20,
+                flyHeight: 25,
+                targetY: 25,
+                diveBombing: false,
+                lastHeal: 0
+            };
+
+            scene.add(dragon);
+
+            // Animate dragon descending
+            animateDragonDescent();
+        }
+
+        function animateDragonDescent() {
+            if (!dragon) return;
+
+            if (dragon.position.y > 25) {
+                dragon.position.y -= 0.8;
+                dragon.rotation.y += 0.05;
+
+                // Wing flap
+                const time = Date.now() * 0.001;
+                if (dragon.children[4]) dragon.children[4].rotation.z = 0.3 + Math.sin(time * 10) * 0.3;
+                if (dragon.children[5]) dragon.children[5].rotation.z = -0.3 - Math.sin(time * 10) * 0.3;
+
+                requestAnimationFrame(animateDragonDescent);
+            }
+        }
+
+        function endDragonCutscene() {
+            inCutscene = false;
+            isDragonWave = true;
+
+            // Hide cutscene overlay
+            const overlay = document.getElementById('cutsceneOverlay');
+            overlay.classList.remove('active');
+
+            // Reset text opacities for next time
+            document.getElementById('cutsceneWave').style.opacity = '0';
+            document.getElementById('cutsceneTitle').style.opacity = '0';
+            document.getElementById('cutsceneTitle').classList.remove('show');
+            document.getElementById('cutsceneSubtitle').style.opacity = '0';
+            document.getElementById('cutsceneHp').style.opacity = '0';
+
+            // Show HUD
+            document.getElementById('hud').style.opacity = '1';
+            document.getElementById('crosshair').style.opacity = '1';
+            document.getElementById('weaponHud').style.opacity = '1';
+
+            // Reset camera to player position
+            camera.position.set(0, 1.6, 0);
+            playerY = 1.6;
+            camera.rotation.set(0, 0, 0);
+
+            // Request pointer lock to resume gameplay
+            document.getElementById('gameCanvas').requestPointerLock();
+
+            // Update boss health bar
+            updateBossHealthBar();
+
+            playSound('levelup');
+        }
+
+        // Remove the old spawnDragonCrystals since we spawn them individually now
+        function spawnDragonCrystals() {
+            // This is now handled by spawnSingleCrystal in cutscene
+            dragonCrystals = [];
         }
 
         function showDragonWarning() {
+            // Now handled by cutscene
             const warning = document.createElement('div');
             warning.className = 'boss-warning';
             warning.innerHTML = '🐉 THE DRAGON AWAKENS 🐉';
@@ -3620,7 +4052,7 @@
             const delta = (time - lastTime) / 1000;
             lastTime = time;
 
-            if (gameRunning && !isPaused) {
+            if (gameRunning && !isPaused && !inCutscene) {
                 updateMovement();
                 updateJump();
                 updateEnemies();
@@ -3632,6 +4064,17 @@
                 // Animate lights
                 lights.forEach((light, i) => {
                     light.intensity = 0.8 + Math.sin(time * 0.002 + i) * 0.2;
+                });
+            }
+
+            // Still render and update particles during cutscene
+            if (inCutscene) {
+                updateParticles(delta);
+                // Rotate crystals during cutscene
+                dragonCrystals.forEach(crystal => {
+                    if (!crystal.userData.isDestroyed) {
+                        crystal.rotation.y += 0.02;
+                    }
                 });
             }
 
@@ -3659,6 +4102,8 @@
             if (dragon) scene.remove(dragon);
             dragon = null;
             isDragonWave = false;
+            inCutscene = false;
+            cutscenePhase = 0;
             dragonCrystals.forEach(c => scene.remove(c));
             dragonCrystals = [];
             fireballs.forEach(fb => scene.remove(fb));
