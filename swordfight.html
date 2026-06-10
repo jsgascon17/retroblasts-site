@@ -3003,9 +3003,14 @@
             // Death particles
             createDeathEffect(enemy.position);
 
-            // Remove enemy
+            // Remove enemy from scene
             scene.remove(enemy);
-            enemies.splice(index, 1);
+
+            // Find the enemy in array by reference (not index - indices can be stale!)
+            const actualIndex = enemies.indexOf(enemy);
+            if (actualIndex !== -1) {
+                enemies.splice(actualIndex, 1);
+            }
 
             // Update stats
             kills++;
