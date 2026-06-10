@@ -921,6 +921,13 @@
                     <span id="knockback-cost">3</span> Points
                 </button>
             </div>
+            <div class="upgrade-card" id="card-sword">
+                <div class="upgrade-icon">⚔️</div>
+                <div class="upgrade-name">Sword</div>
+                <div class="upgrade-level">Owned</div>
+                <div class="upgrade-desc">Balanced melee weapon</div>
+                <button class="upgrade-btn" onclick="buyWeapon('sword')">EQUIP</button>
+            </div>
             <div class="upgrade-card" id="card-slot2">
                 <div class="upgrade-icon">🎒</div>
                 <div class="upgrade-name">Weapon Slot 2</div>
@@ -1585,8 +1592,9 @@
                 const dot = forward.dot(toEnemy);
                 const angle = Math.acos(dot);
 
-                // Hit detection: within weapon range and within attack cone
-                if (distance < weapon.range && angle < Math.PI / 3) {
+                // Hit detection: within weapon range (+ upgrade bonus) and within attack cone
+                const totalRange = weapon.range + (upgrades.range.level - 1) * 0.5;
+                if (distance < totalRange && angle < Math.PI / 3) {
                     hitEnemy(enemy, index, weapon.damage, apexCrit);
                     hitSomething = true;
                 }
@@ -2033,7 +2041,7 @@
                 }
             }
 
-            camera.position.y = 1.6;
+            camera.position.y = playerY;
         }
 
         function dash() {
@@ -2141,7 +2149,7 @@
         function reloadWeapon() {
             const weaponId = getCurrentWeaponId();
             const weapon = WEAPONS[weaponId];
-            if (!weapon || !weapon.ammo) return;
+            if (!weapon || weapon.maxAmmo === undefined) return;
 
             weapon.ammo = weapon.maxAmmo;
             updateWeaponHUD();
@@ -2193,18 +2201,19 @@
             const costs = { knife: 8, bat: 10, handgun: 12, sniper: 20, satchel: 18 };
             const cost = costs[weaponId];
 
-            if (ownedWeapons.includes(weaponId) || upgradePoints < cost) return;
+            // If already owned, equip it instead
+            if (ownedWeapons.includes(weaponId)) {
+                equipWeaponToCurrentSlot(weaponId);
+                return;
+            }
+
+            if (upgradePoints < cost) return;
 
             upgradePoints -= cost;
             ownedWeapons.push(weaponId);
 
-            // Auto-equip to empty slot
-            for (let i = 0; i < unlockedSlots; i++) {
-                if (!weaponSlots[i]) {
-                    weaponSlots[i] = weaponId;
-                    break;
-                }
-            }
+            // Auto-equip to current slot (replacing what's there)
+            weaponSlots[currentSlot] = weaponId;
 
             updateWeaponHUD();
             updateShopUI();
@@ -2212,10 +2221,12 @@
             playSound('levelup');
         }
 
-        function equipWeapon(weaponId, slot) {
-            if (!ownedWeapons.includes(weaponId) || slot >= unlockedSlots) return;
-            weaponSlots[slot] = weaponId;
+        function equipWeaponToCurrentSlot(weaponId) {
+            if (!ownedWeapons.includes(weaponId)) return;
+            weaponSlots[currentSlot] = weaponId;
             updateWeaponHUD();
+            saveUpgrades();
+            playSound('swing');
         }
 
         // ==================== SATCHEL SYSTEM ====================
@@ -2735,14 +2746,30 @@
                 const card = document.getElementById(`card-${w}`);
 
                 if (ownedWeapons.includes(w)) {
-                    if (status) status.textContent = 'Owned';
-                    if (btn) { btn.textContent = 'OWNED'; btn.disabled = true; }
-                    if (card) card.classList.add('maxed');
+                    // Check if currently equipped
+                    const equipped = weaponSlots.includes(w);
+                    if (status) status.textContent = equipped ? 'Equipped' : 'Owned';
+                    if (btn) {
+                        btn.textContent = equipped ? 'EQUIPPED' : 'EQUIP';
+                        btn.disabled = equipped;
+                    }
+                    if (card) card.classList.toggle('maxed', equipped);
                 } else {
                     if (btn) btn.disabled = upgradePoints < weaponCosts[w];
                     if (card) card.classList.remove('maxed');
                 }
             });
+
+            // Also update sword (always owned)
+            const swordEquipped = weaponSlots.includes('sword');
+            const swordCard = document.getElementById('card-sword');
+            if (swordCard) {
+                const swordBtn = swordCard.querySelector('.upgrade-btn');
+                if (swordBtn) {
+                    swordBtn.textContent = swordEquipped ? 'EQUIPPED' : 'EQUIP';
+                    swordBtn.disabled = swordEquipped;
+                }
+            }
         }
 
         function buyUpgrade(type) {
