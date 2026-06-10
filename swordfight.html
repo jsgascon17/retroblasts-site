@@ -2094,85 +2094,170 @@
             playDragonCutscene();
         }
 
+        // Center circle for cutscene
+        let centerCircle = null;
+
         function playDragonCutscene() {
             inCutscene = true;
             document.exitPointerLock();
 
-            // Save camera position
-            cutsceneCameraOriginal = {
-                x: camera.position.x,
-                y: camera.position.y,
-                z: camera.position.z,
-                rotX: camera.rotation.x,
-                rotY: camera.rotation.y
-            };
-
-            // Kill all existing enemies with dramatic effect
-            enemies.forEach((e, i) => {
-                setTimeout(() => {
-                    createDeathEffect(e.position);
-                    scene.remove(e);
-                }, i * 50);
+            // Kill all existing enemies instantly
+            enemies.forEach(e => {
+                createDeathEffect(e.position);
+                scene.remove(e);
             });
             enemies = [];
             currentBoss = null;
 
-            // Show cutscene overlay
+            // Show cutscene overlay (cinematic bars)
             const overlay = document.getElementById('cutsceneOverlay');
             overlay.classList.add('active');
 
-            // Hide HUD during cutscene
-            document.getElementById('hud').style.opacity = '0';
+            // Hide crosshair but keep weapon visible for walking
             document.getElementById('crosshair').style.opacity = '0';
-            document.getElementById('weaponHud').style.opacity = '0';
+            document.getElementById('hud').style.opacity = '0';
 
-            // Timeline of cutscene events
-            const timeline = [
-                { time: 0, action: 'startCameraPan' },
-                { time: 500, action: 'showWaveText' },
-                { time: 1500, action: 'spawnCrystals' },
-                { time: 2500, action: 'showTitle' },
-                { time: 4000, action: 'showSubtitle' },
-                { time: 4500, action: 'showHp' },
-                { time: 5500, action: 'spawnDragon' },
-                { time: 7000, action: 'cameraLookAtDragon' },
-                { time: 8500, action: 'flash' },
-                { time: 9000, action: 'endCutscene' }
-            ];
+            // Create glowing circle at center
+            createCenterCircle();
 
-            timeline.forEach(({ time, action }) => {
-                setTimeout(() => executeCutsceneAction(action), time);
+            // Show ladders
+            pillarLadders.forEach(ladder => {
+                ladder.visible = true;
             });
 
-            // Animate camera during cutscene
-            animateCutsceneCamera();
+            // Start walking player to center
+            cutscenePhase = 0;
+            animatePlayerWalkToCenter();
+        }
+
+        function createCenterCircle() {
+            // Glowing purple ring at center
+            const circleGeo = new THREE.RingGeometry(1.5, 2, 32);
+            const circleMat = new THREE.MeshBasicMaterial({
+                color: 0x9932CC,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.8
+            });
+            centerCircle = new THREE.Mesh(circleGeo, circleMat);
+            centerCircle.rotation.x = -Math.PI / 2;
+            centerCircle.position.y = 0.1;
+            scene.add(centerCircle);
+
+            // Add pulsing glow effect
+            const glowGeo = new THREE.RingGeometry(1, 2.5, 32);
+            const glowMat = new THREE.MeshBasicMaterial({
+                color: 0xff00ff,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.3
+            });
+            const glow = new THREE.Mesh(glowGeo, glowMat);
+            glow.rotation.x = -Math.PI / 2;
+            glow.position.y = 0.05;
+            centerCircle.add(glow);
         }
 
         let cutscenePhase = 0;
-        let cutsceneCameraAngle = 0;
 
-        function animateCutsceneCamera() {
+        function animatePlayerWalkToCenter() {
             if (!inCutscene) return;
 
-            cutsceneCameraAngle += 0.008;
+            const targetX = 0;
+            const targetZ = 0;
+            const walkSpeed = 0.1;
 
-            if (cutscenePhase === 0) {
-                // Pan around arena looking at center
-                const radius = 25;
-                camera.position.x = Math.cos(cutsceneCameraAngle) * radius;
-                camera.position.z = Math.sin(cutsceneCameraAngle) * radius;
-                camera.position.y = 8;
-                camera.lookAt(0, 10, 0);
-            } else if (cutscenePhase === 1 && dragon) {
-                // Look at dragon
-                const radius = 30;
-                camera.position.x = Math.cos(cutsceneCameraAngle * 0.5) * radius;
-                camera.position.z = Math.sin(cutsceneCameraAngle * 0.5) * radius;
-                camera.position.y = 15;
-                camera.lookAt(dragon.position);
+            // Calculate direction to center
+            const dx = targetX - camera.position.x;
+            const dz = targetZ - camera.position.z;
+            const dist = Math.sqrt(dx * dx + dz * dz);
+
+            // Look toward center while walking
+            const targetAngle = Math.atan2(-dx, -dz);
+            camera.rotation.y = targetAngle;
+            camera.rotation.x = 0;
+            camera.rotation.order = 'YXZ';
+
+            if (dist > 0.3) {
+                // Walk toward center
+                camera.position.x += (dx / dist) * walkSpeed;
+                camera.position.z += (dz / dist) * walkSpeed;
+                camera.position.y = 1.6 + Math.sin(Date.now() * 0.015) * 0.05; // Head bob
+
+                requestAnimationFrame(animatePlayerWalkToCenter);
+            } else {
+                // Reached center - snap to exact center
+                camera.position.set(0, 1.6, 0);
+                camera.rotation.set(0, 0, 0);
+
+                // Start crystal lighting sequence
+                setTimeout(startCrystalSequence, 500);
             }
+        }
 
-            requestAnimationFrame(animateCutsceneCamera);
+        function startCrystalSequence() {
+            if (!inCutscene) return;
+
+            // Light up crystals one by one (0.5 seconds apart)
+            pillarPositions.forEach((pos, i) => {
+                setTimeout(() => {
+                    if (!inCutscene) return;
+                    spawnSingleCrystal(pos, i);
+                    screenShake(0.12, 120);
+                    playSound('spawn');
+                }, i * 500);
+            });
+
+            // After all 8 crystals (4 seconds), look up at sky
+            setTimeout(() => {
+                if (inCutscene) startLookUpSequence();
+            }, 4500);
+        }
+
+        function startLookUpSequence() {
+            if (!inCutscene) return;
+
+            cutscenePhase = 1;
+            animateLookUp();
+        }
+
+        function animateLookUp() {
+            if (!inCutscene || cutscenePhase !== 1) return;
+
+            // Slowly tilt head up to look at sky
+            if (camera.rotation.x > -1.0) {
+                camera.rotation.x -= 0.025;
+                requestAnimationFrame(animateLookUp);
+            } else {
+                // Looking up - now spawn dragon falling from sky
+                setTimeout(() => {
+                    if (!inCutscene) return;
+
+                    // Show title
+                    document.getElementById('cutsceneTitle').style.opacity = '1';
+                    document.getElementById('cutsceneTitle').classList.add('show');
+                    screenShake(0.25, 300);
+
+                    // Spawn dragon high up
+                    createDragonCutscene();
+
+                    setTimeout(() => {
+                        document.getElementById('cutsceneHp').style.opacity = '1';
+                    }, 800);
+                }, 300);
+
+                // Flash and end cutscene after dragon lands
+                setTimeout(() => {
+                    if (!inCutscene) return;
+                    const flash = document.getElementById('cutsceneFlash');
+                    flash.style.opacity = '0.7';
+                    setTimeout(() => flash.style.opacity = '0', 200);
+                }, 2800);
+
+                setTimeout(() => {
+                    if (inCutscene) endDragonCutscene();
+                }, 3200);
+            }
         }
 
         function executeCutsceneAction(action) {
@@ -2349,7 +2434,7 @@
                 health: dragonHealth,
                 maxHealth: dragonHealth,
                 type: 'dragon',
-                damage: 50,
+                damage: 20,
                 lastAttack: 0,
                 flyAngle: 0,
                 flyRadius: 20,
@@ -2385,6 +2470,12 @@
             inCutscene = false;
             isDragonWave = true;
 
+            // Remove center circle
+            if (centerCircle) {
+                scene.remove(centerCircle);
+                centerCircle = null;
+            }
+
             // Hide cutscene overlay
             const overlay = document.getElementById('cutsceneOverlay');
             overlay.classList.remove('active');
@@ -2401,7 +2492,7 @@
             document.getElementById('crosshair').style.opacity = '1';
             document.getElementById('weaponHud').style.opacity = '1';
 
-            // Reset camera to player position
+            // Reset camera to center (player starts at center after cutscene)
             camera.position.set(0, 1.6, 0);
             playerY = 1.6;
             camera.rotation.set(0, 0, 0);
@@ -2554,7 +2645,7 @@
                 health: dragonHealth,
                 maxHealth: dragonHealth,
                 type: 'dragon',
-                damage: 50,
+                damage: 20,
                 lastAttack: 0,
                 flyAngle: 0,
                 flyRadius: 20,
@@ -2661,7 +2752,7 @@
 
             fireball.userData = {
                 velocity: direction.multiplyScalar(0.5),
-                damage: 40
+                damage: 20
             };
 
             scene.add(fireball);
@@ -3589,7 +3680,7 @@
             // Check for ladder climbing (only during dragon wave)
             const ladderCheck = checkNearLadder();
 
-            if (ladderCheck.near && isDragonWave) {
+            if (ladderCheck.near && isDragonWave && !keys['Space']) {
                 isOnLadder = true;
                 currentLadderPillar = ladderCheck.pillarIndex;
 
@@ -3615,6 +3706,17 @@
 
                 camera.position.y = playerY;
                 return; // Skip normal movement while on ladder
+            } else if (keys['Space'] && isOnLadder) {
+                // Jump off ladder!
+                isOnLadder = false;
+                currentLadderPillar = -1;
+                // Push player away from pillar toward center
+                const pushDir = new THREE.Vector3(-camera.position.x, 0, -camera.position.z).normalize();
+                camera.position.x += pushDir.x * 3;
+                camera.position.z += pushDir.z * 3;
+                // Start falling
+                isJumping = true;
+                jumpVelocity = 0.1; // Small upward boost
             } else {
                 isOnLadder = false;
                 currentLadderPillar = -1;
