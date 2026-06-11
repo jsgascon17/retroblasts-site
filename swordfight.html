@@ -1194,7 +1194,7 @@
         <div class="cutscene-text cutscene-wave" id="cutsceneWave">WAVE 25</div>
         <div class="cutscene-text cutscene-title" id="cutsceneTitle">THE ENDER DRAGON</div>
         <div class="cutscene-text cutscene-subtitle" id="cutsceneSubtitle">DESTROY THE CRYSTALS</div>
-        <div class="cutscene-text cutscene-hp" id="cutsceneHp">25,000 HP</div>
+        <div class="cutscene-text cutscene-hp" id="cutsceneHp">10,000 HP</div>
         <div class="cutscene-flash" id="cutsceneFlash"></div>
     </div>
 
@@ -1607,6 +1607,25 @@
             platform.castShadow = true;
             platform.receiveShadow = true;
             scene.add(platform);
+
+            // Center pillar (dragon perch)
+            const centerPillarGeo = new THREE.CylinderGeometry(2, 2.5, 20, 8);
+            const centerPillarMat = new THREE.MeshStandardMaterial({
+                color: 0x2a2a4a,
+                roughness: 0.5,
+                metalness: 0.5
+            });
+            const centerPillarMesh = new THREE.Mesh(centerPillarGeo, centerPillarMat);
+            centerPillarMesh.position.set(0, 10, 0);
+            centerPillarMesh.castShadow = true;
+            scene.add(centerPillarMesh);
+
+            // Center pillar top platform
+            const centerTopGeo = new THREE.CylinderGeometry(3, 2, 1, 8);
+            const centerTopMat = new THREE.MeshStandardMaterial({ color: 0x3a3a5a });
+            const centerTop = new THREE.Mesh(centerTopGeo, centerTopMat);
+            centerTop.position.set(0, 20.5, 0);
+            scene.add(centerTop);
 
             // Pillars around arena
             for (let i = 0; i < 8; i++) {
@@ -2195,41 +2214,94 @@
             }
         }
 
+        let currentCrystalIndex = 0;
+
         function startCrystalSequence() {
             if (!inCutscene) return;
 
-            // Light up crystals one by one (0.5 seconds apart)
-            pillarPositions.forEach((pos, i) => {
-                setTimeout(() => {
-                    if (!inCutscene) return;
-                    spawnSingleCrystal(pos, i);
-                    screenShake(0.12, 120);
-                    playSound('spawn');
-                }, i * 500);
-            });
-
-            // After all 8 crystals (4 seconds), look up at sky
-            setTimeout(() => {
-                if (inCutscene) startLookUpSequence();
-            }, 4500);
+            currentCrystalIndex = 0;
+            lookAtNextCrystal();
         }
 
-        function startLookUpSequence() {
+        function lookAtNextCrystal() {
+            if (!inCutscene) return;
+
+            if (currentCrystalIndex < pillarPositions.length) {
+                const pos = pillarPositions[currentCrystalIndex];
+
+                // Smoothly rotate to look at this pillar
+                animateLookAtPillar(pos, () => {
+                    // Once looking at pillar, spawn the crystal
+                    spawnSingleCrystal(pos, currentCrystalIndex);
+                    screenShake(0.12, 120);
+                    playSound('spawn');
+
+                    currentCrystalIndex++;
+
+                    // Wait a moment then look at next one
+                    setTimeout(() => {
+                        lookAtNextCrystal();
+                    }, 400);
+                });
+            } else {
+                // All crystals done - look down
+                setTimeout(() => {
+                    if (inCutscene) startLookDownSequence();
+                }, 500);
+            }
+        }
+
+        function animateLookAtPillar(pos, callback) {
+            const targetAngle = Math.atan2(pos.x, pos.z);
+            const startAngle = camera.rotation.y;
+            const startTime = Date.now();
+            const duration = 300; // 300ms to turn
+
+            function animate() {
+                if (!inCutscene) return;
+
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Smooth easing
+                const eased = 1 - Math.pow(1 - progress, 3);
+
+                // Interpolate angle
+                let angleDiff = targetAngle - startAngle;
+                // Handle wrap-around
+                if (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                if (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
+                camera.rotation.y = startAngle + angleDiff * eased;
+                camera.rotation.x = 0.2; // Slight look up at crystal
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    callback();
+                }
+            }
+            animate();
+        }
+
+        function startLookDownSequence() {
             if (!inCutscene) return;
 
             cutscenePhase = 1;
-            animateLookUp();
+            animateLookDown();
         }
 
-        function animateLookUp() {
+        function animateLookDown() {
             if (!inCutscene || cutscenePhase !== 1) return;
 
-            // Slowly tilt head up to look at sky
-            if (camera.rotation.x > -1.0) {
-                camera.rotation.x -= 0.025;
-                requestAnimationFrame(animateLookUp);
+            // Slowly tilt head down to look at ground
+            if (camera.rotation.x > -0.8) {
+                camera.rotation.x -= 0.03;
+                // Also slowly rotate to face forward
+                camera.rotation.y *= 0.95;
+                requestAnimationFrame(animateLookDown);
             } else {
-                // Looking up - now spawn dragon falling from sky
+                // Looking down - show title and spawn dragon
                 setTimeout(() => {
                     if (!inCutscene) return;
 
@@ -2238,7 +2310,7 @@
                     document.getElementById('cutsceneTitle').classList.add('show');
                     screenShake(0.25, 300);
 
-                    // Spawn dragon high up
+                    // Spawn dragon
                     createDragonCutscene();
 
                     setTimeout(() => {
@@ -2429,7 +2501,7 @@
             // Start very high up (descending entrance)
             dragon.position.set(0, 80, 0);
 
-            const dragonHealth = 25000;
+            const dragonHealth = 10000;
             dragon.userData = {
                 health: dragonHealth,
                 maxHealth: dragonHealth,
@@ -2640,7 +2712,7 @@
             // Position dragon high in sky
             dragon.position.set(0, 25, 0);
 
-            const dragonHealth = 25000;
+            const dragonHealth = 10000;
             dragon.userData = {
                 health: dragonHealth,
                 maxHealth: dragonHealth,
@@ -2664,6 +2736,7 @@
             if (!dragon || !isDragonWave) return;
 
             const time = Date.now() * 0.001;
+            const now = Date.now();
 
             // Rotate crystals
             dragonCrystals.forEach(crystal => {
@@ -2674,44 +2747,131 @@
                 }
             });
 
-            // Dragon flying pattern
-            dragon.userData.flyAngle += 0.01;
-            const angle = dragon.userData.flyAngle;
-            const radius = dragon.userData.flyRadius;
+            // Dragon behavior states: 'flying', 'perching', 'diving', 'approaching'
+            if (!dragon.userData.state) {
+                dragon.userData.state = 'flying';
+                dragon.userData.stateTimer = now;
+                dragon.userData.targetPos = { x: 15, y: 25, z: 0 };
+                dragon.userData.perchTime = 0;
+            }
 
-            // Circular flight path
-            dragon.position.x = Math.cos(angle) * radius;
-            dragon.position.z = Math.sin(angle) * radius;
+            const stateTime = now - dragon.userData.stateTimer;
 
-            // Bobbing height
-            dragon.position.y = dragon.userData.flyHeight + Math.sin(time * 2) * 3;
+            // State machine for dragon behavior
+            if (dragon.userData.state === 'flying') {
+                // Fly toward random target points
+                if (!dragon.userData.targetPos || stateTime > 3000) {
+                    // Pick new random target
+                    const randAngle = Math.random() * Math.PI * 2;
+                    const randRadius = 10 + Math.random() * 20;
+                    const randHeight = 20 + Math.random() * 15;
+                    dragon.userData.targetPos = {
+                        x: Math.cos(randAngle) * randRadius,
+                        y: randHeight,
+                        z: Math.sin(randAngle) * randRadius
+                    };
+                    dragon.userData.stateTimer = now;
+
+                    // Randomly decide to perch (30% chance every 5 seconds)
+                    if (Math.random() < 0.3 && stateTime > 5000) {
+                        dragon.userData.state = 'approaching';
+                        dragon.userData.targetPos = { x: 0, y: 22, z: 0 };
+                        dragon.userData.stateTimer = now;
+                    }
+                }
+
+                // Move toward target
+                movedragonTowardTarget(0.15);
+
+            } else if (dragon.userData.state === 'approaching') {
+                // Flying toward center pillar to perch
+                dragon.userData.targetPos = { x: 0, y: 22, z: 0 };
+                const dist = movedragonTowardTarget(0.2);
+
+                if (dist < 3) {
+                    // Landed on perch!
+                    dragon.userData.state = 'perching';
+                    dragon.userData.stateTimer = now;
+                    dragon.position.set(0, 22, 0);
+                }
+
+            } else if (dragon.userData.state === 'perching') {
+                // Sitting on center pillar - vulnerable to melee!
+                dragon.position.set(0, 22, 0);
+
+                // Look at player
+                const playerDir = Math.atan2(camera.position.x, camera.position.z);
+                dragon.rotation.y = playerDir + Math.PI;
+
+                // Minimal wing movement while perched
+                const wingFlap = Math.sin(time * 2) * 0.05;
+                if (dragon.children[4]) dragon.children[4].rotation.z = 0.1 + wingFlap;
+                if (dragon.children[5]) dragon.children[5].rotation.z = -0.1 - wingFlap;
+
+                // Stay perched for 4-6 seconds
+                if (stateTime > 4000 + Math.random() * 2000) {
+                    dragon.userData.state = 'flying';
+                    dragon.userData.stateTimer = now;
+                    dragon.userData.targetPos = {
+                        x: (Math.random() - 0.5) * 30,
+                        y: 25 + Math.random() * 10,
+                        z: (Math.random() - 0.5) * 30
+                    };
+                }
+
+                // Skip normal wing animation
+                updateDragonHealing(now);
+                updateDragonAttack(now);
+                return;
+            }
 
             // Face direction of movement
-            dragon.rotation.y = -angle + Math.PI / 2;
+            const dx = dragon.userData.targetPos.x - dragon.position.x;
+            const dz = dragon.userData.targetPos.z - dragon.position.z;
+            dragon.rotation.y = Math.atan2(dx, dz);
 
-            // Wing flapping
-            const wingFlap = Math.sin(time * 8) * 0.2;
+            // Wing flapping while flying
+            const wingFlap = Math.sin(time * 8) * 0.25;
             if (dragon.children[4]) dragon.children[4].rotation.z = 0.3 + wingFlap;
             if (dragon.children[5]) dragon.children[5].rotation.z = -0.3 - wingFlap;
 
+            updateDragonHealing(now);
+            updateDragonAttack(now);
+        }
+
+        function movedragonTowardTarget(speed) {
+            const target = dragon.userData.targetPos;
+            const dx = target.x - dragon.position.x;
+            const dy = target.y - dragon.position.y;
+            const dz = target.z - dragon.position.z;
+            const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+            if (dist > 0.5) {
+                dragon.position.x += (dx / dist) * speed;
+                dragon.position.y += (dy / dist) * speed;
+                dragon.position.z += (dz / dist) * speed;
+            }
+            return dist;
+        }
+
+        function updateDragonHealing(now) {
             // Heal from crystals
-            const now = Date.now();
             if (now - dragon.userData.lastHeal > 500) {
                 const activeCrystals = dragonCrystals.filter(c => !c.userData.isDestroyed);
                 if (activeCrystals.length > 0 && dragon.userData.health < dragon.userData.maxHealth) {
-                    // Heal 50 HP per crystal every 0.5 seconds
                     const healAmount = activeCrystals.length * 50;
                     dragon.userData.health = Math.min(dragon.userData.maxHealth, dragon.userData.health + healAmount);
                     updateBossHealthBar();
 
-                    // Healing beam effect from crystals to dragon
                     activeCrystals.forEach(crystal => {
                         createHealBeam(crystal.position, dragon.position);
                     });
                 }
                 dragon.userData.lastHeal = now;
             }
+        }
 
+        function updateDragonAttack(now) {
             // Dragon attack - fireball at player occasionally
             if (now - dragon.userData.lastAttack > 3000) {
                 shootFireball();
@@ -3967,7 +4127,29 @@
 
         function equipWeaponToCurrentSlot(weaponId) {
             if (!ownedWeapons.includes(weaponId)) return;
-            weaponSlots[currentSlot] = weaponId;
+
+            // Check if weapon is already equipped in a slot
+            const existingSlot = weaponSlots.indexOf(weaponId);
+            if (existingSlot !== -1) {
+                // Weapon already equipped - just switch to that slot
+                currentSlot = existingSlot;
+                showWeaponModel(weaponId);
+                updateWeaponHUD();
+                playSound('swing');
+                return;
+            }
+
+            // Find a slot to put it in
+            // First try: empty slot
+            const emptySlot = weaponSlots.findIndex((w, i) => w === null && i < unlockedSlots);
+            if (emptySlot !== -1) {
+                weaponSlots[emptySlot] = weaponId;
+                currentSlot = emptySlot;
+            } else {
+                // No empty slot - replace current slot
+                weaponSlots[currentSlot] = weaponId;
+            }
+
             showWeaponModel(weaponId);
             updateWeaponHUD();
             updateShopUI();
