@@ -644,6 +644,14 @@
                     keepalive: true, headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ score: finalScore, game: "pacman" })
                 }).then(r => r.json()).then(data => { if (data.success) { console.log("Boss damage dealt:", data.damage); if (typeof showToast === "function") showToast("⚔️ Dealt " + data.damage + " boss damage!", "success"); } else { console.log("Boss damage failed:", data.error); } }).catch(e => console.log("Boss damage error:", e));
+
+                // Track for daily challenges
+                fetch("api/game-rewards.php", {
+                    method: "POST",
+                    credentials: "include",
+                    keepalive: true, headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ game: "pacman", score: finalScore })
+                }).catch(() => {});
             }
         }
 

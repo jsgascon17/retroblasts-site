@@ -656,6 +656,15 @@
                 }).catch(e => {
                     console.error("BOSS: Error", e);
                 });
+
+                // Track for daily challenges
+                fetch("api/game-rewards.php", {
+                    method: "POST",
+                    credentials: "include",
+                    keepalive: true,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ game: "space-invaders", score: finalScore })
+                }).catch(() => {});
             }
         }
 

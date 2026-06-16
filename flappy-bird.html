@@ -727,6 +727,14 @@
                         console.log("Boss damage failed:", data.error);
                     }
                 }).catch(e => console.log("Boss damage error:", e));
+
+                // Track for daily challenges and coins
+                fetch("api/game-rewards.php", {
+                    method: "POST",
+                    credentials: "include",
+                    keepalive: true, headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ game: "flappy-bird", score: finalScore })
+                }).catch(() => {});
             }
         }
 

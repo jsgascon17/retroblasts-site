@@ -670,6 +670,14 @@
                 body: JSON.stringify({ game: 'brick-breaker', score: score })
             }).catch(() => {});
 
+            // Track for daily challenges
+            fetch('api/game-rewards.php', {
+                method: 'POST',
+                credentials: 'include',
+                keepalive: true, headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'brick-breaker', score: score })
+            }).catch(() => {});
+
             // Reset submit button
             const submitBtn = document.getElementById('submitScoreBtn');
             submitBtn.disabled = false;
