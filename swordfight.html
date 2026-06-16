@@ -1,4 +1,4 @@
-<!-- cache-bust-1776798595 -->
+<!-- cache-bust-1776798596 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5104,8 +5104,8 @@
                         if (gameRunning) startDragonWave();
                     }, 2000);
                 }
-                // Spawn Giant Zombie boss every 5 waves (but not wave 5 during testing)
-                else if (wave % 5 === 0 && wave !== 5 && !currentBoss && !isDragonWave) {
+                // Spawn Giant Zombie boss every 5 waves (except wave 25 which is dragon)
+                else if (wave % 5 === 0 && wave !== 25 && !currentBoss && !isDragonWave) {
                     setTimeout(() => {
                         if (gameRunning) createBoss();
                     }, 2000);
