@@ -1,4 +1,4 @@
-<!-- cache-bust-1776798587 -->
+<!-- cache-bust-1776798595 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -433,6 +433,7 @@
             height: 200%;
             background: radial-gradient(circle at 50% 50%, rgba(233, 69, 96, 0.1) 0%, transparent 50%);
             animation: pulse-bg 4s ease-in-out infinite;
+            pointer-events: none;
         }
 
         @keyframes pulse-bg {
@@ -607,12 +608,52 @@
 
         .skins-preview-icons {
             font-size: 1.5rem;
-            letter-spacing: 5px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .skin-icon {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .skin-icon:hover:not(.skin-locked) {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: rgba(255, 215, 0, 0.5);
+            transform: scale(1.1);
+        }
+
+        .skin-icon.selected {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
         }
 
         .skin-locked {
             opacity: 0.3;
             filter: grayscale(1);
+            cursor: not-allowed;
+        }
+
+        .skin-name {
+            position: absolute;
+            bottom: -20px;
+            font-size: 0.65rem;
+            color: #aaa;
+            white-space: nowrap;
+        }
+
+        .skin-icon.selected .skin-name {
+            color: #ffd700;
         }
 
         /* Game Over */
@@ -1111,12 +1152,17 @@
         <button class="start-btn" onclick="startGame()">Play</button>
 
         <div class="skins-preview" id="skinsPreview">
-            <div class="skins-preview-title">Sword Skins</div>
+            <div class="skins-preview-title">Sword Skins (Click to Select)</div>
             <div class="skins-preview-icons">
-                <span id="skinDefault">⚔️</span>
-                <span id="skinBoss" class="skin-locked">🗡️</span>
-                <span id="skinDragon" class="skin-locked">🐉</span>
-                <span id="skinFire" class="skin-locked">🔥</span>
+                <div class="skin-icon selected" id="skinDefault" data-skin="default" onclick="selectSkin('default')">
+                    ⚔️
+                </div>
+                <div class="skin-icon skin-locked" id="skinBoss" data-skin="boss" onclick="selectSkin('boss')">
+                    🩸
+                </div>
+                <div class="skin-icon skin-locked" id="skinDragon" data-skin="dragon" onclick="selectSkin('dragon')">
+                    🐉
+                </div>
             </div>
         </div>
 
@@ -1481,8 +1527,119 @@
         let currentBoss = null;
         let bossKills = 0;
         let highScore = 0;
-        let swordSkins = ['default']; // unlocked skins
+        let swordSkins = ['default', 'boss', 'dragon']; // unlocked skins (all unlocked for testing)
         let currentSkin = 'default';
+
+        // Skin definitions
+        const SKIN_STYLES = {
+            default: {
+                name: 'Classic',
+                blade: 0xcccccc,
+                edge: 0x88ccff,
+                guard: 0xffd700,
+                handle: 0x4a2810,
+                glow: null
+            },
+            boss: {
+                name: 'Boss Slayer',
+                blade: 0x8B0000,
+                edge: 0xff4444,
+                guard: 0x333333,
+                handle: 0x1a0a0a,
+                glow: 0xff0000
+            },
+            dragon: {
+                name: 'Dragon Slayer',
+                blade: 0x4B0082,
+                edge: 0xff00ff,
+                guard: 0x9932CC,
+                handle: 0x2a0a2a,
+                glow: 0x9932CC
+            }
+        };
+
+        // Select a skin (called from UI)
+        function selectSkin(skinId) {
+            // Check if skin is unlocked
+            if (!swordSkins.includes(skinId)) {
+                return; // Skin not unlocked
+            }
+
+            currentSkin = skinId;
+
+            // Update UI selection
+            document.querySelectorAll('.skin-icon').forEach(el => {
+                el.classList.remove('selected');
+            });
+            const skinEl = document.querySelector(`[data-skin="${skinId}"]`);
+            if (skinEl) {
+                skinEl.classList.add('selected');
+            }
+
+            // Apply to sword if it exists
+            applySwordSkin(skinId);
+
+            // Save preference
+            saveGame();
+        }
+
+        // Apply skin colors to existing sword
+        function applySwordSkin(skinId) {
+            const skin = SKIN_STYLES[skinId] || SKIN_STYLES.default;
+
+            if (swordParts.blade && swordParts.blade.material) {
+                swordParts.blade.material.color.setHex(skin.blade);
+            }
+            if (swordParts.edge && swordParts.edge.material) {
+                swordParts.edge.material.color.setHex(skin.edge);
+            }
+            if (swordParts.guard && swordParts.guard.material) {
+                swordParts.guard.material.color.setHex(skin.guard);
+            }
+            if (swordParts.handle && swordParts.handle.material) {
+                swordParts.handle.material.color.setHex(skin.handle);
+            }
+
+            // Handle glow effect
+            if (swordParts.glow) {
+                // Remove existing glow
+                if (weaponModels.sword) {
+                    weaponModels.sword.remove(swordParts.glow);
+                }
+                swordParts.glow = null;
+            }
+
+            // Add new glow if skin has one
+            if (skin.glow && weaponModels.sword) {
+                const glowGeo = new THREE.BoxGeometry(0.12, 1.25, 0.04);
+                const glowMat = new THREE.MeshBasicMaterial({
+                    color: skin.glow,
+                    transparent: true,
+                    opacity: 0.3
+                });
+                const glow = new THREE.Mesh(glowGeo, glowMat);
+                glow.position.y = 0.6;
+                weaponModels.sword.add(glow);
+                swordParts.glow = glow;
+            }
+        }
+
+        // Update skin UI based on unlocked skins
+        function updateSkinUI() {
+            document.querySelectorAll('.skin-icon').forEach(el => {
+                const skinId = el.dataset.skin;
+                if (swordSkins.includes(skinId)) {
+                    el.classList.remove('skin-locked');
+                } else {
+                    el.classList.add('skin-locked');
+                }
+                if (skinId === currentSkin) {
+                    el.classList.add('selected');
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+        }
 
         // Dragon boss system (wave 25)
         let dragon = null;
@@ -1608,15 +1765,15 @@
             platform.receiveShadow = true;
             scene.add(platform);
 
-            // Center pillar (dragon perch)
-            const centerPillarGeo = new THREE.CylinderGeometry(2, 2.5, 20, 8);
+            // Center pillar (dragon perch) - shorter for easier melee access
+            const centerPillarGeo = new THREE.CylinderGeometry(2, 2.5, 8, 8);
             const centerPillarMat = new THREE.MeshStandardMaterial({
                 color: 0x2a2a4a,
                 roughness: 0.5,
                 metalness: 0.5
             });
             const centerPillarMesh = new THREE.Mesh(centerPillarGeo, centerPillarMat);
-            centerPillarMesh.position.set(0, 10, 0);
+            centerPillarMesh.position.set(0, 4, 0);
             centerPillarMesh.castShadow = true;
             scene.add(centerPillarMesh);
 
@@ -1624,7 +1781,7 @@
             const centerTopGeo = new THREE.CylinderGeometry(3, 2, 1, 8);
             const centerTopMat = new THREE.MeshStandardMaterial({ color: 0x3a3a5a });
             const centerTop = new THREE.Mesh(centerTopGeo, centerTopMat);
-            centerTop.position.set(0, 20.5, 0);
+            centerTop.position.set(0, 8.5, 0);
             scene.add(centerTop);
 
             // Pillars around arena
@@ -1731,28 +1888,56 @@
             scene.add(camera);
         }
 
+        // Store sword parts for skin changes
+        let swordParts = { blade: null, edge: null, guard: null, handle: null, glow: null };
+
         function createWeaponModels() {
             // === SWORD ===
             const swordGroup = new THREE.Group();
+
+            const skin = SKIN_STYLES[currentSkin] || SKIN_STYLES.default;
+
             const bladeGeo = new THREE.BoxGeometry(0.08, 1.2, 0.02);
-            const bladeMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.2, metalness: 0.9 });
+            const bladeMat = new THREE.MeshStandardMaterial({ color: skin.blade, roughness: 0.2, metalness: 0.9 });
             const blade = new THREE.Mesh(bladeGeo, bladeMat);
             blade.position.y = 0.6;
             swordGroup.add(blade);
+            swordParts.blade = blade;
+
             const edgeGeo = new THREE.BoxGeometry(0.02, 1.2, 0.005);
-            const edgeMat = new THREE.MeshBasicMaterial({ color: 0x88ccff });
+            const edgeMat = new THREE.MeshBasicMaterial({ color: skin.edge });
             const edge = new THREE.Mesh(edgeGeo, edgeMat);
             edge.position.set(0.04, 0.6, 0);
             swordGroup.add(edge);
+            swordParts.edge = edge;
+
             const handleGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.25, 8);
-            const handleMat = new THREE.MeshStandardMaterial({ color: 0x4a2810, roughness: 0.8 });
+            const handleMat = new THREE.MeshStandardMaterial({ color: skin.handle, roughness: 0.8 });
             const handle = new THREE.Mesh(handleGeo, handleMat);
             handle.position.y = -0.12;
             swordGroup.add(handle);
+            swordParts.handle = handle;
+
             const guardGeo = new THREE.BoxGeometry(0.25, 0.05, 0.08);
-            const guardMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3, metalness: 0.8 });
+            const guardMat = new THREE.MeshStandardMaterial({ color: skin.guard, roughness: 0.3, metalness: 0.8 });
             const guard = new THREE.Mesh(guardGeo, guardMat);
             swordGroup.add(guard);
+            swordParts.guard = guard;
+
+            // Add glow effect if skin has one
+            if (skin.glow) {
+                const glowGeo = new THREE.BoxGeometry(0.12, 1.25, 0.04);
+                const glowMat = new THREE.MeshBasicMaterial({
+                    color: skin.glow,
+                    transparent: true,
+                    opacity: 0.3
+                });
+                const glow = new THREE.Mesh(glowGeo, glowMat);
+                glow.position.y = 0.6;
+                swordGroup.add(glow);
+                swordParts.glow = glow;
+            }
+
             swordGroup.position.set(0.4, -0.3, -0.5);
             swordGroup.rotation.set(0, 0, -0.3);
             weaponModels.sword = swordGroup;
@@ -2498,8 +2683,8 @@
             tail.position.z = -7;
             dragon.add(tail);
 
-            // Start very high up (descending entrance)
-            dragon.position.set(0, 80, 0);
+            // Start below ground (rising entrance - player looks down to see it emerge)
+            dragon.position.set(0, -10, 0);
 
             const dragonHealth = 10000;
             dragon.userData = {
@@ -2525,8 +2710,9 @@
         function animateDragonDescent() {
             if (!dragon) return;
 
-            if (dragon.position.y > 25) {
-                dragon.position.y -= 0.8;
+            // Dragon rises from below ground up to flying height
+            if (dragon.position.y < 15) {
+                dragon.position.y += 0.6;
                 dragon.rotation.y += 0.05;
 
                 // Wing flap
@@ -2785,19 +2971,19 @@
 
             } else if (dragon.userData.state === 'approaching') {
                 // Flying toward center pillar to perch
-                dragon.userData.targetPos = { x: 0, y: 22, z: 0 };
+                dragon.userData.targetPos = { x: 0, y: 10, z: 0 };
                 const dist = movedragonTowardTarget(0.2);
 
                 if (dist < 3) {
                     // Landed on perch!
                     dragon.userData.state = 'perching';
                     dragon.userData.stateTimer = now;
-                    dragon.position.set(0, 22, 0);
+                    dragon.position.set(0, 10, 0);
                 }
 
             } else if (dragon.userData.state === 'perching') {
                 // Sitting on center pillar - vulnerable to melee!
-                dragon.position.set(0, 22, 0);
+                dragon.position.set(0, 10, 0);
 
                 // Look at player
                 const playerDir = Math.atan2(camera.position.x, camera.position.z);
@@ -4825,15 +5011,8 @@
             document.getElementById('startBossKills').textContent = bossKills + dragonKills;
             document.getElementById('startCoins').textContent = upgradePoints;
 
-            // Update skin icons based on unlocked skins
-            const skinBoss = document.getElementById('skinBoss');
-            if (swordSkins.includes('boss')) {
-                skinBoss.classList.remove('skin-locked');
-            }
-            const skinDragon = document.getElementById('skinDragon');
-            if (skinDragon && swordSkins.includes('dragon')) {
-                skinDragon.classList.remove('skin-locked');
-            }
+            // Update skin UI (locked/unlocked/selected states)
+            updateSkinUI();
         }
 
         // Show shop button when game is running
@@ -4919,8 +5098,8 @@
                 playSound('levelup');
                 showWaveComplete(wave - 1);
 
-                // Wave 5: Dragon boss! (TESTING - change back to 25 later)
-                if (wave === 5 && !dragon && !isDragonWave) {
+                // Wave 25: Dragon boss!
+                if (wave === 25 && !dragon && !isDragonWave) {
                     setTimeout(() => {
                         if (gameRunning) startDragonWave();
                     }, 2000);
