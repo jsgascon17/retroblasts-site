@@ -1,4 +1,4 @@
-<!-- cache-bust-1776798596 -->
+<!-- cache-bust-1776798597 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1120,6 +1120,112 @@
             font-weight: bold;
         }
 
+        /* Mobile Controls */
+        .mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            z-index: 200;
+            pointer-events: none;
+        }
+
+        @media (max-width: 1024px), (hover: none) {
+            .mobile-controls {
+                display: block;
+            }
+        }
+
+        .joystick-container {
+            position: absolute;
+            left: 30px;
+            bottom: 30px;
+            width: 120px;
+            height: 120px;
+            pointer-events: auto;
+        }
+
+        .joystick-base {
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .joystick-knob {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 215, 0, 0.8);
+            border: 2px solid #ffd700;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: none;
+        }
+
+        .mobile-buttons {
+            position: absolute;
+            right: 20px;
+            bottom: 30px;
+            display: flex;
+            gap: 15px;
+            pointer-events: auto;
+        }
+
+        .mobile-btn {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #fff;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        .mobile-btn:active {
+            background: rgba(255, 215, 0, 0.5);
+            border-color: #ffd700;
+        }
+
+        .mobile-btn.attack-btn {
+            width: 90px;
+            height: 90px;
+            font-size: 36px;
+            background: rgba(255, 50, 50, 0.3);
+            border-color: rgba(255, 100, 100, 0.5);
+        }
+
+        .mobile-btn.attack-btn:active {
+            background: rgba(255, 50, 50, 0.6);
+        }
+
+        .look-zone {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            pointer-events: auto;
+        }
+
+        /* Hide desktop instructions on mobile */
+        @media (max-width: 1024px), (hover: none) {
+            .control-hint {
+                display: none !important;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -1425,6 +1531,20 @@
     </div>
 
     <canvas id="gameCanvas"></canvas>
+
+    <!-- Mobile Controls -->
+    <div class="mobile-controls" id="mobileControls">
+        <div class="joystick-container" id="joystickContainer">
+            <div class="joystick-base" id="joystickBase">
+                <div class="joystick-knob" id="joystickKnob"></div>
+            </div>
+        </div>
+        <div class="look-zone" id="lookZone"></div>
+        <div class="mobile-buttons">
+            <button class="mobile-btn" id="jumpBtn">⬆️</button>
+            <button class="mobile-btn attack-btn" id="attackBtn">⚔️</button>
+        </div>
+    </div>
 
     <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
@@ -3989,6 +4109,128 @@
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
+
+            // Mobile Touch Controls
+            setupMobileControls();
+        }
+
+        // Mobile control state
+        let joystickActive = false;
+        let joystickStartX = 0;
+        let joystickStartY = 0;
+        let lookTouchId = null;
+        let lastLookX = 0;
+        let lastLookY = 0;
+
+        function setupMobileControls() {
+            const joystickBase = document.getElementById('joystickBase');
+            const joystickKnob = document.getElementById('joystickKnob');
+            const lookZone = document.getElementById('lookZone');
+            const jumpBtn = document.getElementById('jumpBtn');
+            const attackBtn = document.getElementById('attackBtn');
+
+            if (!joystickBase) return; // Not on mobile
+
+            // Joystick for movement
+            joystickBase.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = joystickBase.getBoundingClientRect();
+                joystickStartX = rect.left + rect.width / 2;
+                joystickStartY = rect.top + rect.height / 2;
+                joystickActive = true;
+            }, { passive: false });
+
+            joystickBase.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (!joystickActive) return;
+
+                const touch = e.touches[0];
+                const dx = touch.clientX - joystickStartX;
+                const dy = touch.clientY - joystickStartY;
+                const distance = Math.min(40, Math.sqrt(dx * dx + dy * dy));
+                const angle = Math.atan2(dy, dx);
+
+                // Move knob
+                const knobX = Math.cos(angle) * distance;
+                const knobY = Math.sin(angle) * distance;
+                joystickKnob.style.transform = `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
+
+                // Update keys based on joystick position
+                const threshold = 15;
+                keys['KeyW'] = dy < -threshold;
+                keys['KeyS'] = dy > threshold;
+                keys['KeyA'] = dx < -threshold;
+                keys['KeyD'] = dx > threshold;
+            }, { passive: false });
+
+            joystickBase.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                joystickActive = false;
+                joystickKnob.style.transform = 'translate(-50%, -50%)';
+                keys['KeyW'] = false;
+                keys['KeyS'] = false;
+                keys['KeyA'] = false;
+                keys['KeyD'] = false;
+            }, { passive: false });
+
+            // Look zone for camera control
+            lookZone.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                lookTouchId = touch.identifier;
+                lastLookX = touch.clientX;
+                lastLookY = touch.clientY;
+            }, { passive: false });
+
+            lookZone.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const touch = e.changedTouches[i];
+                    if (touch.identifier === lookTouchId) {
+                        const dx = touch.clientX - lastLookX;
+                        const dy = touch.clientY - lastLookY;
+
+                        mouseX -= dx * CONFIG.mouseSensitivity * 2;
+                        mouseY -= dy * CONFIG.mouseSensitivity * 2;
+                        mouseY = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, mouseY));
+
+                        lastLookX = touch.clientX;
+                        lastLookY = touch.clientY;
+                        break;
+                    }
+                }
+            }, { passive: false });
+
+            lookZone.addEventListener('touchend', (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === lookTouchId) {
+                        lookTouchId = null;
+                        break;
+                    }
+                }
+            }, { passive: false });
+
+            // Jump button
+            jumpBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (gameRunning && !isPaused && !isJumping) {
+                    jump();
+                }
+            }, { passive: false });
+
+            // Attack button
+            attackBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (gameRunning && !isPaused) {
+                    attack();
+                }
+            }, { passive: false });
+
+            // Prevent default touch behavior on game area for mobile
+            document.getElementById('gameCanvas').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+            }, { passive: false });
         }
 
         // Ladder climbing state

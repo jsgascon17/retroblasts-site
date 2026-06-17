@@ -700,7 +700,7 @@
                     <p>Get exclusive rewards at every tier + 20% bonus XP!</p>
                 </div>
                 <button class="buy-premium-btn" id="buyPremiumBtn" onclick="buyPremium()">
-                    Buy for 5,000 🪙
+                    Buy for 500 🪙
                 </button>
             </div>
 
@@ -740,68 +740,48 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // Battle Pass Configuration
+        // Battle Pass Configuration (synced with backend)
         const SEASON = {
             id: 1,
-            name: "Season 1: Origins",
-            endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-            premiumCost: 5000,
-            xpPerTier: 500,
-            maxTier: 50
+            name: "Arcade Legends",
+            endDate: new Date('2026-04-30'),
+            premiumCost: 500,
+            xpPerTier: 100,
+            maxTier: 30
         };
 
-        // Rewards for each tier
+        // Rewards for each tier (synced with backend)
         const TIER_REWARDS = [
-            { tier: 1, free: { type: 'coins', amount: 100, icon: '🪙', name: '100 Coins' }, premium: { type: 'skin', item: 'neon', icon: '✨', name: 'Neon Color' }},
-            { tier: 2, free: { type: 'coins', amount: 150, icon: '🪙', name: '150 Coins' }, premium: { type: 'border', item: 'silver', icon: '🔲', name: 'Silver Border' }},
-            { tier: 3, free: { type: 'xp_boost', amount: 10, icon: '⚡', name: '+10% XP (1 day)' }, premium: { type: 'coins', amount: 500, icon: '🪙', name: '500 Coins' }},
-            { tier: 4, free: { type: 'coins', amount: 200, icon: '🪙', name: '200 Coins' }, premium: { type: 'effect', item: 'sparkles', icon: '✨', name: 'Sparkle Effect' }},
-            { tier: 5, free: { type: 'skin', item: 'blue', icon: '🔵', name: 'Blue Color' }, premium: { type: 'lootbox', amount: 1, icon: '📦', name: 'Epic Loot Box' }},
-            { tier: 6, free: { type: 'coins', amount: 250, icon: '🪙', name: '250 Coins' }, premium: { type: 'skin', item: 'purple', icon: '🟣', name: 'Purple Color' }},
-            { tier: 7, free: { type: 'coins', amount: 300, icon: '🪙', name: '300 Coins' }, premium: { type: 'border', item: 'gold', icon: '🔲', name: 'Gold Border' }},
-            { tier: 8, free: { type: 'xp_boost', amount: 15, icon: '⚡', name: '+15% XP (1 day)' }, premium: { type: 'coins', amount: 750, icon: '🪙', name: '750 Coins' }},
-            { tier: 9, free: { type: 'coins', amount: 350, icon: '🪙', name: '350 Coins' }, premium: { type: 'effect', item: 'flames', icon: '🔥', name: 'Flame Effect' }},
-            { tier: 10, free: { type: 'lootbox', amount: 1, icon: '📦', name: 'Rare Loot Box' }, premium: { type: 'skin', item: 'rainbow', icon: '🌈', name: 'Rainbow Color' }},
-            { tier: 11, free: { type: 'coins', amount: 400, icon: '🪙', name: '400 Coins' }, premium: { type: 'coins', amount: 1000, icon: '🪙', name: '1,000 Coins' }},
-            { tier: 12, free: { type: 'coins', amount: 450, icon: '🪙', name: '450 Coins' }, premium: { type: 'border', item: 'diamond', icon: '💎', name: 'Diamond Border' }},
-            { tier: 13, free: { type: 'xp_boost', amount: 20, icon: '⚡', name: '+20% XP (1 day)' }, premium: { type: 'effect', item: 'lightning', icon: '⚡', name: 'Lightning Effect' }},
-            { tier: 14, free: { type: 'coins', amount: 500, icon: '🪙', name: '500 Coins' }, premium: { type: 'skin', item: 'galaxy', icon: '🌌', name: 'Galaxy Color' }},
-            { tier: 15, free: { type: 'skin', item: 'green', icon: '🟢', name: 'Green Color' }, premium: { type: 'lootbox', amount: 2, icon: '📦', name: '2x Epic Loot Box' }},
-            { tier: 16, free: { type: 'coins', amount: 550, icon: '🪙', name: '550 Coins' }, premium: { type: 'coins', amount: 1500, icon: '🪙', name: '1,500 Coins' }},
-            { tier: 17, free: { type: 'coins', amount: 600, icon: '🪙', name: '600 Coins' }, premium: { type: 'effect', item: 'snow', icon: '❄️', name: 'Snow Effect' }},
-            { tier: 18, free: { type: 'xp_boost', amount: 25, icon: '⚡', name: '+25% XP (1 day)' }, premium: { type: 'border', item: 'platinum', icon: '🔲', name: 'Platinum Border' }},
-            { tier: 19, free: { type: 'coins', amount: 650, icon: '🪙', name: '650 Coins' }, premium: { type: 'skin', item: 'plasma', icon: '💜', name: 'Plasma Color' }},
-            { tier: 20, free: { type: 'lootbox', amount: 1, icon: '📦', name: 'Epic Loot Box' }, premium: { type: 'skin', item: 'cosmic', icon: '🌟', name: 'Cosmic Color' }},
-            { tier: 21, free: { type: 'coins', amount: 700, icon: '🪙', name: '700 Coins' }, premium: { type: 'coins', amount: 2000, icon: '🪙', name: '2,000 Coins' }},
-            { tier: 22, free: { type: 'coins', amount: 750, icon: '🪙', name: '750 Coins' }, premium: { type: 'effect', item: 'hearts', icon: '💕', name: 'Hearts Effect' }},
-            { tier: 23, free: { type: 'xp_boost', amount: 30, icon: '⚡', name: '+30% XP (1 day)' }, premium: { type: 'border', item: 'champion', icon: '🏆', name: 'Champion Border' }},
-            { tier: 24, free: { type: 'coins', amount: 800, icon: '🪙', name: '800 Coins' }, premium: { type: 'skin', item: 'void', icon: '⬛', name: 'Void Color' }},
-            { tier: 25, free: { type: 'skin', item: 'orange', icon: '🟠', name: 'Orange Color' }, premium: { type: 'lootbox', amount: 3, icon: '📦', name: '3x Epic Loot Box' }},
-            { tier: 26, free: { type: 'coins', amount: 850, icon: '🪙', name: '850 Coins' }, premium: { type: 'coins', amount: 2500, icon: '🪙', name: '2,500 Coins' }},
-            { tier: 27, free: { type: 'coins', amount: 900, icon: '🪙', name: '900 Coins' }, premium: { type: 'effect', item: 'confetti', icon: '🎊', name: 'Confetti Effect' }},
-            { tier: 28, free: { type: 'xp_boost', amount: 35, icon: '⚡', name: '+35% XP (1 day)' }, premium: { type: 'border', item: 'legend', icon: '👑', name: 'Legend Border' }},
-            { tier: 29, free: { type: 'coins', amount: 950, icon: '🪙', name: '950 Coins' }, premium: { type: 'skin', item: 'aurora', icon: '🌈', name: 'Aurora Color' }},
-            { tier: 30, free: { type: 'lootbox', amount: 2, icon: '📦', name: '2x Epic Loot Box' }, premium: { type: 'effect', item: 'golden_trail', icon: '✨', name: 'Golden Trail' }},
-            { tier: 31, free: { type: 'coins', amount: 1000, icon: '🪙', name: '1,000 Coins' }, premium: { type: 'coins', amount: 3000, icon: '🪙', name: '3,000 Coins' }},
-            { tier: 32, free: { type: 'coins', amount: 1000, icon: '🪙', name: '1,000 Coins' }, premium: { type: 'skin', item: 'fire', icon: '🔥', name: 'Fire Color' }},
-            { tier: 33, free: { type: 'xp_boost', amount: 40, icon: '⚡', name: '+40% XP (1 day)' }, premium: { type: 'border', item: 'mythic', icon: '🌟', name: 'Mythic Border' }},
-            { tier: 34, free: { type: 'coins', amount: 1000, icon: '🪙', name: '1,000 Coins' }, premium: { type: 'effect', item: 'rainbow_trail', icon: '🌈', name: 'Rainbow Trail' }},
-            { tier: 35, free: { type: 'skin', item: 'pink', icon: '🩷', name: 'Pink Color' }, premium: { type: 'lootbox', amount: 1, icon: '📦', name: 'Mythic Loot Box' }},
-            { tier: 36, free: { type: 'coins', amount: 1000, icon: '🪙', name: '1,000 Coins' }, premium: { type: 'coins', amount: 4000, icon: '🪙', name: '4,000 Coins' }},
-            { tier: 37, free: { type: 'coins', amount: 1000, icon: '🪙', name: '1,000 Coins' }, premium: { type: 'effect', item: 'dragon', icon: '🐲', name: 'Dragon Effect' }},
-            { tier: 38, free: { type: 'xp_boost', amount: 50, icon: '⚡', name: '+50% XP (1 day)' }, premium: { type: 'skin', item: 'ice', icon: '🧊', name: 'Ice Color' }},
-            { tier: 39, free: { type: 'coins', amount: 1000, icon: '🪙', name: '1,000 Coins' }, premium: { type: 'border', item: 'animated', icon: '💫', name: 'Animated Border' }},
-            { tier: 40, free: { type: 'lootbox', amount: 2, icon: '📦', name: '2x Epic Loot Box' }, premium: { type: 'skin', item: 'mythic_gold', icon: '👑', name: 'Mythic Gold Color' }},
-            { tier: 41, free: { type: 'coins', amount: 1200, icon: '🪙', name: '1,200 Coins' }, premium: { type: 'coins', amount: 5000, icon: '🪙', name: '5,000 Coins' }},
-            { tier: 42, free: { type: 'coins', amount: 1200, icon: '🪙', name: '1,200 Coins' }, premium: { type: 'effect', item: 'phoenix', icon: '🦅', name: 'Phoenix Effect' }},
-            { tier: 43, free: { type: 'xp_boost', amount: 50, icon: '⚡', name: '+50% XP (1 day)' }, premium: { type: 'skin', item: 'thunder', icon: '⛈️', name: 'Thunder Color' }},
-            { tier: 44, free: { type: 'coins', amount: 1200, icon: '🪙', name: '1,200 Coins' }, premium: { type: 'border', item: 'elite', icon: '🌟', name: 'Elite Border' }},
-            { tier: 45, free: { type: 'skin', item: 'silver', icon: '⚪', name: 'Silver Color' }, premium: { type: 'lootbox', amount: 2, icon: '📦', name: '2x Mythic Loot Box' }},
-            { tier: 46, free: { type: 'coins', amount: 1500, icon: '🪙', name: '1,500 Coins' }, premium: { type: 'coins', amount: 7500, icon: '🪙', name: '7,500 Coins' }},
-            { tier: 47, free: { type: 'coins', amount: 1500, icon: '🪙', name: '1,500 Coins' }, premium: { type: 'effect', item: 'cosmic_aura', icon: '🌌', name: 'Cosmic Aura' }},
-            { tier: 48, free: { type: 'xp_boost', amount: 100, icon: '⚡', name: '+100% XP (1 day)' }, premium: { type: 'skin', item: 'dark_matter', icon: '🕳️', name: 'Dark Matter Color' }},
-            { tier: 49, free: { type: 'coins', amount: 2000, icon: '🪙', name: '2,000 Coins' }, premium: { type: 'border', item: 'ultimate', icon: '👑', name: 'Ultimate Border' }},
-            { tier: 50, free: { type: 'lootbox', amount: 1, icon: '📦', name: 'Mega Loot Box' }, premium: { type: 'title', item: 'season1_champion', icon: '🏆', name: 'Season 1 Champion Title' }}
+            { tier: 1, free: { icon: '🪙', name: '50 Coins' }, premium: { icon: '💎', name: '100 Coins' }},
+            { tier: 2, free: { icon: '📦', name: 'Common Lootbox' }, premium: { icon: '📦', name: 'Rare Lootbox' }},
+            { tier: 3, free: { icon: '🪙', name: '75 Coins' }, premium: { icon: '🎨', name: 'Neon Theme' }},
+            { tier: 4, free: { icon: '🃏', name: 'Trading Card' }, premium: { icon: '🃏', name: 'Rare Card' }},
+            { tier: 5, free: { icon: '🪙', name: '100 Coins' }, premium: { icon: '📦', name: 'Epic Lootbox' }},
+            { tier: 6, free: { icon: '⚡', name: 'XP Booster' }, premium: { icon: '💎', name: '200 Coins' }},
+            { tier: 7, free: { icon: '🪙', name: '100 Coins' }, premium: { icon: '🐾', name: 'Rare Pet Egg' }},
+            { tier: 8, free: { icon: '📦', name: 'Rare Lootbox' }, premium: { icon: '👑', name: 'Crown Badge' }},
+            { tier: 9, free: { icon: '🪙', name: '150 Coins' }, premium: { icon: '🎆', name: 'Galaxy Background' }},
+            { tier: 10, free: { icon: '🏅', name: 'Bronze Frame' }, premium: { icon: '🥇', name: 'Gold Frame' }},
+            { tier: 11, free: { icon: '🪙', name: '150 Coins' }, premium: { icon: '💎', name: '300 Coins' }},
+            { tier: 12, free: { icon: '🃏', name: '2 Trading Cards' }, premium: { icon: '📦', name: 'Legendary Lootbox' }},
+            { tier: 13, free: { icon: '🪙', name: '200 Coins' }, premium: { icon: '🎨', name: 'Synthwave Theme' }},
+            { tier: 14, free: { icon: '⚡', name: 'Coin Booster' }, premium: { icon: '💫', name: 'Comet Trail' }},
+            { tier: 15, free: { icon: '🎖️', name: 'Silver Badge' }, premium: { icon: '💎', name: '500 Coins' }},
+            { tier: 16, free: { icon: '🪙', name: '200 Coins' }, premium: { icon: '🐾', name: 'Epic Pet Egg' }},
+            { tier: 17, free: { icon: '📦', name: 'Epic Lootbox' }, premium: { icon: '❄️', name: 'Frost Trail' }},
+            { tier: 18, free: { icon: '🪙', name: '250 Coins' }, premium: { icon: '🎭', name: 'Arcade King Avatar' }},
+            { tier: 19, free: { icon: '🎨', name: 'Cyber Theme' }, premium: { icon: '💎', name: '750 Coins' }},
+            { tier: 20, free: { icon: '🥈', name: 'Silver Frame' }, premium: { icon: '💠', name: 'Diamond Frame' }},
+            { tier: 21, free: { icon: '🪙', name: '300 Coins' }, premium: { icon: '📦', name: '2 Legendary Lootboxes' }},
+            { tier: 22, free: { icon: '🃏', name: '3 Trading Cards' }, premium: { icon: '💎', name: '1000 Coins' }},
+            { tier: 23, free: { icon: '🪙', name: '350 Coins' }, premium: { icon: '🌀', name: 'Vortex Trail' }},
+            { tier: 24, free: { icon: '⭐', name: 'Gold Badge' }, premium: { icon: '💎', name: 'Diamond Badge' }},
+            { tier: 25, free: { icon: '🪙', name: '500 Coins' }, premium: { icon: '🌈', name: 'Rainbow Aura' }},
+            { tier: 26, free: { icon: '📦', name: 'Legendary Lootbox' }, premium: { icon: '💎', name: '1500 Coins' }},
+            { tier: 27, free: { icon: '🪙', name: '500 Coins' }, premium: { icon: '🐾', name: 'Legendary Pet Egg' }},
+            { tier: 28, free: { icon: '🃏', name: 'Legendary Card' }, premium: { icon: '🔮', name: 'Mystic Effect' }},
+            { tier: 29, free: { icon: '🪙', name: '750 Coins' }, premium: { icon: '💎', name: '2000 Coins' }},
+            { tier: 30, free: { icon: '🏆', name: 'Season 1 Trophy' }, premium: { icon: '👑', name: 'Arcade Master Title' }}
         ];
 
         // Challenges
@@ -1084,7 +1064,7 @@
                     method: 'POST',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'claimReward', tier, type })
+                    body: JSON.stringify({ action: 'claimReward', level: tier, type })
                 });
                 
                 const data = await res.json();
@@ -1100,7 +1080,7 @@
                     }
                     
                     renderAll();
-                    showToast(`Reward claimed: ${data.reward}! 🎁`, 'success');
+                    showToast(`Reward claimed: ${data.reward?.name || data.message}! 🎁`, 'success');
                 } else {
                     showToast(data.error || 'Failed to claim', 'error');
                 }
