@@ -94,6 +94,9 @@ updateChallengeProgress($username, $game, $score, $coinsEarned);
 // Update guild XP
 updateGuildXP($username, $score);
 
+// Update battle pass XP
+$bpXP = updateBattlePassXP($username, $score);
+
 echo json_encode([
     "success" => true,
     "coinsEarned" => $coinsEarned,
@@ -234,4 +237,55 @@ function updateGuildXP($username, $score) {
     }
     
     file_put_contents($guildsFile, json_encode($guilds, JSON_PRETTY_PRINT));
+}
+
+function updateBattlePassXP($username, $score) {
+    $bpFile = __DIR__ . "/../data/battlepass.json";
+
+    // Calculate XP: 1 XP per 20 score, minimum 5 XP for playing
+    $xpEarned = max(5, floor($score / 20));
+    $xpEarned = min($xpEarned, 50); // Cap at 50 XP per game
+
+    // Load battle pass data
+    $bpData = file_exists($bpFile) ? json_decode(file_get_contents($bpFile), true) : [];
+
+    // Initialize user if needed
+    if (!isset($bpData[$username])) {
+        $bpData[$username] = [
+            'season' => 1,
+            'xp' => 0,
+            'premium' => false,
+            'claimed' => ['free' => [], 'premium' => []],
+            'challenges' => [
+                'daily' => ['date' => date('Y-m-d'), 'progress' => []],
+                'weekly' => ['week' => date('W'), 'progress' => []],
+                'seasonal' => ['season' => 1, 'progress' => []]
+            ]
+        ];
+    }
+
+    // Premium gets 2x XP
+    if ($bpData[$username]['premium']) {
+        $xpEarned *= 2;
+    }
+
+    $bpData[$username]['xp'] += $xpEarned;
+
+    // Update challenge progress
+    $bpData[$username]['challenges']['daily']['progress']['games_played'] =
+        ($bpData[$username]['challenges']['daily']['progress']['games_played'] ?? 0) + 1;
+    $bpData[$username]['challenges']['daily']['progress']['score'] =
+        ($bpData[$username]['challenges']['daily']['progress']['score'] ?? 0) + $score;
+    $bpData[$username]['challenges']['weekly']['progress']['games_played'] =
+        ($bpData[$username]['challenges']['weekly']['progress']['games_played'] ?? 0) + 1;
+    $bpData[$username]['challenges']['weekly']['progress']['score'] =
+        ($bpData[$username]['challenges']['weekly']['progress']['score'] ?? 0) + $score;
+    $bpData[$username]['challenges']['seasonal']['progress']['games_played'] =
+        ($bpData[$username]['challenges']['seasonal']['progress']['games_played'] ?? 0) + 1;
+    $bpData[$username]['challenges']['seasonal']['progress']['score'] =
+        ($bpData[$username]['challenges']['seasonal']['progress']['score'] ?? 0) + $score;
+
+    file_put_contents($bpFile, json_encode($bpData, JSON_PRETTY_PRINT));
+
+    return $xpEarned;
 }
