@@ -20,7 +20,14 @@ if (!isset($_SESSION['user'])) {
 }
 
 $username = $_SESSION['user'];
-$action = $_GET['action'] ?? $_POST['action'] ?? '';
+
+// Get action from GET or JSON body (for POST requests)
+$jsonInput = null;
+$action = $_GET['action'] ?? '';
+if (empty($action) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $jsonInput = json_decode(file_get_contents('php://input'), true);
+    $action = $jsonInput['action'] ?? '';
+}
 
 // Season config
 $SEASON = [
@@ -156,7 +163,7 @@ switch ($action) {
         break;
 
     case 'addXp':
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = $jsonInput;
         $xpAmount = intval($input['xp'] ?? 0);
         $source = $input['source'] ?? 'game';
 
@@ -186,7 +193,7 @@ switch ($action) {
         break;
 
     case 'updateChallenge':
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = $jsonInput;
         $track = $input['track'] ?? '';
         $amount = intval($input['amount'] ?? 1);
 
@@ -228,7 +235,7 @@ switch ($action) {
         break;
 
     case 'claimReward':
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = $jsonInput;
         $level = intval($input['level'] ?? 0);
         $type = $input['type'] ?? 'free'; // 'free' or 'premium'
 
