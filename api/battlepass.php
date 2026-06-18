@@ -265,12 +265,18 @@ switch ($action) {
         $userBp['claimed'][$type][] = $level;
 
         // Give the reward
-        $user = &$users[$username];
+        $user = &$users['users'][$username];
+
+        // Initialize inventory if needed
+        if (!isset($user['inventory'])) $user['inventory'] = [];
+        if (!isset($user['unlocks'])) $user['unlocks'] = [];
+
         switch ($reward['type']) {
             case 'coins':
                 $user['coins'] = ($user['coins'] ?? 0) + $reward['value'];
                 break;
             case 'lootbox':
+                if (!isset($user['inventory']['lootboxes'])) $user['inventory']['lootboxes'] = [];
                 $rarity = str_replace('_2', '', $reward['value']);
                 $count = strpos($reward['value'], '_2') !== false ? 2 : 1;
                 for ($i = 0; $i < $count; $i++) {
@@ -278,9 +284,11 @@ switch ($action) {
                 }
                 break;
             case 'booster':
+                if (!isset($user['inventory']['boosters'])) $user['inventory']['boosters'] = [];
                 $user['inventory']['boosters'][] = ['type' => $reward['value'], 'obtained' => date('c')];
                 break;
             case 'card':
+                if (!isset($user['inventory']['tradingCards'])) $user['inventory']['tradingCards'] = [];
                 $cardRarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
                 $cardRarity = $reward['value'] === 'legendary' ? 'legendary' :
                              ($reward['value'] === 'rare' ? 'rare' : $cardRarities[array_rand(['common', 'uncommon', 'rare'])]);
@@ -294,10 +302,12 @@ switch ($action) {
                 }
                 break;
             case 'pet':
+                if (!isset($user['inventory']['petEggs'])) $user['inventory']['petEggs'] = [];
                 $user['inventory']['petEggs'][] = ['type' => $reward['value'], 'obtained' => date('c')];
                 break;
             default:
                 // Cosmetics go to unlocks
+                if (!isset($user['unlocks'][$reward['type']])) $user['unlocks'][$reward['type']] = [];
                 $user['unlocks'][$reward['type']][] = $reward['value'];
                 break;
         }
@@ -318,7 +328,7 @@ switch ($action) {
             exit;
         }
 
-        $user = &$users[$username];
+        $user = &$users['users'][$username];
         if (($user['coins'] ?? 0) < $SEASON['premiumCost']) {
             echo json_encode(['success' => false, 'error' => 'Not enough coins']);
             exit;
