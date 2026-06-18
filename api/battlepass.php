@@ -114,13 +114,37 @@ if (!isset($bpData[$username])) {
 
 $userBp = &$bpData[$username];
 
+// Ensure all required structures exist
+if (!isset($userBp['challenges'])) {
+    $userBp['challenges'] = [
+        'daily' => ['date' => date('Y-m-d'), 'progress' => []],
+        'weekly' => ['week' => date('W'), 'progress' => []],
+        'seasonal' => ['season' => $SEASON['id'], 'progress' => []]
+    ];
+}
+if (!isset($userBp['claimed'])) {
+    $userBp['claimed'] = ['free' => [], 'premium' => []];
+}
+if (!isset($userBp['claimed']['free'])) {
+    $userBp['claimed']['free'] = [];
+}
+if (!isset($userBp['claimed']['premium'])) {
+    $userBp['claimed']['premium'] = [];
+}
+if (!isset($userBp['xp'])) {
+    $userBp['xp'] = 0;
+}
+if (!isset($userBp['premium'])) {
+    $userBp['premium'] = false;
+}
+
 // Reset challenges if needed
 $today = date('Y-m-d');
 $week = date('W');
-if ($userBp['challenges']['daily']['date'] !== $today) {
+if (!isset($userBp['challenges']['daily']['date']) || $userBp['challenges']['daily']['date'] !== $today) {
     $userBp['challenges']['daily'] = ['date' => $today, 'progress' => []];
 }
-if ($userBp['challenges']['weekly']['week'] !== $week) {
+if (!isset($userBp['challenges']['weekly']['week']) || $userBp['challenges']['weekly']['week'] !== $week) {
     $userBp['challenges']['weekly'] = ['week' => $week, 'progress' => []];
 }
 
