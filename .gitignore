@@ -1,2 +1,5 @@
 data/
 leaderboards/
+
+# Internal docs live in the consulting tree, never the webroot
+*.md
