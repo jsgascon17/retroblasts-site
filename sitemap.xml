@@ -1,229 +1,217 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://retroblasts.com/2048</loc>
+    <loc>https://retroblasts.com/2048.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/achievements</loc>
+    <loc>https://retroblasts.com/achievements.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/admin</loc>
+    <loc>https://retroblasts.com/asteroids.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/asteroids</loc>
+    <loc>https://retroblasts.com/auctions.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/auctions</loc>
+    <loc>https://retroblasts.com/battle-pass.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/battle-pass</loc>
+    <loc>https://retroblasts.com/battlepass.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/battlepass</loc>
+    <loc>https://retroblasts.com/boss-events.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/boss-events</loc>
+    <loc>https://retroblasts.com/bounties.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/bounties</loc>
+    <loc>https://retroblasts.com/brick-breaker.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/brick-breaker</loc>
+    <loc>https://retroblasts.com/capybara-clicker.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/capybara-clicker</loc>
-    <lastmod>2026-06-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://retroblasts.com/casino</loc>
+    <loc>https://retroblasts.com/casino.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/challenge</loc>
+    <loc>https://retroblasts.com/challenge.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/chat</loc>
+    <loc>https://retroblasts.com/chat.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/chess</loc>
+    <loc>https://retroblasts.com/chess.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/codes</loc>
+    <loc>https://retroblasts.com/codes.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/cookie-clicker</loc>
+    <loc>https://retroblasts.com/cookie-clicker.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/crafting</loc>
+    <loc>https://retroblasts.com/crafting.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/crash</loc>
+    <loc>https://retroblasts.com/crash.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/crossy-road</loc>
+    <loc>https://retroblasts.com/crossy-road.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/daily-challenges</loc>
+    <loc>https://retroblasts.com/daily-challenges.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/daily-rewards</loc>
+    <loc>https://retroblasts.com/daily-rewards.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/daily-spin</loc>
+    <loc>https://retroblasts.com/daily-spin.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/data-transfer</loc>
+    <loc>https://retroblasts.com/data-transfer.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/doodle-jump-backup</loc>
+    <loc>https://retroblasts.com/doodle-jump-backup.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/doodle-jump</loc>
+    <loc>https://retroblasts.com/doodle-jump.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/dropper</loc>
+    <loc>https://retroblasts.com/dropper.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/egg-farm</loc>
+    <loc>https://retroblasts.com/egg-farm.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/events</loc>
+    <loc>https://retroblasts.com/events.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/fishing</loc>
+    <loc>https://retroblasts.com/fishing.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/flappy-bird</loc>
+    <loc>https://retroblasts.com/flappy-bird.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/friends</loc>
+    <loc>https://retroblasts.com/friends.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/fruit-ninja</loc>
+    <loc>https://retroblasts.com/fruit-ninja.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/game-admin-panel</loc>
+    <loc>https://retroblasts.com/geometry-dash.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/geometry-dash</loc>
+    <loc>https://retroblasts.com/google385d85d6b9326001.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/google385d85d6b9326001</loc>
+    <loc>https://retroblasts.com/guild.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/guild</loc>
-    <lastmod>2026-06-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://retroblasts.com/guilds</loc>
+    <loc>https://retroblasts.com/guilds.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -235,289 +223,289 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/inventory</loc>
+    <loc>https://retroblasts.com/inventory.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/knife-hit</loc>
+    <loc>https://retroblasts.com/knife-hit.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/leaderboards</loc>
+    <loc>https://retroblasts.com/leaderboards.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/login</loc>
+    <loc>https://retroblasts.com/login.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/make-icon</loc>
+    <loc>https://retroblasts.com/make-icon.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/marketplace</loc>
+    <loc>https://retroblasts.com/marketplace.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/minesweeper</loc>
+    <loc>https://retroblasts.com/minesweeper.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/mini-games</loc>
+    <loc>https://retroblasts.com/mini-games.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/navbar</loc>
+    <loc>https://retroblasts.com/navbar.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/news</loc>
+    <loc>https://retroblasts.com/news.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/pacman</loc>
+    <loc>https://retroblasts.com/pacman.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/pets</loc>
+    <loc>https://retroblasts.com/pets.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/platformer</loc>
+    <loc>https://retroblasts.com/platformer.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/pokemon-cards</loc>
+    <loc>https://retroblasts.com/pokemon-cards.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/poker</loc>
+    <loc>https://retroblasts.com/poker.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/poly-racer</loc>
+    <loc>https://retroblasts.com/poly-racer.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/pop-the-lock</loc>
+    <loc>https://retroblasts.com/pop-the-lock.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/predictions</loc>
+    <loc>https://retroblasts.com/predictions.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/privacy</loc>
+    <loc>https://retroblasts.com/privacy.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/profile</loc>
+    <loc>https://retroblasts.com/profile.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/racing-backup</loc>
+    <loc>https://retroblasts.com/racing-backup.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/racing</loc>
+    <loc>https://retroblasts.com/racing.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/ranks</loc>
+    <loc>https://retroblasts.com/ranks.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/referrals</loc>
+    <loc>https://retroblasts.com/referrals.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/replays</loc>
+    <loc>https://retroblasts.com/replays.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/rhythm</loc>
+    <loc>https://retroblasts.com/rhythm.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/rooms</loc>
+    <loc>https://retroblasts.com/rooms.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/settings</loc>
+    <loc>https://retroblasts.com/settings.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/shop</loc>
+    <loc>https://retroblasts.com/shop.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/snake</loc>
+    <loc>https://retroblasts.com/snake.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/space-invaders</loc>
+    <loc>https://retroblasts.com/space-invaders.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/spectate</loc>
+    <loc>https://retroblasts.com/spectate.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/stats</loc>
+    <loc>https://retroblasts.com/stats.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/stocks</loc>
+    <loc>https://retroblasts.com/stocks.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/streaks</loc>
+    <loc>https://retroblasts.com/streaks.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/swordfight</loc>
+    <loc>https://retroblasts.com/swordfight.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/teams</loc>
+    <loc>https://retroblasts.com/teams.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/terms</loc>
+    <loc>https://retroblasts.com/terms.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/tetris</loc>
+    <loc>https://retroblasts.com/tetris.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/tournaments</loc>
+    <loc>https://retroblasts.com/tournaments.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/tower-defense</loc>
+    <loc>https://retroblasts.com/tower-defense.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/trading</loc>
+    <loc>https://retroblasts.com/trading.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/typing</loc>
+    <loc>https://retroblasts.com/typing.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/war-simulator</loc>
+    <loc>https://retroblasts.com/war-simulator.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/wars</loc>
+    <loc>https://retroblasts.com/wars.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/whack-a-mole</loc>
+    <loc>https://retroblasts.com/whack-a-mole.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/zombie-shooter</loc>
+    <loc>https://retroblasts.com/zombie-shooter.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://retroblasts.com/zookeeper</loc>
+    <loc>https://retroblasts.com/zookeeper.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>

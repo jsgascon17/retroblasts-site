@@ -1,1 +1,53 @@
+# RetroBlasts .htaccess - Optimized
+
+# Gzip compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css
+    AddOutputFilterByType DEFLATE application/javascript text/javascript
+    AddOutputFilterByType DEFLATE application/json text/xml application/xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# Aggressive caching
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 year"
+    ExpiresByType text/html "access plus 0 seconds"
+    ExpiresByType application/json "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Immutable static assets
+    <FilesMatch "\.(ico|jpg|jpeg|png|gif|webp|svg|woff|woff2|ttf|eot|css|js)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    # HTML - revalidate
+    <FilesMatch "\.html$">
+        Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
+    # API - no cache
+    <FilesMatch "\.php$">
+        Header set Cache-Control "no-store"
+    </FilesMatch>
+</IfModule>
+
 ErrorDocument 404 /404.html
+Options -Indexes
+
+# --- Block direct HTTP access to the server-side data store -------------------
+# data/ and leaderboards/ hold the JSON that api/*.php reads and writes. They sit
+# under the webroot, so without these rules Apache serves them verbatim:
+# data/users.json exposed every account's bcrypt password hash, and
+# data/chat-dms/ exposed private messages between named users.
+# Options -Indexes only hid the directory listing; the files themselves were
+# still fetchable by their exact path.
+#
+# The three allowed files below are the only ones the browser actually fetches
+# (index.html reads news.json; game-admin-panel.html reads the two admin files).
+# Everything else is server-side state and must never leave via Apache.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^data/(news|game-admins|game-admin-settings)\.json$ - [L]
+    RewriteRule ^data/ - [F,L]
+    RewriteRule ^leaderboards/ - [F,L]
+</IfModule>
