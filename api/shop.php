@@ -94,10 +94,27 @@ $SHOP_ITEMS = [
         'name' => 'Titles',
         'icon' => '🏷️',
         'items' => [
+            // Standard Titles
             ['id' => 'champion', 'name' => 'Champion 👑', 'cost' => 5000, 'display' => 'Champion 👑'],
             ['id' => 'legend', 'name' => 'Legend ⭐', 'cost' => 7500, 'display' => 'Legend ⭐'],
             ['id' => 'whale', 'name' => 'Whale 🐋', 'cost' => 10000, 'display' => 'Whale 🐋'],
-            ['id' => 'og', 'name' => 'OG 🔥', 'cost' => 15000, 'display' => 'OG 🔥', 'limited' => 10]
+            ['id' => 'og', 'name' => 'OG 🔥', 'cost' => 15000, 'display' => 'OG 🔥', 'limited' => 10],
+            // Premium Titles
+            ['id' => 'goat', 'name' => 'The GOAT 🐐', 'cost' => 25000, 'display' => 'The GOAT 🐐', 'rarity' => 'legendary'],
+            ['id' => 'arcade_king', 'name' => 'Arcade King 🕹️', 'cost' => 20000, 'display' => 'Arcade King 🕹️', 'rarity' => 'epic'],
+            ['id' => 'arcade_queen', 'name' => 'Arcade Queen 👸', 'cost' => 20000, 'display' => 'Arcade Queen 👸', 'rarity' => 'epic'],
+            ['id' => 'pixel_master', 'name' => 'Pixel Master 🎮', 'cost' => 15000, 'display' => 'Pixel Master 🎮', 'rarity' => 'rare'],
+            ['id' => 'high_roller', 'name' => 'High Roller 🎰', 'cost' => 30000, 'display' => 'High Roller 🎰', 'rarity' => 'legendary'],
+            ['id' => 'speedrunner', 'name' => 'Speedrunner ⚡', 'cost' => 12000, 'display' => 'Speedrunner ⚡', 'rarity' => 'rare'],
+            ['id' => 'tryhard', 'name' => 'Tryhard 💪', 'cost' => 8000, 'display' => 'Tryhard 💪', 'rarity' => 'uncommon'],
+            ['id' => 'noob', 'name' => 'Certified Noob 🤓', 'cost' => 3000, 'display' => 'Certified Noob 🤓', 'rarity' => 'common'],
+            ['id' => 'pro_gamer', 'name' => 'Pro Gamer 🏆', 'cost' => 18000, 'display' => 'Pro Gamer 🏆', 'rarity' => 'epic'],
+            ['id' => 'night_owl', 'name' => 'Night Owl 🦉', 'cost' => 10000, 'display' => 'Night Owl 🦉', 'rarity' => 'rare'],
+            ['id' => 'collector', 'name' => 'Collector 💎', 'cost' => 35000, 'display' => 'Collector 💎', 'rarity' => 'legendary'],
+            ['id' => 'boss_slayer', 'name' => 'Boss Slayer ⚔️', 'cost' => 22000, 'display' => 'Boss Slayer ⚔️', 'rarity' => 'epic'],
+            ['id' => 'lucky', 'name' => 'Lucky 🍀', 'cost' => 7777, 'display' => 'Lucky 🍀', 'rarity' => 'rare'],
+            ['id' => 'veteran', 'name' => 'Veteran 🎖️', 'cost' => 50000, 'display' => 'Veteran 🎖️', 'rarity' => 'legendary', 'limited' => 25],
+            ['id' => 'founder', 'name' => 'Founder ✨', 'cost' => 100000, 'display' => 'Founder ✨', 'rarity' => 'mythic', 'limited' => 5]
         ]
     ],
     'banners' => [
@@ -152,6 +169,78 @@ $SHOP_ITEMS = [
             ['id' => 'tournament_banner', 'name' => 'Tournament Banner', 'cost' => 3000, 'desc' => 'Custom gold banner on tournaments you create'],
             ['id' => 'spotlight', 'name' => 'Profile Spotlight (24h)', 'cost' => 5000, 'duration' => 86400, 'desc' => 'Featured on homepage for 24 hours']
         ]
+    ],
+    'cursors' => [
+        'name' => 'Cursor Effects',
+        'icon' => '🖱️',
+        'items' => [
+            ['id' => 'default', 'name' => 'Default', 'cost' => 0, 'cursor' => 'default'],
+            ['id' => 'crosshair', 'name' => 'Crosshair', 'cost' => 500, 'cursor' => 'crosshair'],
+            ['id' => 'pointer_gold', 'name' => 'Golden Pointer', 'cost' => 2000, 'cursor' => 'pointer', 'color' => '#ffd700'],
+            ['id' => 'pointer_neon', 'name' => 'Neon Pointer', 'cost' => 2500, 'cursor' => 'pointer', 'color' => '#39ff14', 'glow' => true],
+            ['id' => 'sword', 'name' => 'Pixel Sword', 'cost' => 3500, 'cursor' => 'custom', 'image' => '⚔️'],
+            ['id' => 'wand', 'name' => 'Magic Wand', 'cost' => 4000, 'cursor' => 'custom', 'image' => '🪄', 'trail' => 'sparkle'],
+            ['id' => 'fire_trail', 'name' => 'Fire Trail', 'cost' => 5000, 'cursor' => 'pointer', 'trail' => 'fire'],
+            ['id' => 'rainbow_trail', 'name' => 'Rainbow Trail', 'cost' => 6000, 'cursor' => 'pointer', 'trail' => 'rainbow'],
+            ['id' => 'star_trail', 'name' => 'Star Trail', 'cost' => 4500, 'cursor' => 'pointer', 'trail' => 'stars'],
+            ['id' => 'snow_trail', 'name' => 'Snow Trail', 'cost' => 4000, 'cursor' => 'pointer', 'trail' => 'snow'],
+            ['id' => 'laser', 'name' => 'Laser Pointer', 'cost' => 5500, 'cursor' => 'custom', 'image' => '🔴', 'trail' => 'laser'],
+            ['id' => 'ghost_trail', 'name' => 'Ghost Trail', 'cost' => 5000, 'cursor' => 'pointer', 'trail' => 'ghost']
+        ]
+    ],
+    'profile_music' => [
+        'name' => 'Profile Music',
+        'icon' => '🎵',
+        'items' => [
+            ['id' => 'none', 'name' => 'No Music', 'cost' => 0, 'track' => null],
+            ['id' => 'retro_arcade', 'name' => 'Retro Arcade', 'cost' => 3000, 'track' => 'retro_arcade.mp3', 'desc' => 'Classic 8-bit arcade vibes'],
+            ['id' => 'chiptune_hero', 'name' => 'Chiptune Hero', 'cost' => 3500, 'track' => 'chiptune_hero.mp3', 'desc' => 'Energetic chiptune beats'],
+            ['id' => 'synthwave', 'name' => 'Synthwave Dreams', 'cost' => 4000, 'track' => 'synthwave.mp3', 'desc' => '80s synthwave nostalgia'],
+            ['id' => 'lofi_chill', 'name' => 'Lo-Fi Chill', 'cost' => 3000, 'track' => 'lofi_chill.mp3', 'desc' => 'Relaxing lo-fi beats'],
+            ['id' => 'epic_boss', 'name' => 'Epic Boss Battle', 'cost' => 5000, 'track' => 'epic_boss.mp3', 'desc' => 'Intense boss fight music'],
+            ['id' => 'pixel_adventure', 'name' => 'Pixel Adventure', 'cost' => 3500, 'track' => 'pixel_adventure.mp3', 'desc' => 'Adventurous platformer tunes'],
+            ['id' => 'space_journey', 'name' => 'Space Journey', 'cost' => 4500, 'track' => 'space_journey.mp3', 'desc' => 'Cosmic ambient vibes'],
+            ['id' => 'victory_fanfare', 'name' => 'Victory Fanfare', 'cost' => 4000, 'track' => 'victory_fanfare.mp3', 'desc' => 'Triumphant celebration music'],
+            ['id' => 'mystery_dungeon', 'name' => 'Mystery Dungeon', 'cost' => 3500, 'track' => 'mystery_dungeon.mp3', 'desc' => 'Mysterious exploration theme'],
+            ['id' => 'racing_pulse', 'name' => 'Racing Pulse', 'cost' => 4000, 'track' => 'racing_pulse.mp3', 'desc' => 'High-speed racing beats'],
+            ['id' => 'peaceful_meadow', 'name' => 'Peaceful Meadow', 'cost' => 2500, 'track' => 'peaceful_meadow.mp3', 'desc' => 'Calm nature sounds']
+        ]
+    ],
+    'pets' => [
+        'name' => 'Pets',
+        'icon' => '🐾',
+        'items' => [
+            // Common Pets (1000-3000)
+            ['id' => 'pixel_cat', 'name' => 'Pixel Cat', 'cost' => 2000, 'emoji' => '🐱', 'rarity' => 'common', 'animation' => 'bounce', 'desc' => 'A cute pixelated kitty'],
+            ['id' => 'pixel_dog', 'name' => 'Pixel Dog', 'cost' => 2000, 'emoji' => '🐕', 'rarity' => 'common', 'animation' => 'wag', 'desc' => 'A loyal pixel pup'],
+            ['id' => 'pixel_bunny', 'name' => 'Pixel Bunny', 'cost' => 2500, 'emoji' => '🐰', 'rarity' => 'common', 'animation' => 'hop', 'desc' => 'A bouncy little bunny'],
+            ['id' => 'pixel_bird', 'name' => 'Pixel Bird', 'cost' => 1500, 'emoji' => '🐦', 'rarity' => 'common', 'animation' => 'fly', 'desc' => 'A cheerful songbird'],
+            ['id' => 'pixel_fish', 'name' => 'Pixel Fish', 'cost' => 1000, 'emoji' => '🐠', 'rarity' => 'common', 'animation' => 'swim', 'desc' => 'A colorful fish friend'],
+            // Uncommon Pets (3000-6000)
+            ['id' => 'ghost_pet', 'name' => 'Friendly Ghost', 'cost' => 4000, 'emoji' => '👻', 'rarity' => 'uncommon', 'animation' => 'float', 'desc' => 'A spooky but friendly ghost'],
+            ['id' => 'slime_pet', 'name' => 'Slime Buddy', 'cost' => 3500, 'emoji' => '🟢', 'rarity' => 'uncommon', 'animation' => 'jiggle', 'desc' => 'A wobbly slime companion'],
+            ['id' => 'robot_pet', 'name' => 'Mini Robot', 'cost' => 5000, 'emoji' => '🤖', 'rarity' => 'uncommon', 'animation' => 'beep', 'desc' => 'A helpful little robot'],
+            ['id' => 'bat_pet', 'name' => 'Pixel Bat', 'cost' => 4500, 'emoji' => '🦇', 'rarity' => 'uncommon', 'animation' => 'fly', 'desc' => 'A nocturnal friend'],
+            ['id' => 'fox_pet', 'name' => 'Pixel Fox', 'cost' => 5500, 'emoji' => '🦊', 'rarity' => 'uncommon', 'animation' => 'sneak', 'desc' => 'A clever fox companion'],
+            // Rare Pets (6000-12000)
+            ['id' => 'dragon_baby', 'name' => 'Baby Dragon', 'cost' => 10000, 'emoji' => '🐲', 'rarity' => 'rare', 'animation' => 'breathe', 'desc' => 'A tiny fire-breathing dragon'],
+            ['id' => 'unicorn_pet', 'name' => 'Mini Unicorn', 'cost' => 12000, 'emoji' => '🦄', 'rarity' => 'rare', 'animation' => 'sparkle', 'desc' => 'A magical unicorn'],
+            ['id' => 'phoenix_pet', 'name' => 'Phoenix Chick', 'cost' => 11000, 'emoji' => '🔥', 'rarity' => 'rare', 'animation' => 'flame', 'desc' => 'A baby phoenix rising'],
+            ['id' => 'alien_pet', 'name' => 'Alien Buddy', 'cost' => 8000, 'emoji' => '👽', 'rarity' => 'rare', 'animation' => 'hover', 'desc' => 'An extraterrestrial friend'],
+            ['id' => 'wizard_cat', 'name' => 'Wizard Cat', 'cost' => 9000, 'emoji' => '🧙‍♂️', 'rarity' => 'rare', 'animation' => 'cast', 'desc' => 'A magical feline wizard'],
+            // Epic Pets (15000-25000)
+            ['id' => 'shadow_wolf', 'name' => 'Shadow Wolf', 'cost' => 18000, 'emoji' => '🐺', 'rarity' => 'epic', 'animation' => 'prowl', 'desc' => 'A mysterious dark wolf'],
+            ['id' => 'crystal_golem', 'name' => 'Crystal Golem', 'cost' => 20000, 'emoji' => '💎', 'rarity' => 'epic', 'animation' => 'shine', 'desc' => 'A living crystal being'],
+            ['id' => 'thunder_tiger', 'name' => 'Thunder Tiger', 'cost' => 22000, 'emoji' => '🐯', 'rarity' => 'epic', 'animation' => 'spark', 'desc' => 'An electric tiger'],
+            ['id' => 'ice_dragon', 'name' => 'Ice Dragon', 'cost' => 25000, 'emoji' => '❄️', 'rarity' => 'epic', 'animation' => 'freeze', 'desc' => 'A frost-breathing dragon'],
+            // Legendary Pets (30000-50000)
+            ['id' => 'golden_dragon', 'name' => 'Golden Dragon', 'cost' => 50000, 'emoji' => '🌟', 'rarity' => 'legendary', 'animation' => 'majestic', 'desc' => 'The ultimate dragon companion'],
+            ['id' => 'void_cat', 'name' => 'Void Cat', 'cost' => 40000, 'emoji' => '🌌', 'rarity' => 'legendary', 'animation' => 'warp', 'desc' => 'A cat from another dimension'],
+            ['id' => 'celestial_owl', 'name' => 'Celestial Owl', 'cost' => 45000, 'emoji' => '🦉', 'rarity' => 'legendary', 'animation' => 'cosmos', 'desc' => 'A wise cosmic owl'],
+            // Mythic Pets (75000+)
+            ['id' => 'rainbow_serpent', 'name' => 'Rainbow Serpent', 'cost' => 75000, 'emoji' => '🌈', 'rarity' => 'mythic', 'animation' => 'rainbow', 'desc' => 'A legendary rainbow serpent', 'limited' => 10],
+            ['id' => 'omega_pet', 'name' => 'OMEGA Entity', 'cost' => 100000, 'emoji' => '💀', 'rarity' => 'mythic', 'animation' => 'omega', 'desc' => 'The ultimate companion', 'limited' => 3]
+        ]
     ]
 ];
 
@@ -189,18 +278,18 @@ function ensureUserHasShopFields(&$user) {
             'banners' => [],
             'emotes' => [],
             'boosters' => [],
-            'social' => []
+            'social' => [],
+            'cursors' => [],
+            'profile_music' => [],
+            'pets' => []
         ];
     }
-    // Ensure titles category exists for existing users
-    if (!isset($user['inventory']['banners'])) {
-        $user['inventory']['banners'] = [];
-    }
-    if (!isset($user['inventory']['titles'])) {
-    if (!isset($user['inventory']['avatar_rings'])) {
-        $user['inventory']['avatar_rings'] = [];
-    }
-        $user['inventory']['titles'] = [];
+    // Ensure all categories exist for existing users
+    $categories = ['banners', 'titles', 'avatar_rings', 'cursors', 'profile_music', 'pets'];
+    foreach ($categories as $cat) {
+        if (!isset($user['inventory'][$cat])) {
+            $user['inventory'][$cat] = [];
+        }
     }
     if (!isset($user['equipped'])) {
         $user['equipped'] = [
@@ -209,15 +298,18 @@ function ensureUserHasShopFields(&$user) {
             'avatar_effect' => null,
             'avatar_ring' => null,
             'title' => null,
-            'banner' => null
+            'banner' => null,
+            'cursor' => null,
+            'profile_music' => null,
+            'pet' => null
         ];
     }
-    // Ensure title equip slot exists
-    if (!isset($user['equipped']['title'])) {
-    if (!isset($user['equipped']['avatar_ring'])) {
-        $user['equipped']['avatar_ring'] = null;
-    }
-        $user['equipped']['title'] = null;
+    // Ensure all equip slots exist
+    $equipSlots = ['title', 'avatar_ring', 'cursor', 'profile_music', 'pet'];
+    foreach ($equipSlots as $slot) {
+        if (!isset($user['equipped'][$slot])) {
+            $user['equipped'][$slot] = null;
+        }
     }
     if (!isset($user['activeBoosts'])) $user['activeBoosts'] = [];
 }
@@ -436,7 +528,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($category === 'titles') $equipKey = 'title';
         if ($category === 'banners') $equipKey = 'banner';
         if ($category === 'avatar_rings') $equipKey = 'avatar_ring';
-        
+        if ($category === 'cursors') $equipKey = 'cursor';
+        if ($category === 'profile_music') $equipKey = 'profile_music';
+        if ($category === 'pets') $equipKey = 'pet';
+
         // Check ownership
         if (!in_array($itemId, $user['inventory'][$category] ?? [])) {
             echo json_encode(['success' => false, 'error' => 'You do not own this item']);
@@ -462,7 +557,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($category === 'titles') $equipKey = 'title';
         if ($category === 'banners') $equipKey = 'banner';
         if ($category === 'avatar_rings') $equipKey = 'avatar_ring';
-        
+        if ($category === 'cursors') $equipKey = 'cursor';
+        if ($category === 'profile_music') $equipKey = 'profile_music';
+        if ($category === 'pets') $equipKey = 'pet';
+
         $user['equipped'][$equipKey] = null;
         writeUsers($data);
         

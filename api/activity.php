@@ -70,7 +70,8 @@ function formatActivity($activity, $users) {
         'playing' => "🎮 {$displayName} is playing {$activity['data']['game']}",
     ];
     
-    $activity['message'] = $messages[$activity['type']] ?? "{$displayName} did something in {$activity['data']['game'] ?? 'arcade'}";
+    $gameName = isset($activity['data']['game']) ? $activity['data']['game'] : 'arcade';
+    $activity['message'] = isset($messages[$activity['type']]) ? $messages[$activity['type']] : "{$displayName} did something in {$gameName}";
     $activity['displayName'] = $displayName;
     $activity['timeAgo'] = getTimeAgo($activity['time']);
     
@@ -97,7 +98,8 @@ $activities = readActivity();
 $users = readUsers()['users'] ?? [];
 
 // GET requests
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+$requestMethod = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
+if ($requestMethod === 'GET') {
     $action = $_GET['action'] ?? 'feed';
 
     if ($action === 'feed') {
@@ -147,7 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 // POST requests
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($requestMethod === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
     $action = $input['action'] ?? '';
 

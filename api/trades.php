@@ -30,7 +30,7 @@ function areFriends($user1, $user2, $friends) {
     return false;
 }
 
-$currentUser = $_SESSION['username'] ?? null;
+$currentUser = $_SESSION['user'] ?? null;
 
 if (!$currentUser) {
     echo json_encode(['success' => false, 'error' => 'Not logged in']);

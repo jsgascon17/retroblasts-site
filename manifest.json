@@ -1,18 +1,52 @@
 {
-  "name": "RetroBlasts",
-  "short_name": "RetroBlasts",
-  "description": "Classic retro browser games - Snake, Pac-Man, Flappy Bird and more!",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#1a1a2e",
-  "theme_color": "#667eea",
-  "orientation": "any",
-  "icons": [
-    {
-      "src": "favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ]
+    "name": "RetroBlasts - Free Online Arcade Games",
+    "short_name": "RetroBlasts",
+    "description": "Play 50+ free online games! Flappy Bird, Snake, Tetris, Chess, Cookie Clicker, and more. No download required.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#1a1a2e",
+    "theme_color": "#1a1a2e",
+    "orientation": "any",
+    "lang": "en",
+    "dir": "ltr",
+    "categories": ["games", "entertainment", "arcade"],
+    "iarc_rating_id": "",
+    "prefer_related_applications": false,
+    "screenshots": [
+        {
+            "src": "/images/og-image.svg",
+            "sizes": "1200x630",
+            "type": "image/svg+xml",
+            "form_factor": "wide",
+            "label": "RetroBlasts Homepage"
+        }
+    ],
+    "related_applications": [],
+    "shortcuts": [
+        {
+            "name": "Play Flappy Bird",
+            "short_name": "Flappy Bird",
+            "description": "Classic arcade game",
+            "url": "/flappy-bird.html"
+        },
+        {
+            "name": "Play Chess",
+            "short_name": "Chess",
+            "description": "Strategy board game",
+            "url": "/chess.html"
+        },
+        {
+            "name": "Play Snake",
+            "short_name": "Snake",
+            "description": "Classic snake game",
+            "url": "/snake.html"
+        },
+        {
+            "name": "Daily Rewards",
+            "short_name": "Rewards",
+            "description": "Claim daily coins",
+            "url": "/daily-rewards.html"
+        }
+    ]
 }

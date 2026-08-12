@@ -260,7 +260,7 @@ switch ($action) {
         // Update listing
         $listing['status'] = 'sold';
         $listing['buyer'] = $username;
-        $listing['soldAt'] => date('c');
+        $listing['soldAt'] = date('c');
         $listing['fee'] = $fee;
 
         // Add to history

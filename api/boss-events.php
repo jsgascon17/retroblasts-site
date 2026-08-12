@@ -1,6 +1,32 @@
 <?php
+// Set session cookie params before session_start() for Safari compatibility
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => '',
+    'secure' => isset($_SERVER['HTTPS']),
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
 session_start();
+
+// CORS headers for API access
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if ($origin && strpos($origin, 'retroblasts.com') !== false) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+} else {
+    header('Access-Control-Allow-Origin: https://retroblasts.com');
+}
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
 
 $usersFile = __DIR__ . '/../data/users.json';
 $bossFile = __DIR__ . '/../data/boss-events.json';
@@ -21,74 +47,189 @@ $users = loadJson($usersFile);
 $bossData = loadJson($bossFile);
 $bpData = loadJson($bpFile);
 
-// Boss definitions
+// Admins who can spawn bosses
+$ADMINS = ['BillyBuffalo15'];
+
+// Boss definitions by difficulty
 $BOSSES = [
+    // ===== EASY BOSSES =====
+    'slime_king' => [
+        'name' => 'Slime King',
+        'icon' => '🟢',
+        'hp' => 50000,
+        'difficulty' => 'easy',
+        'duration' => 3600, // 1 hour
+        'description' => 'A wobbly slime king bounces into the arcade!',
+        'rewards' => [
+            'participation' => ['coins' => 25, 'xp' => 15, 'bpXp' => 10],
+            'milestones' => [
+                500 => ['coins' => 50],
+                2000 => ['coins' => 100, 'item' => ['type' => 'lootbox', 'rarity' => 'common']],
+                5000 => ['coins' => 200, 'item' => ['type' => 'lootbox', 'rarity' => 'rare']]
+            ],
+            'topDamage' => [
+                1 => ['coins' => 500, 'item' => ['type' => 'lootbox', 'rarity' => 'rare']],
+                2 => ['coins' => 300],
+                3 => ['coins' => 200]
+            ]
+        ]
+    ],
+    'pixel_bat' => [
+        'name' => 'Pixel Bat',
+        'icon' => '🦇',
+        'hp' => 75000,
+        'difficulty' => 'easy',
+        'duration' => 7200, // 2 hours
+        'description' => 'A pixelated bat flaps through the arcade!',
+        'rewards' => [
+            'participation' => ['coins' => 30, 'xp' => 20, 'bpXp' => 12],
+            'milestones' => [
+                750 => ['coins' => 75],
+                3000 => ['coins' => 150, 'item' => ['type' => 'lootbox', 'rarity' => 'common']],
+                7500 => ['coins' => 300, 'item' => ['type' => 'lootbox', 'rarity' => 'rare']]
+            ],
+            'topDamage' => [
+                1 => ['coins' => 750, 'item' => ['type' => 'lootbox', 'rarity' => 'rare']],
+                2 => ['coins' => 400],
+                3 => ['coins' => 250]
+            ]
+        ]
+    ],
+
+    // ===== MEDIUM BOSSES =====
     'pixel_dragon' => [
         'name' => 'Pixel Dragon',
         'icon' => '🐉',
-        'hp' => 1000000,
-        'duration' => 86400, // 24 hours
+        'hp' => 500000,
+        'difficulty' => 'medium',
+        'duration' => 43200, // 12 hours
         'description' => 'A mighty dragon made of pure pixels threatens the arcade!',
         'rewards' => [
-            'participation' => ['coins' => 100, 'xp' => 50, 'bpXp' => 25],
+            'participation' => ['coins' => 75, 'xp' => 40, 'bpXp' => 20],
             'milestones' => [
-                1000 => ['coins' => 200, 'item' => ['type' => 'lootbox', 'rarity' => 'rare']],
-                5000 => ['coins' => 500, 'item' => ['type' => 'card', 'rarity' => 'epic']],
-                10000 => ['coins' => 1000, 'bpXp' => 100],
-                25000 => ['item' => ['type' => 'lootbox', 'rarity' => 'legendary']],
-                50000 => ['coins' => 2000, 'title' => 'Dragon Slayer']
+                1000 => ['coins' => 150, 'item' => ['type' => 'lootbox', 'rarity' => 'rare']],
+                5000 => ['coins' => 400, 'item' => ['type' => 'card', 'rarity' => 'epic']],
+                15000 => ['coins' => 750, 'bpXp' => 75],
+                30000 => ['coins' => 1500, 'title' => 'Dragon Slayer']
             ],
             'topDamage' => [
-                1 => ['coins' => 5000, 'item' => ['type' => 'pet', 'id' => 'baby_dragon']],
-                2 => ['coins' => 3000, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']],
-                3 => ['coins' => 2000, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']],
-                10 => ['coins' => 1000, 'item' => ['type' => 'lootbox', 'rarity' => 'epic']]
+                1 => ['coins' => 3000, 'item' => ['type' => 'pet', 'id' => 'baby_dragon']],
+                2 => ['coins' => 2000, 'item' => ['type' => 'lootbox', 'rarity' => 'epic']],
+                3 => ['coins' => 1000, 'item' => ['type' => 'lootbox', 'rarity' => 'rare']]
             ]
         ]
     ],
     'arcade_golem' => [
         'name' => 'Arcade Golem',
         'icon' => '🗿',
-        'hp' => 2000000,
-        'duration' => 172800, // 48 hours
+        'hp' => 750000,
+        'difficulty' => 'medium',
+        'duration' => 64800, // 18 hours
         'description' => 'A massive golem of arcade cabinets has awakened!',
         'rewards' => [
-            'participation' => ['coins' => 150, 'xp' => 75, 'bpXp' => 35],
+            'participation' => ['coins' => 100, 'xp' => 50, 'bpXp' => 25],
             'milestones' => [
-                2000 => ['coins' => 300, 'item' => ['type' => 'lootbox', 'rarity' => 'rare']],
-                10000 => ['coins' => 750, 'item' => ['type' => 'card', 'rarity' => 'epic']],
-                25000 => ['coins' => 1500, 'bpXp' => 150],
-                50000 => ['item' => ['type' => 'lootbox', 'rarity' => 'legendary']],
-                100000 => ['coins' => 3000, 'title' => 'Golem Breaker']
+                2000 => ['coins' => 200, 'item' => ['type' => 'lootbox', 'rarity' => 'rare']],
+                7500 => ['coins' => 500, 'item' => ['type' => 'card', 'rarity' => 'epic']],
+                20000 => ['coins' => 1000, 'bpXp' => 100],
+                40000 => ['coins' => 2000, 'title' => 'Golem Breaker']
             ],
             'topDamage' => [
-                1 => ['coins' => 7500, 'item' => ['type' => 'pet', 'id' => 'mini_golem']],
-                2 => ['coins' => 5000, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']],
-                3 => ['coins' => 3000, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']],
-                10 => ['coins' => 1500, 'item' => ['type' => 'lootbox', 'rarity' => 'epic']]
+                1 => ['coins' => 4000, 'item' => ['type' => 'pet', 'id' => 'mini_golem']],
+                2 => ['coins' => 2500, 'item' => ['type' => 'lootbox', 'rarity' => 'epic']],
+                3 => ['coins' => 1500, 'item' => ['type' => 'lootbox', 'rarity' => 'rare']]
             ]
         ]
     ],
+
+    // ===== HARD BOSSES =====
     'glitch_hydra' => [
         'name' => 'Glitch Hydra',
         'icon' => '🐍',
-        'hp' => 3000000,
-        'duration' => 259200, // 72 hours
+        'hp' => 2000000,
+        'difficulty' => 'hard',
+        'duration' => 86400, // 24 hours
         'description' => 'A three-headed beast of corrupted code!',
+        'rewards' => [
+            'participation' => ['coins' => 150, 'xp' => 75, 'bpXp' => 40],
+            'milestones' => [
+                5000 => ['coins' => 400, 'item' => ['type' => 'lootbox', 'rarity' => 'epic']],
+                20000 => ['coins' => 800, 'item' => ['type' => 'card', 'rarity' => 'legendary']],
+                50000 => ['coins' => 1500, 'bpXp' => 150],
+                100000 => ['coins' => 3000, 'title' => 'Hydra Hunter']
+            ],
+            'topDamage' => [
+                1 => ['coins' => 7500, 'item' => ['type' => 'pet', 'id' => 'glitch_serpent']],
+                2 => ['coins' => 5000, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']],
+                3 => ['coins' => 3000, 'item' => ['type' => 'lootbox', 'rarity' => 'epic']]
+            ]
+        ]
+    ],
+    'shadow_phoenix' => [
+        'name' => 'Shadow Phoenix',
+        'icon' => '🔥',
+        'hp' => 3000000,
+        'difficulty' => 'hard',
+        'duration' => 129600, // 36 hours
+        'description' => 'A dark phoenix rises from corrupted save files!',
         'rewards' => [
             'participation' => ['coins' => 200, 'xp' => 100, 'bpXp' => 50],
             'milestones' => [
-                5000 => ['coins' => 500, 'item' => ['type' => 'lootbox', 'rarity' => 'epic']],
-                20000 => ['coins' => 1000, 'item' => ['type' => 'card', 'rarity' => 'legendary']],
-                50000 => ['coins' => 2000, 'bpXp' => 200],
-                100000 => ['item' => ['type' => 'lootbox', 'rarity' => 'legendary'], 'item2' => ['type' => 'lootbox', 'rarity' => 'legendary']],
-                200000 => ['coins' => 5000, 'title' => 'Hydra Hunter', 'badge' => 'hydra_slayer']
+                10000 => ['coins' => 600, 'item' => ['type' => 'lootbox', 'rarity' => 'epic']],
+                35000 => ['coins' => 1200, 'item' => ['type' => 'card', 'rarity' => 'legendary']],
+                75000 => ['coins' => 2500, 'bpXp' => 200],
+                150000 => ['coins' => 5000, 'title' => 'Phoenix Slayer', 'badge' => 'phoenix_slayer']
             ],
             'topDamage' => [
-                1 => ['coins' => 10000, 'item' => ['type' => 'pet', 'id' => 'glitch_serpent']],
-                2 => ['coins' => 7500, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']],
-                3 => ['coins' => 5000, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']],
-                10 => ['coins' => 2500, 'item' => ['type' => 'lootbox', 'rarity' => 'epic']]
+                1 => ['coins' => 10000, 'item' => ['type' => 'pet', 'id' => 'shadow_flame']],
+                2 => ['coins' => 7000, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']],
+                3 => ['coins' => 4000, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']]
+            ]
+        ]
+    ],
+
+    // ===== IMPOSSIBLE BOSSES =====
+    'void_titan' => [
+        'name' => 'Void Titan',
+        'icon' => '👁️',
+        'hp' => 10000000,
+        'difficulty' => 'impossible',
+        'duration' => 172800, // 48 hours
+        'description' => 'An ancient titan from the void between games! IMPOSSIBLE DIFFICULTY!',
+        'rewards' => [
+            'participation' => ['coins' => 500, 'xp' => 250, 'bpXp' => 100],
+            'milestones' => [
+                25000 => ['coins' => 1500, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']],
+                100000 => ['coins' => 4000, 'item' => ['type' => 'card', 'rarity' => 'legendary']],
+                250000 => ['coins' => 8000, 'bpXp' => 500],
+                500000 => ['coins' => 15000, 'title' => 'Void Walker', 'badge' => 'void_conqueror']
+            ],
+            'topDamage' => [
+                1 => ['coins' => 25000, 'item' => ['type' => 'pet', 'id' => 'void_eye'], 'title' => 'Titan Slayer'],
+                2 => ['coins' => 15000, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']],
+                3 => ['coins' => 10000, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']]
+            ]
+        ]
+    ],
+    'omega_destroyer' => [
+        'name' => 'OMEGA DESTROYER',
+        'icon' => '💀',
+        'hp' => 25000000,
+        'difficulty' => 'impossible',
+        'duration' => 259200, // 72 hours
+        'description' => 'THE ULTIMATE BOSS. Can the entire community defeat it?!',
+        'rewards' => [
+            'participation' => ['coins' => 1000, 'xp' => 500, 'bpXp' => 200],
+            'milestones' => [
+                50000 => ['coins' => 3000, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']],
+                200000 => ['coins' => 8000, 'item' => ['type' => 'card', 'rarity' => 'legendary']],
+                500000 => ['coins' => 15000, 'bpXp' => 1000],
+                1000000 => ['coins' => 30000, 'title' => 'OMEGA SLAYER', 'badge' => 'omega_destroyer']
+            ],
+            'topDamage' => [
+                1 => ['coins' => 50000, 'item' => ['type' => 'pet', 'id' => 'omega_skull'], 'title' => 'THE DESTROYER'],
+                2 => ['coins' => 30000, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']],
+                3 => ['coins' => 20000, 'item' => ['type' => 'lootbox', 'rarity' => 'legendary']]
             ]
         ]
     ]
@@ -109,6 +250,7 @@ function startNewBoss($bossId, &$bossData, $BOSSES) {
         'name' => $boss['name'],
         'icon' => $boss['icon'],
         'description' => $boss['description'],
+        'difficulty' => $boss['difficulty'],
         'maxHp' => $boss['hp'],
         'currentHp' => $boss['hp'],
         'startTime' => date('c'),
@@ -118,6 +260,10 @@ function startNewBoss($bossId, &$bossData, $BOSSES) {
         'defeated' => false
     ];
     return $bossData['current'];
+}
+
+function isAdmin($username, $ADMINS) {
+    return in_array(strtolower($username), array_map('strtolower', $ADMINS));
 }
 
 function addDamage($username, $damage, &$bossData, &$users, &$bpData, $BOSSES) {
@@ -154,7 +300,7 @@ function addDamage($username, $damage, &$bossData, &$users, &$bpData, $BOSSES) {
     $event['currentHp'] = max(0, $event['currentHp'] - $damage);
 
     // Give participation rewards
-    $user = &$users[$username];
+    $user = &$users["users"][$username];
     $rewards = $boss['rewards']['participation'];
     $user['coins'] = ($user['coins'] ?? 0) + $rewards['coins'];
     $user['xp'] = ($user['xp'] ?? 0) + $rewards['xp'];
@@ -348,6 +494,17 @@ switch ($action) {
 
     case 'start':
         // Admin only - start a new boss event
+        if (!isset($_SESSION['user'])) {
+            echo json_encode(['success' => false, 'error' => 'Not logged in']);
+            exit;
+        }
+
+        $username = $_SESSION['user'];
+        if (!isAdmin($username, $ADMINS)) {
+            echo json_encode(['success' => false, 'error' => 'Admin access required']);
+            exit;
+        }
+
         $input = json_decode(file_get_contents('php://input'), true);
         $bossId = $input['bossId'] ?? 'pixel_dragon';
 
@@ -366,8 +523,18 @@ switch ($action) {
 
         echo json_encode([
             'success' => true,
-            'event' => $event
+            'event' => $event,
+            'message' => 'Boss spawned by ' . $username
         ]);
+        break;
+
+    case 'isAdmin':
+        // Check if current user is admin
+        if (!isset($_SESSION['user'])) {
+            echo json_encode(['success' => true, 'isAdmin' => false]);
+            exit;
+        }
+        echo json_encode(['success' => true, 'isAdmin' => isAdmin($_SESSION['user'], $ADMINS)]);
         break;
 
     case 'history':
@@ -381,7 +548,7 @@ switch ($action) {
         break;
 
     case 'bosses':
-        // List available bosses
+        // List available bosses grouped by difficulty
         $bossList = [];
         foreach ($BOSSES as $id => $boss) {
             $bossList[] = [
@@ -389,13 +556,27 @@ switch ($action) {
                 'name' => $boss['name'],
                 'icon' => $boss['icon'],
                 'hp' => $boss['hp'],
-                'duration' => $boss['duration']
+                'difficulty' => $boss['difficulty'],
+                'duration' => $boss['duration'],
+                'description' => $boss['description']
             ];
+        }
+
+        // Group by difficulty
+        $grouped = [
+            'easy' => [],
+            'medium' => [],
+            'hard' => [],
+            'impossible' => []
+        ];
+        foreach ($bossList as $boss) {
+            $grouped[$boss['difficulty']][] = $boss;
         }
 
         echo json_encode([
             'success' => true,
-            'bosses' => $bossList
+            'bosses' => $bossList,
+            'byDifficulty' => $grouped
         ]);
         break;
 

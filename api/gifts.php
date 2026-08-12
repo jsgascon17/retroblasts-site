@@ -174,10 +174,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
         
-        if ($amount > 10000) {
-            echo json_encode(['success' => false, 'error' => 'Maximum gift is 10,000 coins']);
-            exit();
-        }
         
         if ($sender['coins'] < $amount) {
             echo json_encode(['success' => false, 'error' => 'Not enough coins']);

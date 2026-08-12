@@ -1,7 +1,7 @@
 <?php
 /**
  * User Authentication API
- * 
+ *
  * POST actions:
  *   register: { username, password, displayName }
  *   login: { username, password }
@@ -12,9 +12,25 @@
  *   get-user: { username } - Get public profile
  */
 
+// Set session cookie params before session_start() for Safari compatibility
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => '',
+    'secure' => isset($_SERVER['HTTPS']),
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
 session_start();
+
+// CORS headers - must use specific origin with credentials (not *)
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if ($origin && strpos($origin, 'retroblasts.com') !== false) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+} else {
+    header('Access-Control-Allow-Origin: https://retroblasts.com');
+}
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Allow-Credentials: true');

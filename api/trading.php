@@ -36,7 +36,29 @@ function getUserInventory($username) {
     ];
 }
 
+// Cosmetic item types (stored as arrays of IDs)
+$COSMETIC_TYPES = ['name_colors', 'borders', 'avatar_effects', 'avatar_rings', 'titles', 'banners', 'cursors', 'profile_music', 'pets', 'emotes'];
+
+function isCosmetic($type) {
+    global $COSMETIC_TYPES;
+    return in_array($type, $COSMETIC_TYPES);
+}
+
 function removeItemFromInventory(&$inventory, $type, $item) {
+    global $COSMETIC_TYPES;
+
+    // Cosmetic items (unique, stored as array of IDs)
+    if (in_array($type, $COSMETIC_TYPES)) {
+        if (!isset($inventory[$type])) return false;
+        $idx = array_search($item, $inventory[$type]);
+        if ($idx !== false) {
+            array_splice($inventory[$type], $idx, 1);
+            return true;
+        }
+        return false;
+    }
+
+    // Stackable items (lootboxes, boosters)
     if ($type === "lootboxes" || $type === "boosters") {
         $idx = array_search($item, $inventory[$type] ?? []);
         if ($idx !== false) {
@@ -56,12 +78,43 @@ function removeItemFromInventory(&$inventory, $type, $item) {
 }
 
 function addItemToInventory(&$inventory, $type, $item) {
+    global $COSMETIC_TYPES;
+
+    // Cosmetic items (unique, don't add duplicates)
+    if (in_array($type, $COSMETIC_TYPES)) {
+        if (!isset($inventory[$type])) $inventory[$type] = [];
+        if (!in_array($item, $inventory[$type])) {
+            $inventory[$type][] = $item;
+        }
+        return;
+    }
+
+    // Stackable items
     if ($type === "lootboxes" || $type === "boosters") {
+        if (!isset($inventory[$type])) $inventory[$type] = [];
         $inventory[$type][] = $item;
     } elseif ($type === "tradingCards") {
         if (!isset($inventory[$type])) $inventory[$type] = [];
         $inventory[$type][$item] = ($inventory[$type][$item] ?? 0) + 1;
     }
+}
+
+function hasItem(&$inventory, $type, $item) {
+    global $COSMETIC_TYPES;
+
+    if (in_array($type, $COSMETIC_TYPES)) {
+        return in_array($item, $inventory[$type] ?? []);
+    }
+
+    if ($type === "lootboxes" || $type === "boosters") {
+        return in_array($item, $inventory[$type] ?? []);
+    }
+
+    if ($type === "tradingCards") {
+        return ($inventory[$type][$item] ?? 0) >= 1;
+    }
+
+    return false;
 }
 
 // Handle GET requests
@@ -179,17 +232,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         foreach ($offerItems as $item) {
             $type = $item["type"];
             $name = $item["name"];
-            
-            if ($type === "lootboxes" || $type === "boosters") {
-                if (!in_array($name, $myInventory[$type] ?? [])) {
-                    echo json_encode(["success" => false, "error" => "You dont have that item"]);
-                    exit;
-                }
-            } elseif ($type === "tradingCards") {
-                if (($myInventory[$type][$name] ?? 0) < 1) {
-                    echo json_encode(["success" => false, "error" => "You dont have that card"]);
-                    exit;
-                }
+
+            if (!hasItem($myInventory, $type, $name)) {
+                echo json_encode(["success" => false, "error" => "You don't have that item: " . $name]);
+                exit;
             }
         }
         
@@ -247,39 +293,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         
         // Check sender still has offer items
         foreach ($trade["offerItems"] as $item) {
-            $type = $item["type"];
-            $name = $item["name"];
-            if ($type === "tradingCards") {
-                if (($fromInventory[$type][$name] ?? 0) < 1) {
-                    $trade["status"] = "cancelled";
-                    saveTrades($data);
-                    echo json_encode(["success" => false, "error" => "Sender no longer has those items"]);
-                    exit;
-                }
-            } else {
-                if (!in_array($name, $fromInventory[$type] ?? [])) {
-                    $trade["status"] = "cancelled";
-                    saveTrades($data);
-                    echo json_encode(["success" => false, "error" => "Sender no longer has those items"]);
-                    exit;
-                }
+            if (!hasItem($fromInventory, $item["type"], $item["name"])) {
+                $trade["status"] = "cancelled";
+                saveTrades($data);
+                echo json_encode(["success" => false, "error" => "Sender no longer has those items"]);
+                exit;
             }
         }
-        
+
         // Check receiver has request items
         foreach ($trade["requestItems"] as $item) {
-            $type = $item["type"];
-            $name = $item["name"];
-            if ($type === "tradingCards") {
-                if (($toInventory[$type][$name] ?? 0) < 1) {
-                    echo json_encode(["success" => false, "error" => "You no longer have the requested items"]);
-                    exit;
-                }
-            } else {
-                if (!in_array($name, $toInventory[$type] ?? [])) {
-                    echo json_encode(["success" => false, "error" => "You no longer have the requested items"]);
-                    exit;
-                }
+            if (!hasItem($toInventory, $item["type"], $item["name"])) {
+                echo json_encode(["success" => false, "error" => "You no longer have the requested items"]);
+                exit;
             }
         }
         

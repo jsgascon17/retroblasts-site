@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
 /**
  * Loot Box System API
  */
@@ -58,6 +60,19 @@ $CRATES = [
 
 // Loot box definitions
 $LOOT_BOXES = [
+    "starter" => [
+        "name" => "Starter Box",
+        "cost" => 200,
+        "icon" => "🎒",
+        "description" => "Perfect for beginners!",
+        "drops" => [
+            ["weight" => 40, "type" => "coins", "min" => 50, "max" => 150],
+            ["weight" => 25, "type" => "emote", "pool" => ["gg", "nice", "rip", "sad"]],
+            ["weight" => 20, "type" => "card", "pool" => ["cookie_bronze", "snake_bronze", "arcade_bronze"]],
+            ["weight" => 10, "type" => "name_color", "pool" => ["neon_green", "purple"]],
+            ["weight" => 5, "type" => "key", "pool" => ["bronze_key"]]
+        ]
+    ],
     "basic" => [
         "name" => "Basic Box",
         "cost" => 500,
@@ -110,6 +125,42 @@ $LOOT_BOXES = [
             ["weight" => 4, "type" => "card", "pool" => ["legendary_dragon", "legendary_unicorn", "legendary_phoenix"]],
             ["weight" => 3, "type" => "border", "pool" => ["rainbow"]]
         ]
+    ],
+    "mythic" => [
+        "name" => "Mythic Box",
+        "cost" => 15000,
+        "icon" => "🌟",
+        "description" => "Exclusive mythic items await!",
+        "drops" => [
+            ["weight" => 12, "type" => "coins", "min" => 3000, "max" => 8000],
+            ["weight" => 12, "type" => "card", "pool" => ["legendary_dragon", "legendary_unicorn", "legendary_phoenix", "mythic_space", "mythic_time", "mythic_chaos"]],
+            ["weight" => 12, "type" => "name_color", "pool" => ["rainbow", "galaxy", "plasma", "void"]],
+            ["weight" => 12, "type" => "border", "pool" => ["diamond", "rainbow", "cosmic", "mythic"]],
+            ["weight" => 12, "type" => "avatar_effect", "pool" => ["glow", "pulse", "lightning", "flames", "cosmic"]],
+            ["weight" => 10, "type" => "key", "pool" => ["gold_key"]],
+            ["weight" => 10, "type" => "crate", "pool" => ["gold_crate"]],
+            ["weight" => 8, "type" => "consumable", "pool" => ["tournament_ticket", "luck_boost", "gift_box"]],
+            ["weight" => 7, "type" => "booster", "pool" => ["xp_2x", "coins_2x"]],
+            ["weight" => 5, "type" => "emote", "pool" => ["crown", "star", "godly"]]
+        ]
+    ],
+    "mega" => [
+        "name" => "Mega Box",
+        "cost" => 50000,
+        "icon" => "💎",
+        "description" => "ULTIMATE! 3 guaranteed rewards!",
+        "multiReward" => 3,
+        "drops" => [
+            ["weight" => 10, "type" => "coins", "min" => 10000, "max" => 25000],
+            ["weight" => 15, "type" => "card", "pool" => ["legendary_dragon", "legendary_unicorn", "legendary_phoenix", "mythic_space", "mythic_time", "mythic_chaos"]],
+            ["weight" => 15, "type" => "name_color", "pool" => ["rainbow", "galaxy", "plasma", "void"]],
+            ["weight" => 15, "type" => "border", "pool" => ["diamond", "rainbow", "cosmic", "mythic"]],
+            ["weight" => 15, "type" => "avatar_effect", "pool" => ["glow", "pulse", "lightning", "flames", "cosmic"]],
+            ["weight" => 10, "type" => "key", "pool" => ["gold_key"]],
+            ["weight" => 10, "type" => "crate", "pool" => ["gold_crate"]],
+            ["weight" => 5, "type" => "emote", "pool" => ["crown", "star", "godly"]],
+            ["weight" => 5, "type" => "booster", "pool" => ["xp_2x", "coins_2x"]]
+        ]
     ]
 ];
 
@@ -117,20 +168,24 @@ $LOOT_BOXES = [
 $ITEM_NAMES = [
     "name_colors" => [
         "gold" => "Gold Name", "rainbow" => "Rainbow Name", "neon_green" => "Neon Green Name",
-        "fire" => "Fire Name", "ice" => "Ice Name", "purple" => "Purple Name"
+        "fire" => "Fire Name", "ice" => "Ice Name", "purple" => "Purple Name",
+        "galaxy" => "Galaxy Name", "plasma" => "Plasma Name", "void" => "Void Name"
     ],
     "borders" => [
         "bronze" => "Bronze Border", "silver" => "Silver Border", "gold" => "Gold Border",
-        "diamond" => "Diamond Border", "rainbow" => "Rainbow Border"
+        "diamond" => "Diamond Border", "rainbow" => "Rainbow Border",
+        "cosmic" => "Cosmic Border", "mythic" => "Mythic Border"
     ],
     "avatar_effects" => [
         "sparkle" => "Sparkle Effect", "bounce" => "Bounce Effect", "glow" => "Glow Effect",
-        "shake" => "Shake Effect", "pulse" => "Pulse Effect"
+        "shake" => "Shake Effect", "pulse" => "Pulse Effect",
+        "lightning" => "Lightning Effect", "flames" => "Flames Effect", "cosmic" => "Cosmic Effect"
     ],
     "emotes" => [
         "gg" => ":gg: Emote", "nice" => ":nice: Emote", "rip" => ":rip: Emote", "pog" => ":pog: Emote",
         "ez" => ":ez: Emote", "sad" => ":sad: Emote", "hype" => ":hype: Emote", "love" => ":love: Emote",
-        "laugh" => ":laugh: Emote", "think" => ":think: Emote"
+        "laugh" => ":laugh: Emote", "think" => ":think: Emote",
+        "crown" => ":crown: Emote", "star" => ":star: Emote", "godly" => ":godly: Emote"
     ],
     "boosters" => [
         "xp_2x" => "2x XP Booster", "coins_2x" => "2x Coins Booster"
@@ -149,7 +204,8 @@ $ITEM_NAMES = [
         "cookie_bronze" => "Cookie Bronze", "cookie_silver" => "Cookie Silver", "cookie_gold" => "Cookie Gold",
         "snake_bronze" => "Snake Bronze", "snake_silver" => "Snake Silver", "snake_gold" => "Snake Gold",
         "arcade_bronze" => "Arcade Bronze", "arcade_silver" => "Arcade Silver", "arcade_gold" => "Arcade Gold",
-        "legendary_dragon" => "Dragon Card", "legendary_unicorn" => "Unicorn Card", "legendary_phoenix" => "Phoenix Card"
+        "legendary_dragon" => "Dragon Card", "legendary_unicorn" => "Unicorn Card", "legendary_phoenix" => "Phoenix Card",
+        "mythic_space" => "Space Mythic", "mythic_time" => "Time Mythic", "mythic_chaos" => "Chaos Mythic"
     ]
 ];
 
@@ -271,13 +327,15 @@ function processDrop($drop, &$user, $boxCost = 0) {
             "cookie_bronze" => "🍪", "cookie_silver" => "🍪", "cookie_gold" => "🍪",
             "snake_bronze" => "🐍", "snake_silver" => "🐍", "snake_gold" => "🐍",
             "arcade_bronze" => "🕹️", "arcade_silver" => "🕹️", "arcade_gold" => "🕹️",
-            "legendary_dragon" => "🐉", "legendary_unicorn" => "🦄", "legendary_phoenix" => "🔥"
+            "legendary_dragon" => "🐉", "legendary_unicorn" => "🦄", "legendary_phoenix" => "🔥",
+            "mythic_space" => "🌌", "mythic_time" => "⏳", "mythic_chaos" => "🌀"
         ];
         $rarities = [];
         foreach (["cookie_bronze", "snake_bronze", "arcade_bronze"] as $c) $rarities[$c] = "common";
         foreach (["cookie_silver", "snake_silver", "arcade_silver"] as $c) $rarities[$c] = "uncommon";
         foreach (["cookie_gold", "snake_gold", "arcade_gold"] as $c) $rarities[$c] = "rare";
         foreach (["legendary_dragon", "legendary_unicorn", "legendary_phoenix"] as $c) $rarities[$c] = "legendary";
+        foreach (["mythic_space", "mythic_time", "mythic_chaos"] as $c) $rarities[$c] = "mythic";
         
         $reward = [
             "type" => "card",
@@ -311,7 +369,8 @@ function processDrop($drop, &$user, $boxCost = 0) {
             $user["inventory"][$category][] = $itemId;
             
             $rarity = "common";
-            if (in_array($itemId, ["rainbow", "diamond", "glow", "pulse"])) $rarity = "legendary";
+            if (in_array($itemId, ["galaxy", "plasma", "void", "cosmic", "mythic", "lightning", "flames", "crown", "star", "godly"])) $rarity = "mythic";
+            else if (in_array($itemId, ["rainbow", "diamond", "glow", "pulse"])) $rarity = "legendary";
             else if (in_array($itemId, ["gold", "fire", "ice", "sparkle"])) $rarity = "rare";
             else if (in_array($itemId, ["silver", "purple", "bounce"])) $rarity = "uncommon";
             
@@ -357,6 +416,15 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     global $LOOT_BOXES, $ITEM_NAMES, $CRATES;
     
+    // Debug logging
+    $debugLog = date("Y-m-d H:i:s") . " - POST request
+";
+    $debugLog .= "Session user: " . ($_SESSION["user"] ?? "NOT SET") . "
+";
+    $debugLog .= "Input: " . file_get_contents("php://input") . "
+";
+    file_put_contents(__DIR__ . "/../data/debug.log", $debugLog, FILE_APPEND);
+    
     if (!isset($_SESSION["user"])) {
         echo json_encode(["success" => false, "error" => "Not logged in"]);
         exit();
@@ -384,7 +452,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             exit();
         }
         
-        $box = $LOOT_BOXES[$boxType];
+        // Map old box types to new ones
+        $typeMap = ["rare" => "premium", "epic" => "premium", "common" => "basic"];
+        $actualType = $typeMap[$boxType] ?? $boxType;
+        if (!isset($LOOT_BOXES[$actualType])) $actualType = "basic";
+        $box = $LOOT_BOXES[$actualType];
         
         if ($user["coins"] < $box["cost"]) {
             echo json_encode(["success" => false, "error" => "Not enough coins"]);
@@ -392,28 +464,56 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
         
         $user["coins"] -= $box["cost"];
-        $drop = rollDrop($box["drops"]);
-        $reward = processDrop($drop, $user, $box["cost"]);
-        
+
+        // Handle multi-reward boxes (like Mega Box)
+        $multiCount = $box["multiReward"] ?? 1;
+        $rewards = [];
+        for ($i = 0; $i < $multiCount; $i++) {
+            $drop = rollDrop($box["drops"]);
+            $rewards[] = processDrop($drop, $user, $box["cost"]);
+        }
+
         writeUsers($usersData);
-        
-        echo json_encode([
-            "success" => true,
-            "reward" => $reward,
-            "coins" => $user["coins"]
-        ]);
+
+        // Return single reward or array based on multiReward
+        if ($multiCount === 1) {
+            echo json_encode([
+                "success" => true,
+                "reward" => $rewards[0],
+                "coins" => $user["coins"]
+            ]);
+        } else {
+            echo json_encode([
+                "success" => true,
+                "rewards" => $rewards,
+                "multiReward" => true,
+                "coins" => $user["coins"]
+            ]);
+        }
         exit();
     }
     
     if ($action === "openFromInventory") {
         $boxType = $input["boxType"] ?? "basic";
         
+        // Debug
+        file_put_contents(__DIR__ . "/../data/debug.log", "openFromInventory - boxType: $boxType, lootboxes count: " . count($user["inventory"]["lootboxes"] ?? []) . "
+", FILE_APPEND);
+        
         if (!isset($user["inventory"]["lootboxes"]) || !is_array($user["inventory"]["lootboxes"])) {
             echo json_encode(["success" => false, "error" => "No boxes in inventory"]);
             exit();
         }
         
-        $index = array_search($boxType, $user["inventory"]["lootboxes"]);
+        // Handle both string format and object format
+        $index = false;
+        foreach ($user["inventory"]["lootboxes"] as $i => $box) {
+            $type = is_array($box) ? ($box["type"] ?? null) : $box;
+            if ($type === $boxType) {
+                $index = $i;
+                break;
+            }
+        }
         if ($index === false) {
             echo json_encode(["success" => false, "error" => "No " . $boxType . " boxes in inventory"]);
             exit();
@@ -421,21 +521,41 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         
         array_splice($user["inventory"]["lootboxes"], $index, 1);
         
-        $box = $LOOT_BOXES[$boxType];
-        $drop = rollDrop($box["drops"]);
-        $reward = processDrop($drop, $user, $box["cost"]);
-        
+        // Map old box types to new ones
+        $typeMap = ["rare" => "premium", "epic" => "premium", "common" => "basic"];
+        $actualType = $typeMap[$boxType] ?? $boxType;
+        if (!isset($LOOT_BOXES[$actualType])) $actualType = "basic";
+        $box = $LOOT_BOXES[$actualType];
+
+        // Handle multi-reward boxes (like Mega Box)
+        $multiCount = $box["multiReward"] ?? 1;
+        $rewards = [];
+        for ($i = 0; $i < $multiCount; $i++) {
+            $drop = rollDrop($box["drops"]);
+            $rewards[] = processDrop($drop, $user, $box["cost"]);
+        }
+
         writeUsers($usersData);
-        
-        echo json_encode([
-            "success" => true,
-            "reward" => $reward,
-            "coins" => $user["coins"],
-            "inventory" => $user["inventory"]
-        ]);
+
+        if ($multiCount === 1) {
+            echo json_encode([
+                "success" => true,
+                "reward" => $rewards[0],
+                "coins" => $user["coins"],
+                "inventory" => $user["inventory"]
+            ]);
+        } else {
+            echo json_encode([
+                "success" => true,
+                "rewards" => $rewards,
+                "multiReward" => true,
+                "coins" => $user["coins"],
+                "inventory" => $user["inventory"]
+            ]);
+        }
         exit();
     }
-    
+
     if ($action === "openCrate") {
         $crateType = $input["crateType"] ?? "";
         
@@ -485,8 +605,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $price = intval($input["price"] ?? 0);
         
         $validBundles = [
+            "starter_3" => 500, "starter_10" => 1500,
             "basic_3" => 1250, "basic_10" => 3750,
-            "premium_3" => 3750, "legendary_3" => 12000
+            "premium_3" => 3750, "premium_10" => 11250,
+            "legendary_3" => 12000, "legendary_10" => 37500,
+            "mythic_3" => 37500, "mythic_10" => 112500,
+            "mega_3" => 125000
         ];
         
         $bundleKey = $boxType . "_" . $count;
@@ -512,7 +636,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         echo json_encode([
             "success" => true,
             "coins" => $user["coins"],
-            "boxesAdded" => $count
+            "boxesAdded" => $count,
+            "inventory" => $user["inventory"]
         ]);
         exit();
     }

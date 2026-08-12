@@ -6,7 +6,7 @@ const VictoryEffects = {
     ctx: null,
     particles: [],
     confetti: [],
-    fireworks: [],
+    fireworksList: [],
     animating: false,
 
     init() {
@@ -62,14 +62,15 @@ const VictoryEffects = {
     fireworks(options = {}) {
         this.init();
         const count = options.count || 5;
-        
+        const self = this;
+
         for (let i = 0; i < count; i++) {
             setTimeout(() => {
-                this.launchFirework(
-                    Math.random() * this.canvas.width,
-                    this.canvas.height,
-                    Math.random() * this.canvas.width,
-                    this.canvas.height * 0.2 + Math.random() * this.canvas.height * 0.3
+                self.launchFirework(
+                    Math.random() * self.canvas.width,
+                    self.canvas.height,
+                    Math.random() * self.canvas.width,
+                    self.canvas.height * 0.2 + Math.random() * self.canvas.height * 0.3
                 );
             }, i * 300);
         }
@@ -80,7 +81,7 @@ const VictoryEffects = {
         const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffd700'];
         const color = colors[Math.floor(Math.random() * colors.length)];
         
-        this.fireworks.push({
+        this.fireworksList.push({
             x, y, targetX, targetY,
             vx: (targetX - x) / 40,
             vy: (targetY - y) / 40,
@@ -136,11 +137,12 @@ const VictoryEffects = {
     coinShower(options = {}) {
         this.init();
         const count = options.count || 30;
-        
+        const self = this;
+
         for (let i = 0; i < count; i++) {
             setTimeout(() => {
-                this.particles.push({
-                    x: Math.random() * this.canvas.width,
+                self.particles.push({
+                    x: Math.random() * self.canvas.width,
                     y: -20,
                     vx: (Math.random() - 0.5) * 2,
                     vy: 3 + Math.random() * 3,
@@ -161,13 +163,14 @@ const VictoryEffects = {
     rainbowWave() {
         this.init();
         const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
-        
+        const self = this;
+
         for (let c = 0; c < colors.length; c++) {
             setTimeout(() => {
                 for (let i = 0; i < 30; i++) {
-                    this.particles.push({
-                        x: this.canvas.width / 2,
-                        y: this.canvas.height,
+                    self.particles.push({
+                        x: self.canvas.width / 2,
+                        y: self.canvas.height,
                         vx: (Math.random() - 0.5) * 15,
                         vy: -15 - Math.random() * 10,
                         color: colors[c],
@@ -291,8 +294,8 @@ const VictoryEffects = {
         }
 
         // Update and draw fireworks
-        for (let i = this.fireworks.length - 1; i >= 0; i--) {
-            const fw = this.fireworks[i];
+        for (let i = this.fireworksList.length - 1; i >= 0; i--) {
+            const fw = this.fireworksList[i];
             
             if (!fw.exploded) {
                 fw.x += fw.vx;
@@ -315,7 +318,7 @@ const VictoryEffects = {
                 if (Math.abs(fw.y - fw.targetY) < 20) {
                     fw.exploded = true;
                     this.explodeFirework(fw);
-                    this.fireworks.splice(i, 1);
+                    this.fireworksList.splice(i, 1);
                 }
             }
         }
@@ -369,7 +372,7 @@ const VictoryEffects = {
         }
 
         // Continue animation if there are still effects
-        if (this.confetti.length > 0 || this.fireworks.length > 0 || this.particles.length > 0) {
+        if (this.confetti.length > 0 || this.fireworksList.length > 0 || this.particles.length > 0) {
             requestAnimationFrame(() => this.animate());
         } else {
             this.animating = false;

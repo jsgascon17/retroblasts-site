@@ -1,16 +1,20 @@
 <?php
 /**
  * Chat System API (Polling-based)
- * 
+ *
  * GET:
  *   ?action=global&since=timestamp - Get global chat messages
  *   ?action=dm&with=username&since=timestamp - Get DMs with user
  *   ?action=unread - Get unread message counts
  *   ?action=conversations - Get list of DM conversations
- * 
+ *   ?action=typing&channel=global|dm:username - Get who's typing
+ *   ?action=online - Get online users for @mention autocomplete
+ *
  * POST:
- *   { action: "send-global", message: "..." }
- *   { action: "send-dm", to: "username", message: "..." }
+ *   { action: "send-global", message: "...", replyTo?: messageId }
+ *   { action: "send-dm", to: "username", message: "...", replyTo?: messageId }
+ *   { action: "react", messageId: "...", emoji: "...", channel: "global|dm:username" }
+ *   { action: "typing", channel: "global|dm:username" }
  */
 
 session_start();
@@ -32,6 +36,10 @@ $usersFile = $dataDir . '/users.json';
 
 // Rate limiting
 $rateLimitFile = $dataDir . '/chat-ratelimit.json';
+$typingFile = $dataDir . '/chat-typing.json';
+
+// Allowed reaction emojis
+$ALLOWED_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥', '💀', '👏'];
 
 // Initialize files
 if (!file_exists($globalChatFile)) {
@@ -100,23 +108,120 @@ function checkRateLimit($username) {
     if (file_exists($rateLimitFile)) {
         $limits = json_decode(file_get_contents($rateLimitFile), true) ?: [];
     }
-    
+
     $now = time();
     $lastMessage = $limits[$username] ?? 0;
-    
+
     if ($now - $lastMessage < 2) {
         return false; // Rate limited
     }
-    
+
     $limits[$username] = $now;
-    
+
     // Clean old entries
     foreach ($limits as $user => $time) {
         if ($now - $time > 60) unset($limits[$user]);
     }
-    
+
     file_put_contents($rateLimitFile, json_encode($limits));
     return true;
+}
+
+function readTyping() {
+    global $typingFile;
+    if (!file_exists($typingFile)) return [];
+    return json_decode(file_get_contents($typingFile), true) ?: [];
+}
+
+function writeTyping($data) {
+    global $typingFile;
+    file_put_contents($typingFile, json_encode($data));
+}
+
+function updateTyping($username, $displayName, $avatar, $channel) {
+    $typing = readTyping();
+    $now = time();
+
+    // Clean expired (older than 5 seconds)
+    foreach ($typing as $chan => $users) {
+        foreach ($users as $user => $info) {
+            if ($now - $info['time'] > 5) {
+                unset($typing[$chan][$user]);
+            }
+        }
+        if (empty($typing[$chan])) unset($typing[$chan]);
+    }
+
+    // Add current user typing
+    if (!isset($typing[$channel])) $typing[$channel] = [];
+    $typing[$channel][$username] = [
+        'displayName' => $displayName,
+        'avatar' => $avatar,
+        'time' => $now
+    ];
+
+    writeTyping($typing);
+}
+
+function getTypingUsers($channel, $excludeUser) {
+    $typing = readTyping();
+    $now = time();
+    $users = [];
+
+    if (isset($typing[$channel])) {
+        foreach ($typing[$channel] as $user => $info) {
+            if ($user !== $excludeUser && $now - $info['time'] <= 5) {
+                $users[] = [
+                    'username' => $user,
+                    'displayName' => $info['displayName'],
+                    'avatar' => $info['avatar']
+                ];
+            }
+        }
+    }
+
+    return $users;
+}
+
+function clearTyping($username, $channel) {
+    $typing = readTyping();
+    if (isset($typing[$channel][$username])) {
+        unset($typing[$channel][$username]);
+        if (empty($typing[$channel])) unset($typing[$channel]);
+        writeTyping($typing);
+    }
+}
+
+function findMessageInGlobal($messageId) {
+    $chat = readGlobalChat();
+    foreach ($chat['messages'] as &$msg) {
+        if ($msg['id'] === $messageId) {
+            return $msg;
+        }
+    }
+    return null;
+}
+
+function addReactionToMessage(&$messages, $messageId, $emoji, $username) {
+    foreach ($messages as &$msg) {
+        if ($msg['id'] === $messageId) {
+            if (!isset($msg['reactions'])) $msg['reactions'] = [];
+            if (!isset($msg['reactions'][$emoji])) $msg['reactions'][$emoji] = [];
+
+            // Toggle reaction
+            $key = array_search($username, $msg['reactions'][$emoji]);
+            if ($key !== false) {
+                array_splice($msg['reactions'][$emoji], $key, 1);
+                if (empty($msg['reactions'][$emoji])) {
+                    unset($msg['reactions'][$emoji]);
+                }
+            } else {
+                $msg['reactions'][$emoji][] = $username;
+            }
+            return true;
+        }
+    }
+    return false;
 }
 
 // Check if logged in
@@ -240,19 +345,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     
     if ($action === 'unread') {
         $totalUnread = 0;
-        
+
         foreach ($userData['friends'] ?? [] as $friend) {
             $dm = readDM($currentUser, $friend);
             $lastRead = $dm['lastRead'][$currentUser] ?? '1970-01-01T00:00:00Z';
-            
+
             foreach ($dm['messages'] as $msg) {
                 if ($msg['from'] !== $currentUser && $msg['timestamp'] > $lastRead) {
                     $totalUnread++;
                 }
             }
         }
-        
+
         echo json_encode(['success' => true, 'unreadCount' => $totalUnread]);
+        exit();
+    }
+
+    if ($action === 'typing') {
+        $channel = $_GET['channel'] ?? 'global';
+        $typingUsers = getTypingUsers($channel, $currentUser);
+        echo json_encode(['success' => true, 'typing' => $typingUsers]);
+        exit();
+    }
+
+    if ($action === 'online') {
+        // Get recently active users for @mention autocomplete
+        $onlineUsers = [];
+        $now = time();
+
+        foreach ($usersData['users'] as $username => $user) {
+            if ($username === $currentUser) continue;
+
+            $lastActivity = strtotime($user['lastActivity'] ?? '1970-01-01');
+            if ($now - $lastActivity < 300) { // Active in last 5 minutes
+                $onlineUsers[] = [
+                    'username' => $username,
+                    'displayName' => $user['displayName'] ?? $username,
+                    'avatar' => $user['avatar'] ?? '😎'
+                ];
+            }
+        }
+
+        echo json_encode(['success' => true, 'users' => $onlineUsers]);
         exit();
     }
 }
@@ -261,21 +395,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
     $action = $input['action'] ?? '';
+
+    // Handle typing indicator (no rate limit needed)
+    if ($action === 'typing') {
+        $channel = $input['channel'] ?? 'global';
+        updateTyping($currentUser, $userData['displayName'] ?? $currentUser, $userData['avatar'] ?? '😎', $channel);
+        echo json_encode(['success' => true]);
+        exit();
+    }
+
+    // Handle reactions (no rate limit needed)
+    if ($action === 'react') {
+        global $ALLOWED_REACTIONS;
+        $messageId = $input['messageId'] ?? '';
+        $emoji = $input['emoji'] ?? '';
+        $channel = $input['channel'] ?? 'global';
+
+        if (empty($messageId) || empty($emoji)) {
+            echo json_encode(['success' => false, 'error' => 'Message ID and emoji required']);
+            exit();
+        }
+
+        if (!in_array($emoji, $ALLOWED_REACTIONS)) {
+            echo json_encode(['success' => false, 'error' => 'Invalid reaction']);
+            exit();
+        }
+
+        if ($channel === 'global') {
+            $chat = readGlobalChat();
+            if (addReactionToMessage($chat['messages'], $messageId, $emoji, $currentUser)) {
+                writeGlobalChat($chat);
+                echo json_encode(['success' => true]);
+            } else {
+                echo json_encode(['success' => false, 'error' => 'Message not found']);
+            }
+        } else if (strpos($channel, 'dm:') === 0) {
+            $with = substr($channel, 3);
+            $dm = readDM($currentUser, $with);
+            if (addReactionToMessage($dm['messages'], $messageId, $emoji, $currentUser)) {
+                writeDM($currentUser, $with, $dm);
+                echo json_encode(['success' => true]);
+            } else {
+                echo json_encode(['success' => false, 'error' => 'Message not found']);
+            }
+        }
+        exit();
+    }
+
     $message = sanitizeMessage($input['message'] ?? '');
-    
+
     if (empty($message)) {
         echo json_encode(['success' => false, 'error' => 'Message required']);
         exit();
     }
-    
+
     if (!checkRateLimit($currentUser)) {
         echo json_encode(['success' => false, 'error' => 'Slow down! Wait 2 seconds between messages.']);
         exit();
     }
-    
+
     if ($action === 'send-global') {
         $chat = readGlobalChat();
-        
+
+        // Handle reply-to
+        $replyTo = null;
+        if (!empty($input['replyTo'])) {
+            foreach ($chat['messages'] as $msg) {
+                if ($msg['id'] === $input['replyTo']) {
+                    $replyTo = [
+                        'id' => $msg['id'],
+                        'from' => $msg['from'],
+                        'fromName' => $msg['fromName'],
+                        'message' => mb_substr($msg['message'], 0, 100)
+                    ];
+                    break;
+                }
+            }
+        }
+
         $newMessage = [
             'id' => generateId(),
             'from' => $currentUser,
@@ -284,40 +481,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'message' => $message,
             'timestamp' => date('c')
         ];
-        
+
+        if ($replyTo) {
+            $newMessage['replyTo'] = $replyTo;
+        }
+
         $chat['messages'][] = $newMessage;
-        
+
         // Keep only last 200 messages
         if (count($chat['messages']) > 200) {
             $chat['messages'] = array_slice($chat['messages'], -200);
         }
-        
+
         writeGlobalChat($chat);
-        
+
+        // Clear typing indicator
+        clearTyping($currentUser, 'global');
+
         // Update stats
-        $usersData['users'][$currentUser]['stats']['messagesSent'] = 
+        $usersData['users'][$currentUser]['stats']['messagesSent'] =
             ($usersData['users'][$currentUser]['stats']['messagesSent'] ?? 0) + 1;
         writeUsers($usersData);
-        
+
         echo json_encode(['success' => true, 'message' => $newMessage]);
         exit();
     }
-    
+
     if ($action === 'send-dm') {
         $to = strtolower(trim($input['to'] ?? ''));
-        
+
         if (empty($to)) {
             echo json_encode(['success' => false, 'error' => 'Recipient required']);
             exit();
         }
-        
+
         if (!in_array($to, $userData['friends'] ?? [])) {
             echo json_encode(['success' => false, 'error' => 'Can only message friends']);
             exit();
         }
-        
+
         $dm = readDM($currentUser, $to);
-        
+
+        // Handle reply-to
+        $replyTo = null;
+        if (!empty($input['replyTo'])) {
+            foreach ($dm['messages'] as $msg) {
+                if ($msg['id'] === $input['replyTo']) {
+                    $replyTo = [
+                        'id' => $msg['id'],
+                        'from' => $msg['from'],
+                        'fromName' => $msg['fromName'],
+                        'message' => mb_substr($msg['message'], 0, 100)
+                    ];
+                    break;
+                }
+            }
+        }
+
         $newMessage = [
             'id' => generateId(),
             'from' => $currentUser,
@@ -325,24 +545,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'message' => $message,
             'timestamp' => date('c')
         ];
-        
+
+        if ($replyTo) {
+            $newMessage['replyTo'] = $replyTo;
+        }
+
         $dm['messages'][] = $newMessage;
-        
+
         // Keep only last 500 messages
         if (count($dm['messages']) > 500) {
             $dm['messages'] = array_slice($dm['messages'], -500);
         }
-        
+
         // Mark as read for sender
         $dm['lastRead'][$currentUser] = date('c');
-        
+
         writeDM($currentUser, $to, $dm);
-        
+
+        // Clear typing indicator
+        clearTyping($currentUser, 'dm:' . $to);
+
         // Update stats
-        $usersData['users'][$currentUser]['stats']['messagesSent'] = 
+        $usersData['users'][$currentUser]['stats']['messagesSent'] =
             ($usersData['users'][$currentUser]['stats']['messagesSent'] ?? 0) + 1;
         writeUsers($usersData);
-        
+
         echo json_encode(['success' => true, 'message' => $newMessage]);
         exit();
     }

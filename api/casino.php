@@ -38,6 +38,11 @@ function updateUserCoins(&$data, $username, $newCoins) {
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
+    $action = $_GET['action'] ?? '';
+    if ($action === 'jackpot') {
+        echo json_encode(['success' => true, 'jackpot' => getJackpot()]);
+        exit;
+    }
     echo json_encode(['error' => 'Invalid action']);
     exit;
 }
@@ -57,7 +62,41 @@ if ($method === 'POST') {
     $username = $_SESSION['user'];
     $coins = $currentUser['coins'] ?? 0;
     
-    switch ($action) {
+    
+// Progressive Jackpot System
+$jackpotFile = __DIR__ . '/../data/jackpot.json';
+
+function getJackpot() {
+    global $jackpotFile;
+    if (!file_exists($jackpotFile)) {
+        file_put_contents($jackpotFile, json_encode(['amount' => 100000, 'lastWinner' => null, 'lastWonAt' => null]));
+    }
+    return json_decode(file_get_contents($jackpotFile), true);
+}
+
+function saveJackpot($data) {
+    global $jackpotFile;
+    file_put_contents($jackpotFile, json_encode($data, JSON_PRETTY_PRINT));
+}
+
+function addToJackpot($amount) {
+    $jp = getJackpot();
+    $jp['amount'] += $amount;
+    saveJackpot($jp);
+    return $jp['amount'];
+}
+
+function winJackpot($username) {
+    $jp = getJackpot();
+    $won = $jp['amount'];
+    $jp['amount'] = 100000; // Reset to base
+    $jp['lastWinner'] = $username;
+    $jp['lastWonAt'] = date('Y-m-d H:i:s');
+    saveJackpot($jp);
+    return $won;
+}
+
+switch ($action) {
         case 'coinflip':
             $bet = intval($input['bet'] ?? 0);
             $choice = $input['choice'] ?? 'heads';
@@ -94,6 +133,8 @@ if ($method === 'POST') {
                 'result' => $result,
                 'won' => $won,
                 'winnings' => $winnings,
+                'jackpot' => getJackpot()['amount'],
+                'isJackpot' => $isJackpot ?? false,
                 'coins' => $newCoins
             ]);
             exit;
@@ -146,8 +187,17 @@ if ($method === 'POST') {
                 $multiplier = 1.5;
             }
             
-            $winnings = floor($bet * $multiplier) - $bet;
-            $newCoins = $coins + $winnings;
+            // Add 5% of bet to jackpot pool
+            addToJackpot(floor($bet * 0.05));
+            
+            $isJackpot = $isJackpot ?? false;
+            if ($isJackpot) {
+                $winnings = $jackpotWon;
+                $newCoins = $coins - $bet + $jackpotWon;
+            } else {
+                $winnings = floor($bet * $multiplier) - $bet;
+                $newCoins = $coins + $winnings;
+            }
             
             updateUserCoins($data, $username, $newCoins);
             saveUsers($data);
@@ -158,6 +208,8 @@ if ($method === 'POST') {
                 'multiplier' => $multiplier,
                 'won' => $multiplier > 0,
                 'winnings' => $winnings,
+                'jackpot' => getJackpot()['amount'],
+                'isJackpot' => $isJackpot ?? false,
                 'coins' => $newCoins
             ]);
             exit;
@@ -211,6 +263,8 @@ if ($method === 'POST') {
                 'won' => $won,
                 'multiplier' => $multiplier,
                 'winnings' => $winnings,
+                'jackpot' => getJackpot()['amount'],
+                'isJackpot' => $isJackpot ?? false,
                 'coins' => $newCoins
             ]);
             exit;
@@ -337,12 +391,124 @@ if ($method === 'POST') {
                     'dealerTotal' => $dealerTotal,
                     'result' => $result,
                     'winnings' => $winnings,
+                'jackpot' => getJackpot()['amount'],
+                'isJackpot' => $isJackpot ?? false,
                     'coins' => $newCoins
                 ]);
                 exit;
             }
             break;
-            
+
+        case 'crash_start':
+            $bet = intval($input['bet'] ?? 0);
+
+            if ($bet < 10) {
+                echo json_encode(['error' => 'Minimum bet is 10 coins']);
+                exit;
+            }
+            if ($bet > $coins) {
+                echo json_encode(['error' => 'Not enough coins']);
+                exit;
+            }
+            if ($bet > 50000) {
+                echo json_encode(['error' => 'Maximum bet is 50,000 coins']);
+                exit;
+            }
+
+            // Generate crash point using exponential distribution
+            // Lower values are more common, higher values are rare
+            $random = mt_rand() / mt_getrandmax();
+            // House edge of 4%
+            $crashPoint = 0.96 / (1 - $random);
+            // Minimum crash at 1.00, max at 1000x
+            $crashPoint = max(1.00, min(1000, $crashPoint));
+            $crashPoint = round($crashPoint, 2);
+
+            // Deduct bet
+            $newCoins = $coins - $bet;
+            updateUserCoins($data, $username, $newCoins);
+            saveUsers($data);
+
+            // Store game in session
+            $_SESSION['crash'] = [
+                'bet' => $bet,
+                'crashPoint' => $crashPoint,
+                'startTime' => microtime(true),
+                'active' => true
+            ];
+
+            // Add to jackpot pool
+            addToJackpot(floor($bet * 0.02));
+
+            echo json_encode([
+                'success' => true,
+                'gameId' => uniqid(),
+                'coins' => $newCoins
+            ]);
+            exit;
+
+        case 'crash_cashout':
+            if (!isset($_SESSION['crash']) || !$_SESSION['crash']['active']) {
+                echo json_encode(['error' => 'No active crash game']);
+                exit;
+            }
+
+            $game = $_SESSION['crash'];
+            $cashoutMultiplier = floatval($input['multiplier'] ?? 1);
+            $cashoutMultiplier = round($cashoutMultiplier, 2);
+
+            // Check if cashout is before crash
+            if ($cashoutMultiplier <= $game['crashPoint']) {
+                // Player wins!
+                $winnings = floor($game['bet'] * $cashoutMultiplier);
+                $newCoins = $coins + $winnings;
+                $result = 'win';
+            } else {
+                // Player tried to cash out after crash (shouldn't happen in normal play)
+                $winnings = 0;
+                $newCoins = $coins;
+                $result = 'crash';
+                $cashoutMultiplier = $game['crashPoint'];
+            }
+
+            updateUserCoins($data, $username, $newCoins);
+            saveUsers($data);
+
+            $_SESSION['crash']['active'] = false;
+
+            echo json_encode([
+                'success' => true,
+                'result' => $result,
+                'crashPoint' => $game['crashPoint'],
+                'cashoutMultiplier' => $cashoutMultiplier,
+                'bet' => $game['bet'],
+                'winnings' => $winnings,
+                'coins' => $newCoins,
+                'jackpot' => getJackpot()['amount']
+            ]);
+            exit;
+
+        case 'crash_result':
+            // Called when player didn't cash out in time
+            if (!isset($_SESSION['crash']) || !$_SESSION['crash']['active']) {
+                echo json_encode(['error' => 'No active crash game']);
+                exit;
+            }
+
+            $game = $_SESSION['crash'];
+            $_SESSION['crash']['active'] = false;
+
+            echo json_encode([
+                'success' => true,
+                'result' => 'crash',
+                'crashPoint' => $game['crashPoint'],
+                'bet' => $game['bet'],
+                'winnings' => -$game['bet'],
+                'coins' => $coins,
+                'jackpot' => getJackpot()['amount']
+            ]);
+            exit;
+
         default:
             echo json_encode(['error' => 'Invalid action']);
             exit;
