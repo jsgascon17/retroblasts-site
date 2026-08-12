@@ -47,6 +47,15 @@ Options -Indexes
 # Everything else is server-side state and must never leave via Apache.
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Deny the git metadata directory. The deploy checkout lives in the webroot,
+    # so .git/ was being served: .git/refs/heads/main gives the tip commit and
+    # .git/index lists every tracked path and blob SHA, which together are
+    # enough to walk the trees and download the whole source history --
+    # including files removed from the webroot but still in earlier commits
+    # (e.g. the internal CLAUDE.md deleted in e45f63e). Keep this rule first.
+    RewriteRule ^\.git - [F,L]
+
     RewriteRule ^data/(news|game-admins|game-admin-settings)\.json$ - [L]
     RewriteRule ^data/ - [F,L]
     RewriteRule ^leaderboards/ - [F,L]
