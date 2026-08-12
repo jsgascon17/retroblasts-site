@@ -19,6 +19,8 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Credentials: true");
 
+require_once __DIR__ . '/_store.php';
+
 if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     http_response_code(200);
     exit();
@@ -34,7 +36,7 @@ function readUsers() {
 
 function writeUsers($data) {
     global $usersFile;
-    file_put_contents($usersFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($usersFile, $data);
 }
 
 // Create notification helper function

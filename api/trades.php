@@ -5,6 +5,8 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
+require_once __DIR__ . '/_store.php';
+
 $dataDir = __DIR__ . '/../data';
 $tradesFile = $dataDir . '/trades.json';
 $usersFile = $dataDir . '/users.json';
@@ -16,7 +18,7 @@ function loadJson($file) {
 }
 
 function saveJson($file, $data) {
-    file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($file, $data);
 }
 
 function areFriends($user1, $user2, $friends) {

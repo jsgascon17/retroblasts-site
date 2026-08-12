@@ -2,6 +2,8 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once __DIR__ . '/_store.php';
+
 $BOUNTY_FILE = __DIR__ . '/../data/bounties.json';
 $USERS_FILE = __DIR__ . '/../data/users.json';
 
@@ -13,7 +15,7 @@ function loadBounties() {
 
 function saveBounties($bounties) {
     global $BOUNTY_FILE;
-    file_put_contents($BOUNTY_FILE, json_encode($bounties, JSON_PRETTY_PRINT));
+    store_write($BOUNTY_FILE, $bounties);
 }
 
 function loadUsers() {
@@ -25,7 +27,7 @@ function loadUsers() {
 
 function saveUsers($data) {
     global $USERS_FILE;
-    file_put_contents($USERS_FILE, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($USERS_FILE, $data);
 }
 
 function getUserCoins($username) {

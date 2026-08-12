@@ -2,20 +2,18 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once __DIR__ . '/_store.php';
+require_once __DIR__ . '/_admin.php';
+
 $DATA_DIR = __DIR__ . '/../data/';
 $ADMINS_FILE = $DATA_DIR . 'game-admins.json';
 $SETTINGS_FILE = $DATA_DIR . 'game-admin-settings.json';
 $OWNER_USERS = ['billybuffalo15'];
 
-// Game configs: game_id => [password, owner_password]
-$GAME_CONFIGS = [
-    'space-invaders' => ['admin' => 'jsg1708admin', 'owner' => 'JsgOwner2024X'],
-    'flappy-bird' => ['admin' => 'flappy123', 'owner' => 'jsgowner2008'],
-    'rhythm' => ['admin' => 'rhythm123', 'owner' => 'JsgOwner2024X'],
-    'cookie-clicker' => ['admin' => 'cookie123', 'owner' => 'JsgOwner2024X'],
-    'doodle-jump' => ['admin' => 'doodle123', 'owner' => 'JsgOwner2024X'],
-    'knife-hit' => ['admin' => 'knife123', 'owner' => 'JsgOwner2024X']
-];
+// Per-game admin/owner codes now come from data/admin-codes.json via
+// _admin.php: game_codes(). They used to be plaintext literals here, which the
+// exposed .git directory made publicly downloadable. See _admin.php.
+$GAME_CONFIGS = game_codes();
 
 function loadData($file) {
     if (!file_exists($file)) return [];
@@ -23,7 +21,7 @@ function loadData($file) {
 }
 
 function saveData($file, $data) {
-    file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($file, $data);
 }
 
 function getSettings() {
@@ -49,9 +47,10 @@ if (!isset($_SESSION['user'])) {
 $username = strtolower($_SESSION['user']);
 $isOwner = in_array($username, array_map('strtolower', $OWNER_USERS));
 
-// Also allow owner password authentication
+// Also allow owner authentication by code. The code is no longer a literal in
+// this file and is compared in constant time; an absent config fails closed.
 $ownerPassword = $_GET['ownerPw'] ?? $_POST['ownerPw'] ?? '';
-if ($ownerPassword === 'JsgOwner2024X') {
+if (owner_master_matches((string) $ownerPassword)) {
     $isOwner = true;
 }
 

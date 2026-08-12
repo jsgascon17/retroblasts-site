@@ -2,11 +2,17 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once __DIR__ . '/_store.php';
+require_once __DIR__ . '/_admin.php';
+
 $ADMIN_FILE = __DIR__ . '/../data/space-invaders-admins.json';
 $SETTINGS_FILE = __DIR__ . '/../data/space-invaders-settings.json';
 $OWNER_USERS = ['billybuffalo15'];
-$ADMIN_PASSWORD = 'jsg1708admin';
-$OWNER_PASSWORD = 'jsgowner2008';
+
+// The admin and owner codes were plaintext literals here and were therefore
+// publicly downloadable through the exposed .git directory. They now come from
+// data/admin-codes.json under the "space-invaders" key and are compared in
+// constant time via _admin.php. Treat the old values as compromised.
 
 function loadAdmins() {
     global $ADMIN_FILE;
@@ -16,7 +22,7 @@ function loadAdmins() {
 
 function saveAdmins($admins) {
     global $ADMIN_FILE;
-    file_put_contents($ADMIN_FILE, json_encode($admins, JSON_PRETTY_PRINT));
+    store_write($ADMIN_FILE, $admins);
 }
 
 function loadSettings() {
@@ -29,7 +35,7 @@ function loadSettings() {
 
 function saveSettings($settings) {
     global $SETTINGS_FILE;
-    file_put_contents($SETTINGS_FILE, json_encode($settings, JSON_PRETTY_PRINT));
+    store_write($SETTINGS_FILE, $settings);
 }
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
@@ -60,12 +66,12 @@ switch ($action) {
         $password = $_POST['password'] ?? '';
         $settings = loadSettings();
         
-        if ($password === $OWNER_PASSWORD) {
+        if (game_code_matches('space-invaders', 'owner', (string) $password)) {
             $admins = loadAdmins();
             $admins[$username] = ['grantedAt' => date('Y-m-d H:i:s'), 'type' => 'owner'];
             saveAdmins($admins);
             echo json_encode(['success' => true, 'type' => 'owner', 'message' => 'Owner mode activated!']);
-        } else if ($password === $ADMIN_PASSWORD) {
+        } else if (game_code_matches('space-invaders', 'admin', (string) $password)) {
             if (!$settings['adminCodeEnabled']) {
                 echo json_encode(['success' => false, 'error' => 'Admin code is currently disabled']);
                 exit;

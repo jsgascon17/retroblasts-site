@@ -13,6 +13,8 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once __DIR__ . '/_store.php';
+
 $usersFile = __DIR__ . '/../data/users.json';
 
 // Streak milestone rewards
@@ -33,7 +35,7 @@ function readUsers() {
 
 function writeUsers($data) {
     global $usersFile;
-    file_put_contents($usersFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($usersFile, $data);
 }
 
 function getToday() {

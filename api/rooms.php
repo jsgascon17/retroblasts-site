@@ -2,6 +2,8 @@
 header('Content-Type: application/json');
 session_start();
 
+require_once __DIR__ . '/_store.php';
+
 $dataFile = __DIR__ . '/../data/rooms.json';
 
 function loadRooms() {
@@ -13,7 +15,7 @@ function loadRooms() {
 
 function saveRooms($data) {
     global $dataFile;
-    file_put_contents($dataFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($dataFile, $data);
 }
 
 function loadUsers() {

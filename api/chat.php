@@ -24,6 +24,8 @@ header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Allow-Credentials: true');
 
+require_once __DIR__ . '/_store.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -43,7 +45,7 @@ $ALLOWED_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥', '💀', 
 
 // Initialize files
 if (!file_exists($globalChatFile)) {
-    file_put_contents($globalChatFile, json_encode(['messages' => []], JSON_PRETTY_PRINT));
+    store_write($globalChatFile, ['messages' => []]);
     chmod($globalChatFile, 0666);
 }
 if (!is_dir($dmDir)) {
@@ -58,7 +60,7 @@ function readUsers() {
 
 function writeUsers($data) {
     global $usersFile;
-    file_put_contents($usersFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($usersFile, $data);
 }
 
 function readGlobalChat() {
@@ -68,7 +70,7 @@ function readGlobalChat() {
 
 function writeGlobalChat($data) {
     global $globalChatFile;
-    file_put_contents($globalChatFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($globalChatFile, $data);
 }
 
 function getDMFile($user1, $user2) {
@@ -88,7 +90,7 @@ function readDM($user1, $user2) {
 
 function writeDM($user1, $user2, $data) {
     $file = getDMFile($user1, $user2);
-    file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($file, $data);
     chmod($file, 0666);
 }
 
@@ -123,7 +125,7 @@ function checkRateLimit($username) {
         if ($now - $time > 60) unset($limits[$user]);
     }
 
-    file_put_contents($rateLimitFile, json_encode($limits));
+    store_write($rateLimitFile, $limits);
     return true;
 }
 
@@ -135,7 +137,7 @@ function readTyping() {
 
 function writeTyping($data) {
     global $typingFile;
-    file_put_contents($typingFile, json_encode($data));
+    store_write($typingFile, $data);
 }
 
 function updateTyping($username, $displayName, $avatar, $channel) {

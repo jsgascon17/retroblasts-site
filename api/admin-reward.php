@@ -2,6 +2,8 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once __DIR__ . '/_store.php';
+
 // Check admin
 if (!isset($_SESSION['user']) || $_SESSION['user'] !== 'billybuffalo15') {
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
@@ -75,7 +77,7 @@ for ($i = 0; $i < min(3, count($scores)); $i++) {
     }
 }
 
-file_put_contents($usersFile, json_encode($usersData, JSON_PRETTY_PRINT));
+store_write($usersFile, $usersData);
 
 echo json_encode([
     'success' => true,

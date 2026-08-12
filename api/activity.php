@@ -13,6 +13,8 @@
 header('Content-Type: application/json');
 session_start();
 
+require_once __DIR__ . '/_store.php';
+
 $activityFile = __DIR__ . '/../data/activity.json';
 $friendsFile = __DIR__ . '/../data/friends.json';
 $usersFile = __DIR__ . '/../data/users.json';
@@ -27,7 +29,7 @@ function writeActivity($data) {
     global $activityFile;
     // Keep only last 1000 activities
     $data = array_slice($data, -1000);
-    file_put_contents($activityFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($activityFile, $data);
 }
 
 function readFriends() {

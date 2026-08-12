@@ -2,6 +2,8 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once __DIR__ . '/_store.php';
+
 $STOCKS_FILE = __DIR__ . '/../data/stocks.json';
 $PORTFOLIOS_FILE = __DIR__ . '/../data/portfolios.json';
 $USERS_FILE = __DIR__ . '/../data/users.json';
@@ -45,7 +47,7 @@ function loadStocks() {
 
 function saveStocks($stocks) {
     global $STOCKS_FILE;
-    file_put_contents($STOCKS_FILE, json_encode($stocks, JSON_PRETTY_PRINT));
+    store_write($STOCKS_FILE, $stocks);
 }
 
 function loadPortfolios() {
@@ -56,7 +58,7 @@ function loadPortfolios() {
 
 function savePortfolios($portfolios) {
     global $PORTFOLIOS_FILE;
-    file_put_contents($PORTFOLIOS_FILE, json_encode($portfolios, JSON_PRETTY_PRINT));
+    store_write($PORTFOLIOS_FILE, $portfolios);
 }
 
 function loadUsers() {
@@ -68,7 +70,7 @@ function loadUsers() {
 
 function saveUsers($data) {
     global $USERS_FILE;
-    file_put_contents($USERS_FILE, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($USERS_FILE, $data);
 }
 
 function getUserCoins($username) {

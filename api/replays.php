@@ -20,6 +20,8 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
+require_once __DIR__ . '/_store.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -47,7 +49,7 @@ function readIndex() {
 
 function writeIndex($data) {
     global $indexFile;
-    file_put_contents($indexFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($indexFile, $data);
 }
 
 function getReplayFile($id) {
@@ -244,7 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $replayFull = array_merge($replayMeta, ['frames' => $frames]);
         
         // Save full replay
-        file_put_contents(getReplayFile($replayId), json_encode($replayFull));
+        store_write(getReplayFile($replayId), $replayFull);
         
         // Update index
         $index['replays'][] = $replayMeta;

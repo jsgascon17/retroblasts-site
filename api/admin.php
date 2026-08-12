@@ -2,6 +2,8 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once __DIR__ . '/_store.php';
+
 $usersFile = __DIR__ . '/../data/users.json';
 $ADMIN_PASSWORD = 'retroadmin2026'; // Change this!
 
@@ -13,7 +15,7 @@ function loadUsers() {
 
 function saveUsers($data) {
     global $usersFile;
-    file_put_contents($usersFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($usersFile, $data);
 }
 
 $input = json_decode(file_get_contents('php://input'), true);

@@ -16,6 +16,8 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
+require_once __DIR__ . '/_store.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -31,7 +33,7 @@ function readRatings() {
 
 function writeRatings($data) {
     global $ratingsFile;
-    file_put_contents($ratingsFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($ratingsFile, $data);
 }
 
 // Handle GET

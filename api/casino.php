@@ -2,6 +2,8 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once __DIR__ . '/_store.php';
+
 $DATA_DIR = __DIR__ . '/../data';
 $USERS_FILE = $DATA_DIR . '/users.json';
 
@@ -14,7 +16,7 @@ function loadUsers() {
 
 function saveUsers($data) {
     global $USERS_FILE;
-    file_put_contents($USERS_FILE, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($USERS_FILE, $data);
 }
 
 function getCurrentUser(&$data) {
@@ -69,14 +71,14 @@ $jackpotFile = __DIR__ . '/../data/jackpot.json';
 function getJackpot() {
     global $jackpotFile;
     if (!file_exists($jackpotFile)) {
-        file_put_contents($jackpotFile, json_encode(['amount' => 100000, 'lastWinner' => null, 'lastWonAt' => null]));
+        store_write($jackpotFile, ['amount' => 100000, 'lastWinner' => null, 'lastWonAt' => null]);
     }
     return json_decode(file_get_contents($jackpotFile), true);
 }
 
 function saveJackpot($data) {
     global $jackpotFile;
-    file_put_contents($jackpotFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($jackpotFile, $data);
 }
 
 function addToJackpot($amount) {

@@ -2,6 +2,8 @@
 header('Content-Type: application/json');
 session_start();
 
+require_once __DIR__ . '/_store.php';
+
 $dataFile = __DIR__ . '/data/score-notifications.json';
 
 function loadNotifications() {
@@ -12,7 +14,7 @@ function loadNotifications() {
 
 function saveNotifications($notifications) {
     global $dataFile;
-    file_put_contents($dataFile, json_encode($notifications, JSON_PRETTY_PRINT));
+    store_write($dataFile, $notifications);
 }
 
 // Check auth

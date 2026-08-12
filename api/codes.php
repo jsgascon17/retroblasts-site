@@ -12,6 +12,8 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once __DIR__ . '/_store.php';
+
 $dataDir = __DIR__ . '/../data';
 $usersFile = $dataDir . '/users.json';
 $codesFile = $dataDir . '/codes.json';
@@ -56,7 +58,7 @@ function readUsers() {
 
 function writeUsers($data) {
     global $usersFile;
-    file_put_contents($usersFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($usersFile, $data);
 }
 
 function readCodes() {
@@ -67,7 +69,7 @@ function readCodes() {
 
 function writeCodes($data) {
     global $codesFile;
-    file_put_contents($codesFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($codesFile, $data);
 }
 
 function ensureInventoryFields(&$user) {

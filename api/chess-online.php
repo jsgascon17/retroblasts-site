@@ -4,6 +4,8 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
+require_once __DIR__ . '/_store.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
@@ -28,7 +30,7 @@ function loadGames() {
 // Save games data
 function saveGames($data) {
     global $dataFile;
-    file_put_contents($dataFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($dataFile, $data);
 }
 
 // Generate random game code

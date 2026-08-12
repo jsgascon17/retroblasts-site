@@ -2,6 +2,9 @@
 session_start();
 header("Content-Type: application/json");
 
+require_once __DIR__ . '/_store.php';
+require_once __DIR__ . '/_admin.php';
+
 $usersFile = __DIR__ . "/../data/users.json";
 $rewardsFile = __DIR__ . "/../data/weekly-rewards.json";
 $leaderboardDir = __DIR__ . "/../leaderboards/";
@@ -16,7 +19,7 @@ function readUsers() {
 
 function writeUsers($data) {
     global $usersFile;
-    file_put_contents($usersFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($usersFile, $data);
 }
 
 function readRewardsHistory() {
@@ -27,7 +30,7 @@ function readRewardsHistory() {
 
 function writeRewardsHistory($data) {
     global $rewardsFile;
-    file_put_contents($rewardsFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($rewardsFile, $data);
 }
 
 function getCurrentWeek() { return date("Y-\WW"); }
@@ -44,6 +47,15 @@ function getTop3FromLeaderboard($file) {
 $action = $_GET["action"] ?? "";
 $input = json_decode(file_get_contents("php://input"), true) ?: [];
 if (isset($input["action"])) $action = $input["action"];
+
+// "distribute" credits prize coins to leaderboard winners across every account
+// and rewrites users.json. It had no authentication of any kind: anyone could
+// POST {"action":"distribute"} and force the weekly payout. The once-per-week
+// guard below limited the damage but was never an access control.
+// "check" and "history" are read-only and stay public.
+if ($action === "distribute") {
+    require_site_admin();
+}
 
 switch ($action) {
     case "check":

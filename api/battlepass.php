@@ -2,6 +2,8 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once __DIR__ . '/_store.php';
+
 $usersFile = __DIR__ . '/../data/users.json';
 $bpFile = __DIR__ . '/../data/battlepass.json';
 
@@ -11,7 +13,7 @@ function loadJson($file) {
 }
 
 function saveJson($file, $data) {
-    file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($file, $data);
 }
 
 if (!isset($_SESSION['user'])) {

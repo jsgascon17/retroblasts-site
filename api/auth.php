@@ -23,6 +23,8 @@ session_set_cookie_params([
 ]);
 session_start();
 
+require_once __DIR__ . '/_store.php';
+
 // CORS headers - must use specific origin with credentials (not *)
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if ($origin && strpos($origin, 'retroblasts.com') !== false) {
@@ -45,7 +47,7 @@ $usersFile = $dataDir . '/users.json';
 
 // Initialize data file if needed
 if (!file_exists($usersFile)) {
-    file_put_contents($usersFile, json_encode(['users' => []], JSON_PRETTY_PRINT));
+    store_write($usersFile, ['users' => []]);
     chmod($usersFile, 0666);
 }
 
@@ -57,7 +59,7 @@ function readUsers() {
 
 function writeUsers($data) {
     global $usersFile;
-    file_put_contents($usersFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($usersFile, $data);
 }
 
 function sanitize($input, $maxLength = 20) {

@@ -2,6 +2,8 @@
 header('Content-Type: application/json');
 session_start();
 
+require_once __DIR__ . '/_store.php';
+
 $dataFile = __DIR__ . '/../data/news.json';
 
 // Admin users who can post/delete news
@@ -16,7 +18,7 @@ function loadNews() {
 
 function saveNews($data) {
     global $dataFile;
-    file_put_contents($dataFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($dataFile, $data);
 }
 
 function generateId() {

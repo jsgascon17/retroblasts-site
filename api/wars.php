@@ -18,6 +18,8 @@
 header('Content-Type: application/json');
 session_start();
 
+require_once __DIR__ . '/_store.php';
+
 $warsFile = __DIR__ . '/../data/wars.json';
 $teamsFile = __DIR__ . '/../data/teams.json';
 $usersFile = __DIR__ . '/../data/users.json';
@@ -30,7 +32,7 @@ function readWars() {
 
 function writeWars($data) {
     global $warsFile;
-    file_put_contents($warsFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($warsFile, $data);
 }
 
 function readTeams() {

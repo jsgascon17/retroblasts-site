@@ -2,6 +2,8 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once __DIR__ . '/_store.php';
+
 $AUCTIONS_FILE = __DIR__ . '/../data/auctions.json';
 $USERS_FILE = __DIR__ . '/../data/users.json';
 $OWNERS = ['billybuffalo15'];
@@ -14,7 +16,7 @@ function loadAuctions() {
 
 function saveAuctions($auctions) {
     global $AUCTIONS_FILE;
-    file_put_contents($AUCTIONS_FILE, json_encode($auctions, JSON_PRETTY_PRINT));
+    store_write($AUCTIONS_FILE, $auctions);
 }
 
 function loadUsers() {
@@ -26,7 +28,7 @@ function loadUsers() {
 
 function saveUsers($data) {
     global $USERS_FILE;
-    file_put_contents($USERS_FILE, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($USERS_FILE, $data);
 }
 
 function getUserCoins($username) {

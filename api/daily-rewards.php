@@ -2,6 +2,8 @@
 header('Content-Type: application/json');
 session_start();
 
+require_once __DIR__ . '/_store.php';
+
 $dataFile = __DIR__ . '/../data/daily-rewards.json';
 
 function loadRewards() {
@@ -13,7 +15,7 @@ function loadRewards() {
 
 function saveRewards($data) {
     global $dataFile;
-    file_put_contents($dataFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($dataFile, $data);
 }
 
 function loadUsers() {
@@ -25,7 +27,7 @@ function loadUsers() {
 
 function saveUsers($users) {
     $userFile = __DIR__ . '/../data/users.json';
-    file_put_contents($userFile, json_encode($users, JSON_PRETTY_PRINT));
+    store_write($userFile, $users);
 }
 
 // Weekly rewards structure

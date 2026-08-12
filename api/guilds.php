@@ -2,6 +2,8 @@
 header("Content-Type: application/json");
 session_start();
 
+require_once __DIR__ . '/_store.php';
+
 $guildsFile = __DIR__ . "/../data/guilds.json";
 $usersFile = __DIR__ . "/../data/users.json";
 
@@ -13,7 +15,7 @@ function loadGuilds() {
 
 function saveGuilds($data) {
     global $guildsFile;
-    file_put_contents($guildsFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($guildsFile, $data);
 }
 
 function loadUsers() {
@@ -24,7 +26,7 @@ function loadUsers() {
 
 function saveUsers($data) {
     global $usersFile;
-    file_put_contents($usersFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($usersFile, $data);
 }
 
 // Guild icons/badges

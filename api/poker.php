@@ -8,6 +8,8 @@ session_start();
 header('Content-Type: application/json');
 header('Access-Control-Allow-Credentials: true');
 
+require_once __DIR__ . '/_store.php';
+
 $dataDir = __DIR__ . '/../data/';
 $tablesFile = $dataDir . 'poker-tables.json';
 $tournamentsFile = $dataDir . 'poker-tournaments.json';
@@ -39,7 +41,7 @@ function loadJson($file) {
 
 // Save JSON file
 function saveJson($file, $data) {
-    file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($file, $data);
 }
 
 // Get user coins

@@ -2,6 +2,8 @@
 header("Content-Type: application/json");
 session_start();
 
+require_once __DIR__ . '/_store.php';
+
 $tradesFile = __DIR__ . "/../data/trades.json";
 $usersFile = __DIR__ . "/../data/users.json";
 
@@ -13,7 +15,7 @@ function loadTrades() {
 
 function saveTrades($data) {
     global $tradesFile;
-    file_put_contents($tradesFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($tradesFile, $data);
 }
 
 function loadUsers() {
@@ -24,7 +26,7 @@ function loadUsers() {
 
 function saveUsers($data) {
     global $usersFile;
-    file_put_contents($usersFile, json_encode($data, JSON_PRETTY_PRINT));
+    store_write($usersFile, $data);
 }
 
 function getUserInventory($username) {
