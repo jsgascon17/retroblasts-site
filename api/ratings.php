@@ -28,12 +28,12 @@ $ratingsFile = __DIR__ . '/../data/ratings.json';
 function readRatings() {
     global $ratingsFile;
     if (!file_exists($ratingsFile)) return ['games' => []];
-    return json_decode(file_get_contents($ratingsFile), true) ?: ['games' => []];
+    return store_hold_read($ratingsFile, ['games' => []]);
 }
 
 function writeRatings($data) {
     global $ratingsFile;
-    store_write($ratingsFile, $data);
+    store_hold_write($ratingsFile, $data);
 }
 
 // Handle GET

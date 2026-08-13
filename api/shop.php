@@ -249,23 +249,23 @@ $SHOP_ITEMS = [
 function readUsers() {
     global $usersFile;
     if (!file_exists($usersFile)) return ['users' => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ['users' => []];
+    return store_hold_read($usersFile, ['users' => []]);
 }
 
 function writeUsers($data) {
     global $usersFile;
-    store_write($usersFile, $data);
+    store_hold_write($usersFile, $data);
 }
 
 function readShopData() {
     global $shopDataFile;
     if (!file_exists($shopDataFile)) return ['limitedItems' => []];
-    return json_decode(file_get_contents($shopDataFile), true) ?: ['limitedItems' => []];
+    return store_hold_read($shopDataFile, ['limitedItems' => []]);
 }
 
 function writeShopData($data) {
     global $shopDataFile;
-    store_write($shopDataFile, $data);
+    store_hold_write($shopDataFile, $data);
 }
 
 function ensureUserHasShopFields(&$user) {

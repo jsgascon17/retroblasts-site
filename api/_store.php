@@ -133,6 +133,92 @@ function store_mutate(string $file, callable $mutator, $default = null) {
     }
 }
 
+/* ---------------------------------------------------------------------------
+ * Request-scoped locking.
+ *
+ * store_mutate() is the right tool when a handler can be expressed as one
+ * read-modify-write. Most endpoints here cannot: they read users.json near the
+ * top, branch through a few hundred lines of game logic, and write near the
+ * bottom. Rewriting 49 handlers around a closure would be a large, risky change
+ * to live money-handling code.
+ *
+ * These helpers give the same guarantee without touching handler logic. The
+ * first read takes an exclusive lock and KEEPS it, so every later read and the
+ * final write in that request use the same handle. Concurrent requests queue
+ * instead of interleaving, which is what stops one player's write from
+ * silently discarding another's.
+ *
+ * PHP releases file locks when the script ends, including on fatal error, so
+ * there is no unlock path to forget.
+ *
+ * Cost: requests that touch the same file serialise, including read-only ones.
+ * At this site's scale that is irrelevant, and correctness is worth far more
+ * than concurrency on a file holding every account's coins.
+ *
+ * Caveat: a handler that holds two different files must always take them in
+ * the same order, or two requests can deadlock. In practice users.json is
+ * taken first everywhere.
+ * ------------------------------------------------------------------------- */
+
+$GLOBALS['__store_handles'] = [];
+
+function store_hold(string $file) {
+    if (isset($GLOBALS['__store_handles'][$file])) {
+        return $GLOBALS['__store_handles'][$file];
+    }
+    $dir = dirname($file);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0775, true);
+    }
+    $fh = @fopen($file, 'c+b');
+    if ($fh === false) {
+        return null;
+    }
+    if (!flock($fh, LOCK_EX)) {
+        fclose($fh);
+        return null;
+    }
+    $GLOBALS['__store_handles'][$file] = $fh;
+    return $fh;
+}
+
+/** Read under the request's exclusive lock, taking it if not already held. */
+function store_hold_read(string $file, $default = null) {
+    if ($default === null) {
+        $default = [];
+    }
+    $fh = store_hold($file);
+    if ($fh === null) {
+        return $default;
+    }
+    rewind($fh);
+    $raw = stream_get_contents($fh);
+    if ($raw === '' || $raw === false) {
+        return $default;
+    }
+    $data = json_decode($raw, true);
+    return $data === null ? $default : $data;
+}
+
+/** Write through the handle this request already holds. */
+function store_hold_write(string $file, $data): bool {
+    $fh = store_hold($file);
+    if ($fh === null) {
+        return false;
+    }
+    $encoded = json_encode($data, JSON_PRETTY_PRINT);
+    if ($encoded === false) {
+        return false;
+    }
+    rewind($fh);
+    if (ftruncate($fh, 0) === false) {
+        return false;
+    }
+    $ok = fwrite($fh, $encoded) !== false;
+    fflush($fh);
+    return $ok;
+}
+
 /**
  * Overwrite a JSON file wholesale, atomically, under an exclusive lock.
  * Prefer store_mutate() -- this is only for callers that legitimately replace

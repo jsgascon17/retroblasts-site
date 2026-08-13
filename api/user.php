@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/_store.php';
 session_start();
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: https://retroblasts.com");
@@ -9,7 +10,7 @@ $usersFile = __DIR__ . "/../data/users.json";
 function loadUsers() {
     global $usersFile;
     if (!file_exists($usersFile)) return ["users" => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ["users" => []];
+    return store_hold_read($usersFile, ["users" => []]);
 }
 
 $action = $_GET["action"] ?? "profile";

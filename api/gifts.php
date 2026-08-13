@@ -30,28 +30,28 @@ $rateLimitFile = __DIR__ . '/../data/gift-ratelimit.json';
 function readUsers() {
     global $usersFile;
     if (!file_exists($usersFile)) return ['users' => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ['users' => []];
+    return store_hold_read($usersFile, ['users' => []]);
 }
 
 function writeUsers($data) {
     global $usersFile;
-    store_write($usersFile, $data);
+    store_hold_write($usersFile, $data);
 }
 
 function readGifts() {
     global $giftsFile;
     if (!file_exists($giftsFile)) return ['gifts' => []];
-    return json_decode(file_get_contents($giftsFile), true) ?: ['gifts' => []];
+    return store_hold_read($giftsFile, ['gifts' => []]);
 }
 
 function writeGifts($data) {
     global $giftsFile;
-    store_write($giftsFile, $data);
+    store_hold_write($giftsFile, $data);
 }
 
 function checkRateLimit($username) {
     global $rateLimitFile;
-    $data = file_exists($rateLimitFile) ? json_decode(file_get_contents($rateLimitFile), true) : [];
+    $data = file_exists($rateLimitFile) ? store_hold_read($rateLimitFile, []) : [];
     $now = time();
     
     // Clean old entries
@@ -65,7 +65,7 @@ function checkRateLimit($username) {
     }
     
     $data[$username] = $now;
-    store_write($rateLimitFile, $data);
+    store_hold_write($rateLimitFile, $data);
     return 0;
 }
 

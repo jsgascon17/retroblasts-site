@@ -37,23 +37,23 @@ $usersFile = __DIR__ . '/../data/users.json';
 function readTeams() {
     global $teamsFile;
     if (!file_exists($teamsFile)) return ['teams' => []];
-    return json_decode(file_get_contents($teamsFile), true) ?: ['teams' => []];
+    return store_hold_read($teamsFile, ['teams' => []]);
 }
 
 function writeTeams($data) {
     global $teamsFile;
-    store_write($teamsFile, $data);
+    store_hold_write($teamsFile, $data);
 }
 
 function readUsers() {
     global $usersFile;
     if (!file_exists($usersFile)) return ['users' => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ['users' => []];
+    return store_hold_read($usersFile, ['users' => []]);
 }
 
 function writeUsers($data) {
     global $usersFile;
-    store_write($usersFile, $data);
+    store_hold_write($usersFile, $data);
 }
 
 function sanitize($input, $maxLength = 50) {

@@ -47,19 +47,18 @@ $usersFile = $dataDir . '/users.json';
 
 // Initialize data file if needed
 if (!file_exists($usersFile)) {
-    store_write($usersFile, ['users' => []]);
+    store_hold_write($usersFile, ['users' => []]);
     chmod($usersFile, 0666);
 }
 
 function readUsers() {
     global $usersFile;
-    $data = json_decode(file_get_contents($usersFile), true);
-    return $data ?: ['users' => []];
+    return store_hold_read($usersFile, ['users' => []]);
 }
 
 function writeUsers($data) {
     global $usersFile;
-    store_write($usersFile, $data);
+    store_hold_write($usersFile, $data);
 }
 
 function sanitize($input, $maxLength = 20) {

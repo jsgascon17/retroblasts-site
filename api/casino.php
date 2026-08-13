@@ -11,12 +11,12 @@ $USERS_FILE = $DATA_DIR . '/users.json';
 function loadUsers() {
     global $USERS_FILE;
     if (!file_exists($USERS_FILE)) return ['users' => []];
-    return json_decode(file_get_contents($USERS_FILE), true) ?: ['users' => []];
+    return store_hold_read($USERS_FILE, ['users' => []]);
 }
 
 function saveUsers($data) {
     global $USERS_FILE;
-    store_write($USERS_FILE, $data);
+    store_hold_write($USERS_FILE, $data);
 }
 
 function getCurrentUser(&$data) {
@@ -71,14 +71,14 @@ $jackpotFile = __DIR__ . '/../data/jackpot.json';
 function getJackpot() {
     global $jackpotFile;
     if (!file_exists($jackpotFile)) {
-        store_write($jackpotFile, ['amount' => 100000, 'lastWinner' => null, 'lastWonAt' => null]);
+        store_hold_write($jackpotFile, ['amount' => 100000, 'lastWinner' => null, 'lastWonAt' => null]);
     }
-    return json_decode(file_get_contents($jackpotFile), true);
+    return store_hold_read($jackpotFile, []);
 }
 
 function saveJackpot($data) {
     global $jackpotFile;
-    store_write($jackpotFile, $data);
+    store_hold_write($jackpotFile, $data);
 }
 
 function addToJackpot($amount) {

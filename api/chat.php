@@ -45,7 +45,7 @@ $ALLOWED_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥', '💀', 
 
 // Initialize files
 if (!file_exists($globalChatFile)) {
-    store_write($globalChatFile, ['messages' => []]);
+    store_hold_write($globalChatFile, ['messages' => []]);
     chmod($globalChatFile, 0666);
 }
 if (!is_dir($dmDir)) {
@@ -55,22 +55,22 @@ if (!is_dir($dmDir)) {
 function readUsers() {
     global $usersFile;
     if (!file_exists($usersFile)) return ['users' => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ['users' => []];
+    return store_hold_read($usersFile, ['users' => []]);
 }
 
 function writeUsers($data) {
     global $usersFile;
-    store_write($usersFile, $data);
+    store_hold_write($usersFile, $data);
 }
 
 function readGlobalChat() {
     global $globalChatFile;
-    return json_decode(file_get_contents($globalChatFile), true) ?: ['messages' => []];
+    return store_hold_read($globalChatFile, ['messages' => []]);
 }
 
 function writeGlobalChat($data) {
     global $globalChatFile;
-    store_write($globalChatFile, $data);
+    store_hold_write($globalChatFile, $data);
 }
 
 function getDMFile($user1, $user2) {
@@ -85,12 +85,12 @@ function readDM($user1, $user2) {
     if (!file_exists($file)) {
         return ['messages' => [], 'lastRead' => []];
     }
-    return json_decode(file_get_contents($file), true) ?: ['messages' => [], 'lastRead' => []];
+    return store_hold_read($file, ['messages' => [], 'lastRead' => []]);
 }
 
 function writeDM($user1, $user2, $data) {
     $file = getDMFile($user1, $user2);
-    store_write($file, $data);
+    store_hold_write($file, $data);
     chmod($file, 0666);
 }
 
@@ -108,7 +108,7 @@ function checkRateLimit($username) {
     global $rateLimitFile;
     $limits = [];
     if (file_exists($rateLimitFile)) {
-        $limits = json_decode(file_get_contents($rateLimitFile), true) ?: [];
+        $limits = store_hold_read($rateLimitFile, []);
     }
 
     $now = time();
@@ -125,19 +125,19 @@ function checkRateLimit($username) {
         if ($now - $time > 60) unset($limits[$user]);
     }
 
-    store_write($rateLimitFile, $limits);
+    store_hold_write($rateLimitFile, $limits);
     return true;
 }
 
 function readTyping() {
     global $typingFile;
     if (!file_exists($typingFile)) return [];
-    return json_decode(file_get_contents($typingFile), true) ?: [];
+    return store_hold_read($typingFile, []);
 }
 
 function writeTyping($data) {
     global $typingFile;
-    store_write($typingFile, $data);
+    store_hold_write($typingFile, $data);
 }
 
 function updateTyping($username, $displayName, $avatar, $channel) {

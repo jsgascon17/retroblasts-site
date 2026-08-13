@@ -17,12 +17,12 @@ $usersFile = __DIR__ . "/../data/users.json";
 function readUsers() {
     global $usersFile;
     if (!file_exists($usersFile)) return ["users" => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ["users" => []];
+    return store_hold_read($usersFile, ["users" => []]);
 }
 
 function writeUsers($data) {
     global $usersFile;
-    store_write($usersFile, $data);
+    store_hold_write($usersFile, $data);
 }
 
 // Valid games list
@@ -150,7 +150,7 @@ function updateChallengeProgress($username, $game, $score, $coins) {
     if (count($hard) > 0) $dailyChallenges[] = $hard[array_rand($hard)];
     
     // Load challenge data
-    $challengeData = file_exists($challengeFile) ? json_decode(file_get_contents($challengeFile), true) : [];
+    $challengeData = file_exists($challengeFile) ? store_hold_read($challengeFile, []) : [];
     
     if (!isset($challengeData[$username]) || $challengeData[$username]["date"] !== $today) {
         $challengeData[$username] = [
@@ -210,12 +210,12 @@ function updateChallengeProgress($username, $game, $score, $coins) {
         }
     }
     
-    store_write($challengeFile, $challengeData);
+    store_hold_write($challengeFile, $challengeData);
 }
 
 function updateGuildXP($username, $score) {
     global $usersFile;
-    $users = json_decode(file_get_contents($usersFile), true);
+    $users = store_hold_read($usersFile, []);
     $guildId = $users["users"][$username]["guildId"] ?? null;
     
     if (!$guildId) return;
@@ -223,7 +223,7 @@ function updateGuildXP($username, $score) {
     $guildsFile = __DIR__ . "/../data/guilds.json";
     if (!file_exists($guildsFile)) return;
     
-    $guilds = json_decode(file_get_contents($guildsFile), true);
+    $guilds = store_hold_read($guildsFile, []);
     if (!isset($guilds["guilds"][$guildId])) return;
     
     // Add XP to guild (1 XP per 10 score)
@@ -238,7 +238,7 @@ function updateGuildXP($username, $score) {
         }
     }
     
-    store_write($guildsFile, $guilds);
+    store_hold_write($guildsFile, $guilds);
 }
 
 function updateBattlePassXP($username, $score) {
@@ -249,7 +249,7 @@ function updateBattlePassXP($username, $score) {
     $xpEarned = min($xpEarned, 50); // Cap at 50 XP per game
 
     // Load battle pass data
-    $bpData = file_exists($bpFile) ? json_decode(file_get_contents($bpFile), true) : [];
+    $bpData = file_exists($bpFile) ? store_hold_read($bpFile, []) : [];
 
     // Initialize user if needed
     if (!isset($bpData[$username])) {
@@ -287,7 +287,7 @@ function updateBattlePassXP($username, $score) {
     $bpData[$username]['challenges']['seasonal']['progress']['score'] =
         ($bpData[$username]['challenges']['seasonal']['progress']['score'] ?? 0) + $score;
 
-    store_write($bpFile, $bpData);
+    store_hold_write($bpFile, $bpData);
 
     return $xpEarned;
 }

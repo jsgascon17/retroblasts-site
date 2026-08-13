@@ -31,19 +31,18 @@ if (!file_exists($dataDir)) {
     mkdir($dataDir, 0755, true);
 }
 if (!file_exists($gameStatsFile)) {
-    store_write($gameStatsFile, ['users' => []]);
+    store_hold_write($gameStatsFile, ['users' => []]);
     chmod($gameStatsFile, 0666);
 }
 
 function readGameStats() {
     global $gameStatsFile;
-    $data = json_decode(file_get_contents($gameStatsFile), true);
-    return $data ?: ['users' => []];
+    return store_hold_read($gameStatsFile, ['users' => []]);
 }
 
 function writeGameStats($data) {
     global $gameStatsFile;
-    store_write($gameStatsFile, $data);
+    store_hold_write($gameStatsFile, $data);
 }
 
 function sanitizeGameName($game) {

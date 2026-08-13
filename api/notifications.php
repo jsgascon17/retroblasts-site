@@ -31,12 +31,12 @@ $usersFile = __DIR__ . "/../data/users.json";
 function readUsers() {
     global $usersFile;
     if (!file_exists($usersFile)) return ["users" => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ["users" => []];
+    return store_hold_read($usersFile, ["users" => []]);
 }
 
 function writeUsers($data) {
     global $usersFile;
-    store_write($usersFile, $data);
+    store_hold_write($usersFile, $data);
 }
 
 // Create notification helper function

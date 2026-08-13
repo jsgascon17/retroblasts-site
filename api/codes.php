@@ -53,23 +53,23 @@ $CODES = [
 function readUsers() {
     global $usersFile;
     if (!file_exists($usersFile)) return ['users' => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ['users' => []];
+    return store_hold_read($usersFile, ['users' => []]);
 }
 
 function writeUsers($data) {
     global $usersFile;
-    store_write($usersFile, $data);
+    store_hold_write($usersFile, $data);
 }
 
 function readCodes() {
     global $codesFile;
     if (!file_exists($codesFile)) return ['redeemed' => []];
-    return json_decode(file_get_contents($codesFile), true) ?: ['redeemed' => []];
+    return store_hold_read($codesFile, ['redeemed' => []]);
 }
 
 function writeCodes($data) {
     global $codesFile;
-    store_write($codesFile, $data);
+    store_hold_write($codesFile, $data);
 }
 
 function ensureInventoryFields(&$user) {

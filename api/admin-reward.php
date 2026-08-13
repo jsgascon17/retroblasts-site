@@ -26,7 +26,7 @@ if (!file_exists($leaderboardFile)) {
     exit;
 }
 
-$leaderboard = json_decode(file_get_contents($leaderboardFile), true);
+$leaderboard = store_hold_read($leaderboardFile, []);
 $scores = $leaderboard['scores'] ?? [];
 
 if (count($scores) === 0) {
@@ -36,7 +36,7 @@ if (count($scores) === 0) {
 
 // Load users
 $usersFile = __DIR__ . '/../data/users.json';
-$usersData = json_decode(file_get_contents($usersFile), true);
+$usersData = store_hold_read($usersFile, []);
 
 // Build lookup by display name AND username (case insensitive, spaces removed)
 $nameToUsername = [];
@@ -77,7 +77,7 @@ for ($i = 0; $i < min(3, count($scores)); $i++) {
     }
 }
 
-store_write($usersFile, $usersData);
+store_hold_write($usersFile, $usersData);
 
 echo json_encode([
     'success' => true,

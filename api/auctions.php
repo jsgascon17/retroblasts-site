@@ -11,24 +11,23 @@ $OWNERS = ['billybuffalo15'];
 function loadAuctions() {
     global $AUCTIONS_FILE;
     if (!file_exists($AUCTIONS_FILE)) return [];
-    return json_decode(file_get_contents($AUCTIONS_FILE), true) ?: [];
+    return store_hold_read($AUCTIONS_FILE, []);
 }
 
 function saveAuctions($auctions) {
     global $AUCTIONS_FILE;
-    store_write($AUCTIONS_FILE, $auctions);
+    store_hold_write($AUCTIONS_FILE, $auctions);
 }
 
 function loadUsers() {
     global $USERS_FILE;
     if (!file_exists($USERS_FILE)) return ['users' => []];
-    $data = json_decode(file_get_contents($USERS_FILE), true);
-    return $data ?: ['users' => []];
+    return store_hold_read($USERS_FILE, ['users' => []]);
 }
 
 function saveUsers($data) {
     global $USERS_FILE;
-    store_write($USERS_FILE, $data);
+    store_hold_write($USERS_FILE, $data);
 }
 
 function getUserCoins($username) {

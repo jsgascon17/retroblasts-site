@@ -9,11 +9,11 @@ $referralsFile = __DIR__ . '/../data/referrals.json';
 
 function loadJson($file) {
     if (!file_exists($file)) return [];
-    return json_decode(file_get_contents($file), true) ?: [];
+    return store_hold_read($file, []);
 }
 
 function saveJson($file, $data) {
-    store_write($file, $data);
+    store_hold_write($file, $data);
 }
 
 function generateCode($username) {

@@ -14,23 +14,23 @@ $PRIZES = [1000, 500, 250];
 function readUsers() {
     global $usersFile;
     if (!file_exists($usersFile)) return ["users" => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ["users" => []];
+    return store_hold_read($usersFile, ["users" => []]);
 }
 
 function writeUsers($data) {
     global $usersFile;
-    store_write($usersFile, $data);
+    store_hold_write($usersFile, $data);
 }
 
 function readRewardsHistory() {
     global $rewardsFile;
     if (!file_exists($rewardsFile)) return ["lastProcessedWeek" => null, "history" => []];
-    return json_decode(file_get_contents($rewardsFile), true) ?: ["lastProcessedWeek" => null, "history" => []];
+    return store_hold_read($rewardsFile, ["lastProcessedWeek" => null, "history" => []]);
 }
 
 function writeRewardsHistory($data) {
     global $rewardsFile;
-    store_write($rewardsFile, $data);
+    store_hold_write($rewardsFile, $data);
 }
 
 function getCurrentWeek() { return date("Y-\WW"); }
@@ -38,7 +38,7 @@ function getPreviousWeek() { return date("Y-\WW", strtotime("-1 week")); }
 
 function getTop3FromLeaderboard($file) {
     if (!file_exists($file)) return [];
-    $data = json_decode(file_get_contents($file), true);
+    $data = store_hold_read($file, []);
     if (!isset($data["scores"])) return [];
     usort($data["scores"], function($a, $b) { return $b["score"] - $a["score"]; });
     return array_slice($data["scores"], 0, 3);

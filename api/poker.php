@@ -41,7 +41,7 @@ function loadJson($file) {
 
 // Save JSON file
 function saveJson($file, $data) {
-    store_write($file, $data);
+    store_hold_write($file, $data);
 }
 
 // Get user coins

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/_store.php';
 session_start();
 header('Content-Type: application/json');
 
@@ -6,7 +7,7 @@ $usersFile = __DIR__ . '/../data/users.json';
 
 function loadJson($file) {
     if (!file_exists($file)) return [];
-    return json_decode(file_get_contents($file), true) ?: [];
+    return store_hold_read($file, []);
 }
 
 if (!isset($_SESSION['user'])) {

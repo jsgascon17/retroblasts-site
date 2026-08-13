@@ -11,24 +11,23 @@ $OWNERS = ['billybuffalo15'];
 function loadPredictions() {
     global $PREDICTIONS_FILE;
     if (!file_exists($PREDICTIONS_FILE)) return [];
-    return json_decode(file_get_contents($PREDICTIONS_FILE), true) ?: [];
+    return store_hold_read($PREDICTIONS_FILE, []);
 }
 
 function savePredictions($predictions) {
     global $PREDICTIONS_FILE;
-    store_write($PREDICTIONS_FILE, $predictions);
+    store_hold_write($PREDICTIONS_FILE, $predictions);
 }
 
 function loadUsers() {
     global $USERS_FILE;
     if (!file_exists($USERS_FILE)) return ['users' => []];
-    $data = json_decode(file_get_contents($USERS_FILE), true);
-    return $data ?: ['users' => []];
+    return store_hold_read($USERS_FILE, ['users' => []]);
 }
 
 function saveUsers($data) {
     global $USERS_FILE;
-    store_write($USERS_FILE, $data);
+    store_hold_write($USERS_FILE, $data);
 }
 
 function getUserCoins($username) {

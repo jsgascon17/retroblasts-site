@@ -38,18 +38,18 @@ $REPLAY_RETENTION_DAYS = 30;
 function readUsers() {
     global $usersFile;
     if (!file_exists($usersFile)) return ['users' => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ['users' => []];
+    return store_hold_read($usersFile, ['users' => []]);
 }
 
 function readIndex() {
     global $indexFile;
     if (!file_exists($indexFile)) return ['replays' => []];
-    return json_decode(file_get_contents($indexFile), true) ?: ['replays' => []];
+    return store_hold_read($indexFile, ['replays' => []]);
 }
 
 function writeIndex($data) {
     global $indexFile;
-    store_write($indexFile, $data);
+    store_hold_write($indexFile, $data);
 }
 
 function getReplayFile($id) {
@@ -151,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             exit();
         }
         
-        $replay = json_decode(file_get_contents($file), true);
+        $replay = store_hold_read($file, []);
         echo json_encode(['success' => true, 'replay' => $replay]);
         exit();
     }

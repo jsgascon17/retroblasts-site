@@ -17,11 +17,11 @@ $GAME_CONFIGS = game_codes();
 
 function loadData($file) {
     if (!file_exists($file)) return [];
-    return json_decode(file_get_contents($file), true) ?: [];
+    return store_hold_read($file, []);
 }
 
 function saveData($file, $data) {
-    store_write($file, $data);
+    store_hold_write($file, $data);
 }
 
 function getSettings() {

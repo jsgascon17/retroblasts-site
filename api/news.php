@@ -12,13 +12,12 @@ $ADMIN_USERS = ['billybuffalo15', 'admin'];
 function loadNews() {
     global $dataFile;
     if (!file_exists($dataFile)) return [];
-    $data = json_decode(file_get_contents($dataFile), true);
-    return $data ?: [];
+    return store_hold_read($dataFile, []);
 }
 
 function saveNews($data) {
     global $dataFile;
-    store_write($dataFile, $data);
+    store_hold_write($dataFile, $data);
 }
 
 function generateId() {

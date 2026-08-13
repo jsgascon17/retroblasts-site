@@ -9,12 +9,12 @@ $dataFile = __DIR__ . '/data/score-notifications.json';
 function loadNotifications() {
     global $dataFile;
     if (!file_exists($dataFile)) return [];
-    return json_decode(file_get_contents($dataFile), true) ?: [];
+    return store_hold_read($dataFile, []);
 }
 
 function saveNotifications($notifications) {
     global $dataFile;
-    store_write($dataFile, $notifications);
+    store_hold_write($dataFile, $notifications);
 }
 
 // Check auth

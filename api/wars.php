@@ -27,24 +27,24 @@ $usersFile = __DIR__ . '/../data/users.json';
 function readWars() {
     global $warsFile;
     if (!file_exists($warsFile)) return [];
-    return json_decode(file_get_contents($warsFile), true) ?: [];
+    return store_hold_read($warsFile, []);
 }
 
 function writeWars($data) {
     global $warsFile;
-    store_write($warsFile, $data);
+    store_hold_write($warsFile, $data);
 }
 
 function readTeams() {
     global $teamsFile;
     if (!file_exists($teamsFile)) return [];
-    return json_decode(file_get_contents($teamsFile), true) ?: [];
+    return store_hold_read($teamsFile, []);
 }
 
 function readUsers() {
     global $usersFile;
     if (!file_exists($usersFile)) return ['users' => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ['users' => []];
+    return store_hold_read($usersFile, ['users' => []]);
 }
 
 function getUserTeam($username) {

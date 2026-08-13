@@ -30,7 +30,7 @@ function loadGames() {
 // Save games data
 function saveGames($data) {
     global $dataFile;
-    store_write($dataFile, $data);
+    store_hold_write($dataFile, $data);
 }
 
 // Generate random game code

@@ -22,26 +22,26 @@ $usersFile = __DIR__ . '/../data/users.json';
 function readActivity() {
     global $activityFile;
     if (!file_exists($activityFile)) return [];
-    return json_decode(file_get_contents($activityFile), true) ?: [];
+    return store_hold_read($activityFile, []);
 }
 
 function writeActivity($data) {
     global $activityFile;
     // Keep only last 1000 activities
     $data = array_slice($data, -1000);
-    store_write($activityFile, $data);
+    store_hold_write($activityFile, $data);
 }
 
 function readFriends() {
     global $friendsFile;
     if (!file_exists($friendsFile)) return [];
-    return json_decode(file_get_contents($friendsFile), true) ?: [];
+    return store_hold_read($friendsFile, []);
 }
 
 function readUsers() {
     global $usersFile;
     if (!file_exists($usersFile)) return ['users' => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ['users' => []];
+    return store_hold_read($usersFile, ['users' => []]);
 }
 
 function getUserFriends($username) {

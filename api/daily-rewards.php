@@ -9,25 +9,23 @@ $dataFile = __DIR__ . '/../data/daily-rewards.json';
 function loadRewards() {
     global $dataFile;
     if (!file_exists($dataFile)) return [];
-    $data = json_decode(file_get_contents($dataFile), true);
-    return $data ?: [];
+    return store_hold_read($dataFile, []);
 }
 
 function saveRewards($data) {
     global $dataFile;
-    store_write($dataFile, $data);
+    store_hold_write($dataFile, $data);
 }
 
 function loadUsers() {
     $userFile = __DIR__ . '/../data/users.json';
     if (!file_exists($userFile)) return [];
-    $data = json_decode(file_get_contents($userFile), true);
-    return $data ?: [];
+    return store_hold_read($userFile, []);
 }
 
 function saveUsers($users) {
     $userFile = __DIR__ . '/../data/users.json';
-    store_write($userFile, $users);
+    store_hold_write($userFile, $users);
 }
 
 // Weekly rewards structure

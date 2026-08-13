@@ -42,35 +42,34 @@ function loadStocks() {
         saveStocks($stocks);
         return $stocks;
     }
-    return json_decode(file_get_contents($STOCKS_FILE), true) ?: [];
+    return store_hold_read($STOCKS_FILE, []);
 }
 
 function saveStocks($stocks) {
     global $STOCKS_FILE;
-    store_write($STOCKS_FILE, $stocks);
+    store_hold_write($STOCKS_FILE, $stocks);
 }
 
 function loadPortfolios() {
     global $PORTFOLIOS_FILE;
     if (!file_exists($PORTFOLIOS_FILE)) return [];
-    return json_decode(file_get_contents($PORTFOLIOS_FILE), true) ?: [];
+    return store_hold_read($PORTFOLIOS_FILE, []);
 }
 
 function savePortfolios($portfolios) {
     global $PORTFOLIOS_FILE;
-    store_write($PORTFOLIOS_FILE, $portfolios);
+    store_hold_write($PORTFOLIOS_FILE, $portfolios);
 }
 
 function loadUsers() {
     global $USERS_FILE;
     if (!file_exists($USERS_FILE)) return ['users' => []];
-    $data = json_decode(file_get_contents($USERS_FILE), true);
-    return $data ?: ['users' => []];
+    return store_hold_read($USERS_FILE, ['users' => []]);
 }
 
 function saveUsers($data) {
     global $USERS_FILE;
-    store_write($USERS_FILE, $data);
+    store_hold_write($USERS_FILE, $data);
 }
 
 function getUserCoins($username) {

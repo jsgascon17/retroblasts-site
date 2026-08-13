@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/_store.php';
 session_start();
 header('Content-Type: application/json');
 
@@ -7,7 +8,7 @@ $leaderboardsDir = __DIR__ . '/../leaderboards/';
 
 function loadJson($file) {
     if (!file_exists($file)) return [];
-    return json_decode(file_get_contents($file), true) ?: [];
+    return store_hold_read($file, []);
 }
 
 $action = $_GET['action'] ?? '';
@@ -119,7 +120,7 @@ function getGameLeaderboard($game) {
     $file = $leaderboardsDir . $game . '.json';
     if (!file_exists($file)) return [];
     
-    $data = json_decode(file_get_contents($file), true);
+    $data = store_hold_read($file, []);
     $scores = $data['scores'] ?? $data ?? [];
     
     if (empty($scores) || !is_array($scores)) return [];
@@ -150,7 +151,7 @@ function getGamesWithScores() {
     
     foreach (glob($leaderboardsDir . '*.json') as $file) {
         $gameId = basename($file, '.json');
-        $data = json_decode(file_get_contents($file), true);
+        $data = store_hold_read($file, []);
         $scores = $data['scores'] ?? $data ?? [];
         
         if (!empty($scores) && is_array($scores)) {
@@ -178,7 +179,7 @@ function buildHighScoresLeaderboard() {
     // Read all game leaderboard files
     foreach (glob($leaderboardsDir . '*.json') as $file) {
         $gameId = basename($file, '.json');
-        $data = json_decode(file_get_contents($file), true);
+        $data = store_hold_read($file, []);
         $scores = $data['scores'] ?? $data ?? [];
         
         if (empty($scores) || !is_array($scores)) continue;

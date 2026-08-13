@@ -17,12 +17,12 @@ $OWNER_USERS = ['billybuffalo15'];
 function loadAdmins() {
     global $ADMIN_FILE;
     if (!file_exists($ADMIN_FILE)) return [];
-    return json_decode(file_get_contents($ADMIN_FILE), true) ?: [];
+    return store_hold_read($ADMIN_FILE, []);
 }
 
 function saveAdmins($admins) {
     global $ADMIN_FILE;
-    store_write($ADMIN_FILE, $admins);
+    store_hold_write($ADMIN_FILE, $admins);
 }
 
 function loadSettings() {
@@ -30,12 +30,12 @@ function loadSettings() {
     if (!file_exists($SETTINGS_FILE)) {
         return ['adminCodeEnabled' => true];
     }
-    return json_decode(file_get_contents($SETTINGS_FILE), true) ?: ['adminCodeEnabled' => true];
+    return store_hold_read($SETTINGS_FILE, ['adminCodeEnabled' => true]);
 }
 
 function saveSettings($settings) {
     global $SETTINGS_FILE;
-    store_write($SETTINGS_FILE, $settings);
+    store_hold_write($SETTINGS_FILE, $settings);
 }
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';

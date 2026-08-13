@@ -10,24 +10,23 @@ $USERS_FILE = __DIR__ . '/../data/users.json';
 function loadBounties() {
     global $BOUNTY_FILE;
     if (!file_exists($BOUNTY_FILE)) return [];
-    return json_decode(file_get_contents($BOUNTY_FILE), true) ?: [];
+    return store_hold_read($BOUNTY_FILE, []);
 }
 
 function saveBounties($bounties) {
     global $BOUNTY_FILE;
-    store_write($BOUNTY_FILE, $bounties);
+    store_hold_write($BOUNTY_FILE, $bounties);
 }
 
 function loadUsers() {
     global $USERS_FILE;
     if (!file_exists($USERS_FILE)) return ['users' => []];
-    $data = json_decode(file_get_contents($USERS_FILE), true);
-    return $data ?: ['users' => []];
+    return store_hold_read($USERS_FILE, ['users' => []]);
 }
 
 function saveUsers($data) {
     global $USERS_FILE;
-    store_write($USERS_FILE, $data);
+    store_hold_write($USERS_FILE, $data);
 }
 
 function getUserCoins($username) {

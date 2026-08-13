@@ -26,24 +26,23 @@ $PETS = [
 function loadPets() {
     global $dataFile;
     if (!file_exists($dataFile)) return [];
-    $data = json_decode(file_get_contents($dataFile), true);
-    return $data ?: [];
+    return store_hold_read($dataFile, []);
 }
 
 function savePets($data) {
     global $dataFile;
-    store_write($dataFile, $data);
+    store_hold_write($dataFile, $data);
 }
 
 function loadUsers() {
     global $usersFile;
     if (!file_exists($usersFile)) return ['users' => []];
-    return json_decode(file_get_contents($usersFile), true) ?: ['users' => []];
+    return store_hold_read($usersFile, ['users' => []]);
 }
 
 function saveUsers($data) {
     global $usersFile;
-    store_write($usersFile, $data);
+    store_hold_write($usersFile, $data);
 }
 
 function getUserPets($username) {

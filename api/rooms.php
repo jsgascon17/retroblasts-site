@@ -9,26 +9,24 @@ $dataFile = __DIR__ . '/../data/rooms.json';
 function loadRooms() {
     global $dataFile;
     if (!file_exists($dataFile)) return [];
-    $data = json_decode(file_get_contents($dataFile), true);
-    return $data ?: [];
+    return store_hold_read($dataFile, []);
 }
 
 function saveRooms($data) {
     global $dataFile;
-    store_write($dataFile, $data);
+    store_hold_write($dataFile, $data);
 }
 
 function loadUsers() {
     $userFile = __DIR__ . '/../data/users.json';
     if (!file_exists($userFile)) return [];
-    $data = json_decode(file_get_contents($userFile), true);
-    return $data ?: [];
+    return store_hold_read($userFile, []);
 }
 
 function loadFriends($username) {
     $friendsFile = __DIR__ . '/../data/friends.json';
     if (!file_exists($friendsFile)) return [];
-    $data = json_decode(file_get_contents($friendsFile), true);
+    $data = store_hold_read($friendsFile, []);
     return $data[$username] ?? [];
 }
 
