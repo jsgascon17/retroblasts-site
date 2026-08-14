@@ -58,40 +58,56 @@ function buildLeaderboards($users) {
 
         $stats = $user['stats'] ?? [];
 
-        $leaderboards['coins'][] = [
-            'username' => $user['displayName'] ?? $username,
-            'realUsername' => $username,
-            'avatar' => $user['avatar'] ?? '👤',
-            'value' => $user['coins'] ?? 0,
-            'rank' => $user['rank'] ?? 'Bronze'
-        ];
+        // Per-board opt-out. "banned" removes an account from everything; this
+        // hides it from named boards only, so an account can stay on the boards
+        // it legitimately earned while keeping a distorted figure off the one
+        // that would be meaningless. Set in users.json, e.g.
+        //   "leaderboardOptOut": ["coins"]
+        $optOut = $user['leaderboardOptOut'] ?? [];
+        if (!is_array($optOut)) $optOut = [];
 
-        $leaderboards['xp'][] = [
-            'username' => $user['displayName'] ?? $username,
-            'realUsername' => $username,
-            'avatar' => $user['avatar'] ?? '👤',
-            'value' => $user['xp'] ?? 0,
-            'level' => floor(sqrt(($user['xp'] ?? 0) / 10)) + 1,
-            'rank' => $user['rank'] ?? 'Bronze'
-        ];
+        if (!in_array('coins', $optOut, true)) {
+            $leaderboards['coins'][] = [
+                'username' => $user['displayName'] ?? $username,
+                'realUsername' => $username,
+                'avatar' => $user['avatar'] ?? '👤',
+                'value' => $user['coins'] ?? 0,
+                'rank' => $user['rank'] ?? 'Bronze'
+            ];
+        }
 
-        $leaderboards['gamesPlayed'][] = [
-            'username' => $user['displayName'] ?? $username,
-            'realUsername' => $username,
-            'avatar' => $user['avatar'] ?? '👤',
-            'value' => $stats['totalGamesPlayed'] ?? 0,
-            'rank' => $user['rank'] ?? 'Bronze'
-        ];
+        if (!in_array('xp', $optOut, true)) {
+            $leaderboards['xp'][] = [
+                'username' => $user['displayName'] ?? $username,
+                'realUsername' => $username,
+                'avatar' => $user['avatar'] ?? '👤',
+                'value' => $user['xp'] ?? 0,
+                'level' => floor(sqrt(($user['xp'] ?? 0) / 10)) + 1,
+                'rank' => $user['rank'] ?? 'Bronze'
+            ];
+        }
+
+        if (!in_array('gamesPlayed', $optOut, true)) {
+            $leaderboards['gamesPlayed'][] = [
+                'username' => $user['displayName'] ?? $username,
+                'realUsername' => $username,
+                'avatar' => $user['avatar'] ?? '👤',
+                'value' => $stats['totalGamesPlayed'] ?? 0,
+                'rank' => $user['rank'] ?? 'Bronze'
+            ];
+        }
 
         $timePlayed = $stats['totalTimePlayed'] ?? 0;
-        $leaderboards['timePlayed'][] = [
-            'username' => $user['displayName'] ?? $username,
-            'realUsername' => $username,
-            'avatar' => $user['avatar'] ?? '👤',
-            'value' => $timePlayed,
-            'formatted' => formatTime($timePlayed),
-            'rank' => $user['rank'] ?? 'Bronze'
-        ];
+        if (!in_array('timePlayed', $optOut, true)) {
+            $leaderboards['timePlayed'][] = [
+                'username' => $user['displayName'] ?? $username,
+                'realUsername' => $username,
+                'avatar' => $user['avatar'] ?? '👤',
+                'value' => $timePlayed,
+                'formatted' => formatTime($timePlayed),
+                'rank' => $user['rank'] ?? 'Bronze'
+            ];
+        }
     }
 
     // Sort each leaderboard by value descending

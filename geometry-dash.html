@@ -1528,7 +1528,7 @@
                 c.translate(15, 15);
                 icon.draw(c, 20);
                 return `<div class="icon-btn ${i === selectedIcon ? 'selected' : ''}" data-icon="${i}">
-                    <img src="${canvas.toDataURL()}" width="30" height="30">
+                    <img src="${canvas.toDataURL()}" width="30" height="30" alt="Player icon ${i + 1}">
                 </div>`;
             }).join('');
 
