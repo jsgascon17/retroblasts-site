@@ -484,6 +484,7 @@
                 </div>
 
                 <!-- Direct Login/Logout Button -->
+                <a href="#" class="nav-direct" onclick="openNews(); return false;">📢 What’s New</a>
                 <a href="login.html" class="nav-direct auth" id="authBtn">🔐 Login</a>
             </div>
             </header>
@@ -1565,10 +1566,14 @@
     </script>
 
     <!-- News Popup -->
+    <!-- What's New. One entry per update, newest first, scrollable, so a player
+         coming back after a while can read everything they missed in one go.
+         Appears by itself when there is something unseen; the header button
+         reopens it any time. -->
     <div class="news-overlay" id="newsOverlay">
         <div class="news-modal">
             <div class="news-header">
-                <h2 id="newsTitle">📢 News</h2>
+                <h2 id="newsTitle">📢 What's New</h2>
                 <div class="news-date" id="newsDate"></div>
             </div>
             <div class="news-body" id="newsBody"></div>
@@ -1579,51 +1584,76 @@
     </div>
 
     <script>
-    // News popup system
+    // News popup. data/news.json holds { latestId, entries: [newest, ...] }.
+    // The old single-entry shape is still accepted so an older file does not
+    // blank the popup.
+    let newsDoc = null;
+
+    function newsEntries(doc) {
+        if (Array.isArray(doc.entries)) return doc.entries;
+        return doc.id ? [doc] : [];                 // pre-2026-10 single-entry file
+    }
+
+    function renderNews(entries) {
+        const esc = t => String(t == null ? '' : t)
+            .replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        document.getElementById('newsDate').textContent =
+            entries.length > 1 ? entries.length + ' updates — newest first' : (entries[0] ? entries[0].date : '');
+        document.getElementById('newsBody').innerHTML = entries.map((entry, i) => {
+            const body = (entry.content || []).map(line => {
+                if (line === '') return '<br>';
+                return '<p>' + esc(line).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') + '</p>';
+            }).join('');
+            return (i ? '<hr style="border:none;border-top:1px solid rgba(255,215,0,.25);margin:22px 0;">' : '') +
+                   '<h3 style="color:#ffd700;margin-bottom:2px;">' + esc(entry.title) + '</h3>' +
+                   '<div style="color:#98a2b3;font-size:.85rem;margin-bottom:10px;">' + esc(entry.date) + '</div>' +
+                   body;
+        }).join('');
+    }
+
+    async function loadNews() {
+        if (newsDoc) return newsDoc;
+        const resp = await fetch('data/news.json?' + Date.now());
+        newsDoc = await resp.json();
+        return newsDoc;
+    }
+
     async function checkNews() {
         try {
-            const resp = await fetch('data/news.json?' + Date.now());
-            const news = await resp.json();
-            
-            if (!news.enabled) return;
-            
-            // Check if user already saw this news
-            const seenNews = localStorage.getItem('seenNewsId');
-            if (seenNews === news.id) return;
-            
-            // Show the news
-            document.getElementById('newsTitle').textContent = news.title;
-            document.getElementById('newsDate').textContent = news.date;
-            
-            // Format content
-            const bodyHtml = news.content.map(line => {
-                if (line === '') return '<br>';
-                line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                return '<p>' + line + '</p>';
-            }).join('');
-            document.getElementById('newsBody').innerHTML = bodyHtml;
-            
-            // Show popup
+            const doc = await loadNews();
+            if (!doc.enabled) return;
+            const entries = newsEntries(doc);
+            if (!entries.length) return;
+            const latest = doc.latestId || entries[0].id;
+            if (localStorage.getItem('seenNewsId') === latest) return;   // already read
+            renderNews(entries);
             document.getElementById('newsOverlay').classList.add('active');
         } catch (e) {
             console.log('No news to display');
         }
     }
-    
+
+    // Reopen from the header, whether or not there is anything unseen.
+    async function openNews() {
+        try {
+            const doc = await loadNews();
+            const entries = newsEntries(doc);
+            if (!entries.length) return;
+            renderNews(entries);
+            document.getElementById('newsOverlay').classList.add('active');
+        } catch (e) { /* nothing to show */ }
+    }
+
     function closeNews() {
-        // Mark as seen
-        fetch('data/news.json?' + Date.now())
-            .then(r => r.json())
-            .then(news => {
-                localStorage.setItem('seenNewsId', news.id);
-            });
+        if (newsDoc) {
+            const entries = newsEntries(newsDoc);
+            const latest = newsDoc.latestId || (entries[0] && entries[0].id);
+            if (latest) localStorage.setItem('seenNewsId', latest);
+        }
         document.getElementById('newsOverlay').classList.remove('active');
     }
-    
-    // Check news on page load
-    window.addEventListener('load', () => {
-        setTimeout(checkNews, 500); // Small delay for smoother UX
-    });
+
+    window.addEventListener('load', () => setTimeout(checkNews, 500));
     </script>
 
     <!-- Auth Button Script -->
@@ -1666,6 +1696,7 @@
         </a>
     </div>
 
+    <script src="js/report.js" defer></script>
 </body>
 
     <!-- Online Friends Sidebar -->
@@ -1751,66 +1782,6 @@
 
 
     <!-- News Popup -->
-    <div class="news-overlay" id="newsOverlay">
-        <div class="news-modal">
-            <div class="news-header">
-                <h2 id="newsTitle">📢 News</h2>
-                <div class="news-date" id="newsDate"></div>
-            </div>
-            <div class="news-body" id="newsBody"></div>
-            <div class="news-footer">
-                <button class="news-btn" onclick="closeNews()">Got it! 👍</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-    // News popup system
-    async function checkNews() {
-        try {
-            const resp = await fetch('data/news.json?' + Date.now());
-            const news = await resp.json();
-            
-            if (!news.enabled) return;
-            
-            // Check if user already saw this news
-            const seenNews = localStorage.getItem('seenNewsId');
-            if (seenNews === news.id) return;
-            
-            // Show the news
-            document.getElementById('newsTitle').textContent = news.title;
-            document.getElementById('newsDate').textContent = news.date;
-            
-            // Format content
-            const bodyHtml = news.content.map(line => {
-                if (line === '') return '<br>';
-                line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                return '<p>' + line + '</p>';
-            }).join('');
-            document.getElementById('newsBody').innerHTML = bodyHtml;
-            
-            // Show popup
-            document.getElementById('newsOverlay').classList.add('active');
-        } catch (e) {
-            console.log('No news to display');
-        }
-    }
-    
-    function closeNews() {
-        // Mark as seen
-        fetch('data/news.json?' + Date.now())
-            .then(r => r.json())
-            .then(news => {
-                localStorage.setItem('seenNewsId', news.id);
-            });
-        document.getElementById('newsOverlay').classList.remove('active');
-    }
-    
-    // Check news on page load
-    window.addEventListener('load', () => {
-        setTimeout(checkNews, 500); // Small delay for smoother UX
-    });
-    </script>
 
 </html>
 <style>.theme-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.theme-option{display:flex;flex-direction:column;align-items:center;padding:10px 5px;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);border-radius:10px;cursor:pointer;transition:all 0.3s ease}.theme-option:hover{background:rgba(255,255,255,0.2);transform:translateY(-2px)}.theme-option.active{border-color:#ffd700;box-shadow:0 0 12px rgba(255,215,0,0.4)}.theme-option .theme-icon{font-size:1.5rem}.theme-option .theme-name{font-size:0.7rem;text-align:center;color:#fff;margin-top:4px}.theme-preview{width:100%;height:6px;border-radius:3px;margin-top:6px}.theme-toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:12px 24px;border-radius:8px;z-index:10000;animation:fadeInUp 0.3s ease}@keyframes fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}.game-rating{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);padding:4px 8px;border-radius:10px;font-size:0.8rem;color:#ffd700;display:flex;align-items:center;gap:3px}.rate-btn{position:absolute;bottom:8px;right:8px;background:rgba(255,215,0,0.9);color:#000;border:none;padding:4px 10px;border-radius:12px;font-size:0.75rem;cursor:pointer;opacity:0;transition:opacity 0.2s}.game-card:hover .rate-btn{opacity:1}.rating-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.8);background:linear-gradient(135deg,#1a1a2e,#16213e);border:3px solid #ffd700;border-radius:20px;padding:25px;z-index:10000;text-align:center;opacity:0;visibility:hidden;transition:all 0.2s}.rating-modal.active{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}.rating-modal h3{color:#ffd700;margin-bottom:15px}.stars{display:flex;justify-content:center;gap:10px;margin:15px 0}.star{font-size:2.5rem;cursor:pointer;transition:transform 0.1s;filter:grayscale(1)}.star:hover,.star.active{transform:scale(1.2);filter:grayscale(0)}.rating-modal-close{margin-top:15px;background:#666;color:#fff;border:none;padding:8px 20px;border-radius:15px;cursor:pointer}.rating-backdrop{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;opacity:0;visibility:hidden;transition:all 0.2s}.rating-backdrop.active{opacity:1;visibility:visible}.news-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all 0.3s ease}.news-overlay.active{opacity:1;visibility:visible}.news-modal{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);border:3px solid #ffd700;border-radius:20px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;transform:scale(0.8);transition:transform 0.3s ease;box-shadow:0 0 50px rgba(255,215,0,0.3)}.news-overlay.active .news-modal{transform:scale(1)}.news-header{background:linear-gradient(135deg,#ffd700,#ff8c00);padding:20px;border-radius:17px 17px 0 0;text-align:center}.news-header h2{color:#000;margin:0;font-size:1.5rem}.news-date{color:#333;font-size:0.9rem;margin-top:5px}.news-body{padding:25px;color:#fff;line-height:1.8}.news-body p{margin:10px 0}.news-body strong{color:#ffd700}.news-footer{padding:15px 25px 25px;text-align:center}.news-btn{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;border:none;padding:12px 40px;border-radius:25px;font-size:1.1rem;font-weight:bold;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s}.news-btn:hover{transform:scale(1.05);box-shadow:0 0 20px rgba(255,215,0,0.5)}</style>

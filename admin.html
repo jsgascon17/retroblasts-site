@@ -127,6 +127,18 @@
             flex-wrap: wrap;
             gap: 15px;
         }
+
+        .report-card {
+            background: rgba(0,0,0,.35); border: 1px solid rgba(255,215,0,.25);
+            border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;
+        }
+        .report-card.fixed { opacity: .55; border-color: rgba(126,231,135,.35); }
+        .report-card .msg { font-size: 1rem; margin-bottom: 8px; white-space: pre-wrap; word-break: break-word; }
+        .report-card .meta { font-size: .8rem; color: #98a2b3; line-height: 1.7; word-break: break-word; }
+        .report-card .meta strong { color: #ffd700; }
+        .report-card .acts { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+        .report-card .acts button { padding: 6px 14px; font-size: .8rem; }
+        .report-empty { color: #98a2b3; padding: 10px 0; }
     </style>
 </head>
 <body>
@@ -149,7 +161,14 @@
             
             <div id="adminMsg"></div>
             
-            <h2 style="color:#ffd700;">All Users</h2>
+            <h2 style="color:#ffd700;">🐞 Problem Reports <span id="reportCount" style="font-size:1rem;color:#98a2b3;"></span></h2>
+            <div style="margin-bottom:10px;">
+                <button class="secondary" onclick="setReportFilter('open')" id="rfOpen">Open</button>
+                <button class="secondary" onclick="setReportFilter('all')" id="rfAll">All</button>
+            </div>
+            <div id="reportList">Loading...</div>
+
+            <h2 style="color:#ffd700;margin-top:35px;">All Users</h2>
             <div class="user-grid" id="userGrid">Loading...</div>
         </div>
     </div>
@@ -168,6 +187,76 @@
     
     <script>
         let resetUser = null;
+        let reportFilter = 'open';
+        let allReports = [];
+
+        // Reports come from api/report-bug.php, which only answers a GET once the
+        // admin session is set - the same session this page's login creates.
+        async function loadReports() {
+            const resp = await fetch('api/report-bug.php', { credentials: 'include' });
+            const data = await resp.json();
+            const list = document.getElementById('reportList');
+            if (!data.success) {
+                list.innerHTML = '<div class="message error">' + (data.error || 'Could not load reports') + '</div>';
+                return;
+            }
+            allReports = data.reports || [];
+            renderReports();
+        }
+
+        function setReportFilter(f) { reportFilter = f; renderReports(); }
+
+        function esc(t) {
+            return String(t == null ? '' : t).replace(/[&<>"']/g, c =>
+                ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        function renderReports() {
+            const shown = reportFilter === 'open'
+                ? allReports.filter(r => (r.status || 'open') === 'open')
+                : allReports;
+            const openCount = allReports.filter(r => (r.status || 'open') === 'open').length;
+            document.getElementById('reportCount').textContent =
+                '— ' + openCount + ' open of ' + allReports.length;
+            const list = document.getElementById('reportList');
+            if (!shown.length) {
+                list.innerHTML = '<div class="report-empty">Nothing here. ' +
+                    (reportFilter === 'open' ? 'No open reports.' : 'No reports yet.') + '</div>';
+                return;
+            }
+            // Reporter text is escaped: it is typed by the public and this page is
+            // where it gets read back.
+            list.innerHTML = shown.map(r => `
+                <div class="report-card ${(r.status || 'open') !== 'open' ? 'fixed' : ''}">
+                    <div class="msg">${esc(r.message)}</div>
+                    <div class="meta">
+                        <strong>${esc(r.game || r.page)}</strong> · ${esc(r.page)}<br>
+                        ${esc(r.viewport)} viewport · ${r.touch ? 'touch' : 'mouse'} · screen ${esc(r.screen)}<br>
+                        ${esc(r.username ? 'signed in as ' + r.username : 'not signed in')} ·
+                        ${esc((r.at || '').replace('T', ' ').replace('+00:00', ' UTC'))} ·
+                        status <strong>${esc(r.status || 'open')}</strong><br>
+                        <span style="color:#6b7280;">${esc(r.device)}</span>
+                    </div>
+                    <div class="acts">
+                        <button onclick="setStatus('${esc(r.id)}','fixed')">Mark fixed</button>
+                        <button class="secondary" onclick="setStatus('${esc(r.id)}','wontfix')">Won't fix</button>
+                        <button class="secondary" onclick="setStatus('${esc(r.id)}','open')">Reopen</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        async function setStatus(id, status) {
+            const resp = await fetch('api/report-bug.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ action: 'status', id, status })
+            });
+            const data = await resp.json();
+            if (data.success) loadReports();
+            else document.getElementById('adminMsg').innerHTML =
+                '<div class="message error">' + (data.error || 'Could not update') + '</div>';
+        }
         
         async function doLogin() {
             const pass = document.getElementById('adminPass').value;
@@ -184,6 +273,7 @@
                 document.getElementById('loginBox').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
                 loadUsers();
+                loadReports();
             } else {
                 document.getElementById('loginMsg').innerHTML = '<div class="message error">' + data.error + '</div>';
             }
