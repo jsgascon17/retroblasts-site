@@ -409,6 +409,17 @@
             color: #888;
         }
         .empty-state .icon { font-size: 3rem; margin-bottom: 15px; }
+    
+        /* Narrow-screen layout fixes. Each rule below is here because the
+           element it names made the page wider than the screen. Found on the
+           live site only: this page builds its content from fetched data, so
+           it renders empty from a file:// copy. */
+        @media (max-width: 600px) {
+            /* Same min-width:auto blowout, via the empty state's 40px padding. */
+            .rooms-grid { grid-template-columns: 1fr; }
+            .rooms-grid > * { min-width: 0; }
+            .empty-state { padding: 30px 15px; }
+        }
     </style>
 </head>
 <body>

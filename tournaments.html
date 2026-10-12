@@ -157,6 +157,18 @@
             h1 { font-size: 1.8rem; }
             .tournaments-grid { grid-template-columns: 1fr; }
         }
+    
+        /* Narrow-screen layout fixes. Each rule below is here because the
+           element it names made the page wider than the screen. Found on the
+           live site only: this page builds its content from fetched data, so
+           it renders empty from a file:// copy. */
+        @media (max-width: 600px) {
+            /* Grid children default to min-width:auto, so the card's padding plus
+               its content set the page width. */
+            .tournaments-grid { grid-template-columns: 1fr; }
+            .tournaments-grid > * { min-width: 0; }
+            .tournament-card { padding: 18px 15px; }
+        }
     </style>
 </head>
 <body>

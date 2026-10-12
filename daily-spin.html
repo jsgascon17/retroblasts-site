@@ -299,6 +299,17 @@
             .spin-btn { padding: 15px 35px; font-size: 1.1rem; }
             .prizes-grid { grid-template-columns: repeat(2, 1fr); }
         }
+    
+        /* Narrow-screen layout fixes. Each rule below is here because the
+           element it names made the page wider than the screen. Found on the
+           live site only: this page builds its content from fetched data, so
+           it renders empty from a file:// copy. */
+        @media (max-width: 600px) {
+            /* The wheel's segments are rotated, so their bounding boxes stick out
+               past the circle and widened the page. The wheel is round; clipping
+               to it removes nothing that was visible. */
+            .wheel { overflow: hidden; }
+        }
     </style>
 </head>
 <body>

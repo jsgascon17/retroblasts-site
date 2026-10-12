@@ -280,6 +280,18 @@
             padding: 30px;
         }
         .login-prompt a { color: #00ff88; }
+    
+        /* Narrow-screen layout fixes. Each rule below is here because the
+           element it names made the page wider than the screen. Found on the
+           live site only: this page builds its content from fetched data, so
+           it renders empty from a file:// copy. */
+        @media (max-width: 600px) {
+            /* The stock table's min-content is ~345px. Let the panel scroll the
+               table sideways instead of widening the whole page. */
+            .section { overflow-x: auto; }
+            .stock-table { font-size: 0.8rem; }
+            .stock-table th, .stock-table td { padding: 6px 4px; }
+        }
     </style>
 </head>
 <body>
