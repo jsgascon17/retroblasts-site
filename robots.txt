@@ -3,6 +3,59 @@
 User-agent: *
 Allow: /
 
+# AI crawler policy (rule AEO-ACCESS-1)
+# Standard: github.com/jsgascon17/freshbuild-ops - ops/seo-aeo/STANDARD.md
+# Same decision as freshbuild.co: block AI *training*, allow AI *retrieval*.
+# Training crawlers take the content to train a model and send nothing back.
+# Retrieval crawlers fetch a page to answer someone's live question and can cite
+# the site, so blocking those would remove it from AI answers entirely - which
+# for a free games site is the cheapest discovery channel there is.
+# Re-check these agent names each build: operators add and rename them silently.
+
+# --- Training: blocked ---
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+# --- Retrieval and search: allowed, deliberately ---
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
 # Sitemaps
 Sitemap: https://retroblasts.com/sitemap.xml
 

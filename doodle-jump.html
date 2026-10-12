@@ -364,6 +364,22 @@
         }
 
 
+            /* Game notes. Each page says something specific about its own game:
+           these two pages are dominated by the same stats/shop/achievements
+           modal markup, so without real copy of their own they read as
+           near-duplicates to a search engine (SEO-PAGE-6). */
+        .game-notes {
+            max-width: 560px;
+            margin: 18px auto 0;
+            padding: 0 16px 24px;
+            color: #b9c2d0;
+            font-size: 0.9rem;
+            line-height: 1.65;
+            text-align: left;
+        }
+        .game-notes h2 { font-size: 1rem; margin-bottom: 8px; color: #fff; }
+        .game-notes ul { margin: 0 0 14px 18px; }
+        .game-notes li { margin-bottom: 5px; }
     </style>
 <script src="js/pets.js"></script>
 </head>
@@ -394,6 +410,17 @@
     <canvas id="gameCanvas" width="400" height="600"></canvas>
 
     <div class="instructions">← → Arrow keys or A/D to move</div>
+
+    <section class="game-notes">
+        <h2>How Doodle Jump works</h2>
+        <ul>
+            <li>You never jump manually. The frog bounces the moment it lands, so the whole game is steering left and right with the arrow keys, A/D, or by dragging your thumb across the screen.</li>
+            <li>Your score is the height you have climbed, not the platforms you land on. Falling below the bottom of the screen ends the run at whatever height you reached.</li>
+            <li>Platforms are either solid or drifting sideways. The drifting ones are where most runs end, because the frog lands where the platform <em>was</em>.</li>
+            <li>Springs fling you several screens up at once. A jetpack or a propeller does the same for a few seconds and steers much faster than a normal jump.</li>
+            <li>Monsters sit on platforms and end the run on contact. A power-up does not protect you from one.</li>
+        </ul>
+    </section>
 
     <div id="powerupIndicator" class="powerup-indicator" style="display: none;"></div>
 
