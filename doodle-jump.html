@@ -340,6 +340,30 @@
         .owner-stat-controls button:hover { background: #388e3c; }
         #invincibleBtn { width: 60px; }
         #invincibleBtn.active { background: #0f0; color: #000; border-color: #0f0; }
+    #gameCanvas {
+        max-width: 100%;
+        touch-action: none;
+    }
+
+        /* Fit the canvas to narrow screens. The width/height attributes are the
+
+           drawing buffer and stay 400 wide; only the CSS box shrinks, so pointer
+
+           input must be scaled by canvas.width / rect.width - see the handlers. */
+
+        @media (max-width: 450px) {
+
+            #gameCanvas {
+
+                width: 100%;
+
+                height: auto;
+
+            }
+
+        }
+
+
     </style>
 <script src="js/pets.js"></script>
 </head>
@@ -956,7 +980,11 @@
         canvas.addEventListener('touchmove', e => {
             if (touchX !== null) {
                 const newX = e.touches[0].clientX;
-                const diff = newX - touchX;
+                // diff is in CSS pixels but vx is in drawing-buffer units, and the
+                // canvas is CSS-scaled on narrow screens. Without the ratio the
+                // same swipe moves the player less the smaller the screen gets.
+                const scaleX = canvas.width / canvas.getBoundingClientRect().width;
+                const diff = (newX - touchX) * scaleX;
                 gameState.player.vx = diff * 0.3;
                 touchX = newX;
             }

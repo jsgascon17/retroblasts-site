@@ -113,6 +113,8 @@
             border-radius: 10px;
             box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
             cursor: crosshair;
+            max-width: 100%;
+            touch-action: none;
         }
         .tower-bar {
             display: flex;
@@ -345,6 +347,26 @@
         }
         .notification-title { color: #ffd700; font-weight: bold; font-size: 1rem; }
         .notification-desc { color: #aaa; font-size: 0.85rem; margin-top: 5px; }
+        /* Fit the canvas to narrow screens. The width/height attributes are the
+           drawing buffer and stay 800 wide; only the CSS box shrinks, so pointer
+           input must be scaled by canvas.width / rect.width - see the handlers. */
+        @media (max-width: 850px) {
+            #gameCanvas {
+                width: 100%;
+                height: auto;
+            }
+        }
+
+    
+        /* Narrow-screen layout fixes. Each rule below is here because the
+           element it names made the page wider than the screen, so the
+           whole page zoomed out and scrolled sideways on a phone. */
+        @media (max-width: 600px) {
+            /* Same unwrapped button row as snake, plus a modal that was not
+               bounded by the viewport. */
+            .top-bar { flex-wrap: wrap; justify-content: center; }
+            .modal-content { max-width: calc(100vw - 30px); padding: 18px; }
+        }
     </style>
 <script src="js/pets.js"></script>
 </head>
@@ -2412,10 +2434,19 @@
         // ============================================
         // INPUT
         // ============================================
-        canvas.addEventListener('mousemove', e => {
+        // The canvas is CSS-scaled on narrow screens (see the @media rule), so the
+        // element and the drawing buffer differ in size. Tile coordinates below
+        // divide by TILE_W/TILE_H, which are buffer units, so client coordinates
+        // must be converted or towers land in the wrong square. Ratio is 1 at
+        // full size, making this a no-op on desktop.
+        function canvasPos(clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
-            const mx = e.clientX - rect.left;
-            const my = e.clientY - rect.top;
+            return [(clientX - rect.left) * (canvas.width / rect.width),
+                    (clientY - rect.top) * (canvas.height / rect.height)];
+        }
+
+        canvas.addEventListener('mousemove', e => {
+            const [mx, my] = canvasPos(e.clientX, e.clientY);
             hoverTile = {
                 x: Math.floor(mx / TILE_W),
                 y: Math.floor(my / TILE_H)
@@ -2426,12 +2457,30 @@
             hoverTile = null;
         });
 
-// Touch support for mobile        canvas.addEventListener('touchmove', e => {            e.preventDefault();            const rect = canvas.getBoundingClientRect();            const touch = e.touches[0];            const mx = touch.clientX - rect.left;            const my = touch.clientY - rect.top;            hoverTile = {                x: Math.floor(mx / TILE_W),                y: Math.floor(my / TILE_H)            };        }, { passive: false });        canvas.addEventListener('touchstart', e => {            const rect = canvas.getBoundingClientRect();            const touch = e.touches[0];            const mx = touch.clientX - rect.left;            const my = touch.clientY - rect.top;            hoverTile = {                x: Math.floor(mx / TILE_W),                y: Math.floor(my / TILE_H)            };        });
+        // Touch support for mobile. This block used to be a single line beginning
+        // with //, so every statement in it was commented out and touch hover
+        // never worked at all.
+        canvas.addEventListener('touchmove', e => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const [mx, my] = canvasPos(touch.clientX, touch.clientY);
+            hoverTile = {
+                x: Math.floor(mx / TILE_W),
+                y: Math.floor(my / TILE_H)
+            };
+        }, { passive: false });
+
+        canvas.addEventListener('touchstart', e => {
+            const touch = e.touches[0];
+            const [mx, my] = canvasPos(touch.clientX, touch.clientY);
+            hoverTile = {
+                x: Math.floor(mx / TILE_W),
+                y: Math.floor(my / TILE_H)
+            };
+        });
         canvas.addEventListener('click', e => {
             if (gameState !== 'playing') return;
-            const rect = canvas.getBoundingClientRect();
-            const mx = e.clientX - rect.left;
-            const my = e.clientY - rect.top;
+            const [mx, my] = canvasPos(e.clientX, e.clientY);
             const gridX = Math.floor(mx / TILE_W);
             const gridY = Math.floor(my / TILE_H);
 

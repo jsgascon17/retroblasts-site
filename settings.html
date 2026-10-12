@@ -251,6 +251,17 @@
             display: inline-block;
             margin-top: 20px;
         }
+    
+        /* Narrow-screen layout fixes. Each rule below is here because the
+           element it names made the page wider than the screen, so the
+           whole page zoomed out and scrolled sideways on a phone. */
+        @media (max-width: 600px) {
+            /* The label and the colour swatches sat in one unwrapped row, and
+               a flex child defaults to min-width:auto so the swatches refused
+               to shrink. */
+            .setting-row { flex-wrap: wrap; }
+            .color-options { flex-wrap: wrap; min-width: 0; }
+        }
     </style>
 </head>
 <body>

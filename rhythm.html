@@ -113,6 +113,8 @@
 
         #gameCanvas {
             display: block;
+            max-width: 100%;
+            touch-action: none;
         }
 
         .hit-zone {
@@ -403,6 +405,27 @@
         }
         .admin-action-btn:hover { background: rgba(255,255,255,0.2); }
         .admin-action-btn.danger { border-color: #ff6b6b; color: #ff6b6b; }
+        /* Fit the canvas to narrow screens. The width/height attributes are the
+           drawing buffer and stay 400 wide; only the CSS box shrinks, so pointer
+           input must be scaled by canvas.width / rect.width - see the handlers. */
+        @media (max-width: 450px) {
+            #gameCanvas {
+                width: 100%;
+                height: auto;
+            }
+        }
+
+    
+        /* Narrow-screen layout fixes. Each rule below is here because the
+           element it names made the page wider than the screen, so the
+           whole page zoomed out and scrolled sideways on a phone. */
+        @media (max-width: 600px) {
+            /* Fixed 400px container. The canvas inside is already fluid. */
+            #gameContainer { max-width: 100%; }
+            /* The score/combo row did not wrap inside the padded header. */
+            .stats-bar { flex-wrap: wrap; justify-content: center; }
+            .header { padding: 15px 8px; }
+        }
     </style>
     <script src="js/vip.js"></script>
 </head>

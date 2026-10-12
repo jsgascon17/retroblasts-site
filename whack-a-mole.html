@@ -203,6 +203,15 @@
 
         .hammer-indicator { position: fixed; bottom: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 10px 15px; border-radius: 10px; display: flex; align-items: center; gap: 10px; }
         .hammer-indicator span { font-size: 1.5rem; }
+    
+        /* Narrow-screen layout fixes. Each rule below is here because the
+           element it names made the page wider than the screen, so the
+           whole page zoomed out and scrolled sideways on a phone. */
+        @media (max-width: 600px) {
+            /* The board is repeat(3, 1fr) but the holes were a fixed 100px, so
+               they overflowed their own tracks. */
+            .hole { width: auto; height: auto; aspect-ratio: 1; }
+        }
     </style>
 <script src="js/duel.js"></script>
 <script src="js/victory.js"></script>

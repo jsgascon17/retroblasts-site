@@ -71,6 +71,8 @@
         #gameCanvas {
             border: 2px solid #fff;
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+            max-width: 100%;
+            touch-action: none;
         }
         .overlay {
             position: fixed;
@@ -354,6 +356,16 @@
             from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
+        /* Fit the canvas to narrow screens. The width/height attributes are the
+           drawing buffer and stay 800 wide; only the CSS box shrinks, so pointer
+           input must be scaled by canvas.width / rect.width - see the handlers. */
+        @media (max-width: 850px) {
+            #gameCanvas {
+                width: 100%;
+                height: auto;
+            }
+        }
+
     </style>
 <script src="js/duel.js"></script>
 <script src="js/victory.js"></script>
@@ -2150,8 +2162,14 @@
 
             for (let touch of touches) {
                 const rect = canvas.getBoundingClientRect();
-                const x = touch.clientX - rect.left;
-                const y = touch.clientY - rect.top;
+                // The canvas is CSS-scaled on narrow screens, so the element and
+                // the drawing buffer are different sizes. x and y are compared
+                // against W and H below, which are buffer units. Ratio is 1 at
+                // full size, so this is a no-op on desktop.
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const x = (touch.clientX - rect.left) * scaleX;
+                const y = (touch.clientY - rect.top) * scaleY;
 
                 if (x < W / 3) touchControls.left = true;
                 else if (x > W * 2 / 3) touchControls.right = true;

@@ -111,6 +111,17 @@
 
         .leaderboard-form { margin: 20px 0; padding: 20px; background: rgba(50,205,50,0.1); border-radius: 15px; border: 2px solid #32CD32; }
         .leaderboard-form input { padding: 10px 15px; border-radius: 20px; border: 2px solid #32CD32; background: rgba(0,0,0,0.5); color: #fff; font-size: 1rem; width: 150px; margin-right: 10px; }
+    
+        /* Narrow-screen layout fixes. Each rule below is here because the
+           element it names made the page wider than the screen, so the
+           whole page zoomed out and scrolled sideways on a phone. */
+        @media (max-width: 600px) {
+            /* 9 columns of 35px plus borders and padding came to 341px. Smaller
+               cells fit a 320px screen; the scroll container keeps the larger
+               difficulties inside the board instead of widening the page. */
+            .grid { max-width: 100%; overflow-x: auto; }
+            .cell { width: 30px; height: 30px; font-size: 0.85rem; }
+        }
     </style>
 <script src="js/pets.js"></script>
 </head>

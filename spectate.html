@@ -292,6 +292,19 @@
             color: #fff;
             margin-bottom: 10px;
         }
+    
+        /* Narrow-screen layout fixes. Each rule below is here because the
+           element it names made the page wider than the screen, so the
+           whole page zoomed out and scrolled sideways on a phone. */
+        @media (max-width: 600px) {
+            /* Grid children default to min-width:auto, so the empty state's
+               content width (300px) set the page width. */
+            .streams-grid > * { min-width: 0; }
+            /* auto-fill minmax(300px,...) cannot go below 300px, which is wider
+               than the column available on a 320px screen. */
+            .streams-grid { grid-template-columns: 1fr; }
+            .empty-state { min-width: 0; padding: 40px 15px; }
+        }
     </style>
 </head>
 <body>

@@ -92,6 +92,8 @@
             box-shadow: 0 0 50px rgba(255, 107, 107, 0.3);
             cursor: pointer;
             transition: transform 0.1s;
+            max-width: 100%;
+            touch-action: none;
         }
         #gameCanvas:active { transform: scale(0.98); }
         .message {
@@ -160,6 +162,16 @@
             50% { transform: translate(-50%, -50%) scale(1.2); }
             100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
         }
+        /* Fit the canvas to narrow screens. The width/height attributes are the
+           drawing buffer and stay 350 wide; only the CSS box shrinks, so pointer
+           input must be scaled by canvas.width / rect.width - see the handlers. */
+        @media (max-width: 400px) {
+            #gameCanvas {
+                width: 100%;
+                height: auto;
+            }
+        }
+
     </style>
 <script src="js/pets.js"></script>
 </head>

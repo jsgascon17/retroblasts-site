@@ -375,6 +375,20 @@
         .owner-stat-controls button:hover { background: #A0522D; }
         .owner-toggle-btn { width: 60px !important; }
         .owner-toggle-btn.active { background: #4CAF50; color: #fff; border-color: #4CAF50; }
+    
+        /* Narrow-screen layout fixes. Each rule below is here because the
+           element it names made the page wider than the screen, so the
+           whole page zoomed out and scrolled sideways on a phone. */
+        @media (max-width: 600px) {
+            /* The click area's padding plus a fixed 220px cookie exceeded the
+               column width. */
+            .game-container > * { min-width: 0; }
+            /* A long unbreakable string in the code box set a 302px minimum. */
+            .game-container { max-width: 100%; }
+            .code-box { padding: 10px; overflow-wrap: anywhere; word-break: break-word; }
+            .click-area { padding: 15px; }
+            #cookie { width: 100%; max-width: 220px; height: auto; aspect-ratio: 1; font-size: 7rem; }
+        }
     </style>
 <script src="js/pets.js"></script>
 </head>

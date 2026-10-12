@@ -351,6 +351,16 @@
             padding: 40px;
         }
         .login-prompt a { color: #f43f5e; }
+    
+        /* Narrow-screen layout fixes. Each rule below is here because the
+           element it names made the page wider than the screen, so the
+           whole page zoomed out and scrolled sideways on a phone. */
+        @media (max-width: 600px) {
+            /* Two equal columns do not fit on a phone, and the grid children
+               would not shrink below their content. */
+            .controls { grid-template-columns: 1fr; }
+            .controls > * { min-width: 0; }
+        }
     </style>
 </head>
 <body>

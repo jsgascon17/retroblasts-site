@@ -195,7 +195,7 @@
         }
         .mini-game-overlay.hidden { display: none; }
         .mini-game-overlay h2 { color: #fff; margin-bottom: 20px; }
-        .mini-game-canvas { border: 4px solid #8D6E63; border-radius: 15px; background: #f5f5f5; }
+        .mini-game-canvas { border: 4px solid #8D6E63; border-radius: 15px; background: #f5f5f5; max-width: 100%; height: auto; touch-action: none; }
         .mini-game-close {
             margin-top: 15px; padding: 10px 25px; background: #f44336; color: #fff;
             border: none; border-radius: 10px; font-size: 1rem; cursor: pointer;
@@ -1171,6 +1171,13 @@
         let miniGameObjects = [];
         let miniGamePlayerX = 200; // Player X position (center of canvas)
         const miniGameCanvas = document.getElementById('miniGameCanvas');
+        // The overlay canvas is CSS-scaled on narrow screens, so convert client
+        // coordinates into drawing-buffer coordinates. Ratio is 1 at full size.
+        function miniGamePos(clientX, clientY) {
+            const rect = miniGameCanvas.getBoundingClientRect();
+            return [(clientX - rect.left) * (miniGameCanvas.width / rect.width),
+                    (clientY - rect.top) * (miniGameCanvas.height / rect.height)];
+        }
         const miniGameCtx = miniGameCanvas.getContext('2d');
 
         function startMiniGame() {
@@ -1271,8 +1278,7 @@
         // Mouse movement to control capybara
         miniGameCanvas.addEventListener('mousemove', (e) => {
             if (!miniGameRunning) return;
-            const rect = miniGameCanvas.getBoundingClientRect();
-            miniGamePlayerX = e.clientX - rect.left;
+            [miniGamePlayerX] = miniGamePos(e.clientX, e.clientY);
             // Clamp to canvas bounds
             miniGamePlayerX = Math.max(25, Math.min(miniGameCanvas.width - 25, miniGamePlayerX));
         });
@@ -1281,18 +1287,15 @@
         miniGameCanvas.addEventListener('touchmove', (e) => {
             if (!miniGameRunning) return;
             e.preventDefault();
-            const rect = miniGameCanvas.getBoundingClientRect();
             const touch = e.touches[0];
-            miniGamePlayerX = touch.clientX - rect.left;
+            [miniGamePlayerX] = miniGamePos(touch.clientX, touch.clientY);
             miniGamePlayerX = Math.max(25, Math.min(miniGameCanvas.width - 25, miniGamePlayerX));
         });
 
         // Click to collect oranges (bonus feature - can still click to catch)
         miniGameCanvas.addEventListener('click', (e) => {
             if (!miniGameRunning) return;
-            const rect = miniGameCanvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            const [x, y] = miniGamePos(e.clientX, e.clientY);
 
             for (let i = miniGameObjects.length - 1; i >= 0; i--) {
                 const obj = miniGameObjects[i];

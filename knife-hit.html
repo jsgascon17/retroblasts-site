@@ -355,6 +355,30 @@
         .owner-stat-controls button:hover { background: #444; }
         .owner-toggle-btn { width: 60px !important; }
         .owner-toggle-btn.active { background: #4CAF50; color: #fff; border-color: #4CAF50; }
+    #gameCanvas {
+        max-width: 100%;
+        touch-action: none;
+    }
+
+        /* Fit the canvas to narrow screens. The width/height attributes are the
+
+           drawing buffer and stay 400 wide; only the CSS box shrinks, so pointer
+
+           input must be scaled by canvas.width / rect.width - see the handlers. */
+
+        @media (max-width: 450px) {
+
+            #gameCanvas {
+
+                width: 100%;
+
+                height: auto;
+
+            }
+
+        }
+
+
     </style>
 <script src="js/duel.js"></script>
 <script src="js/victory.js"></script>

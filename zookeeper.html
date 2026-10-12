@@ -106,6 +106,15 @@
         #minimap { position: absolute; top: 20px; right: 20px; width: 150px; height: 150px; background: rgba(0,0,0,0.8); border: 3px solid #ffd700; border-radius: 10px; z-index: 100; }
         #minimap canvas { width: 100%; height: 100%; border-radius: 7px; }
         #minimap-label { position: absolute; bottom: 5px; left: 0; right: 0; text-align: center; font-size: 0.4rem; color: #ffd700; }
+    
+        /* Narrow-screen layout fixes. Each rule below is here because the
+           element it names made the page wider than the screen, so the
+           whole page zoomed out and scrolled sideways on a phone. */
+        @media (max-width: 600px) {
+            /* Absolutely positioned HUD with an unwrapped stats row. */
+            #ui { left: 10px; right: 10px; }
+            #statsBar { flex-wrap: wrap; }
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <script src="js/vip.js"></script>

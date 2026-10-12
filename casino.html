@@ -537,6 +537,14 @@
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
         }
+    
+        /* Narrow-screen layout fixes. Each rule below is here because the
+           element it names made the page wider than the screen, so the
+           whole page zoomed out and scrolled sideways on a phone. */
+        @media (max-width: 600px) {
+            /* Unwrapped header row. */
+            .header-right { flex-wrap: wrap; justify-content: center; min-width: 0; }
+        }
     </style>
 </head>
 <body>

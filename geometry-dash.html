@@ -71,6 +71,8 @@
         #gameCanvas {
             border: none;
             cursor: pointer;
+            max-width: 100%;
+            touch-action: none;
         }
         .overlay {
             position: fixed;
@@ -226,6 +228,16 @@
             font-size: 0.9rem;
         }
         .back-link:hover { color: #fff; }
+        /* Fit the canvas to narrow screens. The width/height attributes are the
+           drawing buffer and stay 900 wide; only the CSS box shrinks, so pointer
+           input must be scaled by canvas.width / rect.width - see the handlers. */
+        @media (max-width: 950px) {
+            #gameCanvas {
+                width: 100%;
+                height: auto;
+            }
+        }
+
     </style>
 <script src="js/pets.js"></script>
 </head>
